@@ -1,7 +1,8 @@
 # nasa-apt
 Code and issues relevant to the NASA APT project
 
-The project API is built using [Postgrest](https://github.com/PostgREST/postgrest)
+The project API is built using [Postgrest](https://github.com/PostgREST/postgrest).
+
 To create a test instance of the database and API with `docker-compose` run
 
 `docker-compose build` 

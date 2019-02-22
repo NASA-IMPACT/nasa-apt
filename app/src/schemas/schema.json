@@ -1,0 +1,401 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "5.2.0 (1e732ac)",
+        "title": "PostgREST API",
+        "description": "standard public schema"
+    },
+    "host": "0.0.0.0:3000",
+    "basePath": "/",
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json",
+        "application/vnd.pgrst.object+json",
+        "text/csv"
+    ],
+    "produces": [
+        "application/json",
+        "application/vnd.pgrst.object+json",
+        "text/csv"
+    ],
+    "paths": {
+        "/": {
+            "get": {
+                "tags": [
+                    "Introspection"
+                ],
+                "summary": "OpenAPI description (this document)",
+                "produces": [
+                    "application/openapi+json",
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/contacts": {
+            "get": {
+                "tags": [
+                    "contacts"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.contact_id"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.first_name"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.middle_name"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.last_name"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.uuid"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_type"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_value"
+                    },
+                    {
+                        "$ref": "#/parameters/select"
+                    },
+                    {
+                        "$ref": "#/parameters/order"
+                    },
+                    {
+                        "$ref": "#/parameters/range"
+                    },
+                    {
+                        "$ref": "#/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "206": {
+                        "description": "Partial Content"
+                    },
+                    "200": {
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/contacts"
+                            },
+                            "type": "array"
+                        },
+                        "description": "OK"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "contacts"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/body.contacts"
+                    },
+                    {
+                        "$ref": "#/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "contacts"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.contact_id"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.first_name"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.middle_name"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.last_name"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.uuid"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_type"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_value"
+                    },
+                    {
+                        "$ref": "#/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "contacts"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.contact_id"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.first_name"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.middle_name"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.last_name"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.uuid"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_type"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_value"
+                    },
+                    {
+                        "$ref": "#/parameters/body.contacts"
+                    },
+                    {
+                        "$ref": "#/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "contacts": {
+            "required": [
+                "contact_id",
+                "first_name",
+                "middle_name",
+                "last_name",
+                "contact_mechanism_value"
+            ],
+            "properties": {
+                "contact_id": {
+                    "format": "integer",
+                    "type": "integer",
+                    "description": "Note:\nThis is a Primary Key.<pk/>"
+                },
+                "first_name": {
+                    "maxLength": 1024,
+                    "format": "character varying",
+                    "type": "string"
+                },
+                "middle_name": {
+                    "maxLength": 1024,
+                    "format": "character varying",
+                    "type": "string"
+                },
+                "last_name": {
+                    "maxLength": 1024,
+                    "format": "character varying",
+                    "type": "string"
+                },
+                "uuid": {
+                    "maxLength": 1024,
+                    "format": "character varying",
+                    "type": "string"
+                },
+                "contact_mechanism_type": {
+                    "format": "public.e_contact_mechanism_type",
+                    "type": "string",
+                    "enum": [
+                        "Direct Line",
+                        "Email",
+                        "Facebook",
+                        "Fax",
+                        "Mobile",
+                        "Modem",
+                        "Primary",
+                        "TDD/TTY Phone",
+                        "Telephone",
+                        "Twitter",
+                        "U.S.",
+                        "Other"
+                    ]
+                },
+                "contact_mechanism_value": {
+                    "maxLength": 1024,
+                    "format": "character varying",
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "parameters": {
+        "preferParams": {
+            "name": "Prefer",
+            "description": "Preference",
+            "required": false,
+            "in": "header",
+            "type": "string",
+            "enum": [
+                "params=single-object"
+            ]
+        },
+        "preferReturn": {
+            "name": "Prefer",
+            "description": "Preference",
+            "required": false,
+            "in": "header",
+            "type": "string",
+            "enum": [
+                "return=representation",
+                "return=minimal",
+                "return=none"
+            ]
+        },
+        "preferCount": {
+            "name": "Prefer",
+            "description": "Preference",
+            "required": false,
+            "in": "header",
+            "type": "string",
+            "enum": [
+                "count=none"
+            ]
+        },
+        "select": {
+            "name": "select",
+            "description": "Filtering Columns",
+            "required": false,
+            "in": "query",
+            "type": "string"
+        },
+        "order": {
+            "name": "order",
+            "description": "Ordering",
+            "required": false,
+            "in": "query",
+            "type": "string"
+        },
+        "range": {
+            "name": "Range",
+            "description": "Limiting and Pagination",
+            "required": false,
+            "in": "header",
+            "type": "string"
+        },
+        "rangeUnit": {
+            "name": "Range-Unit",
+            "description": "Limiting and Pagination",
+            "required": false,
+            "default": "items",
+            "in": "header",
+            "type": "string"
+        },
+        "offset": {
+            "name": "offset",
+            "description": "Limiting and Pagination",
+            "required": false,
+            "in": "query",
+            "type": "string"
+        },
+        "limit": {
+            "name": "limit",
+            "description": "Limiting and Pagination",
+            "required": false,
+            "in": "query",
+            "type": "string"
+        },
+        "body.contacts": {
+            "name": "contacts",
+            "description": "contacts",
+            "required": false,
+            "schema": {
+                "$ref": "#/definitions/contacts"
+            },
+            "in": "body"
+        },
+        "rowFilter.contacts.contact_id": {
+            "name": "contact_id",
+            "required": false,
+            "format": "integer",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.contacts.first_name": {
+            "name": "first_name",
+            "required": false,
+            "format": "character varying",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.contacts.middle_name": {
+            "name": "middle_name",
+            "required": false,
+            "format": "character varying",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.contacts.last_name": {
+            "name": "last_name",
+            "required": false,
+            "format": "character varying",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.contacts.uuid": {
+            "name": "uuid",
+            "required": false,
+            "format": "character varying",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.contacts.contact_mechanism_type": {
+            "name": "contact_mechanism_type",
+            "required": false,
+            "format": "public.e_contact_mechanism_type",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.contacts.contact_mechanism_value": {
+            "name": "contact_mechanism_value",
+            "required": false,
+            "format": "character varying",
+            "in": "query",
+            "type": "string"
+        }
+    },
+    "externalDocs": {
+        "url": "https://postgrest.org/en/v2/api.html",
+        "description": "PostgREST Documentation"
+    }
+}
