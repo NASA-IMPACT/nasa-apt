@@ -1,8 +1,10 @@
 /* eslint camelcase: 0 */
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { withFormik } from 'formik';
 import jsonschema from 'jsonschema';
+import { createContact } from '../actions/actions';
 import apiSchema from '../schemas/schema.json';
 import addMinLength from '../schemas/addMinLength';
 import transformErrors from '../schemas/transformErrors';
@@ -11,12 +13,16 @@ import Select from './Select';
 
 const validator = new jsonschema.Validator();
 const contactsSchema = addMinLength(apiSchema.definitions.contacts);
+contactsSchema.required = contactsSchema
+  .required.filter(property => (property !== 'contact_id'));
+
 const first_name = 'first_name';
 const middle_name = 'middle_name';
 const last_name = 'last_name';
 const contact_mechanism_type = 'contact_mechanism_type';
 const contact_mechanism_types = contactsSchema
   .properties[contact_mechanism_type].enum;
+const contact_mechanism_value = 'contact_mechanism_value';
 
 const InnerContactForm = (props) => {
   const {
@@ -27,7 +33,6 @@ const InnerContactForm = (props) => {
     handleBlur,
     handleSubmit,
   } = props;
-
   return (
     <form onSubmit={handleSubmit}>
       <Input
@@ -70,6 +75,16 @@ const InnerContactForm = (props) => {
         touched={touched[contact_mechanism_type]}
         options={contact_mechanism_types}
       />
+      <Input
+        name={contact_mechanism_value}
+        label="Contact Mechanism Value"
+        type="text"
+        onChange={handleChange}
+        onBlur={handleBlur}
+        value={values[contact_mechanism_value]}
+        error={errors[contact_mechanism_value]}
+        touched={touched[contact_mechanism_value]}
+      />
       <button type="submit">Submit</button>
     </form>
   );
@@ -90,7 +105,8 @@ export const ContactForm = withFormik({
       [first_name]: '',
       [middle_name]: '',
       [last_name]: '',
-      [contact_mechanism_type]: 'Email'
+      [contact_mechanism_type]: 'Email',
+      [contact_mechanism_value]: ''
     };
     return initialValues;
   },
@@ -103,9 +119,13 @@ export const ContactForm = withFormik({
     return errors;
   },
 
-  handleSubmit: (values, { setSubmitting }) => {
+  handleSubmit: (values, { props, setSubmitting }) => {
+    const { createContact: create } = props;
+    create(values);
     setSubmitting(false);
   }
 })(InnerContactForm);
 
-export default ContactForm;
+const mapDispatchToProps = { createContact };
+
+export default connect(null, mapDispatchToProps)(ContactForm);
