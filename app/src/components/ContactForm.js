@@ -7,11 +7,16 @@ import apiSchema from '../schemas/schema.json';
 import addMinLength from '../schemas/addMinLength';
 import transformErrors from '../schemas/transformErrors';
 import Input from './Input';
+import Select from './Select';
 
 const validator = new jsonschema.Validator();
 const contactsSchema = addMinLength(apiSchema.definitions.contacts);
 const first_name = 'first_name';
 const middle_name = 'middle_name';
+const last_name = 'last_name';
+const contact_mechanism_type = 'contact_mechanism_type';
+const contact_mechanism_types = contactsSchema
+  .properties[contact_mechanism_type].enum;
 
 const InnerContactForm = (props) => {
   const {
@@ -45,6 +50,26 @@ const InnerContactForm = (props) => {
         error={errors[middle_name]}
         touched={touched[middle_name]}
       />
+      <Input
+        name={last_name}
+        label="Last Name"
+        type="text"
+        onChange={handleChange}
+        onBlur={handleBlur}
+        value={values[last_name]}
+        error={errors[last_name]}
+        touched={touched[last_name]}
+      />
+      <Select
+        name={contact_mechanism_type}
+        label="Contact Mechanism Type"
+        onChange={handleChange}
+        onBlur={handleBlur}
+        value={values[contact_mechanism_type]}
+        error={errors[contact_mechanism_type]}
+        touched={touched[contact_mechanism_type]}
+        options={contact_mechanism_types}
+      />
       <button type="submit">Submit</button>
     </form>
   );
@@ -63,7 +88,9 @@ export const ContactForm = withFormik({
   mapPropsToValues: () => {
     const initialValues = {
       [first_name]: '',
-      [middle_name]: ''
+      [middle_name]: '',
+      [last_name]: '',
+      [contact_mechanism_type]: 'Email'
     };
     return initialValues;
   },
