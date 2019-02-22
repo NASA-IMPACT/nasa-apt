@@ -1,4 +1,4 @@
-/* eslint camel-case: 0 */
+/* eslint camelcase: 0 */
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withFormik } from 'formik';
@@ -6,12 +6,14 @@ import jsonschema from 'jsonschema';
 import apiSchema from '../schemas/schema.json';
 import addMinLength from '../schemas/addMinLength';
 import transformErrors from '../schemas/transformErrors';
+import Input from './Input';
 
 const validator = new jsonschema.Validator();
 const contactsSchema = addMinLength(apiSchema.definitions.contacts);
+const first_name = 'first_name';
+const middle_name = 'middle_name';
 
 const InnerContactForm = (props) => {
-  const name = 'first_name';
   const {
     values,
     touched,
@@ -23,14 +25,26 @@ const InnerContactForm = (props) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <input
-        name={name}
+      <Input
+        name={first_name}
+        label="First Name"
         type="text"
         onChange={handleChange}
         onBlur={handleBlur}
-        value={values[name]}
+        value={values[first_name]}
+        error={errors[first_name]}
+        touched={touched[first_name]}
       />
-      {errors[name] && touched[name] && <div id="feedback">{errors[name]}</div>}
+      <Input
+        name={middle_name}
+        label="Middle Name"
+        type="text"
+        onChange={handleChange}
+        onBlur={handleBlur}
+        value={values[middle_name]}
+        error={errors[middle_name]}
+        touched={touched[middle_name]}
+      />
       <button type="submit">Submit</button>
     </form>
   );
@@ -48,7 +62,8 @@ InnerContactForm.propTypes = {
 export const ContactForm = withFormik({
   mapPropsToValues: () => {
     const initialValues = {
-      first_name: ''
+      [first_name]: '',
+      [middle_name]: ''
     };
     return initialValues;
   },
