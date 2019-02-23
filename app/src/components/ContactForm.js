@@ -8,6 +8,7 @@ import { createContact } from '../actions/actions';
 import apiSchema from '../schemas/schema.json';
 import addMinLength from '../schemas/addMinLength';
 import transformErrors from '../schemas/transformErrors';
+import validateEmail from '../schemas/validateEmail';
 import Input from './Input';
 import Select from './Select';
 
@@ -23,6 +24,7 @@ const contact_mechanism_type = 'contact_mechanism_type';
 const contact_mechanism_types = contactsSchema
   .properties[contact_mechanism_type].enum;
 const contact_mechanism_value = 'contact_mechanism_value';
+const email = 'Email';
 
 const InnerContactForm = (props) => {
   const {
@@ -105,7 +107,7 @@ export const ContactForm = withFormik({
       [first_name]: '',
       [middle_name]: '',
       [last_name]: '',
-      [contact_mechanism_type]: 'Email',
+      [contact_mechanism_type]: email,
       [contact_mechanism_value]: ''
     };
     return initialValues;
@@ -116,6 +118,12 @@ export const ContactForm = withFormik({
     errors = transformErrors(
       validator.validate(values, contactsSchema).errors
     );
+    if (values[contact_mechanism_type] === email) {
+      const isValidEmail = validateEmail(values[contact_mechanism_value]);
+      if (!isValidEmail) {
+        errors[contact_mechanism_value] = 'Must be a valid email';
+      }
+    }
     return errors;
   },
 
