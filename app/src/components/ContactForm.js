@@ -26,7 +26,7 @@ const contact_mechanism_types = contactsSchema
 const contact_mechanism_value = 'contact_mechanism_value';
 const email = 'Email';
 
-const InnerContactForm = (props) => {
+export const InnerContactForm = (props) => {
   const {
     values,
     touched,
