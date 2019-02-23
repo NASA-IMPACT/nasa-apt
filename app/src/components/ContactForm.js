@@ -35,6 +35,8 @@ const InnerContactForm = (props) => {
     handleBlur,
     handleSubmit,
   } = props;
+  const submitEnabled = !Object.keys(errors).length
+                                  && Object.keys(touched).length;
   return (
     <form onSubmit={handleSubmit}>
       <Input
@@ -87,7 +89,12 @@ const InnerContactForm = (props) => {
         error={errors[contact_mechanism_value]}
         touched={touched[contact_mechanism_value]}
       />
-      <button type="submit">Submit</button>
+      <button
+        type="submit"
+        disabled={!submitEnabled}
+      >
+        Submit
+      </button>
     </form>
   );
 };
