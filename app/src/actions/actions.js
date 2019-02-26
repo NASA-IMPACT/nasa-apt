@@ -1,18 +1,20 @@
+import { RSAA } from 'redux-api-middleware';
 import * as types from '../constants/action_types';
+
+const BASE_URL = process.env.REACT_APP_API_URL;
 
 export function createContact(contact) {
   return {
-    type: types.CALL_API,
-    payload: {
-      endpoint: 'contacts',
-      authenticated: false,
-      types: {
-        requestType: types.CREATE_CONTACT,
-        successType: types.CREATE_CONTACT_SUCCEEDED,
-        errorType: types.CREATE_CONTACT_FAILED
-      },
+    [RSAA]: {
+      endpoint: `${BASE_URL}/contacts`,
       method: 'POST',
-      json: contact
+      body: JSON.stringify(contact),
+      headers: { 'Content-Type': 'application/json' },
+      types: [
+        types.CREATE_CONTACT,
+        types.CREATE_CONTACT_SUCCEEDED,
+        types.CREATE_CONTACT_FAILED
+      ]
     }
   };
 }

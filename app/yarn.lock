@@ -8655,6 +8655,11 @@ recursive-readdir@2.2.2:
   dependencies:
     minimatch "3.0.4"
 
+redux-api-middleware@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/redux-api-middleware/-/redux-api-middleware-3.0.1.tgz#fa28b22cf34abdf75fb32ac0c2fd1a50d84637a8"
+  integrity sha512-orktovWGaLoKZU88hWcQ+LswSyMmfxyrR4zEpAa/Ccc3BW2ugZoRqA9ZBFaa8+VbxfZGzz6DsTTxjxsShY9Zqg==
+
 redux-thunk@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/redux-thunk/-/redux-thunk-2.3.0.tgz#51c2c19a185ed5187aaa9a2d08b666d0d6467622"

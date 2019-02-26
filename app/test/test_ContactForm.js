@@ -3,13 +3,20 @@ import Adapter from 'enzyme-adapter-react-16';
 import { shallow, configure } from 'enzyme';
 import test from 'tape';
 import sinon from 'sinon';
-import { InnerContactForm } from '../src/components/ContactForm';
 
 const proxyquire = require('proxyquire').noCallThru();
 
 configure({ adapter: new Adapter() });
 
 test('InnerContactForm submit disabled', (t) => {
+  const { InnerContactForm } = proxyquire(
+    '../src/components/ContactForm',
+    {
+      '../actions/actions': {
+        createContact: () => {}
+      }
+    }
+  );
   const props = {
     values: {},
     touched: {
@@ -41,7 +48,10 @@ test('ContactForm validation', (t) => {
     '../src/components/ContactForm',
     {
       '../schemas/transformErrors': transformErrors,
-      '../schemas/validateEmail': validateEmail
+      '../schemas/validateEmail': validateEmail,
+      '../actions/actions': {
+        createContact: () => {}
+      }
     }
   );
 
