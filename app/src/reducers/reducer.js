@@ -1,4 +1,5 @@
 const initialState = {
+  test: '\\prod \\delta\\Gamma'
 };
 
 export default function (state = initialState, action) {

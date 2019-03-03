@@ -17,12 +17,11 @@ const composeEnhancers = composeWithDevTools({
 });
 */
 
-const initialState = {};
 const store = createStore(
-  combineReducers({
-    reducer
-  }),
-  initialState,
+  //combineReducers({
+    //reducer
+  //}),
+  reducer,
   applyMiddleware(
     thunk,
     apiMiddleware

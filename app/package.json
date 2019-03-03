@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@tinymce/tinymce-react": "^3.0.1",
     "formik": "^1.5.1",
     "jsonschema": "^1.2.4",
     "prop-types": "^15.7.2",
@@ -13,8 +12,7 @@
     "react-scripts": "2.1.5",
     "redux": "^4.0.1",
     "redux-api-middleware": "^3.0.1",
-    "redux-thunk": "^2.3.0",
-    "tinymce": "4.9.2"
+    "redux-thunk": "^2.3.0"
   },
   "scripts": {
     "start": "react-scripts start",
