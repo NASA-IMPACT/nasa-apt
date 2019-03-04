@@ -1,5 +1,4 @@
 import { Value } from 'slate';
-
 // Create our initial value...
 const test = Value.fromJSON({
   document: {
@@ -18,6 +17,23 @@ const test = Value.fromJSON({
           },
         ],
       },
+      {
+        object: 'block',
+        type: 'equation',
+        nodes: [
+          {
+            object: 'text',
+            leaves: [{
+              text: '\\int_0^\\infty x^2 dx',
+              marks: [
+                {
+                  type: 'latex'
+                }
+              ]
+            }]
+          },
+        ],
+      }
     ],
   },
 });
