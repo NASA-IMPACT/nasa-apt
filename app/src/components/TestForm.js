@@ -1,30 +1,25 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withFormik } from 'formik';
-import { Editor } from '@tinymce/tinymce-react';
+import { Editor } from 'slate-react';
 
-
-const InnerTestForm = (props) => {
-  const { values } = props;
-  const { test } = values;
-  return (
-    <Editor
-      initialValue={test}
-      init={{
-        skin_url: `${process.env.PUBLIC_URL}/skins/lightgray`,
-        plugins: 'eqneditor',
-        toolbar: 'eqneditor'
-      }}
-    />
-  );
-};
-
-const TestForm = withFormik({
-  mapPropsToValues: (props) => {
+class TestForm extends React.Component {
+  constructor(props) {
+    super(props);
     const { test } = props;
-    return { test };
+    this.state = {
+      value: test
+    };
+    this.onChange = this.onChange.bind(this);
   }
-})(InnerTestForm);
+
+  onChange({ value }) {
+    this.setState({ value });
+  }
+
+  render() {
+    return <Editor value={this.state.value} onChange={this.onChange} />;
+  }
+}
 
 const mapStateToProps = (state) => {
   const { test } = state;

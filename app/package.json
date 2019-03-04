@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "formik": "^1.5.1",
+    "immutable": "^4.0.0-rc.12",
     "jsonschema": "^1.2.4",
     "prop-types": "^15.7.2",
     "react": "^16.8.3",
@@ -12,7 +13,9 @@
     "react-scripts": "2.1.5",
     "redux": "^4.0.1",
     "redux-api-middleware": "^3.0.1",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "slate": "^0.44.10",
+    "slate-react": "^0.21.16"
   },
   "scripts": {
     "start": "react-scripts start",

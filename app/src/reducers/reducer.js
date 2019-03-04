@@ -1,5 +1,29 @@
+import { Value } from 'slate';
+
+// Create our initial value...
+const test = Value.fromJSON({
+  document: {
+    nodes: [
+      {
+        object: 'block',
+        type: 'paragraph',
+        nodes: [
+          {
+            object: 'text',
+            leaves: [
+              {
+                text: 'A line of text in a paragraph.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+});
+
 const initialState = {
-  test: '\\prod \\delta\\Gamma'
+  test
 };
 
 export default function (state = initialState, action) {
