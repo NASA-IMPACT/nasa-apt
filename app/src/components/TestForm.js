@@ -13,32 +13,24 @@ class TestForm extends React.Component {
     };
     this.onChange = this.onChange.bind(this);
     this.renderNode = this.renderNode.bind(this);
-    //this.onChangeEquation = this.onChangeEquation.bind(this);
   }
 
   onChange({ value }) {
     this.setState({ value });
   }
 
-  onChangeEquation(event, component, editor, key) {
-    const value = event.target.value;
-    editor.setTextByKey(key, value);
-  }
-
   renderNode(props, editor, next) {
+    const latexClass = {
+      backgroundColor: '#eee',
+      textAlign: 'center'
+    };
     switch (props.node.type) {
       case 'equation':
         return (
           <div>
-            <div contentEditable={false}>
-              <input
-                type="text"
-                value={props.node.text}
-                onChange={(e) => {
-                  this.onChangeEquation(e, this, editor, props.children[0].key);
-                }}
-              />
-            </div>
+            <pre style={latexClass}>
+              {props.children}
+            </pre>
             <div contentEditable={false}>
               <BlockMath math={props.node.text} />
             </div>
