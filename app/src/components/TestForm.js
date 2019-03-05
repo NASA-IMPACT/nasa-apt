@@ -5,6 +5,7 @@ import SoftBreak from 'slate-soft-break';
 import SectionEditor from './SectionEditor';
 import schema from './editorSchema';
 import { Button, Icon, Toolbar } from './Toolbars';
+import { createAlgorithmDescription } from '../actions/actions';
 
 const plugins = [
   SoftBreak()
@@ -21,10 +22,21 @@ class TestForm extends React.Component {
     this.renderNode = this.renderNode.bind(this);
     this.insertEquation = this.insertEquation.bind(this);
     this.insertParagraph = this.insertParagraph.bind(this);
+    this.save = this.save.bind(this);
   }
 
   onChange({ value }) {
     this.setState({ value });
+  }
+
+  save(e) {
+    e.preventDefault();
+    const { createAlgorithmDescription: create } = this.props;
+    const jsonValue = this.editor.value.toJSON();
+    const record = {
+      data_model: jsonValue
+    };
+    create(record);
   }
 
   insertEquation(e) {
@@ -91,6 +103,9 @@ class TestForm extends React.Component {
           <Button onMouseDown={this.insertParagraph}>
             <Icon>{'Paragraph'}</Icon>
           </Button>
+          <Button onMouseDown={this.save}>
+            <Icon>{'Save'}</Icon>
+          </Button>
         </Toolbar>
         <Editor
           ref={editor => (this.editor = editor)}
@@ -110,4 +125,6 @@ const mapStateToProps = (state) => {
   return { test };
 };
 
-export default connect(mapStateToProps)(TestForm);
+const mapDispatchToProps = { createAlgorithmDescription };
+
+export default connect(mapStateToProps, mapDispatchToProps)(TestForm);

@@ -18,3 +18,19 @@ export function createContact(contact) {
     }
   };
 }
+
+export function createAlgorithmDescription(dataModel) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_descriptions`,
+      method: 'POST',
+      body: JSON.stringify(dataModel),
+      headers: { 'Content-Type': 'application/json' },
+      types: [
+        types.CREATE_ALGORITHM_DESCRIPTION,
+        types.CREATE_ALGORITHM_DESCRIPTION_SUCCEEDED,
+        types.CREATE_ALGORITHM_DESCRIPTION_FAILED
+      ]
+    }
+  };
+}

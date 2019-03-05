@@ -21,3 +21,7 @@ CREATE TABLE contacts(
  contact_mechanism_type e_contact_mechanism_type default 'Email',
  contact_mechanism_value VARCHAR (1024) NOT NULL
 );
+CREATE TABLE algorithm_descriptions(
+  algorithm_description_id serial PRIMARY KEY,
+  data_model json NOT NULL
+);
