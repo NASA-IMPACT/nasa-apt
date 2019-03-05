@@ -1,8 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Editor } from 'slate-react';
-import 'katex/dist/katex.min.css';
-import { BlockMath } from 'react-katex';
+import SectionEditor from './SectionEditor';
 
 class TestForm extends React.Component {
   constructor(props) {
@@ -20,22 +19,9 @@ class TestForm extends React.Component {
   }
 
   renderNode(props, editor, next) {
-    const latexClass = {
-      backgroundColor: '#eee',
-      textAlign: 'center'
-    };
     switch (props.node.type) {
       case 'equation':
-        return (
-          <div>
-            <pre style={latexClass}>
-              {props.children}
-            </pre>
-            <div contentEditable={false}>
-              <BlockMath math={props.node.text} />
-            </div>
-          </div>
-        );
+        return <SectionEditor {...props} />;
       default:
         return next();
     }
