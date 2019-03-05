@@ -25,11 +25,6 @@ const test = Value.fromJSON({
             object: 'text',
             leaves: [{
               text: '\\int_0^\\infty x^2 dx',
-              marks: [
-                {
-                  type: 'latex'
-                }
-              ]
             }]
           },
         ],

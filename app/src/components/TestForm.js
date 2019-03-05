@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Editor } from 'slate-react';
 import 'katex/dist/katex.min.css';
-import { InlineMath } from 'react-katex';
+import { BlockMath } from 'react-katex';
 
 class TestForm extends React.Component {
   constructor(props) {
@@ -12,17 +12,38 @@ class TestForm extends React.Component {
       value: test
     };
     this.onChange = this.onChange.bind(this);
-    this.renderMark = this.renderMark.bind(this);
+    this.renderNode = this.renderNode.bind(this);
+    //this.onChangeEquation = this.onChangeEquation.bind(this);
   }
 
   onChange({ value }) {
     this.setState({ value });
   }
 
-  renderMark(props, editor, next) {
-    switch (props.mark.type) {
-      case 'latex':
-        return <InlineMath math={props.text} />;
+  onChangeEquation(event, component, editor, key) {
+    const value = event.target.value;
+    editor.setTextByKey(key, value);
+  }
+
+  renderNode(props, editor, next) {
+    switch (props.node.type) {
+      case 'equation':
+        return (
+          <div>
+            <div contentEditable={false}>
+              <input
+                type="text"
+                value={props.node.text}
+                onChange={(e) => {
+                  this.onChangeEquation(e, this, editor, props.children[0].key);
+                }}
+              />
+            </div>
+            <div contentEditable={false}>
+              <BlockMath math={props.node.text} />
+            </div>
+          </div>
+        );
       default:
         return next();
     }
@@ -33,7 +54,7 @@ class TestForm extends React.Component {
       <Editor
         value={this.state.value}
         onChange={this.onChange}
-        renderMark={this.renderMark}
+        renderNode={this.renderNode}
       />
     );
   }
