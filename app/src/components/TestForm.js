@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Editor } from 'slate-react';
 import SectionEditor from './SectionEditor';
+import schema from './editorSchema';
 
 class TestForm extends React.Component {
   constructor(props) {
@@ -19,9 +20,20 @@ class TestForm extends React.Component {
   }
 
   renderNode(props, editor, next) {
-    switch (props.node.type) {
+    const { attributes, node, isFocused } = props;
+    switch (node.type) {
       case 'equation':
         return <SectionEditor {...props} />;
+      case 'image': {
+        const imageClass = {
+          display: 'block',
+          maxWidth: '100%',
+          maxHeight: '20em',
+          boxShadow: isFocused ? '0 0 0 2px blue' : 'none'
+        };
+        const src = node.data.get('src');
+        return <img src={src} style={imageClass} {...attributes} />;
+      }
       default:
         return next();
     }
@@ -30,6 +42,7 @@ class TestForm extends React.Component {
   render() {
     return (
       <Editor
+        schema={schema}
         value={this.state.value}
         onChange={this.onChange}
         renderNode={this.renderNode}

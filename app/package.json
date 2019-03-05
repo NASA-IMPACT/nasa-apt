@@ -5,6 +5,7 @@
   "dependencies": {
     "formik": "^1.5.1",
     "immutable": "^4.0.0-rc.12",
+    "is-url": "^1.2.4",
     "jsonschema": "^1.2.4",
     "katex": "^0.10.1",
     "prop-types": "^15.7.2",
