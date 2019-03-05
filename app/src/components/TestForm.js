@@ -20,6 +20,7 @@ class TestForm extends React.Component {
     this.onChange = this.onChange.bind(this);
     this.renderNode = this.renderNode.bind(this);
     this.insertEquation = this.insertEquation.bind(this);
+    this.insertParagraph = this.insertParagraph.bind(this);
   }
 
   onChange({ value }) {
@@ -36,6 +37,23 @@ class TestForm extends React.Component {
             object: 'text',
             leaves: [{
               text: '\\',
+            }]
+          },
+        ],
+      })
+      .focus();
+  }
+
+  insertParagraph(e) {
+    e.preventDefault();
+    this.editor
+      .insertBlock({
+        type: 'paragraph',
+        nodes: [
+          {
+            object: 'text',
+            leaves: [{
+              text: '',
             }]
           },
         ],
@@ -69,6 +87,9 @@ class TestForm extends React.Component {
         <Toolbar>
           <Button onMouseDown={this.insertEquation}>
             <Icon>{'Equation'}</Icon>
+          </Button>
+          <Button onMouseDown={this.insertParagraph}>
+            <Icon>{'Paragraph'}</Icon>
           </Button>
         </Toolbar>
         <Editor
