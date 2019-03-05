@@ -1,8 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Editor } from 'slate-react';
+import SoftBreak from 'slate-soft-break';
 import SectionEditor from './SectionEditor';
 import schema from './editorSchema';
+import { Button, Icon, Toolbar } from './Toolbars';
+
+const plugins = [
+  SoftBreak()
+];
 
 class TestForm extends React.Component {
   constructor(props) {
@@ -13,10 +19,28 @@ class TestForm extends React.Component {
     };
     this.onChange = this.onChange.bind(this);
     this.renderNode = this.renderNode.bind(this);
+    this.insertEquation = this.insertEquation.bind(this);
   }
 
   onChange({ value }) {
     this.setState({ value });
+  }
+
+  insertEquation(e) {
+    e.preventDefault();
+    this.editor
+      .insertBlock({
+        type: 'equation',
+        nodes: [
+          {
+            object: 'text',
+            leaves: [{
+              text: '\\',
+            }]
+          },
+        ],
+      })
+      .focus();
   }
 
   renderNode(props, editor, next) {
@@ -41,12 +65,21 @@ class TestForm extends React.Component {
 
   render() {
     return (
-      <Editor
-        schema={schema}
-        value={this.state.value}
-        onChange={this.onChange}
-        renderNode={this.renderNode}
-      />
+      <div>
+        <Toolbar>
+          <Button onMouseDown={this.insertEquation}>
+            <Icon>{'Equation'}</Icon>
+          </Button>
+        </Toolbar>
+        <Editor
+          ref={editor => (this.editor = editor)}
+          schema={schema}
+          value={this.state.value}
+          onChange={this.onChange}
+          renderNode={this.renderNode}
+          plugins={plugins}
+        />
+      </div>
     );
   }
 }
