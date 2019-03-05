@@ -34,3 +34,17 @@ export function createAlgorithmDescription(dataModel) {
     }
   };
 }
+
+export function fetchAlgorithmDescription(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_descriptions?algorithm_description_id=eq.${id}`,
+      method: 'GET',
+      types: [
+        types.FETCH_ALGORITHM_DESCRIPTION,
+        types.FETCH_ALGORITHM_DESCRIPTION_SUCCEEDED,
+        types.FETCH_ALGORITHM_DESCRIPTION_FAILED
+      ]
+    }
+  };
+}

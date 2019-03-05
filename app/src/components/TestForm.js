@@ -5,7 +5,7 @@ import SoftBreak from 'slate-soft-break';
 import SectionEditor from './SectionEditor';
 import schema from './editorSchema';
 import { Button, Icon, Toolbar } from './Toolbars';
-import { createAlgorithmDescription } from '../actions/actions';
+import { createAlgorithmDescription, fetchAlgorithmDescription } from '../actions/actions';
 
 const plugins = [
   SoftBreak()
@@ -14,15 +14,27 @@ const plugins = [
 class TestForm extends React.Component {
   constructor(props) {
     super(props);
-    const { test } = props;
+    const { algorithmDescription } = props;
     this.state = {
-      value: test
+      value: algorithmDescription
     };
     this.onChange = this.onChange.bind(this);
     this.renderNode = this.renderNode.bind(this);
     this.insertEquation = this.insertEquation.bind(this);
     this.insertParagraph = this.insertParagraph.bind(this);
     this.save = this.save.bind(this);
+  }
+
+  componentDidMount() {
+    const { fetchAlgorithmDescription: fetchDescription } = this.props;
+    fetchDescription(1);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { algorithmDescription } = nextProps;
+    this.setState({
+      value: algorithmDescription
+    });
   }
 
   onChange({ value }) {
@@ -121,10 +133,13 @@ class TestForm extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-  const { test } = state;
-  return { test };
+  const { algorithmDescription } = state;
+  return { algorithmDescription };
 };
 
-const mapDispatchToProps = { createAlgorithmDescription };
+const mapDispatchToProps = {
+  createAlgorithmDescription,
+  fetchAlgorithmDescription
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(TestForm);
