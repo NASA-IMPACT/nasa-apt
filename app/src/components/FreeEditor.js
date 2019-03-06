@@ -1,23 +1,21 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+import ImmutableTypes from 'react-immutable-proptypes';
 import { Editor } from 'slate-react';
 import SoftBreak from 'slate-soft-break';
-import SectionEditor from './SectionEditor';
+import EquationEditor from './EquationEditor';
 import schema from './editorSchema';
 import { Button, Icon, Toolbar } from './Toolbars';
-import { createAlgorithmDescription, fetchAlgorithmDescription } from '../actions/actions';
 
 const plugins = [
   SoftBreak()
 ];
 
-class TestForm extends React.Component {
+class FreeEditor extends React.Component {
   constructor(props) {
     super(props);
-    const { algorithmDescription } = props;
-    this.state = {
-      value: algorithmDescription
-    };
+    const { value } = props;
+    this.state = { value };
     this.onChange = this.onChange.bind(this);
     this.renderNode = this.renderNode.bind(this);
     this.insertEquation = this.insertEquation.bind(this);
@@ -26,15 +24,13 @@ class TestForm extends React.Component {
   }
 
   componentDidMount() {
-    const { fetchAlgorithmDescription: fetchDescription } = this.props;
-    fetchDescription(1);
+    const { fetchDocument } = this.props;
+    fetchDocument(1);
   }
 
   componentWillReceiveProps(nextProps) {
-    const { algorithmDescription } = nextProps;
-    this.setState({
-      value: algorithmDescription
-    });
+    const { value } = nextProps;
+    this.setState({ value });
   }
 
   onChange({ value }) {
@@ -43,12 +39,12 @@ class TestForm extends React.Component {
 
   save(e) {
     e.preventDefault();
-    const { createAlgorithmDescription: create } = this.props;
+    const { createDocument } = this.props;
     const jsonValue = this.editor.value.toJSON();
     const record = {
       data_model: jsonValue
     };
-    create(record);
+    createDocument(record);
   }
 
   insertEquation(e) {
@@ -85,11 +81,12 @@ class TestForm extends React.Component {
       .focus();
   }
 
+  /* eslint-disable-next-line */
   renderNode(props, editor, next) {
     const { attributes, node, isFocused } = props;
     switch (node.type) {
       case 'equation':
-        return <SectionEditor {...props} />;
+        return <EquationEditor {...props} />;
       case 'image': {
         const imageClass = {
           display: 'block',
@@ -106,25 +103,34 @@ class TestForm extends React.Component {
   }
 
   render() {
+    const {
+      state: { value },
+      insertEquation,
+      insertParagraph,
+      save,
+      onChange,
+      renderNode
+    } = this;
+
     return (
       <div>
         <Toolbar>
-          <Button onMouseDown={this.insertEquation}>
-            <Icon>{'Equation'}</Icon>
+          <Button onMouseDown={insertEquation}>
+            <Icon>Equation</Icon>
           </Button>
-          <Button onMouseDown={this.insertParagraph}>
-            <Icon>{'Paragraph'}</Icon>
+          <Button onMouseDown={insertParagraph}>
+            <Icon>Paragraph</Icon>
           </Button>
-          <Button onMouseDown={this.save}>
-            <Icon>{'Save'}</Icon>
+          <Button onMouseDown={save}>
+            <Icon>Save</Icon>
           </Button>
         </Toolbar>
         <Editor
           ref={editor => (this.editor = editor)}
           schema={schema}
-          value={this.state.value}
-          onChange={this.onChange}
-          renderNode={this.renderNode}
+          value={value}
+          onChange={onChange}
+          renderNode={renderNode}
           plugins={plugins}
         />
       </div>
@@ -132,14 +138,10 @@ class TestForm extends React.Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  const { algorithmDescription } = state;
-  return { algorithmDescription };
+FreeEditor.propTypes = {
+  value: ImmutableTypes.record.isRequired,
+  createDocument: PropTypes.func.isRequired,
+  fetchDocument: PropTypes.func.isRequired
 };
 
-const mapDispatchToProps = {
-  createAlgorithmDescription,
-  fetchAlgorithmDescription
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(TestForm);
+export default FreeEditor;

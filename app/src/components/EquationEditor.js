@@ -3,7 +3,7 @@ import propTypes from 'prop-types';
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
 
-const SectionEditor = (props) => {
+const EquationEditor = (props) => {
   const latexClass = {
     backgroundColor: '#eee',
     textAlign: 'center'
@@ -21,8 +21,9 @@ const SectionEditor = (props) => {
   );
 };
 
-SectionEditor.propTypes = {
+EquationEditor.propTypes = {
   children: propTypes.array.isRequired,
   node: propTypes.object.isRequired
 };
-export default SectionEditor;
+
+export default EquationEditor;
