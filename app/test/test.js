@@ -6,3 +6,4 @@ require('@babel/register')({
 require('./test_addMinLength');
 require('./test_Input');
 require('./test_ContactForm');
+require('./test_reducer');
