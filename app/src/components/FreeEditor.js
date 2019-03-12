@@ -3,12 +3,16 @@ import PropTypes from 'prop-types';
 import ImmutableTypes from 'react-immutable-proptypes';
 import { Editor } from 'slate-react';
 import SoftBreak from 'slate-soft-break';
+import PluginDeepTable from 'slate-deep-table';
+import styled from 'styled-components';
 import EquationEditor from './EquationEditor';
-import schema from './editorSchema';
 import { Button, Icon, Toolbar } from './Toolbars';
+import EditorImage from './EditorImage';
+import schema from './editorSchema';
 
 const plugins = [
-  SoftBreak()
+  SoftBreak(),
+  PluginDeepTable()
 ];
 
 class FreeEditor extends React.Component {
@@ -20,6 +24,7 @@ class FreeEditor extends React.Component {
     this.renderNode = this.renderNode.bind(this);
     this.insertEquation = this.insertEquation.bind(this);
     this.insertParagraph = this.insertParagraph.bind(this);
+    this.insertTable = this.insertTable.bind(this);
     this.save = this.save.bind(this);
   }
 
@@ -81,6 +86,11 @@ class FreeEditor extends React.Component {
       .focus();
   }
 
+  insertTable(e) {
+    e.preventDefault();
+    this.onChange(this.editor.insertTable());
+  }
+
   /* eslint-disable-next-line */
   renderNode(props, editor, next) {
     const { attributes, node, isFocused } = props;
@@ -88,14 +98,14 @@ class FreeEditor extends React.Component {
       case 'equation':
         return <EquationEditor {...props} />;
       case 'image': {
-        const imageClass = {
-          display: 'block',
-          maxWidth: '100%',
-          maxHeight: '20em',
-          boxShadow: isFocused ? '0 0 0 2px blue' : 'none'
-        };
         const src = node.data.get('src');
-        return <img src={src} style={imageClass} {...attributes} />;
+        return (
+          <EditorImage
+            isFocused={isFocused}
+            src={src}
+            {...attributes}
+          />
+        );
       }
       default:
         return next();
@@ -107,13 +117,14 @@ class FreeEditor extends React.Component {
       state: { value },
       insertEquation,
       insertParagraph,
+      insertTable,
       save,
       onChange,
       renderNode
     } = this;
-
+    const { className } = this.props;
     return (
-      <div>
+      <div className={className}>
         <Toolbar>
           <Button onMouseDown={insertEquation}>
             <Icon>Equation</Icon>
@@ -121,13 +132,16 @@ class FreeEditor extends React.Component {
           <Button onMouseDown={insertParagraph}>
             <Icon>Paragraph</Icon>
           </Button>
-          <Button onMouseDown={save}>
+          <Button onMouseDown={insertTable}>
+            <Icon>Table</Icon>
+          </Button>
+          <Button onClick={save}>
             <Icon>Save</Icon>
           </Button>
         </Toolbar>
         <Editor
-          ref={editor => (this.editor = editor)}
           schema={schema}
+          ref={editor => (this.editor = editor)}
           value={value}
           onChange={onChange}
           renderNode={renderNode}
@@ -144,4 +158,29 @@ FreeEditor.propTypes = {
   fetchDocument: PropTypes.func.isRequired
 };
 
-export default FreeEditor;
+const StyledFreeEditor = styled(FreeEditor)`
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border-top: 1px solid black;
+  }
+  table tr {
+    border: none;
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
+  }
+  table thead tr {
+    background: #f5f5f5;
+    font-weight: bold;
+  }
+  table td {
+    border: 1px solid black;
+    border-top: none;
+    border-bottom: none;
+    border-right: none;
+    padding: .5em;
+    position: relative;
+  }
+`;
+
+export default StyledFreeEditor;

@@ -1,13 +1,6 @@
 import isUrl from 'is-url';
 
 export default {
-  document: {
-    nodes: [
-      {
-        match: [{ type: 'paragraph' }, { type: 'image' }, { type: 'equation' }],
-      },
-    ],
-  },
   blocks: {
     paragraph: {
       nodes: [
