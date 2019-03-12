@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "collecticons-processor": "^4.0.1",
+    "watch": "^1.0.2"
+  }
+}

@@ -28,7 +28,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "NODE_ENV=test ./node_modules/.bin/tape ./test/test.js",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "collecticons": "collecticons compile ./src/assets/icons/collecticons --catalog-dest ./src/styles/collecticons --experimental-font-on-catalog --experimental-disable-styles"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -41,6 +42,7 @@
   ],
   "devDependencies": {
     "@babel/register": "^7.0.0",
+    "collecticons-processor": "^4.0.1",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.9.1",
     "eslint": "^5.14.1",

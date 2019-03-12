@@ -1,15 +1,15 @@
-import React from 'react';
 import styled from 'styled-components';
+import collecticon from '../styles/collecticons';
 
 export const Button = styled('span')`
   cursor: pointer;
 `;
 
-export const Icon = styled(({ className, ...rest }) => (
-  <span className={`material-icons ${className}`} {...rest} />
-))`
-  font-size: 18px;
-  vertical-align: text-bottom;
+export const Icon = styled.span`
+  font-size: 1rem;
+  &::after {
+    ${collecticon('plus')}
+  }
 `;
 
 export const Menu = styled('div')`
