@@ -29,7 +29,7 @@
     "build": "react-scripts build",
     "test": "NODE_ENV=test ./node_modules/.bin/tape ./test/test.js",
     "eject": "react-scripts eject",
-    "collecticons": "collecticons compile ./src/assets/icons/collecticons --catalog-dest ./src/styles/collecticons --experimental-font-on-catalog --experimental-disable-styles"
+    "collecticons": "collecticons compile ./src/assets/icons/collecticons --no-preview --catalog-dest ./src/styles/collecticons --experimental-font-on-catalog --experimental-disable-styles"
   },
   "eslintConfig": {
     "extends": "react-app"
