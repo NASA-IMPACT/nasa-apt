@@ -4,7 +4,7 @@ import ImmutableTypes from 'react-immutable-proptypes';
 import { Editor } from 'slate-react';
 import SoftBreak from 'slate-soft-break';
 import PluginDeepTable from 'slate-deep-table';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import EquationEditor from './EquationEditor';
 import { Button, Icon, Toolbar } from './Toolbars';
 import EditorImage from './EditorImage';
@@ -155,7 +155,8 @@ class FreeEditor extends React.Component {
 FreeEditor.propTypes = {
   value: ImmutableTypes.record.isRequired,
   createDocument: PropTypes.func.isRequired,
-  fetchDocument: PropTypes.func.isRequired
+  fetchDocument: PropTypes.func.isRequired,
+  className: PropTypes.string.isRequired
 };
 
 const StyledFreeEditor = styled(FreeEditor)`
