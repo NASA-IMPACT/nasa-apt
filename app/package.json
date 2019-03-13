@@ -26,7 +26,7 @@
   },
   "scripts": {
     "start": "yarn watch_collecticons & react-scripts start",
-    "build": "yarn collecticons & react-scripts build",
+    "build": "yarn collecticons && react-scripts build",
     "test": "NODE_ENV=test ./node_modules/.bin/tape ./test/test.js",
     "eject": "react-scripts eject",
     "collecticons": "collecticons compile ./src/assets/icons/collecticons --no-preview --catalog-dest ./src/styles/collecticons --experimental-font-on-catalog --experimental-disable-styles",
