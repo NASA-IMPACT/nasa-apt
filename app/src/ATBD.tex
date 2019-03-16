@@ -1,0 +1,85 @@
+\newcommand{\ATBDTitle}{ATBD \LaTeX{} Template}
+\newcommand{\Introduction}{Intro Lorem Ipsum Text}
+\newcommand{\HistoricalPerspective}{Historical Perspective Lorem Ipsum Text}
+\newcommand{\AlgDesc}{Algorithm Description Lorem Ipsum Text}
+\newcommand{\ScientificTheory}{Scientific Theory Lorem Ipsum Text}
+\newcommand{\ScientificTheoryAssumptions}{Scientific Theory Lorem Ipsum Text}
+\newcommand{\MathematicalTheory}{Mathematical Theory Lorem Ipsum Text}
+\newcommand{\MathematicalTheoryAssumptions}{Mathematical Theory Assumptions Lorem Ipsum Text}
+\newcommand{\AlgorithmInputVariables}{AlgorithmInputVariables Lorem Ipsum Text}
+\newcommand{\AlgorthimInputVariablesLongName}{Input Name Lorem Ipsum Text}
+\newcommand{\AlgorthimInputVariablesUnit}{Input Unit Lorem Ipsum Text}
+\newcommand{\AlgorithmOutputVariables}{AlgorithmOutputVariables Lorem Ipsum Text}
+\newcommand{\AlgorthimOutputVariablesLongName}{Output Lorem Ipsum Text}
+\newcommand{\AlgorthimOutputVariablesUnit}{Output Lorem Ipsum Text}
+\newcommand{\AlgorithmUsage}{Alg Usage Lorem Ipsum Text}
+\newcommand{\Constraints}{Constraints Lorem Ipsum Text}
+
+\title{\ATBDTitle}
+\date{\today}
+
+\documentclass[12pt]{article}
+
+\usepackage{color}   %May be necessary if you want to color links
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true, %set true if you want colored links
+    linktoc=all,     %set to all if you want both sections and subsections linked
+    linkcolor=blue,  %choose some color if you want links to stand out
+}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+\Introduction
+
+\section{HistoricalPerspective}
+\HistoricalPerspective
+
+\section{Algorithm Description}
+\AlgDesc
+
+\subsection{ScientificTheory}
+\ScientificTheory
+
+\subsubsection{Assumptions}
+\ScientificTheoryAssumptions
+
+\subsection{MathematicalTheory}
+\MathematicalTheory
+
+\subsubsection{Assumptions}
+\MathematicalTheoryAssumptions
+
+\subsection{AlgorithmInputVariables}
+\AlgorithmInputVariables
+
+\subsubsection{AlgorthimInputVariablesLongName}
+\AlgorthimInputVariablesLongName
+
+\subsubsection{AlgorthimInputVariablesUnit}
+\AlgorthimInputVariablesUnit
+
+\subsection{AlgorithmOutputVariables}
+\AlgorithmOutputVariables
+
+\subsubsection{AlgorthimOutputVariablesLongName}
+\AlgorthimOutputVariablesLongName
+
+\subsubsection{AlgorthimOutputVariablesUnit}
+\AlgorthimOutputVariablesUnit
+
+\section{Algorithm Usage}
+\AlgorithmUsage
+
+\subsection{Constraints}
+\Constraints
+
+\bibliographystyle{abbrv}
+\bibliography{main}
+
+\end{document}
+  
