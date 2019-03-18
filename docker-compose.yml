@@ -13,6 +13,7 @@ services:
     depends_on:
       - db
   db:
+    image: nasa_apt_db
     build:
       context: .
       dockerfile: Dockerfile
