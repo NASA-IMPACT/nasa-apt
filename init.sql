@@ -65,6 +65,44 @@ CREATE TABLE algorithm_input_variables(
   long_name VARCHAR (1024),
   unit VARCHAR (1024)
 );
+CREATE TABLE algorithm_output_variables(
+  algorithm_output_variable_id serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  name VARCHAR (1024),
+  long_name VARCHAR (1024),
+  unit VARCHAR (1024)
+);
+CREATE TABLE algorithm_implementations(
+  algorithm_implementation_id serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  access_url VARCHAR (1024),
+  execution_description json NOT NULL
+);
+CREATE TABLE publication_references(
+  publication_reference_id serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  authors VARCHAR (1024),
+  publication_date DATE,
+  title VARCHAR (1024),
+  series VARCHAR (1024),
+  edition VARCHAR (1024),
+  volume VARCHAR (1024),
+  issue VARCHAR (1024),
+  report_number VARCHAR (1024),
+  publication_place VARCHAR (1024),
+  publisher VARCHAR (1024),
+  pages VARCHAR (1024),
+  isbn VARCHAR (1024),
+  doi VARCHAR (1024),
+  online_resource VARCHAR (1024),
+  other_reference_details VARCHAR (1024)
+);
 INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
 VALUES ('Leonardo', 'Davinci', 'ld@gmail.comn');
 INSERT INTO atbds(title)
