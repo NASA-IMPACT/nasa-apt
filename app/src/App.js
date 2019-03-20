@@ -10,12 +10,15 @@ import { themeVal } from './styles/utils/general';
 import createStore from './store/store';
 import ContactForm from './components/ContactForm';
 import PageHeader from './components/common/PageHeader';
+import PageFooter from './components/common/PageFooter';
 import AlgorithmDescriptionForm from './components/AlgorithmDescriptionForm';
 
 const store = createStore;
 
 const Page = styled.div`
   display: grid;
+  min-height: 100vh;
+  grid-auto-rows: auto 1fr auto;
 `;
 
 const PageBody = styled.main`
@@ -33,6 +36,7 @@ const App = () => (
             <ContactForm />
             <AlgorithmDescriptionForm />
           </PageBody>
+          <PageFooter />
         </Page>
       </React.Fragment>
     </ThemeProvider>

@@ -57,6 +57,10 @@ const baseStyles = css`
   .tether-element {
     z-index: 1000;
   }
+
+  #root {
+    min-height: 100vh;
+  }
 `;
 
 export default createGlobalStyle`
