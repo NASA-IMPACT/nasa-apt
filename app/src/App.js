@@ -5,6 +5,7 @@ import styled, { css } from 'styled-components';
 import { ThemeProvider } from 'styled-components';
 import theme from './styles/theme/theme';
 import GlobalStyle from './styles/global';
+import { themeVal } from './styles/utils/general';
 
 import createStore from './store/store';
 import ContactForm from './components/ContactForm';
@@ -17,6 +18,10 @@ const Page = styled.div`
   display: grid;
 `;
 
+const PageBody = styled.main`
+  padding: ${themeVal('layout.space')};
+`;
+
 const App = () => (
   <Provider store={store}>
     <ThemeProvider theme={theme.main}>
@@ -24,8 +29,10 @@ const App = () => (
         <GlobalStyle />
         <Page>
           <PageHeader />
-          <ContactForm />
-          <AlgorithmDescriptionForm />
+          <PageBody>
+            <ContactForm />
+            <AlgorithmDescriptionForm />
+          </PageBody>
         </Page>
       </React.Fragment>
     </ThemeProvider>
