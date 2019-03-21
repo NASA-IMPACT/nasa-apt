@@ -1,6 +1,5 @@
 import React from 'react';
-import { PropTypes as T } from 'prop-types';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { antialiased } from '../../styles/helpers';
 import { themeVal } from '../../styles/utils/general';
 
@@ -20,8 +19,8 @@ const PageHeadline = styled.div`
 
 const PageTitle = styled.h1`
   font-size: 1.5rem;
-  text-transform: uppercase;
   line-height: 1;
+  text-transform: uppercase;
   margin: 0;
 `;
 
@@ -48,7 +47,7 @@ class PageHeader extends React.PureComponent {
     return (
       <PageHead>
         <PageHeadline>
-          <PageTitle>NASA APT</PageTitle>
+          <PageTitle as='h1' variation='base'>NASA APT</PageTitle>
         </PageHeadline>
         <PageNav>
           <GlobalMenu>

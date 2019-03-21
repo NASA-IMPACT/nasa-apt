@@ -1,6 +1,5 @@
 import React from 'react';
-import { PropTypes as T } from 'prop-types';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { themeVal } from '../../styles/utils/general';
 
 const PageFoot = styled.footer`

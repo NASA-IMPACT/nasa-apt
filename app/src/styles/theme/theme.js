@@ -1,4 +1,4 @@
-import { rgba, tint, shade } from 'polished';
+import { rgba, tint } from 'polished';
 
 let color = {
   base: '#000000',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { ThemeProvider } from 'styled-components';
 import theme from './styles/theme/theme';
 import GlobalStyle from './styles/global';
