@@ -9,6 +9,7 @@
     "jsonschema": "^1.2.4",
     "katex": "^0.10.1",
     "prop-types": "^15.7.2",
+    "polished": "^2.3.3",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
     "react-immutable-proptypes": "^2.1.0",
@@ -25,10 +26,12 @@
     "styled-components": "^4.1.3"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "yarn watch_collecticons & react-scripts start",
+    "build": "yarn collecticons && react-scripts build",
     "test": "NODE_ENV=test ./node_modules/.bin/tape ./test/test.js",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "collecticons": "collecticons compile ./src/assets/icons/collecticons --no-preview --catalog-dest ./src/styles/collecticons --experimental-font-on-catalog --experimental-disable-styles",
+    "watch_collecticons": "watch 'yarn collecticons' ../app/src/assets/icons/**"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -41,15 +44,17 @@
   ],
   "devDependencies": {
     "@babel/register": "^7.0.0",
+    "collecticons-processor": "^4.0.1",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.9.1",
-    "eslint": "^5.14.1",
+    "eslint": "5.12.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.12.4",
     "proxyquire": "^2.1.0",
     "sinon": "^7.2.4",
-    "tape": "^4.10.1"
+    "tape": "^4.10.1",
+    "watch": "^1.0.2"
   }
 }

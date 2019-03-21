@@ -1,0 +1,76 @@
+import React from 'react';
+import styled from 'styled-components';
+import { antialiased } from '../../styles/helpers';
+import { themeVal } from '../../styles/utils/general';
+import { multiply } from '../../styles/utils/math';
+import Constrainer from '../../styles/atoms/constrainer';
+
+const PageHead = styled.header`
+  ${antialiased()}
+  padding: ${themeVal('layout.space')};
+  background-color: ${themeVal('color.primary')};
+  color: #FFF;
+`;
+
+export const Inner = styled(Constrainer)`
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+`;
+
+const PageHeadline = styled.div`
+
+`;
+
+const PageTitle = styled.h1`
+  font-size: 1.5rem;
+  line-height: 1;
+  text-transform: uppercase;
+  margin: 0;
+`;
+
+const PageNav = styled.nav`
+  display: flex;
+  margin: 0 0 0 auto;
+`;
+
+const GlobalMenu = styled.ul`
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  margin: 0;
+  list-style: none;
+
+  > * {
+    margin: 0 0 0 ${multiply(themeVal('layout.space'), 2)};
+  }
+
+  a {
+    font-weight: ${themeVal('type.base.bold')};
+    color: inherit;
+  }
+`;
+
+class PageHeader extends React.PureComponent {
+  render () {
+    return (
+      <PageHead>
+        <Inner>
+          <PageHeadline>
+            <PageTitle as='h1' variation='base'>NASA APT</PageTitle>
+          </PageHeadline>
+          <PageNav>
+            <GlobalMenu>
+              <li><a href='#' title='View'>Dashboard</a></li>
+              <li><a href='#' title='View'>Projects</a></li>
+              <li><a href='#' title='View'>Help</a></li>
+              <li><a href='#' title='View'>About</a></li>
+            </GlobalMenu>
+          </PageNav>
+        </Inner>
+      </PageHead>
+    );
+  }
+}
+
+export default PageHeader;

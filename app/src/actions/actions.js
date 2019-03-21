@@ -38,7 +38,7 @@ export function createAlgorithmDescription(dataModel) {
 export function fetchAlgorithmDescription(id) {
   return {
     [RSAA]: {
-      endpoint: `${BASE_URL}/algorithm_descriptions?algorithm_description_id=eq.${id}`,
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${id}&atbd_version=eq.${id}&select=scientific_theory`,
       method: 'GET',
       types: [
         types.FETCH_ALGORITHM_DESCRIPTION,

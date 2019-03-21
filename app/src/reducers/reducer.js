@@ -72,7 +72,7 @@ export default function (state = initialState, action) {
     case actions.FETCH_ALGORITHM_DESCRIPTION_SUCCEEDED: {
       const { payload } = action;
       const document = Value.fromJSON({
-        document: payload[0].data_model.document
+        document: payload[0].scientific_theory.document
       });
       return { algorithmDescription: document };
     }
