@@ -2,15 +2,20 @@ import React from 'react';
 import styled from 'styled-components';
 import { antialiased } from '../../styles/helpers';
 import { themeVal } from '../../styles/utils/general';
+import { multiply } from '../../styles/utils/math';
+import Constrainer from '../../styles/atoms/constrainer';
 
 const PageHead = styled.header`
   ${antialiased()}
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;
   padding: ${themeVal('layout.space')};
   background-color: ${themeVal('color.primary')};
   color: #FFF;
+`;
+
+export const Inner = styled(Constrainer)`
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
 `;
 
 const PageHeadline = styled.div`
@@ -37,26 +42,32 @@ const GlobalMenu = styled.ul`
   list-style: none;
 
   > * {
-    margin: 0 0 0 ${themeVal('layout.space')};
+    margin: 0 0 0 ${multiply(themeVal('layout.space'), 2)};
+  }
+
+  a {
+    font-weight: ${themeVal('type.base.bold')};
+    color: inherit;
   }
 `;
-
 
 class PageHeader extends React.PureComponent {
   render () {
     return (
       <PageHead>
-        <PageHeadline>
-          <PageTitle as='h1' variation='base'>NASA APT</PageTitle>
-        </PageHeadline>
-        <PageNav>
-          <GlobalMenu>
-            <li>Item A</li>
-            <li>Item B</li>
-            <li>Item C</li>
-            <li>Item D</li>
-          </GlobalMenu>
-        </PageNav>
+        <Inner>
+          <PageHeadline>
+            <PageTitle as='h1' variation='base'>NASA APT</PageTitle>
+          </PageHeadline>
+          <PageNav>
+            <GlobalMenu>
+              <li><a href='#' title='View'>Dashboard</a></li>
+              <li><a href='#' title='View'>Projects</a></li>
+              <li><a href='#' title='View'>Help</a></li>
+              <li><a href='#' title='View'>About</a></li>
+            </GlobalMenu>
+          </PageNav>
+        </Inner>
       </PageHead>
     );
   }
