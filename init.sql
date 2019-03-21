@@ -82,6 +82,27 @@ CREATE TABLE algorithm_implementations(
   access_url VARCHAR (1024),
   execution_description json NOT NULL
 );
+CREATE TABLE performance_assessment_validation_methods(
+  performance_assessment_validation_method_id serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  description json
+);
+CREATE TABLE performance_assessment_validation_uncertainties(
+  performance_assessment_validation_uncertainty serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  description json
+);
+CREATE TABLE performance_assessment_validation_errors(
+  performance_assessment_validation_error serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  description json
+);
 CREATE TABLE publication_references(
   publication_reference_id serial PRIMARY KEY,
   atbd_version INTEGER NOT NULL,
@@ -102,6 +123,30 @@ CREATE TABLE publication_references(
   doi VARCHAR (1024),
   online_resource VARCHAR (1024),
   other_reference_details VARCHAR (1024)
+);
+CREATE TABLE data_access_input_data(
+  data_access_input_data_id serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  access_url VARCHAR (1024),
+  description VARCHAR (4000)
+);
+CREATE TABLE data_access_output_data(
+  data_access_output_data_id serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  access_url VARCHAR (1024),
+  description VARCHAR (4000)
+);
+CREATE TABLE data_access_related_urls(
+  data_access_related_url_id serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  url VARCHAR (1024),
+  description VARCHAR (4000)
 );
 INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
 VALUES ('Leonardo', 'Davinci', 'ld@gmail.comn');
