@@ -48,3 +48,45 @@ export function fetchAlgorithmDescription(id) {
     }
   };
 }
+
+export function fetchAtbds() {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbds?select=*,contacts(*)`,
+      method: 'GET',
+      types: [
+        types.FETCH_ATBDS,
+        types.FETCH_ATBDS_SUCCEEDED,
+        types.FETCH_ATBDS_FAILED
+      ]
+    }
+  };
+}
+
+export function fetchAtbd(atbd_id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbds?atbd_id=eq.${atbd_id}&select=*,contacts(*)`,
+      method: 'GET',
+      headers: { Accept: 'application/vnd.pgrst.object+json' },
+      types: [
+        types.FETCH_ATBD,
+        types.FETCH_ATBD_SUCCEEDED,
+        types.FETCH_ATBD_FAILED
+      ]
+    }
+  };
+}
+export function fetchContacts() {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/contacts`,
+      method: 'GET',
+      types: [
+        types.FETCH_CONTACTS,
+        types.FETCH_CONTACTS_SUCCEEDED,
+        types.FETCH_CONTACTS_FAILED
+      ]
+    }
+  };
+}

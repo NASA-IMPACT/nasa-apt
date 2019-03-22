@@ -4,7 +4,7 @@ import FreeEditor from './FreeEditor';
 
 
 const mapStateToProps = (state) => {
-  const { algorithmDescription } = state;
+  const { algorithmDescription } = state.application;
   return { value: algorithmDescription };
 };
 
