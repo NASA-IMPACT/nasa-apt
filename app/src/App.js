@@ -11,11 +11,10 @@ import { themeVal } from './styles/utils/general';
 
 import store, { history } from './store/store';
 import * as routes from './constants/routes';
-import ContactForm from './components/ContactForm';
 import PageHeader from './components/common/PageHeader';
 import PageFooter from './components/common/PageFooter';
 import AtbdList from './components/AtbdList';
-import AlgorithmDescriptionForm from './components/AlgorithmDescriptionForm';
+import Contacts from './components/Contacts';
 
 const Page = styled.div`
   display: grid;
@@ -38,7 +37,10 @@ const App = () => (
             <PageBody>
               <Switch>
                 <Route path={`/${routes.atbds}`} component={AtbdList} />
-                <Route path={`/${routes.atbdsedit}/:atbd_id`} component={AtbdList} />
+                <Route
+                  path={`/${routes.atbdsedit}/:atbd_id/${routes.contacts}`}
+                  component={Contacts}
+                />
               </Switch>
             </PageBody>
             <PageFooter />

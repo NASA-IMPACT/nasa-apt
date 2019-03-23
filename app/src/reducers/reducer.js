@@ -24,7 +24,8 @@ const algorithmDescription = Value.fromJSON({
 
 const initialState = {
   algorithmDescription,
-  atbds: []
+  atbds: [],
+  contacts: []
 };
 
 export default function (state = initialState, action) {
@@ -38,11 +39,33 @@ export default function (state = initialState, action) {
     }
     case actions.FETCH_ATBDS_SUCCEEDED: {
       const { payload } = action;
-      return Object.assign({}, state, { atbds: [...payload] });
+      return { ...state, atbds: [...payload] };
+    }
+    case actions.FETCH_CONTACTS_SUCCEEDED: {
+      const { payload } = action;
+      return { ...state, contacts: [...payload] };
     }
     case actions.FETCH_ATBD_SUCCEEDED: {
       const { payload } = action;
-      return Object.assign({}, state, { selectedAtbd: payload });
+      return { ...state, selectedAtbd: payload };
+    }
+    case actions.CREATE_CONTACT_SUCCEEDED: {
+      const { payload } = action;
+      return { ...state, contacts: [...state.contacts, payload] };
+    }
+    case actions.CREATE_ATBD_CONTACT_SUCCEEDED: {
+      const { payload } = action;
+      const addedContact = state.contacts.find(contact => (
+        contact.contact_id === payload.contact_id
+      ));
+      const newState = {
+        ...state,
+        selectedAtbd: {
+          ...state.selectedAtbd,
+          contacts: [...state.selectedAtbd.contacts, { ...addedContact }]
+        }
+      };
+      return newState;
     }
     default: return state;
   }

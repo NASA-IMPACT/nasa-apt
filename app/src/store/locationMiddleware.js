@@ -10,7 +10,8 @@ const locationMiddleware = store => next => async (action) => {
     if (pathComponents[1] === routes.atbds) {
       store.dispatch(actions.fetchAtbds());
     }
-    if (pathComponents[1] === routes.atbdsedit) {
+    if (pathComponents[1] === routes.atbdsedit
+        && pathComponents[3] === routes.contacts) {
       if (pathComponents[2]) {
         store.dispatch(actions.fetchAtbd(pathComponents[2]));
         store.dispatch(actions.fetchContacts());
