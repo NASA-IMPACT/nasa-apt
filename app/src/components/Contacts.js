@@ -73,7 +73,7 @@ Contacts.propTypes = {
   contacts: PropTypes.arrayOf(contactShape),
   selectedAtbd: PropTypes.shape({
     atbd_id: PropTypes.number.isRequired,
-    contacts: PropTypes.arrayOf(PropTypes.shape(contactShape))
+    contacts: PropTypes.array
   }),
   createAtbdContact: PropTypes.func.isRequired
 };

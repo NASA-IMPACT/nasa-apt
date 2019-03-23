@@ -1,29 +1,27 @@
-import { Value } from 'slate';
 import * as actions from '../constants/action_types';
 
-const algorithmDescription = Value.fromJSON({
-  document: {
-    nodes: [
-      {
-        object: 'block',
-        type: 'paragraph',
-        nodes: [
-          {
-            object: 'text',
-            leaves: [
-              {
-                text: 'A line of text in a paragraph.',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-});
+//const algorithmDescription = Value.fromJSON({
+  //document: {
+    //nodes: [
+      //{
+        //object: 'block',
+        //type: 'paragraph',
+        //nodes: [
+          //{
+            //object: 'text',
+            //leaves: [
+              //{
+                //text: 'A line of text in a paragraph.',
+              //},
+            //],
+          //},
+        //],
+      //},
+    //],
+  //},
+//});
 
 const initialState = {
-  algorithmDescription,
   atbds: [],
   contacts: []
 };
@@ -32,10 +30,7 @@ export default function (state = initialState, action) {
   switch (action.type) {
     case actions.FETCH_ALGORITHM_DESCRIPTION_SUCCEEDED: {
       const { payload } = action;
-      const document = Value.fromJSON({
-        document: payload[0].scientific_theory.document
-      });
-      return { algorithmDescription: document };
+      return { ...state, algorithmDescription: payload };
     }
     case actions.FETCH_ATBDS_SUCCEEDED: {
       const { payload } = action;

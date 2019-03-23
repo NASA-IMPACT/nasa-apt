@@ -40,11 +40,15 @@ export function createAlgorithmDescription(dataModel) {
   };
 }
 
-export function fetchAlgorithmDescription(id) {
+export function fetchAlgorithmDescription(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
   return {
     [RSAA]: {
-      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${id}&atbd_version=eq.${id}&select=scientific_theory`,
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}&select=*,algorithm_input_variables(*),`
+        + `algorithm_output_variables(*)`,
       method: 'GET',
+      headers: returnObjectHeaders,
       types: [
         types.FETCH_ALGORITHM_DESCRIPTION,
         types.FETCH_ALGORITHM_DESCRIPTION_SUCCEEDED,

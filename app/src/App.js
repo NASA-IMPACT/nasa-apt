@@ -10,11 +10,18 @@ import GlobalStyle from './styles/global';
 import { themeVal } from './styles/utils/general';
 
 import store, { history } from './store/store';
-import * as routes from './constants/routes';
+import {
+  atbds,
+  atbdsedit,
+  contacts,
+  versions,
+  algorithm_description
+} from './constants/routes';
 import PageHeader from './components/common/PageHeader';
 import PageFooter from './components/common/PageFooter';
 import AtbdList from './components/AtbdList';
 import Contacts from './components/Contacts';
+import AlgorithmDescription from './components/AlgorithmDescription';
 
 const Page = styled.div`
   display: grid;
@@ -36,10 +43,14 @@ const App = () => (
             <PageHeader />
             <PageBody>
               <Switch>
-                <Route path={`/${routes.atbds}`} component={AtbdList} />
+                <Route path={`/${atbds}`} component={AtbdList} />
                 <Route
-                  path={`/${routes.atbdsedit}/:atbd_id/${routes.contacts}`}
+                  path={`/${atbdsedit}/:atbd_id/${contacts}`}
                   component={Contacts}
+                />
+                <Route
+                  path={`/${atbdsedit}/:atbd_id/${versions}/:atbd_version/${algorithm_description}`}
+                  component={AlgorithmDescription}
                 />
               </Switch>
             </PageBody>
