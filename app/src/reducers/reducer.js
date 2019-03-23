@@ -28,9 +28,9 @@ const initialState = {
 
 export default function (state = initialState, action) {
   switch (action.type) {
-    case actions.FETCH_ALGORITHM_DESCRIPTION_SUCCEEDED: {
+    case actions.FETCH_ATBD_VERSION_SUCCEEDED: {
       const { payload } = action;
-      return { ...state, algorithmDescription: payload };
+      return { ...state, atbdVersion: payload };
     }
     case actions.FETCH_ATBDS_SUCCEEDED: {
       const { payload } = action;

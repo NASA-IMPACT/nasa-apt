@@ -24,23 +24,39 @@ export function createContact(contact) {
   };
 }
 
-export function createAlgorithmDescription(dataModel) {
+export function createAtbdVersion(atbd_version) {
   return {
     [RSAA]: {
-      endpoint: `${BASE_URL}/algorithm_descriptions`,
+      endpoint: `${BASE_URL}/atbd_versions`,
       method: 'POST',
-      body: JSON.stringify(dataModel),
-      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(atbd_version),
+      headers: returnObjectHeaders,
       types: [
-        types.CREATE_ALGORITHM_DESCRIPTION,
-        types.CREATE_ALGORITHM_DESCRIPTION_SUCCEEDED,
-        types.CREATE_ALGORITHM_DESCRIPTION_FAILED
+        types.CREATE_ATBD_VERSION,
+        types.CREATE_ATBD_VERSION_SUCCEEDED,
+        types.CREATE_ATBD_VERSION_FAILED
       ]
     }
   };
 }
 
-export function fetchAlgorithmDescription(versionObject) {
+export function updateAtbdVersion(atbd_id, atbd_version, document) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&atbd_version=eq.${atbd_version}`,
+      method: 'PATCH',
+      body: JSON.stringify(document),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_ATBD_VERSION,
+        types.UPDATE_ATBD_VERSION_SUCCEEDED,
+        types.UPDATE_ATBD_VERSION_FAILED
+      ]
+    }
+  };
+}
+
+export function fetchAtbdVersion(versionObject) {
   const { atbd_id, atbd_version } = versionObject;
   return {
     [RSAA]: {
@@ -50,9 +66,9 @@ export function fetchAlgorithmDescription(versionObject) {
       method: 'GET',
       headers: returnObjectHeaders,
       types: [
-        types.FETCH_ALGORITHM_DESCRIPTION,
-        types.FETCH_ALGORITHM_DESCRIPTION_SUCCEEDED,
-        types.FETCH_ALGORITHM_DESCRIPTION_FAILED
+        types.FETCH_ATBD_VERSION,
+        types.FETCH_ATBD_VERSION_SUCCEEDED,
+        types.FETCH_ATBD_VERSION_FAILED
       ]
     }
   };

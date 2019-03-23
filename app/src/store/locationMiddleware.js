@@ -23,7 +23,7 @@ const locationMiddleware = store => next => async (action) => {
       }
       if (pathComponents[3] === versions) {
         if (pathComponents[5] === algorithm_description) {
-          store.dispatch(actions.fetchAlgorithmDescription({
+          store.dispatch(actions.fetchAtbdVersion({
             atbd_id: pathComponents[2],
             atbd_version: pathComponents[4]
           }));

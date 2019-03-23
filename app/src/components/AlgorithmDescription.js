@@ -1,49 +1,63 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Value } from 'slate';
-import { createAlgorithmDescription } from '../actions/actions';
+import {
+  createAtbdVersion,
+  updateAtbdVersion
+} from '../actions/actions';
 import FreeEditor from './FreeEditor';
 
 const AlgorithmDescription = (props) => {
   const {
-    algorithmDescription = {},
+    atbdVersion = {},
     save
   } = props;
-  console.log(algorithmDescription);
-  const { scientific_theory = {} } = algorithmDescription;
+
+  const { scientific_theory = {} } = atbdVersion;
+
   return (
-    <FreeEditor
-      value={Value.fromJSON(scientific_theory)}
-      save={(document) => {
-        save({
-          ...algorithmDescription,
-          scientific_theory: document
-        });
-      }}
-    />
+    <Fragment>
+      <span>Scientifc Theory</span>
+      <br />
+      <FreeEditor
+        value={Value.fromJSON(scientific_theory)}
+        save={(document) => {
+          save({
+            scientific_theory: document
+          });
+        }}
+      />
+    </Fragment>
   );
 };
-const mapStateToProps = (state) => {
-  const { algorithmDescription } = state.application;
-  return { algorithmDescription };
+
+AlgorithmDescription.propTypes = {
+  atbdVersion: PropTypes.object,
+  save: PropTypes.func.isRequired
 };
 
-//const mapDispatchToProps = dispatch => ({
-  //createDocument: document => dispatch(createAlgorithmDescription(document)),
-//});
+const mapStateToProps = (state) => {
+  const { atbdVersion } = state.application;
+  return { atbdVersion };
+};
 
 const mapDispatchToProps = {
-  createAlgorithmDescription
+  createAtbdVersion,
+  updateAtbdVersion
 };
 
 const mergeProps = (stateProps, dispatchProps) => {
-  const { algorithmDescription } = stateProps;
-  const { createAlgorithmDescription: create } = dispatchProps;
+  const { atbdVersion } = stateProps;
+  const {
+    createAtbdVersion: create,
+    updateAtbdVersion: update
+  } = dispatchProps;
   let save;
-  if (algorithmDescription) {
+  if (atbdVersion) {
+    const { atbd_id, atbd_version } = atbdVersion;
     save = (value) => {
-      console.log(value);
+      update(atbd_id, atbd_version, value);
     };
   } else {
     save = (value) => {
