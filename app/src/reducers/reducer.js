@@ -1,82 +1,70 @@
-import { Value } from 'slate';
 import * as actions from '../constants/action_types';
 
-//const algorithmDescription = Value.fromJSON({
-  //document: {
-    //nodes: [
-      //{
-        //object: 'block',
-        //type: 'paragraph',
-        //nodes: [
-          //{
-            //object: 'text',
-            //leaves: [
-              //{
-                //text: 'A line of text in a paragraph.',
-              //},
-            //],
-          //},
-        //],
-      //},
-      //{
-        //object: 'block',
-        //type: 'equation',
-        //nodes: [
-          //{
-            //object: 'text',
-            //leaves: [{
-              //text: '\\int_0^\\infty x^2 dx',
-            //}]
-          //},
-        //],
-      //},
-      //{
-        //object: 'block',
-        //type: 'image',
-        //data: {
-          //src:
-            //'https://img.washingtonpost.com/wp-apps/imrs.php?src=https://img.washingtonpost.com/news/speaking-of-science/wp-content/uploads/sites/36/2015/10/as12-49-7278-1024x1024.jpg&w=1484'
-        //}
-      //},
-    //],
-  //},
-//});
-
-const algorithmDescription = Value.fromJSON({
-  document: {
-    nodes: [
-      {
-        object: 'block',
-        type: 'paragraph',
-        nodes: [
-          {
-            object: 'text',
-            leaves: [
-              {
-                text: 'A line of text in a paragraph.',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-});
-
 const initialState = {
-  algorithmDescription
+  atbds: [],
+  contacts: []
 };
 
 export default function (state = initialState, action) {
   switch (action.type) {
-    case actions.FETCH_ALGORITHM_DESCRIPTION_SUCCEEDED: {
+    case actions.FETCH_ATBD_VERSION_SUCCEEDED: {
       const { payload } = action;
-      const document = Value.fromJSON({
-        document: payload[0].scientific_theory.document
-      });
-      return { algorithmDescription: document };
+      return { ...state, atbdVersion: payload };
+    }
+    case actions.FETCH_ATBDS_SUCCEEDED: {
+      const { payload } = action;
+      return { ...state, atbds: [...payload] };
+    }
+    case actions.FETCH_CONTACTS_SUCCEEDED: {
+      const { payload } = action;
+      return { ...state, contacts: [...payload] };
+    }
+    case actions.FETCH_ATBD_SUCCEEDED: {
+      const { payload } = action;
+      return { ...state, selectedAtbd: payload };
+    }
+    case actions.CREATE_CONTACT_SUCCEEDED: {
+      const { payload } = action;
+      return { ...state, contacts: [...state.contacts, payload] };
+    }
+    case actions.CREATE_ATBD_CONTACT_SUCCEEDED: {
+      const { payload } = action;
+      const addedContact = state.contacts.find(contact => (
+        contact.contact_id === payload.contact_id
+      ));
+      const newState = {
+        ...state,
+        selectedAtbd: {
+          ...state.selectedAtbd,
+          contacts: [...state.selectedAtbd.contacts, { ...addedContact }]
+        }
+      };
+      return newState;
     }
 
+    case actions.CREATE_ALGORITHM_INPUT_VARIABLE_SUCCEEDED: {
+      const { payload } = action;
+      return {
+        ...state,
+        atbdVersion: {
+          ...state.atbdVersion,
+          algorithm_input_variables:
+            [...state.atbdVersion.algorithm_input_variables, { ...payload }]
+        }
+      };
+    }
+
+    case actions.CREATE_ALGORITHM_OUTPUT_VARIABLE_SUCCEEDED: {
+      const { payload } = action;
+      return {
+        ...state,
+        atbdVersion: {
+          ...state.atbdVersion,
+          algorithm_output_variables:
+            [...state.atbdVersion.algorithm_output_variables, { ...payload }]
+        }
+      };
+    }
     default: return state;
   }
 }

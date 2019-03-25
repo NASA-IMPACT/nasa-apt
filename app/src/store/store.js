@@ -3,12 +3,13 @@ import {
   combineReducers,
   applyMiddleware
 } from 'redux';
-// import Immutable from 'immutable';
 // import { composeWithDevTools } from 'redux-devtools-extension';
 import thunk from 'redux-thunk';
 import { apiMiddleware } from 'redux-api-middleware';
+import { createBrowserHistory } from 'history';
+import { connectRouter, routerMiddleware } from 'connected-react-router';
 import reducer from '../reducers/reducer';
-
+import locationMiddleware from './locationMiddleware';
 /*
 const composeEnhancers = composeWithDevTools({
   serialize: {
@@ -16,15 +17,17 @@ const composeEnhancers = composeWithDevTools({
   }
 });
 */
-
+export const history = createBrowserHistory();
 const store = createStore(
-  //combineReducers({
-    //reducer
-  //}),
-  reducer,
+  combineReducers({
+    router: connectRouter(history),
+    application: reducer
+  }),
   applyMiddleware(
+    routerMiddleware(history),
     thunk,
-    apiMiddleware
+    apiMiddleware,
+    locationMiddleware
   )
   /*
   composeEnhancers(

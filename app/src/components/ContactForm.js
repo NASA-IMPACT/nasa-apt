@@ -93,7 +93,7 @@ export const InnerContactForm = (props) => {
         type="submit"
         disabled={!submitEnabled}
       >
-        Submit
+       Create Contact
       </button>
     </form>
   );
@@ -134,10 +134,11 @@ export const ContactForm = withFormik({
     return errors;
   },
 
-  handleSubmit: (values, { props, setSubmitting }) => {
+  handleSubmit: (values, { props, setSubmitting, resetForm }) => {
     const { createContact: create } = props;
     create(values);
     setSubmitting(false);
+    resetForm();
   }
 })(InnerContactForm);
 
