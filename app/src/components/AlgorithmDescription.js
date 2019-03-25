@@ -4,20 +4,34 @@ import { connect } from 'react-redux';
 import { Value } from 'slate';
 import {
   createAtbdVersion,
-  updateAtbdVersion
+  updateAtbdVersion,
+  createAlgorithmInputVariable,
+  createAlgorithmOutputVariable
 } from '../actions/actions';
 import FreeEditor from './FreeEditor';
+import AlgorithmVariables from './AlgorithmVariables';
+import AlgorithmVariableForm from './AlgorithmVariableForm';
 
 const AlgorithmDescription = (props) => {
   const {
     atbdVersion = {},
-    save
+    save,
+    createAlgorithmInputVariable: createInputVariable,
+    createAlgorithmOutputVariable: createOutputVariable
   } = props;
 
-  const { scientific_theory = {} } = atbdVersion;
+  const {
+    atbd_id,
+    atbd_version,
+    scientific_theory = {},
+    algorithm_input_variables = [],
+    algorithm_output_variables = []
+  } = atbdVersion;
 
   return (
     <Fragment>
+      <span>Algorithm Description</span>
+      <br />
       <span>Scientifc Theory</span>
       <br />
       <FreeEditor
@@ -28,13 +42,46 @@ const AlgorithmDescription = (props) => {
           });
         }}
       />
+      <br />
+      <span>Scientifc Theory Assumptions</span>
+      <br />
+      <span>Algorithm Input Variables</span>
+      <AlgorithmVariables
+        schemaKey="algorithm_input_variable"
+        variables={algorithm_input_variables}
+      />
+      {atbd_id && atbd_version && (
+      <AlgorithmVariableForm
+        schemaKey="algorithm_input_variable"
+        atbd_id={atbd_id}
+        atbd_version={atbd_version}
+        create={(data) => { createInputVariable(data); }}
+      />
+      )
+      }
+      <span>Algorithm Output Variables</span>
+      <AlgorithmVariables
+        schemaKey="algorithm_output_variable"
+        variables={algorithm_output_variables}
+      />
+      {atbd_id && atbd_version && (
+      <AlgorithmVariableForm
+        schemaKey="algorithm_output_variable"
+        atbd_id={atbd_id}
+        atbd_version={atbd_version}
+        create={(data) => { createOutputVariable(data); }}
+      />
+      )
+      }
     </Fragment>
   );
 };
 
 AlgorithmDescription.propTypes = {
   atbdVersion: PropTypes.object,
-  save: PropTypes.func.isRequired
+  save: PropTypes.func.isRequired,
+  createAlgorithmInputVariable: PropTypes.func.isRequired,
+  createAlgorithmOutputVariable: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -44,7 +91,9 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = {
   createAtbdVersion,
-  updateAtbdVersion
+  updateAtbdVersion,
+  createAlgorithmInputVariable,
+  createAlgorithmOutputVariable
 };
 
 const mergeProps = (stateProps, dispatchProps) => {
@@ -66,6 +115,7 @@ const mergeProps = (stateProps, dispatchProps) => {
   }
   return {
     ...stateProps,
+    ...dispatchProps,
     save
   };
 };

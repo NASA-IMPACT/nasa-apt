@@ -102,6 +102,7 @@ export function fetchAtbd(atbd_id) {
     }
   };
 }
+
 export function fetchContacts() {
   return {
     [RSAA]: {
@@ -115,6 +116,7 @@ export function fetchContacts() {
     }
   };
 }
+
 export function createAtbdContact(atbd_contact) {
   return {
     [RSAA]: {
@@ -126,6 +128,38 @@ export function createAtbdContact(atbd_contact) {
         types.CREATE_ATBD_CONTACT,
         types.CREATE_ATBD_CONTACT_SUCCEEDED,
         types.CREATE_ATBD_CONTACT_FAILED
+      ]
+    }
+  };
+}
+
+export function createAlgorithmInputVariable(variable) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_input_variables`,
+      method: 'POST',
+      body: JSON.stringify(variable),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ALGORITHM_INPUT_VARIABLE,
+        types.CREATE_ALGORITHM_INPUT_VARIABLE_SUCCEEDED,
+        types.CREATE_ALGORITHM_INPUT_VARIABLE_FAILED
+      ]
+    }
+  };
+}
+
+export function createAlgorithmOutputVariable(variable) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_output_variables`,
+      method: 'POST',
+      body: JSON.stringify(variable),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ALGORITHM_OUTPUT_VARIABLE,
+        types.CREATE_ALGORITHM_OUTPUT_VARIABLE_SUCCEEDED,
+        types.CREATE_ALGORITHM_OUTPUT_VARIABLE_FAILED
       ]
     }
   };

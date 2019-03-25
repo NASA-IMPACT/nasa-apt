@@ -1,26 +1,5 @@
 import * as actions from '../constants/action_types';
 
-//const algorithmDescription = Value.fromJSON({
-  //document: {
-    //nodes: [
-      //{
-        //object: 'block',
-        //type: 'paragraph',
-        //nodes: [
-          //{
-            //object: 'text',
-            //leaves: [
-              //{
-                //text: 'A line of text in a paragraph.',
-              //},
-            //],
-          //},
-        //],
-      //},
-    //],
-  //},
-//});
-
 const initialState = {
   atbds: [],
   contacts: []
@@ -61,6 +40,30 @@ export default function (state = initialState, action) {
         }
       };
       return newState;
+    }
+
+    case actions.CREATE_ALGORITHM_INPUT_VARIABLE_SUCCEEDED: {
+      const { payload } = action;
+      return {
+        ...state,
+        atbdVersion: {
+          ...state.atbdVersion,
+          algorithm_input_variables:
+            [...state.atbdVersion.algorithm_input_variables, { ...payload }]
+        }
+      };
+    }
+
+    case actions.CREATE_ALGORITHM_OUTPUT_VARIABLE_SUCCEEDED: {
+      const { payload } = action;
+      return {
+        ...state,
+        atbdVersion: {
+          ...state.atbdVersion,
+          algorithm_output_variables:
+            [...state.atbdVersion.algorithm_output_variables, { ...payload }]
+        }
+      };
     }
     default: return state;
   }
