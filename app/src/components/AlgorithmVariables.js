@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 const AlgorithmVariables = (props) => {
@@ -27,6 +27,15 @@ const AlgorithmVariables = (props) => {
       {variableItems}
     </ul>
   );
+};
+
+AlgorithmVariables.propTypes = {
+  schemaKey: PropTypes.string.isRequired,
+  variables: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string,
+    long_name: PropTypes.string,
+    unit: PropTypes.string
+  }))
 };
 
 export default AlgorithmVariables;

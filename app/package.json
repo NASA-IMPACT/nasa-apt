@@ -34,7 +34,8 @@
     "test": "NODE_ENV=test ./node_modules/.bin/tape ./test/test.js",
     "eject": "react-scripts eject",
     "collecticons": "collecticons compile ./src/assets/icons/collecticons --no-preview --catalog-dest ./src/styles/collecticons --experimental-font-on-catalog --experimental-disable-styles",
-    "watch_collecticons": "watch 'yarn collecticons' ../app/src/assets/icons/**"
+    "watch_collecticons": "watch 'yarn collecticons' ../app/src/assets/icons/**",
+    "lint": "eslint 'src/**/*.js'"
   },
   "eslintConfig": {
     "extends": "react-app"
