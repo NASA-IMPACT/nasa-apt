@@ -12,6 +12,7 @@ import PageSubNav, {
   SubNavAction
 } from './common/PageSubNav';
 import Dropdown from './Dropdown';
+import { Inner } from './common/Page';
 
 const Separator = styled.span`
   border-right: 1px solid ${themeVal('color.lightgray')};
@@ -48,11 +49,65 @@ const DropdownItem = styled.li`
   }
 `;
 
+const AtbdTable = styled.table`
+  border-collapse: collapse;
+  padding: ${themeVal('layout.space')};
+  width: 100%;
+`;
+
+const AtbdRow = styled.tr`
+`;
+
+const AtbdCell = styled.td`
+  border-bottom: 1px solid ${themeVal('color.lightgray')};
+  padding: ${themeVal('layout.space')};
+`;
+
+const AtbdHeaderCell = styled.th`
+  color: ${themeVal('color.lightgray')};
+  font-weight: normal;
+  padding: ${themeVal('layout.space')} ${themeVal('layout.space')} 0;
+  text-align: left;
+  text-transform: uppercase;
+`;
+
+const AtbdPublishedState = styled.span`
+  background-color: ${themeVal('color.lightgray')};
+  border-radius: ${multiply(themeVal('layout.space'), 2)};
+  color: ${themeVal('color.surface')};
+  display: inline-block;
+  padding: ${divide(themeVal('layout.space'), 2)} 0;
+  text-align: center;
+  width: 100%;
+`;
+
+const AtbdTitle = styled.h5`
+  font-size: 1em;
+  line-height: 1.4;
+  margin: 0;
+`;
+
+const AtbdVersion = styled.span`
+  text-transform: uppercase;
+  color: ${themeVal('color.lightgray')};
+`;
+
 const AtbdList = (props) => {
   const { atbds } = props;
   const atbdElements = atbds.map((atbd) => {
     const { atbd_id, title } = atbd;
-    return <div key={atbd_id}>{title}</div>;
+    return (
+      <AtbdRow scope="row" key={atbd_id}>
+        <AtbdCell><AtbdPublishedState>Status</AtbdPublishedState></AtbdCell>
+        <AtbdCell>
+          <AtbdTitle>{title}</AtbdTitle>
+          <AtbdVersion>Version 1.0</AtbdVersion>
+        </AtbdCell>
+        <AtbdCell>2 hours ago</AtbdCell>
+        <AtbdCell>Author Name</AtbdCell>
+        <AtbdCell>Topic</AtbdCell>
+      </AtbdRow>
+    );
   });
   return (
     <Fragment>
@@ -118,7 +173,23 @@ const AtbdList = (props) => {
           <SubNavAction>Create</SubNavAction>
         </SubNavActions>
       </PageSubNav>
-      {atbdElements}
+
+      <Inner>
+        <AtbdTable>
+          <thead>
+            <tr>
+              <AtbdHeaderCell scope="col" />
+              <AtbdHeaderCell scope="col" />
+              <AtbdHeaderCell scope="col">Last Edit</AtbdHeaderCell>
+              <AtbdHeaderCell scope="col">Authors</AtbdHeaderCell>
+              <AtbdHeaderCell scope="col">Topics</AtbdHeaderCell>
+            </tr>
+          </thead>
+          <tbody>
+            {atbdElements}
+          </tbody>
+        </AtbdTable>
+      </Inner>
     </Fragment>
   );
 };
