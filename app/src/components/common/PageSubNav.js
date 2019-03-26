@@ -45,8 +45,8 @@ const PageSubNav = (props) => {
 
 PageSubNav.propTypes = {
   children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.instanceOf(Element)),
-    PropTypes.instanceOf(Element)
+    PropTypes.arrayOf(PropTypes.node),
+    PropTypes.node
   ])
 };
 
