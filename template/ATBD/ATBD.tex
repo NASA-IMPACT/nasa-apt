@@ -1,22 +1,25 @@
 \newcommand{\ATBDTitle}{ATBD \LaTeX{} Template}
 \newcommand{\Introduction}{Intro Lorem Ipsum Text}
 \newcommand{\HistoricalPerspective}{Historical Perspective Lorem Ipsum Text}
-\newcommand{\AlgorithmDescription}{Algorithm Description Lorem Ipsum Text}
-\newcommand{\AlgorithmInputVariables}{Algorithm Input Variables Lorem Ipsum Text}
-\newcommand{\AlgorthimInputVariablesLongName}{Input Name Lorem Ipsum Text}
-\newcommand{\AlgorthimInputVariablesUnit}{Input Unit Lorem Ipsum Text}
-\newcommand{\AlgorithmOutputVariables}{Algorithm Output Variables Lorem Ipsum Text}
-\newcommand{\AlgorthimOutputVariablesLongName}{Output Lorem Ipsum Text}
-\newcommand{\AlgorthimOutputVariablesUnit}{Output Lorem Ipsum Text}
-\newcommand{\AlgorithmUsage}{Algorithm Usage Lorem Ipsum Text}
-\newcommand{\Constraints}{Constraints Lorem Ipsum Text}
-\newcommand{\AlgorithmPerformanceAssessment}{Algorithm Performance Assessment Lorem Ipsum Text}
-\newcommand{\Methods}{Methods Lorem Ipsum Text}
-\newcommand{\Uncertainties}{Uncertainties Lorem Ipsum Text}
-\newcommand{\Errors}{Errors Lorem Ipsum Text}
-\newcommand{\AlgorithmImplementation}{Algorithm Implementation Lorem Ipsum Text}
-\newcommand{\AccessURL}{Access URL Lorem Ipsum Text}
-\newcommand{\ExecutionDescription}{Execution Description Lorem Ipsum Text}
+\newcommand{\AlgDesc}{
+Some other text 
+\begin{equation} \int_0^\infty x^2 dx 
+\end{equation} Plus some more text
+}
+\newcommand{\AlgorithmOutputVariables}{\variableTable{None & None \\}}
+\newcommand{\variableTable}[1]{
+\begin{center}
+\begin{tabular} { | p{9cm}  | p{3cm} | } 
+ \hline
+ \textbf{Long Name} & \textbf{Unit} \\
+ \hline
+#1
+ \hline
+\end{tabular}
+\end{center}
+}
+
+\newcommand{\AlgorithmUsageConstraints}{Alg Usage Lorem Ipsum Text}
 
 \title{\ATBDTitle}
 \date{\today}
@@ -25,6 +28,7 @@
 
 \usepackage{color}   %May be necessary if you want to color links
 \usepackage{hyperref}
+\usepackage{booktabs}
 \hypersetup{
     colorlinks=true, %set true if you want colored links
     linktoc=all,     %set to all if you want both sections and subsections linked
@@ -43,7 +47,7 @@
 \HistoricalPerspective
 
 \section{Algorithm Description}
-\AlgorithmDescription
+\AlgDesc
 
 \subsection{Scientific Theory}
 \ScientificTheory
@@ -60,44 +64,11 @@
 \subsection{Algorithm Input Variables}
 \AlgorithmInputVariables
 
-\subsubsection{Long Name}
-\AlgorthimInputVariablesLongName
-
-\subsubsection{Unit}
-\AlgorthimInputVariablesUnit
-
 \subsection{Algorithm Output Variables}
 \AlgorithmOutputVariables
 
-\subsubsection{Long Name}
-\AlgorthimOutputVariablesLongName
-
-\subsubsection{Unit}
-\AlgorthimOutputVariablesUnit
-
-\section{Algorithm Usage}
-\AlgorithmUsage
-
-\subsection{Constraints}
-\Constraints
-
-\section{Algorithm Performance Assessment}
-\AlgorithmPerformanceAssessment
-
-\subsection{Validation}
-\subsubsection{Methods}
-\Methods
-\subsubsection{Uncertainties}
-\Uncertainties
-\subsection{Errors}
-\Errors
-
-\section{Algorithm Implementation}
-\AlgorithmImplementation
-\subsection{Access URL}
-\AccessURL
-\subsection{Execution Description}
-\ExecutionDescription
+\section{Algorithm Usage Constraints}
+\AlgorithmUsageConstraints
 
 \bibliographystyle{abbrv}
 \bibliography{main}
