@@ -30,7 +30,8 @@ const Page = styled.div`
 `;
 
 const PageBody = styled.main`
-  padding: ${themeVal('layout.space')};
+  padding: 0;
+  margin: 0;
 `;
 
 const App = () => (
