@@ -52,6 +52,4 @@ PageSubNav.propTypes = {
   ])
 };
 
-export default PageSubNav
-
-
+export default PageSubNav;

@@ -19,7 +19,7 @@ color = {
   info: '#5860ff'
 };
 
-let type = {
+const type = {
   base: {
     root: '16px',
     size: '1rem',
@@ -44,12 +44,12 @@ let type = {
   }
 };
 
-let shape = {
+const shape = {
   rounded: '0.25rem',
   ellipsoid: '320rem',
 };
 
-let layout = {
+const layout = {
   space: '1rem',
   border: '1px',
   min: '960px',

@@ -3,11 +3,9 @@ import { Provider } from 'react-redux';
 import { Route, Switch } from 'react-router';
 import { ConnectedRouter } from 'connected-react-router';
 
-import styled from 'styled-components';
-import { ThemeProvider } from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import theme from './styles/theme/theme';
 import GlobalStyle from './styles/global';
-import { themeVal } from './styles/utils/general';
 
 import store, { history } from './store/store';
 import {

@@ -52,19 +52,19 @@ const GlobalMenu = styled.ul`
 `;
 
 class PageHeader extends React.PureComponent {
-  render () {
+  render() {
     return (
       <PageHead>
         <Inner>
           <PageHeadline>
-            <PageTitle as='h1' variation='base'>NASA APT</PageTitle>
+            <PageTitle as="h1" variation="base">NASA APT</PageTitle>
           </PageHeadline>
           <PageNav>
             <GlobalMenu>
-              <li><a href='#' title='View'>Dashboard</a></li>
-              <li><a href='#' title='View'>Projects</a></li>
-              <li><a href='#' title='View'>Help</a></li>
-              <li><a href='#' title='View'>About</a></li>
+              <li><a href="#" title="View">Dashboard</a></li>
+              <li><a href="#" title="View">Projects</a></li>
+              <li><a href="#" title="View">Help</a></li>
+              <li><a href="#" title="View">About</a></li>
             </GlobalMenu>
           </PageNav>
         </Inner>

@@ -17,7 +17,7 @@ const Separator = styled.span`
   border-right: 1px solid ${themeVal('color.lightgray')};
   padding-right: ${multiply(themeVal('layout.space'), 2)};
   margin-right: ${multiply(themeVal('layout.space'), 2)};
-`
+`;
 
 const DropdownTrigger = styled.a`
   color: #FFF;
@@ -27,7 +27,7 @@ const DropdownTrigger = styled.a`
     margin-left: ${divide(themeVal('layout.space'), 2)};
     ${collecticon('chevron-down--small')};
   }
-`
+`;
 
 const DropdownList = styled.ul`
   background-color: ${themeVal('color.background')};
@@ -36,7 +36,7 @@ const DropdownList = styled.ul`
 
   padding: ${divide(themeVal('layout.space'), 2)} 0;
   text-align: center;
-`
+`;
 
 const DropdownItem = styled.li`
   background-color: ${themeVal('color.background')};
@@ -46,7 +46,7 @@ const DropdownItem = styled.li`
   &:hover {
     background-color: ${themeVal('color.shadow')};
   }
-`
+`;
 
 const AtbdList = (props) => {
   const { atbds } = props;
@@ -62,10 +62,11 @@ const AtbdList = (props) => {
         <SubNavFilter>
           Status
           <Dropdown
-            triggerText='All'
-            triggerTitle='Toggle menu options'
-            triggerElement={DropdownTrigger}>
-            <DropdownList role='menu'>
+            triggerText="All"
+            triggerTitle="Toggle menu options"
+            triggerElement={DropdownTrigger}
+          >
+            <DropdownList role="menu">
               <DropdownItem>All</DropdownItem>
               <DropdownItem>Published</DropdownItem>
               <DropdownItem>Draft</DropdownItem>
@@ -76,10 +77,11 @@ const AtbdList = (props) => {
         <SubNavFilter>
           Authors
           <Dropdown
-            triggerText='All'
-            triggerTitle='Toggle menu options'
-            triggerElement={DropdownTrigger}>
-            <DropdownList role='menu'>
+            triggerText="All"
+            triggerTitle="Toggle menu options"
+            triggerElement={DropdownTrigger}
+          >
+            <DropdownList role="menu">
               <DropdownItem>All</DropdownItem>
             </DropdownList>
           </Dropdown>
@@ -88,10 +90,11 @@ const AtbdList = (props) => {
         <SubNavFilter>
           Topics
           <Dropdown
-            triggerText='All'
-            triggerTitle='Toggle menu options'
-            triggerElement={DropdownTrigger}>
-            <DropdownList role='menu'>
+            triggerText="All"
+            triggerTitle="Toggle menu options"
+            triggerElement={DropdownTrigger}
+          >
+            <DropdownList role="menu">
               <DropdownItem>All</DropdownItem>
             </DropdownList>
           </Dropdown>
@@ -100,10 +103,11 @@ const AtbdList = (props) => {
         <SubNavFilter>
           Sort
           <Dropdown
-            triggerText='Newest'
-            triggerTitle='Toggle menu options'
-            triggerElement={DropdownTrigger}>
-            <DropdownList role='menu'>
+            triggerText="Newest"
+            triggerTitle="Toggle menu options"
+            triggerElement={DropdownTrigger}
+          >
+            <DropdownList role="menu">
               <DropdownItem>Newest</DropdownItem>
             </DropdownList>
           </Dropdown>

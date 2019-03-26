@@ -24,46 +24,45 @@ const TransitionWrap = styled.div`
  * https://github.com/developmentseed/ui-seed/blob/develop/assets/scripts/dropdown.js
  */
 
-let activeDropdowns = [];
-
-/*
-<Dropdown
-  className='browse-menu'
-  triggerText='Menu'
-  triggerTitle='Toggle menu options'
-  direction='down'
-  alignment='right' >
-
-  <h6 className='drop__title'>Browse</h6>
-  <ul className='drop__menu drop__menu--select'>
-    <li><Link to='' className='drop__menu-item' activeClassName='drop__menu-item--active'>Label</Link></li>
-  </ul>
-
-</Dropdown>
-*/
+const activeDropdowns = [];
 
 class Dropdown extends React.Component {
-  constructor (props) {
+  static closeAll() {
+    activeDropdowns.forEach(d => d.close());
+  }
+
+  constructor(props) {
     super(props);
 
     this.state = {
       open: false
     };
 
-    this._bodyListener = this._bodyListener.bind(this);
-    this._toggleDropdown = this._toggleDropdown.bind(this);
+    this.bodyListener = this.bodyListener.bind(this);
+    this.toggleDropdown = this.toggleDropdown.bind(this);
   }
 
-  static closeAll () {
-    activeDropdowns.forEach(d => d.close());
+  // Lifecycle method.
+  // Called once as soon as the component has a DOM representation.
+  componentDidMount() {
+    activeDropdowns.push(this);
+    // eslint-disable-next-line
+    window.addEventListener('click', this.bodyListener);
   }
 
-  _bodyListener (e) {
+  // Lifecycle method.
+  componentWillUnmount() {
+    activeDropdowns.splice(activeDropdowns.indexOf(this), 1);
+    // eslint-disable-next-line
+    window.removeEventListener('click', this.bodyListener);
+  }
+
+  bodyListener(e) {
     // Get the dropdown that is a parent of the clicked element. If any.
     let theSelf = e.target;
-    if (theSelf.tagName === 'BODY' ||
-        theSelf.tagName === 'HTML' ||
-        e.target.getAttribute('data-hook') === 'dropdown:close') {
+    if (theSelf.tagName === 'BODY'
+        || theSelf.tagName === 'HTML'
+        || e.target.getAttribute('data-hook') === 'dropdown:close') {
       this.close();
       return;
     }
@@ -72,13 +71,13 @@ class Dropdown extends React.Component {
     // button, the target is the "button" itself.
     // This code handles this case. No idea why this is happening.
     // TODO: Unveil whatever black magic is at work here.
-    if (theSelf.tagName === 'SPAN' &&
-        theSelf.parentNode === this.triggerRef &&
-        theSelf.parentNode.getAttribute('data-hook') === 'dropdown:btn') {
+    if (theSelf.tagName === 'SPAN'
+        && theSelf.parentNode === this.triggerRef
+        && theSelf.parentNode.getAttribute('data-hook') === 'dropdown:btn') {
       return;
     }
-    if (theSelf.tagName === 'SPAN' &&
-        theSelf.parentNode.getAttribute('data-hook') === 'dropdown:close') {
+    if (theSelf.tagName === 'SPAN'
+        && theSelf.parentNode.getAttribute('data-hook') === 'dropdown:close') {
       this.close();
       return;
     }
@@ -102,48 +101,42 @@ class Dropdown extends React.Component {
     }
   }
 
-  _toggleDropdown (e) {
+  toggleDropdown(e) {
     e.preventDefault();
     this.toggle();
   }
 
-  // Lifecycle method.
-  // Called once as soon as the component has a DOM representation.
-  componentDidMount () {
-    activeDropdowns.push(this);
-    window.addEventListener('click', this._bodyListener);
+  toggle() {
+    const { open } = this.state;
+    this.setState({ open: !open });
   }
 
-  // Lifecycle method.
-  componentWillUnmount () {
-    activeDropdowns.splice(activeDropdowns.indexOf(this), 1);
-    window.removeEventListener('click', this._bodyListener);
+  open() {
+    const { open } = this.state;
+    if (!open) {
+      this.setState({ open: true });
+    }
   }
 
-  toggle () {
-    this.setState({ open: !this.state.open });
+  close() {
+    const { open } = this.state;
+    if (open) {
+      this.setState({ open: false });
+    }
   }
 
-  open () {
-    !this.state.open && this.setState({ open: true });
-  }
-
-  close () {
-    this.state.open && this.setState({ open: false });
-  }
-
-  renderTriggerElement () {
+  renderTriggerElement() {
     const {
       triggerTitle,
       triggerText,
       triggerElement: TriggerElement
     } = this.props;
 
-    let triggerKlasses = ['drop__toggle'];
-    let triggerProps = {
-      onClick: this._toggleDropdown,
+    const triggerKlasses = ['drop__toggle'];
+    const triggerProps = {
+      onClick: this.toggleDropdown,
       'data-hook': 'dropdown:btn',
-      ref: el => { this.triggerRef = el; }
+      ref: (el) => { this.triggerRef = el; }
     };
 
     /*
@@ -159,19 +152,25 @@ class Dropdown extends React.Component {
     }
 
     return (
-      <TriggerElement {...triggerProps} >
+      <TriggerElement {...triggerProps}>
         <span>{ triggerText }</span>
       </TriggerElement>
     );
   }
 
-  renderContent () {
-    const { direction, className } = this.props;
+  renderContent() {
+    const {
+      direction,
+      className,
+      onChange,
+      children
+    } = this.props;
+    const { open } = this.state;
 
     // Base and additional classes for the trigger and the content.
-    let klasses = ['drop__content', 'drop__content--react', `drop-trans--${direction}`];
-    let dropdownContentProps = {
-      ref: el => { this.dropdownRef = el; },
+    const klasses = ['drop__content', 'drop__content--react', `drop-trans--${direction}`];
+    const dropdownContentProps = {
+      ref: (el) => { this.dropdownRef = el; },
       'data-hook': 'dropdown:content'
     };
 
@@ -183,17 +182,19 @@ class Dropdown extends React.Component {
 
     return (
       <CSSTransition
-        in={this.state.open}
-        appear={true}
-        unmountOnExit={true}
-        classNames='drop-trans'
-        timeout={160}>
+        in={open}
+        appear
+        unmountOnExit
+        classNames="drop-trans"
+        timeout={160}
+      >
 
         <TransitionWrap>
           <TransitionItem
             props={dropdownContentProps}
-            onChange={this.props.onChange} >
-            { this.props.children }
+            onChange={onChange}
+          >
+            { children }
           </TransitionItem>
         </TransitionWrap>
 
@@ -201,8 +202,8 @@ class Dropdown extends React.Component {
     );
   }
 
-  render () {
-    let { alignment, direction } = this.props;
+  render() {
+    const { alignment, direction } = this.props;
 
     let allowed;
     if (direction === 'up' || direction === 'down') {
@@ -250,7 +251,8 @@ class Dropdown extends React.Component {
         constraints={[{
           to: 'scrollParent',
           attachment: 'together'
-        }]}>
+        }]}
+      >
         {this.renderTriggerElement()}
         {this.renderContent()}
       </TetherComponent>
@@ -279,16 +281,23 @@ Dropdown.propTypes = {
 };
 
 class TransitionItem extends React.Component {
-  componentDidMount () {
-    this.props.onChange && this.props.onChange(true);
+  componentDidMount() {
+    const { onChange } = this.props;
+    if (onChange) {
+      onChange(true);
+    }
   }
 
-  componentWillUnmount () {
-    this.props.onChange && this.props.onChange(false);
+  componentWillUnmount() {
+    const { onChange } = this.props;
+    if (onChange) {
+      onChange(false);
+    }
   }
 
-  render () {
-    return <div {...this.props.props}>{ this.props.children }</div>;
+  render() {
+    const { props, children } = this.props;
+    return <div {...props}>{ children }</div>;
   }
 }
 

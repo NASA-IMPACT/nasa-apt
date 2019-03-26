@@ -1,4 +1,4 @@
-import get from 'lodash.get';
+import { get } from 'object-path';
 
 /**
  * Return the a function that when executed appends the `unit` to the value.
@@ -9,8 +9,7 @@ import get from 'lodash.get';
  *
  * @param {string} unit The unit to use
  */
-export const unitify = unit => v =>
-  typeof v === 'function' ? (...args) => `${v(...args)}${unit}` : `${v}${unit}`;
+export const unitify = unit => v => (typeof v === 'function' ? (...args) => `${v(...args)}${unit}` : `${v}${unit}`);
 
 /**
  * Return the given value with `rem` appended.
@@ -71,9 +70,7 @@ export const themeVal = path => ({ theme }) => {
  *
  * @returns {function} Curried function
  */
-export const stylizeFunction = (fn) => {
-  return (...fnArgs) => (...props) => {
-    const mappedArgs = fnArgs.map(arg => typeof arg === 'function' ? arg(...props) : arg);
-    return fn(...mappedArgs);
-  };
+export const stylizeFunction = fn => (...fnArgs) => (...props) => {
+  const mappedArgs = fnArgs.map(arg => (typeof arg === 'function' ? arg(...props) : arg));
+  return fn(...mappedArgs);
 };
