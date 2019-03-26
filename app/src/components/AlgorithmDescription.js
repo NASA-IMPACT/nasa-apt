@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Value } from 'slate';
@@ -11,6 +11,7 @@ import {
 import FreeEditor from './FreeEditor';
 import AlgorithmVariables from './AlgorithmVariables';
 import AlgorithmVariableForm from './AlgorithmVariableForm';
+import EditPage from './common/EditPage';
 
 const AlgorithmDescription = (props) => {
   const {
@@ -29,7 +30,7 @@ const AlgorithmDescription = (props) => {
   } = atbdVersion;
 
   return (
-    <Fragment>
+    <EditPage title="Document title">
       <span>Algorithm Description</span>
       <br />
       <span>Scientifc Theory</span>
@@ -73,7 +74,7 @@ const AlgorithmDescription = (props) => {
       />
       )
       }
-    </Fragment>
+    </EditPage>
   );
 };
 
