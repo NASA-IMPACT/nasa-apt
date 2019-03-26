@@ -3,19 +3,13 @@ import styled from 'styled-components';
 import { antialiased } from '../../styles/helpers';
 import { themeVal } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
-import Constrainer from '../../styles/atoms/constrainer';
+import { Inner } from './Page';
 
 const PageHead = styled.header`
   ${antialiased()}
   padding: ${themeVal('layout.space')};
   background-color: ${themeVal('color.primary')};
   color: #FFF;
-`;
-
-export const Inner = styled(Constrainer)`
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;
 `;
 
 const PageHeadline = styled.div`

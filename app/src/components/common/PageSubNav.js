@@ -3,13 +3,12 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { themeVal } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
-import { Inner } from './PageHeader';
+import { Inner } from './Page';
 
 const SubNav = styled.div`
   background-color: ${themeVal('color.primary')};
   color: #FFF;
-  padding-top: ${multiply(themeVal('layout.space'), 3)};
-  padding-bottom: ${themeVal('layout.space')};
+  padding: ${multiply(themeVal('layout.space'), 3)} ${themeVal('layout.space')} ${themeVal('layout.space')};
 `;
 
 export const SubNavTitle = styled.h2`
