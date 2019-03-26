@@ -19,6 +19,7 @@ export const SubNavTitle = styled.h2`
 `;
 
 export const SubNavFilter = styled.div`
+  margin-right: ${themeVal('layout.space')};
 `;
 
 export const SubNavActions = styled.ul`
@@ -27,6 +28,7 @@ export const SubNavActions = styled.ul`
 `;
 
 export const SubNavAction = styled.li`
+  margin-left: ${themeVal('layout.space')};
 `;
 
 const PageSubNav = (props) => {
