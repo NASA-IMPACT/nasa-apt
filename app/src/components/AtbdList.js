@@ -1,6 +1,21 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import styled from 'styled-components';
+import { themeVal } from '../styles/utils/general';
+import { multiply } from '../styles/utils/math';
+import PageSubNav, {
+  SubNavTitle,
+  SubNavFilter,
+  SubNavActions,
+  SubNavAction
+} from './common/PageSubNav';
+
+const Separator = styled.span`
+  border-right: 1px solid ${themeVal('color.shadow')};
+  padding-right: ${multiply(themeVal('layout.space'), 2)};
+  margin-right: ${multiply(themeVal('layout.space'), 2)};
+`
 
 const AtbdList = (props) => {
   const { atbds } = props;
@@ -10,6 +25,15 @@ const AtbdList = (props) => {
   });
   return (
     <Fragment>
+      <PageSubNav>
+        <Separator><SubNavTitle>Documents</SubNavTitle></Separator>
+        <SubNavFilter></SubNavFilter>
+
+        <SubNavActions>
+          <SubNavAction>Search</SubNavAction>
+          <SubNavAction>Create</SubNavAction>
+        </SubNavActions>
+      </PageSubNav>
       {atbdElements}
     </Fragment>
   );
