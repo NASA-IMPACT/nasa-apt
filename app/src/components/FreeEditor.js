@@ -28,11 +28,6 @@ class FreeEditor extends React.Component {
     this.save = this.save.bind(this);
   }
 
-  componentDidMount() {
-    const { fetchDocument } = this.props;
-    fetchDocument(1);
-  }
-
   componentWillReceiveProps(nextProps) {
     const { value } = nextProps;
     this.setState({ value });
@@ -44,12 +39,9 @@ class FreeEditor extends React.Component {
 
   save(e) {
     e.preventDefault();
-    const { createDocument } = this.props;
+    const { save } = this.props;
     const jsonValue = this.editor.value.toJSON();
-    const record = {
-      data_model: jsonValue
-    };
-    createDocument(record);
+    save(jsonValue);
   }
 
   insertEquation(e) {
@@ -154,8 +146,7 @@ class FreeEditor extends React.Component {
 
 FreeEditor.propTypes = {
   value: ImmutableTypes.record.isRequired,
-  createDocument: PropTypes.func.isRequired,
-  fetchDocument: PropTypes.func.isRequired,
+  save: PropTypes.func.isRequired,
   className: PropTypes.string.isRequired
 };
 

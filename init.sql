@@ -150,6 +150,8 @@ CREATE TABLE data_access_related_urls(
 );
 INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
 VALUES ('Leonardo', 'Davinci', 'ld@gmail.comn');
+INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
+VALUES ('Gregor', 'Mendel', 'genes@gmail.comn');
 INSERT INTO atbds(title)
 VALUES ('Test ATBD 1');
 INSERT INTO atbd_contacts(atbd_id, contact_id)

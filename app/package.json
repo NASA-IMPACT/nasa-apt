@@ -3,18 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "connected-react-router": "^6.3.2",
     "formik": "^1.5.1",
+    "history": "^4.9.0",
     "immutable": "^4.0.0-rc.12",
     "is-url": "^1.2.4",
     "jsonschema": "^1.2.4",
     "katex": "^0.10.1",
-    "prop-types": "^15.7.2",
     "polished": "^2.3.3",
+    "prop-types": "^15.7.2",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
     "react-immutable-proptypes": "^2.1.0",
     "react-katex": "^2.0.2",
     "react-redux": "^6.0.1",
+    "react-router": "4.4.0-beta.7",
     "react-scripts": "2.1.5",
     "redux": "^4.0.1",
     "redux-api-middleware": "^3.0.1",
@@ -31,7 +34,8 @@
     "test": "NODE_ENV=test ./node_modules/.bin/tape ./test/test.js",
     "eject": "react-scripts eject",
     "collecticons": "collecticons compile ./src/assets/icons/collecticons --no-preview --catalog-dest ./src/styles/collecticons --experimental-font-on-catalog --experimental-disable-styles",
-    "watch_collecticons": "watch 'yarn collecticons' ../app/src/assets/icons/**"
+    "watch_collecticons": "watch 'yarn collecticons' ../app/src/assets/icons/**",
+    "lint": "eslint 'src/**/*.js'"
   },
   "eslintConfig": {
     "extends": "react-app"

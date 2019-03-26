@@ -1,5 +1,7 @@
 import React from 'react';
 import { Provider } from 'react-redux';
+import { Route, Switch } from 'react-router';
+import { ConnectedRouter } from 'connected-react-router';
 
 import styled from 'styled-components';
 import { ThemeProvider } from 'styled-components';
@@ -7,13 +9,19 @@ import theme from './styles/theme/theme';
 import GlobalStyle from './styles/global';
 import { themeVal } from './styles/utils/general';
 
-import createStore from './store/store';
-import ContactForm from './components/ContactForm';
+import store, { history } from './store/store';
+import {
+  atbds,
+  atbdsedit,
+  contacts,
+  versions,
+  algorithm_description
+} from './constants/routes';
 import PageHeader from './components/common/PageHeader';
 import PageFooter from './components/common/PageFooter';
-import AlgorithmDescriptionForm from './components/AlgorithmDescriptionForm';
-
-const store = createStore;
+import AtbdList from './components/AtbdList';
+import Contacts from './components/Contacts';
+import AlgorithmDescription from './components/AlgorithmDescription';
 
 const Page = styled.div`
   display: grid;
@@ -27,19 +35,30 @@ const PageBody = styled.main`
 
 const App = () => (
   <Provider store={store}>
-    <ThemeProvider theme={theme.main}>
-      <React.Fragment>
-        <GlobalStyle />
-        <Page>
-          <PageHeader />
-          <PageBody>
-            <ContactForm />
-            <AlgorithmDescriptionForm />
-          </PageBody>
-          <PageFooter />
-        </Page>
-      </React.Fragment>
-    </ThemeProvider>
+    <ConnectedRouter history={history}>
+      <ThemeProvider theme={theme.main}>
+        <React.Fragment>
+          <GlobalStyle />
+          <Page>
+            <PageHeader />
+            <PageBody>
+              <Switch>
+                <Route path={`/${atbds}`} component={AtbdList} />
+                <Route
+                  path={`/${atbdsedit}/:atbd_id/${contacts}`}
+                  component={Contacts}
+                />
+                <Route
+                  path={`/${atbdsedit}/:atbd_id/${versions}/:atbd_version/${algorithm_description}`}
+                  component={AlgorithmDescription}
+                />
+              </Switch>
+            </PageBody>
+            <PageFooter />
+          </Page>
+        </React.Fragment>
+      </ThemeProvider>
+    </ConnectedRouter>
   </Provider>
 );
 
