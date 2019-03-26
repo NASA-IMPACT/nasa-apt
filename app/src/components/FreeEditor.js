@@ -42,9 +42,8 @@ class FreeEditor extends React.Component {
     this.setState({ value });
   }
 
-  onMouseDown(event, editor, next) {
+  onMouseDown() {
     const { activeTool } = this.state;
-    next();
     if (activeTool) {
       setTimeout(() => {
         if (activeTool === equation) {
