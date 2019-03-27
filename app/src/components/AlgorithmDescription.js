@@ -11,7 +11,14 @@ import {
 import FreeEditor from './FreeEditor';
 import AlgorithmVariables from './AlgorithmVariables';
 import AlgorithmVariableForm from './AlgorithmVariableForm';
-import EditPage from './common/EditPage';
+import PageSection, {
+  PageTitle,
+  Inner
+} from './common/Page';
+import EditPage, {
+  EditorSection,
+  EditorLabel
+} from './common/EditPage';
 
 const AlgorithmDescription = (props) => {
   const {
@@ -31,18 +38,18 @@ const AlgorithmDescription = (props) => {
 
   return (
     <EditPage title="Document title">
-      <span>Algorithm Description</span>
-      <br />
-      <span>Scientifc Theory</span>
-      <br />
-      <FreeEditor
-        value={Value.fromJSON(scientific_theory)}
-        save={(document) => {
-          save({
-            scientific_theory: document
-          });
-        }}
-      />
+      <PageTitle>Algorithm Description</PageTitle>
+      <EditorSection>
+        <EditorLabel>Scientifc Theory</EditorLabel>
+        <FreeEditor
+          value={Value.fromJSON(scientific_theory)}
+          save={(document) => {
+            save({
+              scientific_theory: document
+            });
+          }}
+        />
+      </EditorSection>
       <br />
       <span>Scientifc Theory Assumptions</span>
       <br />

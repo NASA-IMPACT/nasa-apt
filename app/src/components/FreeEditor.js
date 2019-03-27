@@ -6,7 +6,12 @@ import SoftBreak from 'slate-soft-break';
 import PluginDeepTable from 'slate-deep-table';
 import styled from 'styled-components/macro';
 import EquationEditor from './EquationEditor';
-import { Button, Icon, Toolbar } from './Toolbars';
+import {
+  ToolbarAction,
+  ToolbarIcon,
+  Toolbar,
+  ToolbarLabel
+} from './Toolbars';
 import EditorImage from './EditorImage';
 import schema from './editorSchema';
 
@@ -118,18 +123,19 @@ class FreeEditor extends React.Component {
     return (
       <div className={className}>
         <Toolbar>
-          <Button onMouseDown={insertEquation}>
-            <Icon>Equation</Icon>
-          </Button>
-          <Button onMouseDown={insertParagraph}>
-            <Icon>Paragraph</Icon>
-          </Button>
-          <Button onMouseDown={insertTable}>
-            <Icon>Table</Icon>
-          </Button>
-          <Button onClick={save}>
-            <Icon>Save</Icon>
-          </Button>
+          <ToolbarLabel>Insert</ToolbarLabel>
+          <ToolbarAction onMouseDown={insertEquation}>
+            <ToolbarIcon icon={{ icon: 'equal--small' }}>Equation</ToolbarIcon>
+          </ToolbarAction>
+          <ToolbarAction onMouseDown={insertParagraph}>
+            <ToolbarIcon icon={{ icon: 'text-block' }}>Paragraph</ToolbarIcon>
+          </ToolbarAction>
+          <ToolbarAction onMouseDown={insertTable}>
+            <ToolbarIcon icon={{ icon: 'list'}}>Table</ToolbarIcon>
+          </ToolbarAction>
+          <ToolbarAction onClick={save}>
+            Save
+          </ToolbarAction>
         </Toolbar>
         <Editor
           schema={schema}

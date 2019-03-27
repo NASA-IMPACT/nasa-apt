@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import Constrainer from '../../styles/atoms/constrainer';
 import PageSubNav, {
   SubNavTitle,
   SubNavTagline,
@@ -8,6 +9,20 @@ import PageSubNav, {
   SubNavActions,
   SubNavAction
 } from './PageSubNav';
+import PageSection, { Inner } from './Page';
+import { multiply } from '../../styles/utils/math';
+import { themeVal } from '../../styles/utils/general';
+
+export const EditorSection = styled.div`
+  background-color: ${themeVal('color.lightgray')};
+  padding: ${multiply(themeVal('layout.space'), 2)};
+  margin-top: ${multiply(themeVal('layout.space'), 2)};
+`;
+
+export const EditorLabel = styled.label`
+  font-weight: bold;
+  line-height: 2;
+`;
 
 const EditPage = (props) => {
   const { children, title } = props;
@@ -24,7 +39,11 @@ const EditPage = (props) => {
           <SubNavAction>Create</SubNavAction>
         </SubNavActions>
       </PageSubNav>
-      { children }
+      <PageSection>
+        <Constrainer>
+          { children }
+        </Constrainer>
+      </PageSection>
     </Fragment>
   );
 };
