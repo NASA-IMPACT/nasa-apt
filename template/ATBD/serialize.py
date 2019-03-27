@@ -69,42 +69,48 @@ def texify (name, element):
     else:
         return name
 
-def texVariables (ID, version):
-    url = f'http://localhost:3000/atbd_versions?atbd_id=eq.{ID}&atbd_version=eq.{version}&select=*,algorithm_input_variables(*),publication_references(*),atbd(*),data_access_input_data(*)'
-    res = requests.get(url)
-    myJson = json.loads(res.text)
-    if debug:
-        for item, value in myJson[0].items():
-            print('item: {}, value: {}'.format(item, value))
-    commands = [texify(x, y) for x,y in myJson[0].items() if x in mapVars.keys()]
-    if debug:
-        print(commands)
-    return commands
+class ATBD:
+    def __init__(self, atbd_id, atbd_version):
+        self.ID = atbd_id
+        self.version = atbd_version
 
-def nameFile(ID, version, ext):
-    return f'ATBD_{ID}v{version}.{ext}'
+    def texVariables (self):
+        url = f'http://localhost:3000/atbd_versions?atbd_id=eq.{self.ID}&atbd_version=eq.{self.version}&select=*,algorithm_input_variables(*),publication_references(*),atbd(*),data_access_input_data(*)'
+        res = requests.get(url)
+        myJson = json.loads(res.text)
+        if debug:
+            for item, value in myJson[0].items():
+                print('item: {}, value: {}'.format(item, value))
+        commands = [texify(x, y) for x,y in myJson[0].items() if x in mapVars.keys()]
+        if debug:
+            print(commands)
+        self.texVars = commands
 
-def filewrite(prepend, ID, version):
-    with open(os.path.join(os.getcwd(), 'template', 'ATBD', 'ATBD.tex'),  'r') as original:
-        data = original.read()
-    with open(os.path.join(os.getcwd(), 'template', 'ATBD', nameFile(ID, version, 'tex')), 'w') as modified:
-        modified.write('\n'.join(prepend) + ' \n' + data)
-        fileName = modified.name
-    return fileName
+    def nameFile(self, ext):
+        return f'ATBD_{self.ID}v{self.version}.{ext}'
 
-def writeLatex(srcFile, ID, version):
-    # temporary: change directory to create pdf
-    curDir = os.getcwd()
-    outputDir = os.path.join(os.getcwd(), 'template', nameFile(ID, version, 'pdf'))
-    os.chdir(outputDir)
-    subprocess.check_call(['pdflatex', srcFile])
-    # run a second time for table of contents
-    subprocess.check_call(['pdflatex', srcFile])
-    os.chdir(curDir)
+    def filewrite(self):
+        with open(os.path.join(os.getcwd(), 'template', 'ATBD', 'ATBD.tex'),  'r') as original:
+            data = original.read()
+        with open(os.path.join(os.getcwd(), 'template', 'ATBD', self.nameFile('tex')), 'w') as modified:
+            modified.write('\n'.join(self.texVars) + ' \n' + data)
+            fileName = modified.name
+        return fileName
+
+    def writeLatex(self, srcFile):
+        # temporary: change directory to create pdf in template/ATBD
+        curDir = os.getcwd()
+        outputDir = os.path.join(os.getcwd(), 'template', 'ATBD')
+        os.chdir(outputDir)
+        subprocess.check_call(['pdflatex', srcFile])
+        # run a second time for table of contents
+        subprocess.check_call(['pdflatex', srcFile])
+        os.chdir(curDir)
 
 def createLatex(atbd_id, atbd_version):
-    to_prepend = texVariables(atbd_id, atbd_version)
-    texFile = filewrite(to_prepend, atbd_id, atbd_version)
-    writeLatex(texFile, atbd_id, atbd_version)
+    newTex = ATBD(atbd_id, atbd_version)
+    newTex.texVariables()
+    texFile = newTex.filewrite()
+    newTex.writeLatex(texFile)
 
 createLatex(1, 1)
