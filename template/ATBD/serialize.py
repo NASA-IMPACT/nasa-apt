@@ -3,6 +3,10 @@ import json
 from shutil import copyfile
 import os
 import pandas as pd
+import subprocess
+from latex import build_pdf
+
+debug = True
 
 # from https://stackoverflow.com/questions/19053707/converting-snake-case-to-lower-camel-case-lowercamelcase
 def toCamelCase(snake_str):
@@ -12,7 +16,8 @@ def toCamelCase(snake_str):
     return ''.join(x.title() for x in components)
 
 def processWYSIWYG(element):
-    print('element 2 is ' + str(element))
+    if debug:
+        print('element in WYSIWYG is ' + str(element))
     to_return = ''
     for node in element['document']['nodes']:
         if node['type'] != 'image':
@@ -34,6 +39,9 @@ def processVarList(element):
 def processATBD(element):
     return element['title']
 
+def processText(element):
+    return element
+
 mapVars = {
     'scientific_theory': processWYSIWYG,
     'scientific_theory_assumptions': processWYSIWYG,
@@ -41,14 +49,17 @@ mapVars = {
     'mathematical_theory_assumptions': processWYSIWYG,
     'algorithm_input_variables': processVarList,
     'algorithm_output_variables': processVarList,
-    'atbd': processATBD
+    'atbd': processATBD,
+    'introduction': processText,
+    'historical_perspective': processText
 }
 
 def macroWrap(name, value):
     return '\\newcommand{{\\{fn}}}{{{val}}}'.format(fn=name, val=value)
 
-def helperTwo (name, element):
-    print('name: {} || element: {}'.format(name, element))
+def texify (name, element):
+    if debug:
+        print('name: {} || element: {}'.format(name, element))
     if name == 'atbd':
         return macroWrap('ATBDTitle', processATBD(element))
     elif name in mapVars.keys() and element is not None:
@@ -58,20 +69,42 @@ def helperTwo (name, element):
     else:
         return name
 
-def helper ():
-    res = requests.get('http://localhost:3000/atbd_versions?atbd_id=eq.1&atbd_version=eq.1&select=*,algorithm_input_variables(*),publication_references(*),atbd(*),data_access_input_data(*)')
+def texVariables (ID, version):
+    url = f'http://localhost:3000/atbd_versions?atbd_id=eq.{ID}&atbd_version=eq.{version}&select=*,algorithm_input_variables(*),publication_references(*),atbd(*),data_access_input_data(*)'
+    res = requests.get(url)
     myJson = json.loads(res.text)
-    for item, value in myJson[0].items():
-        print('item: {}, value: {}'.format(item, value))
-    commands = [helperTwo(x, y) for x,y in myJson[0].items() if x in mapVars.keys()]
+    if debug:
+        for item, value in myJson[0].items():
+            print('item: {}, value: {}'.format(item, value))
+    commands = [texify(x, y) for x,y in myJson[0].items() if x in mapVars.keys()]
+    if debug:
+        print(commands)
     return commands
 
-def filewrite():
-    add = helper()
+def nameFile(ID, version, ext):
+    return f'ATBD_{ID}v{version}.{ext}'
+
+def filewrite(prepend, ID, version):
     with open(os.path.join(os.getcwd(), 'template', 'ATBD', 'ATBD.tex'),  'r') as original:
         data = original.read()
-    with open(os.path.join(os.getcwd(), 'template', 'ATBD', 'ATBD2.tex'), 'w') as modified:
-        modified.write(
-            '\n'.join(add) + " \n" + data)
+    with open(os.path.join(os.getcwd(), 'template', 'ATBD', nameFile(ID, version, 'tex')), 'w') as modified:
+        modified.write('\n'.join(prepend) + ' \n' + data)
+        fileName = modified.name
+    return fileName
 
-filewrite()
+def writeLatex(srcFile, ID, version):
+    # temporary: change directory to create pdf
+    curDir = os.getcwd()
+    outputDir = os.path.join(os.getcwd(), 'template', nameFile(ID, version, 'pdf'))
+    os.chdir(outputDir)
+    subprocess.check_call(['pdflatex', srcFile])
+    # run a second time for table of contents
+    subprocess.check_call(['pdflatex', srcFile])
+    os.chdir(curDir)
+
+def createLatex(atbd_id, atbd_version):
+    to_prepend = texVariables(atbd_id, atbd_version)
+    texFile = filewrite(to_prepend, atbd_id, atbd_version)
+    writeLatex(texFile, atbd_id, atbd_version)
+
+createLatex(1, 1)
