@@ -11,7 +11,7 @@ color = {
   background: '#FFFFFF',
   surface: '#FFFFFF',
   shadow: rgba(color.base, 0.08),
-  lightgray: '#999',
+  lightgray: '#EEE',
   darkgray: '#444',
   link: color.primary,
   danger: '#d85d3f',
