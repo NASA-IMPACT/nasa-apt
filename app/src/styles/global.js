@@ -61,6 +61,13 @@ const baseStyles = css`
   #root {
     min-height: 100vh;
   }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    margin-block-start: 0;
+    margin-block-end: 0;
+  }
 `;
 
 export default createGlobalStyle`

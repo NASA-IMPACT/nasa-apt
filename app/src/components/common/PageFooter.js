@@ -21,7 +21,7 @@ export const Inner = styled(Constrainer)`
 `;
 
 class PageFooter extends React.PureComponent {
-  render () {
+  render() {
     return (
       <PageFoot>
         <Inner>

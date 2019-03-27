@@ -21,17 +21,17 @@ const createMathOperation = op => (a, b) => (...args) => {
   b = typeof b === 'function' ? b(...args) : b;
 
   // The final unit is driven by the `a` value.
-  const unit = (a + '').match(/[0-9]*(?:.[0-9]+)?(.*)/)[1];
+  const unit = (`${a}`).match(/[0-9]*(?:.[0-9]+)?(.*)/)[1];
   const aVal = parseFloat(a);
   const bVal = parseFloat(b);
 
   if (op === '+') {
     return `${aVal + bVal}${unit}`;
-  } else if (op === '-') {
+  } if (op === '-') {
     return `${aVal - bVal}${unit}`;
-  } else if (op === '/') {
+  } if (op === '/') {
     return `${aVal / bVal}${unit}`;
-  } else if (op === '*') {
+  } if (op === '*') {
     return `${aVal * bVal}${unit}`;
   }
 };

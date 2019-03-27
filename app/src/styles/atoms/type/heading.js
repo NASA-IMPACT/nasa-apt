@@ -28,14 +28,13 @@ const Heading = styled.h1`
 
   /* Colors */
   color:
-    ${({ variation, theme }) =>
-    variation === 'base'
-      ? theme.type.base.color
-      : variation === 'primary'
-        ? theme.color.primary
-        : variation === 'secondary'
-          ? theme.color.secondary
-          : 'inherit'};
+    ${({ variation, theme }) => (variation === 'base'
+    ? theme.type.base.color
+    : variation === 'primary'
+      ? theme.color.primary
+      : variation === 'secondary'
+        ? theme.color.secondary
+        : 'inherit')};
 `;
 
 Heading.defaultProps = {
