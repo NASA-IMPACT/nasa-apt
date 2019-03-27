@@ -101,7 +101,7 @@ const AtbdList = (props) => {
         <AtbdCell><AtbdPublishedState>Status</AtbdPublishedState></AtbdCell>
         <AtbdCell>
           <AtbdTitle>{title}</AtbdTitle>
-          <AtbdVersion>Version 1.0</AtbdVersion>
+          { false && <AtbdVersion>Version 1.0</AtbdVersion> }
         </AtbdCell>
         <AtbdCell>2 hours ago</AtbdCell>
         <AtbdCell>Author Name</AtbdCell>
