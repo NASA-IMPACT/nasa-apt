@@ -19,7 +19,7 @@ const plugins = [
   PluginDeepTable()
 ];
 
-class FreeEditor extends React.Component {
+export class FreeEditor extends React.Component {
   constructor(props) {
     super(props);
     const { value } = props;
@@ -152,18 +152,21 @@ class FreeEditor extends React.Component {
       <div className={className}>
         <Toolbar>
           <Button
+            id={equation}
             onClick={() => { this.selectTool(equation); }}
             active={activeTool === equation}
           >
             <Icon>Equation</Icon>
           </Button>
           <Button
+            id={paragraph}
             onClick={() => { this.selectTool(paragraph); }}
             active={activeTool === paragraph}
           >
             <Icon>Paragraph</Icon>
           </Button>
           <Button
+            id={table}
             onClick={() => { this.selectTool(table); }}
             active={activeTool === table}
           >
