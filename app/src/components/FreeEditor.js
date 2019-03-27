@@ -141,23 +141,32 @@ class FreeEditor extends React.Component {
 
   render() {
     const {
-      state: { value },
+      state: { value, activeTool },
       save,
       onChange,
       onMouseDown,
-      renderNode
+      renderNode,
     } = this;
     const { className } = this.props;
     return (
       <div className={className}>
         <Toolbar>
-          <Button onClick={() => { this.selectTool(equation); }}>
+          <Button
+            onClick={() => { this.selectTool(equation); }}
+            active={activeTool === equation}
+          >
             <Icon>Equation</Icon>
           </Button>
-          <Button onClick={() => { this.selectTool(paragraph); }}>
+          <Button
+            onClick={() => { this.selectTool(paragraph); }}
+            active={activeTool === paragraph}
+          >
             <Icon>Paragraph</Icon>
           </Button>
-          <Button onClick={() => { this.selectTool(table); }}>
+          <Button
+            onClick={() => { this.selectTool(table); }}
+            active={activeTool === table}
+          >
             <Icon>Table</Icon>
           </Button>
           <Button onClick={save}>
