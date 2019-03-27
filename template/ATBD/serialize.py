@@ -31,9 +31,8 @@ def processWYSIWYG(element):
 
 def processVarList(element):
     varDF = pd.DataFrame.from_dict(element, orient='columns')
-    varDF = varDF[['name', 'long_name', 'unit']].rename(
-        columns={'name': '\\textbf{{Name}}', 'long_name': '\\textbf{{Long Name}}', 'unit': '\\textbf{{Unit}}'})
-    latexDF = varDF.to_latex(index=False, bold_rows=True, escape = False)
+    latexDF = varDF.to_latex(index=False, bold_rows=True, escape=False, column_format='p{9cm} p{3cm}',
+        columns=['long_name', 'unit'], header = ['\\textbf{{Name}}', '\\textbf{{Unit}}'])
     return latexDF
 
 def processATBD(element):
@@ -75,7 +74,7 @@ class ATBD:
         self.version = atbd_version
 
     def texVariables (self):
-        url = f'http://localhost:3000/atbd_versions?atbd_id=eq.{self.ID}&atbd_version=eq.{self.version}&select=*,algorithm_input_variables(*),publication_references(*),atbd(*),data_access_input_data(*)'
+        url = f'http://localhost:3000/atbd_versions?atbd_id=eq.{self.ID}&atbd_version=eq.{self.version}&select=*,algorithm_input_variables(*),algorithm_output_variables(*),publication_references(*),atbd(*),data_access_input_data(*)'
         res = requests.get(url)
         myJson = json.loads(res.text)
         if debug:
