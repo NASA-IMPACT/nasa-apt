@@ -17,6 +17,16 @@ export const SubNavTitle = styled.h2`
   margin: 0;
 `;
 
+export const SubNavTagline = styled.span`
+  color: ${themeVal('color.background')};
+  display: block;
+  font-size: 0.875rem;
+  font-weight: lighter;
+  line-height: 1.4;
+  margin: 0;
+  text-transform: uppercase;
+`;
+
 export const SubNavFilter = styled.div`
   margin-right: ${themeVal('layout.space')};
 `;
@@ -30,6 +40,10 @@ export const SubNavAction = styled.li`
   margin-left: ${themeVal('layout.space')};
 `;
 
+const SubNavContainer = styled(Inner)`
+  align-items: flex-end;
+`;
+
 const PageSubNav = (props) => {
   const {
     children
@@ -37,9 +51,9 @@ const PageSubNav = (props) => {
 
   return (
     <SubNav>
-      <Inner>
+      <SubNavContainer>
         {children}
-      </Inner>
+      </SubNavContainer>
     </SubNav>
   );
 };

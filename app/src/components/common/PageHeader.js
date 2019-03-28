@@ -16,7 +16,7 @@ const PageHeadline = styled.div`
 
 `;
 
-const PageTitle = styled.h1`
+const AppTitle = styled.h1`
   font-size: 1.5rem;
   line-height: 1;
   text-transform: uppercase;
@@ -51,7 +51,7 @@ class PageHeader extends React.PureComponent {
       <PageHead>
         <Inner>
           <PageHeadline>
-            <PageTitle as="h1" variation="base">NASA APT</PageTitle>
+            <AppTitle as="h1" variation="base">NASA APT</AppTitle>
           </PageHeadline>
           <PageNav>
             <GlobalMenu>

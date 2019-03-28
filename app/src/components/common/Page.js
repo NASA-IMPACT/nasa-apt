@@ -9,8 +9,14 @@ export const Inner = styled(Constrainer)`
   justify-content: center;
 `;
 
+export const PageTitle = styled.h2`
+  font-size: 1.5rem;
+  line-height: 1.8;
+  margin: 0;
+`;
+
 const PageSection = styled.div`
-  margin: ${multiply(themeVal('layout.space'), 2)} ${themeVal('layout.space')} ${themeVal('layout.space')};
+  padding: ${multiply(themeVal('layout.space'), 2)} ${themeVal('layout.space')} ${themeVal('layout.space')};
 `;
 
 export default PageSection;
