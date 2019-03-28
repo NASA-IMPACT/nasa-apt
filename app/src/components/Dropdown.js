@@ -107,8 +107,7 @@ class Dropdown extends React.Component {
   }
 
   toggle() {
-    const { open } = this.state;
-    this.setState({ open: !open });
+    this.setState(state => ({ open: !state.open }));
   }
 
   open() {
@@ -132,20 +131,11 @@ class Dropdown extends React.Component {
       triggerElement: TriggerElement
     } = this.props;
 
-    const triggerKlasses = ['drop__toggle'];
     const triggerProps = {
       onClick: this.toggleDropdown,
       'data-hook': 'dropdown:btn',
       ref: (el) => { this.triggerRef = el; }
     };
-
-    /*
-    if (this.state.open && triggerActiveClassName) {
-      triggerKlasses.push(triggerActiveClassName);
-    }
-    */
-
-    triggerProps.className = triggerKlasses.join(' ');
 
     if (triggerTitle) {
       triggerProps.title = triggerTitle;
@@ -160,25 +150,15 @@ class Dropdown extends React.Component {
 
   renderContent() {
     const {
-      direction,
-      className,
       onChange,
       children
     } = this.props;
     const { open } = this.state;
 
-    // Base and additional classes for the trigger and the content.
-    const klasses = ['drop__content', 'drop__content--react', `drop-trans--${direction}`];
     const dropdownContentProps = {
       ref: (el) => { this.dropdownRef = el; },
       'data-hook': 'dropdown:content'
     };
-
-    if (className) {
-      klasses.push(className);
-    }
-
-    dropdownContentProps.className = klasses.join(' ');
 
     return (
       <CSSTransition
@@ -275,8 +255,6 @@ Dropdown.propTypes = {
 
   direction: PropTypes.oneOf(['up', 'down', 'left', 'right']),
   alignment: PropTypes.oneOf(['left', 'center', 'right', 'top', 'middle', 'bottom']),
-
-  className: PropTypes.string,
   children: PropTypes.node
 };
 

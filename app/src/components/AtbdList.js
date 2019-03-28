@@ -2,6 +2,11 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
+import { push } from 'connected-react-router';
+import {
+  atbdsedit,
+  contacts
+} from '../constants/routes';
 import { themeVal } from '../styles/utils/general';
 import { multiply, divide } from '../styles/utils/math';
 import collecticon from '../styles/collecticons';
@@ -92,6 +97,14 @@ const AtbdVersion = styled.span`
   color: ${themeVal('color.lightgray')};
 `;
 
+const EditIcon = styled.span`
+  color: ${themeVal('color.link')};
+  cursor: pointer;
+  &::before {
+    ${collecticon('pencil')};
+  }
+`;
+
 const AtbdList = (props) => {
   const { atbds } = props;
   const atbdElements = atbds.map((atbd) => {
@@ -101,11 +114,12 @@ const AtbdList = (props) => {
         <AtbdCell><AtbdPublishedState>Status</AtbdPublishedState></AtbdCell>
         <AtbdCell>
           <AtbdTitle>{title}</AtbdTitle>
-          <AtbdVersion>Version 1.0</AtbdVersion>
+          { false && <AtbdVersion>Version 1.0</AtbdVersion> }
         </AtbdCell>
         <AtbdCell>2 hours ago</AtbdCell>
         <AtbdCell>Author Name</AtbdCell>
         <AtbdCell>Topic</AtbdCell>
+        <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${contacts}`)}><EditIcon /></AtbdCell>
       </AtbdRow>
     );
   });
@@ -198,7 +212,8 @@ AtbdList.propTypes = {
   atbds: PropTypes.arrayOf(PropTypes.shape({
     atbd_id: PropTypes.number.isRequired,
     title: PropTypes.string.isRequired
-  }))
+  })),
+  push: PropTypes.func
 };
 
 const mapStateToProps = (state) => {
@@ -206,4 +221,6 @@ const mapStateToProps = (state) => {
   return { atbds };
 };
 
-export default connect(mapStateToProps)(AtbdList);
+const mapDispatch = { push };
+
+export default connect(mapStateToProps, mapDispatch)(AtbdList);
