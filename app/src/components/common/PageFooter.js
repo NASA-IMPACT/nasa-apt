@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { themeVal } from '../../styles/utils/general';
-import Constrainer from '../../styles/atoms/constrainer';
+import Constrainer from '../../styles/atoms/Constrainer';
 
 const PageFoot = styled.footer`
   padding: ${themeVal('layout.space')};
