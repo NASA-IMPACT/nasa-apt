@@ -3,19 +3,13 @@ import styled from 'styled-components';
 import { antialiased } from '../../styles/helpers';
 import { themeVal } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
-import Constrainer from '../../styles/atoms/constrainer';
+import { Inner } from './Page';
 
 const PageHead = styled.header`
   ${antialiased()}
   padding: ${themeVal('layout.space')};
   background-color: ${themeVal('color.primary')};
   color: #FFF;
-`;
-
-export const Inner = styled(Constrainer)`
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;
 `;
 
 const PageHeadline = styled.div`
@@ -52,19 +46,19 @@ const GlobalMenu = styled.ul`
 `;
 
 class PageHeader extends React.PureComponent {
-  render () {
+  render() {
     return (
       <PageHead>
         <Inner>
           <PageHeadline>
-            <PageTitle as='h1' variation='base'>NASA APT</PageTitle>
+            <PageTitle as="h1" variation="base">NASA APT</PageTitle>
           </PageHeadline>
           <PageNav>
             <GlobalMenu>
-              <li><a href='#' title='View'>Dashboard</a></li>
-              <li><a href='#' title='View'>Projects</a></li>
-              <li><a href='#' title='View'>Help</a></li>
-              <li><a href='#' title='View'>About</a></li>
+              <li><a href="#" title="View">Dashboard</a></li>
+              <li><a href="#" title="View">Projects</a></li>
+              <li><a href="#" title="View">Help</a></li>
+              <li><a href="#" title="View">About</a></li>
             </GlobalMenu>
           </PageNav>
         </Inner>

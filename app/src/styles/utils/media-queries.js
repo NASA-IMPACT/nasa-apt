@@ -46,33 +46,31 @@ export default Object.keys(mediaRanges).reduce((acc, label) => {
   const range = mediaRanges[label];
   return {
     ...acc,
-    ...['Up', 'Only', 'Down'].reduce((acc_, type) => {
-      return {
-        ...acc_,
-        [`${label}${type}`]: (...args) => {
-          let expr = buildMediaExp(range, type);
-          if (expr === null && (type === 'Up' || type === 'Down')) {
-            // eslint-disable-next-line
+    ...['Up', 'Only', 'Down'].reduce((acc_, type) => ({
+      ...acc_,
+      [`${label}${type}`]: (...args) => {
+        let expr = buildMediaExp(range, type);
+        if (expr === null && (type === 'Up' || type === 'Down')) {
+          // eslint-disable-next-line
             console.warn(`Media query warning: The specified media query (${label}${type}) has no ${range[0] === null ? 'lower' : 'upper'} bound.
 There's no need for a media query in this case;
 `);
-          } else if (expr === null) {
-            // eslint-disable-next-line
+        } else if (expr === null) {
+          // eslint-disable-next-line
             console.warn(`Media query warning: The specified media query (${label}${type}) has no ${range[0] === null ? 'lower' : 'upper'} bound.
 You can use (${label}${range[0] === null ? 'Down' : 'Up'}) instead.
 `);
-            expr = buildMediaExp(range, range[0] === null ? 'Down' : 'Up');
-          }
+          expr = buildMediaExp(range, range[0] === null ? 'Down' : 'Up');
+        }
 
-          return expr
-            ? css`
+        return expr
+          ? css`
               @media ${expr} {
                 ${css(...args)}
               }
             `
-            : css(...args);
-        }
-      };
-    }, acc)
+          : css(...args);
+      }
+    }), acc)
   };
 }, {});

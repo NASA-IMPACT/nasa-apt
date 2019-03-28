@@ -55,3 +55,22 @@ The application store is configured to support the [redux-devtools-extension](ht
 Because the application makes extensive use of [HOCs](https://reactjs.org/docs/higher-order-components.html), wrapped components are exposed as the default export while raw components are available as a named component.  This allows for unit testing without invoking HOC behavior.
 
 The application uses [tape-await](https://github.com/mbostock/tape-await) to simplify asynchronous test flow for middleware.
+
+### Icons
+
+The application uses [Collecticons](https://collecticons.io/). To reduce bundle size, we only store the icons we use. Place icons in `src/assets/icons/collecticons/`.
+
+To compile new icons, run:
+
+`yarn collecticons`
+
+You can then reference icons in your code:
+
+```
+import collecticon from 'src/styles/collecticons';
+const icon = styled.div`
+   &::after {
+      ${collecticon('chevron-down--small')};
+   }
+`
+```

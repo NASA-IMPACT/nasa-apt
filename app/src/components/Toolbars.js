@@ -3,6 +3,8 @@ import collecticon from '../styles/collecticons';
 
 export const Button = styled('span')`
   cursor: pointer;
+  background: ${props => (props.active ? 'grey' : 'white')};
+  color: ${props => (props.active ? 'white' : 'black')};
 `;
 
 export const Icon = styled.span`
