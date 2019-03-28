@@ -20,6 +20,7 @@ import PageFooter from './components/common/PageFooter';
 import AtbdList from './components/AtbdList';
 import Contacts from './components/Contacts';
 import AlgorithmDescription from './components/AlgorithmDescription';
+import Sandbox from './components/sandbox';
 
 const Page = styled.div`
   display: grid;
@@ -51,6 +52,7 @@ const App = () => (
                   path={`/${atbdsedit}/:atbd_id/${versions}/:atbd_version/${algorithm_description}`}
                   component={AlgorithmDescription}
                 />
+                <Route exact path='/sandbox' component={Sandbox} />
               </Switch>
             </PageBody>
             <PageFooter />
