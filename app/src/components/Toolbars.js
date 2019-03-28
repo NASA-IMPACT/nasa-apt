@@ -5,26 +5,33 @@ import { themeVal } from '../styles/utils/general';
 
 export const ToolbarAction = styled('span')`
   cursor: pointer;
+  background: ${props => (props.active ? themeVal('color.shadow') : null)};
+  box-shadow: ${props => (props.active ? themeVal('boxShadow.inset') : null)};
   font-weight: bold;
-  background: ${props => (props.active ? 'grey' : 'white')};
-  color: ${props => (props.active ? 'white' : 'black')};
+  padding: ${themeVal('layout.space')};
+  transition: background .16s ease;
+  &:hover {
+    background: ${themeVal('color.shadow')}
+  }
 `;
 
 export const ToolbarIcon = styled.span`
-  line-height: 1;
+  display: flex;
   &::before {
-    ${collecticon('text-block')}
+    font-size: 0.875rem;
+    margin-right: ${multiply(themeVal('layout.space'), 0.5)};
+    ${props => collecticon(props.icon.icon)}
   }
 `;
 
 export const Toolbar = styled.div`
   align-items: center;
-  background-color: ${themeVal('color.shadow')};
-  border: 1px solid #CCC;
+  background: ${themeVal('color.shadow')};
+  border: 1px solid ${themeVal('color.gray')};
   border-top-left-radius: ${multiply(themeVal('layout.space'), 0.25)};
   border-top-right-radius: ${multiply(themeVal('layout.space'), 0.25)};
   display: flex;
-  padding: ${multiply(themeVal('layout.space'), 0.75)} ${themeVal('layout.space')};
+  padding: 0 ${themeVal('layout.space')};
   position: relative;
 `;
 
@@ -32,5 +39,6 @@ export const ToolbarLabel = styled.span`
   color: ${themeVal('color.darkgray')};
   font-size: 0.875rem;
   font-weight: lighter;
+  margin-right: ${themeVal('layout.space')};
   text-transform: uppercase;
 `;

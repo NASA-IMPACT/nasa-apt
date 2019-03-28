@@ -14,10 +14,20 @@ import {
 } from './Toolbars';
 import EditorImage from './EditorImage';
 import schema from './editorSchema';
+import { themeVal } from '../styles/utils/general';
+import { multiply } from '../styles/utils/math';
 
 const equation = 'equation';
 const paragraph = 'paragraph';
 const table = 'table';
+
+const EditorContainer = styled.div`
+  background-color: ${themeVal('color.surface')};
+  border: 1px solid ${themeVal('color.gray')};
+  border-bottom-left-radius: ${multiply(themeVal('layout.space'), 0.25)};
+  border-bottom-right-radius: ${multiply(themeVal('layout.space'), 0.25)};
+  padding: ${themeVal('layout.space')};
+`;
 
 const plugins = [
   SoftBreak(),
@@ -73,8 +83,11 @@ export class FreeEditor extends React.Component {
   }
 
   selectTool(tool) {
-    this.setState({
-      activeTool: tool
+    this.setState(state => {
+      if (this.state.activeTool === tool) {
+        return { activeTool: null };
+      }
+      return { activeTool: tool };
     });
   }
 
@@ -187,15 +200,17 @@ export class FreeEditor extends React.Component {
           </ToolbarAction>
 
         </Toolbar>
-        <Editor
-          schema={schema}
-          ref={editor => (this.editor = editor)}
-          value={value}
-          onChange={onChange}
-          onMouseDown={onMouseDown}
-          renderNode={renderNode}
-          plugins={plugins}
-        />
+        <EditorContainer>
+          <Editor
+            schema={schema}
+            ref={editor => (this.editor = editor)}
+            value={value}
+            onChange={onChange}
+            onMouseDown={onMouseDown}
+            renderNode={renderNode}
+            plugins={plugins}
+          />
+        </EditorContainer>
       </div>
     );
   }

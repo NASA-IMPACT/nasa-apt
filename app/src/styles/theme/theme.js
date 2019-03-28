@@ -12,6 +12,7 @@ color = {
   surface: '#FFFFFF',
   shadow: rgba(color.base, 0.08),
   lightgray: '#EEE',
+  gray: '#DBDBDB',
   darkgray: '#444',
   link: color.primary,
   danger: '#d85d3f',
@@ -57,12 +58,17 @@ const layout = {
   max: '1280px'
 };
 
+const boxShadow = {
+  inset: 'box-shadow: inset 0px 0px 5px 0px rgba(0,0,0,0.8);'
+};
+
 export default {
   main: {
     layout,
     color,
     type,
-    shape
+    shape,
+    boxShadow
   }
 };
 
