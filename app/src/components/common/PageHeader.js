@@ -50,7 +50,7 @@ class PageHeader extends React.PureComponent {
       <PageHead>
         <Inner>
           <PageHeadline>
-            <PageTitle as="h1" variation="base">NASA APT</PageTitle>
+            <PageTitle>NASA APT</PageTitle>
           </PageHeadline>
           <PageNav>
             <GlobalMenu>
