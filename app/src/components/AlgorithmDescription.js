@@ -19,7 +19,7 @@ import EditPage, {
 } from './common/EditPage';
 import editorBlankDocument from './editorBlankDocument';
 
-const AlgorithmDescription = (props) => {
+export const AlgorithmDescription = (props) => {
   const {
     atbdVersion = {},
     save,
