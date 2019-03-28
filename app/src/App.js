@@ -21,6 +21,7 @@ import AtbdList from './components/AtbdList';
 import Contacts from './components/Contacts';
 import AlgorithmDescription from './components/AlgorithmDescription';
 import Sandbox from './components/sandbox';
+import UhOh from './components/uhoh';
 
 const Page = styled.div`
   display: grid;
@@ -53,6 +54,7 @@ const App = () => (
                   component={AlgorithmDescription}
                 />
                 <Route exact path='/sandbox' component={Sandbox} />
+                <Route path='*' component={UhOh} />
               </Switch>
             </PageBody>
             <PageFooter />
