@@ -7,7 +7,6 @@ import { Inner } from './Page';
 
 const PageHead = styled.header`
   ${antialiased()}
-  padding: ${themeVal('layout.space')};
   background-color: ${themeVal('color.primary')};
   color: #FFF;
 `;
