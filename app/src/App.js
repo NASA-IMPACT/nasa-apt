@@ -26,7 +26,7 @@ import UhOh from './components/uhoh';
 const Page = styled.div`
   display: grid;
   min-height: 100vh;
-  grid-auto-rows: auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
 `;
 
 const PageBody = styled.main`
