@@ -6,6 +6,8 @@ import { themeVal } from '../styles/utils/general';
 export const ToolbarAction = styled('span')`
   cursor: pointer;
   font-weight: bold;
+  background: ${props => (props.active ? 'grey' : 'white')};
+  color: ${props => (props.active ? 'white' : 'black')};
 `;
 
 export const ToolbarIcon = styled.span`

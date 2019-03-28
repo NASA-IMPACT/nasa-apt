@@ -15,21 +15,30 @@ import {
 import EditorImage from './EditorImage';
 import schema from './editorSchema';
 
+const equation = 'equation';
+const paragraph = 'paragraph';
+const table = 'table';
+
 const plugins = [
   SoftBreak(),
   PluginDeepTable()
 ];
 
-class FreeEditor extends React.Component {
+export class FreeEditor extends React.Component {
   constructor(props) {
     super(props);
     const { value } = props;
-    this.state = { value };
+    this.state = {
+      value,
+      activeTool: null
+    };
     this.onChange = this.onChange.bind(this);
     this.renderNode = this.renderNode.bind(this);
     this.insertEquation = this.insertEquation.bind(this);
     this.insertParagraph = this.insertParagraph.bind(this);
     this.insertTable = this.insertTable.bind(this);
+    this.selectTool = this.selectTool.bind(this);
+    this.onMouseDown = this.onMouseDown.bind(this);
     this.save = this.save.bind(this);
   }
 
@@ -38,8 +47,35 @@ class FreeEditor extends React.Component {
     this.setState({ value });
   }
 
-  onChange({ value }) {
-    this.setState({ value });
+  onMouseDown() {
+    const { activeTool } = this.state;
+    if (activeTool) {
+      setTimeout(() => {
+        if (activeTool === equation) {
+          this.insertEquation();
+        }
+        if (activeTool === paragraph) {
+          this.insertParagraph();
+        }
+        if (activeTool === table) {
+          this.insertTable();
+        }
+      }, 0);
+    }
+  }
+
+  onChange(event) {
+    const { value } = event;
+    this.setState({
+      value,
+      activeTool: null
+    });
+  }
+
+  selectTool(tool) {
+    this.setState({
+      activeTool: tool
+    });
   }
 
   save(e) {
@@ -49,11 +85,10 @@ class FreeEditor extends React.Component {
     save(jsonValue);
   }
 
-  insertEquation(e) {
-    e.preventDefault();
+  insertEquation() {
     this.editor
       .insertBlock({
-        type: 'equation',
+        type: equation,
         nodes: [
           {
             object: 'text',
@@ -66,11 +101,10 @@ class FreeEditor extends React.Component {
       .focus();
   }
 
-  insertParagraph(e) {
-    e.preventDefault();
+  insertParagraph() {
     this.editor
       .insertBlock({
-        type: 'paragraph',
+        type: paragraph,
         nodes: [
           {
             object: 'text',
@@ -83,9 +117,10 @@ class FreeEditor extends React.Component {
       .focus();
   }
 
-  insertTable(e) {
-    e.preventDefault();
-    this.onChange(this.editor.insertTable());
+  insertTable() {
+    this.insertParagraph();
+    this.editor.moveBackward(1);
+    this.editor.insertTable();
   }
 
   /* eslint-disable-next-line */
@@ -111,37 +146,53 @@ class FreeEditor extends React.Component {
 
   render() {
     const {
-      state: { value },
-      insertEquation,
-      insertParagraph,
-      insertTable,
+      state: { value, activeTool },
       save,
       onChange,
-      renderNode
+      onMouseDown,
+      renderNode,
     } = this;
     const { className } = this.props;
     return (
       <div className={className}>
         <Toolbar>
           <ToolbarLabel>Insert</ToolbarLabel>
-          <ToolbarAction onMouseDown={insertEquation}>
+
+          <ToolbarAction
+            id={equation}
+            onClick={() => { this.selectTool(equation); }}
+            active={activeTool === equation}
+          >
             <ToolbarIcon icon={{ icon: 'equal--small' }}>Equation</ToolbarIcon>
           </ToolbarAction>
-          <ToolbarAction onMouseDown={insertParagraph}>
+
+          <ToolbarAction
+            id={paragraph}
+            onClick={() => { this.selectTool(paragraph); }}
+            active={activeTool === paragraph}
+          >
             <ToolbarIcon icon={{ icon: 'text-block' }}>Paragraph</ToolbarIcon>
           </ToolbarAction>
-          <ToolbarAction onMouseDown={insertTable}>
+
+          <ToolbarAction
+            id={table}
+            onClick={() => { this.selectTool(table); }}
+            active={activeTool === table}
+          >
             <ToolbarIcon icon={{ icon: 'list'}}>Table</ToolbarIcon>
           </ToolbarAction>
+
           <ToolbarAction onClick={save}>
             Save
           </ToolbarAction>
+
         </Toolbar>
         <Editor
           schema={schema}
           ref={editor => (this.editor = editor)}
           value={value}
           onChange={onChange}
+          onMouseDown={onMouseDown}
           renderNode={renderNode}
           plugins={plugins}
         />
