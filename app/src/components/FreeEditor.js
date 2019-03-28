@@ -226,23 +226,26 @@ const StyledFreeEditor = styled(FreeEditor)`
   table {
     width: 100%;
     border-collapse: collapse;
-    border-top: 1px solid black;
+    border-top: 1px solid ${themeVal('color.gray')};
+    margin: ${themeVal('layout.space')} 0;
+    table-layout: fixed;
   }
   table tr {
     border: none;
-    border-bottom: 1px solid black;
-    border-right: 1px solid black;
+    border-bottom: 1px solid ${themeVal('color.gray')};
+    border-right: 1px solid ${themeVal('color.gray')};
   }
   table thead tr {
     background: #f5f5f5;
     font-weight: bold;
   }
   table td {
-    border: 1px solid black;
+    border: 1px solid ${themeVal('color.gray')};
     border-top: none;
     border-bottom: none;
     border-right: none;
-    padding: .5em;
+    line-height: 1;
+    padding: 0.5rem;
     position: relative;
   }
 `;
