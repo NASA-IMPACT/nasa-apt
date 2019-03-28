@@ -6,13 +6,28 @@ import SoftBreak from 'slate-soft-break';
 import PluginDeepTable from 'slate-deep-table';
 import styled from 'styled-components/macro';
 import EquationEditor from './EquationEditor';
-import { Button, Icon, Toolbar } from './Toolbars';
+import {
+  ToolbarAction,
+  ToolbarIcon,
+  Toolbar,
+  ToolbarLabel
+} from './Toolbars';
 import EditorImage from './EditorImage';
 import schema from './editorSchema';
+import { themeVal } from '../styles/utils/general';
+import { multiply } from '../styles/utils/math';
 
 const equation = 'equation';
 const paragraph = 'paragraph';
 const table = 'table';
+
+const EditorContainer = styled.div`
+  background-color: ${themeVal('color.surface')};
+  border: 1px solid ${themeVal('color.gray')};
+  border-bottom-left-radius: ${multiply(themeVal('layout.space'), 0.25)};
+  border-bottom-right-radius: ${multiply(themeVal('layout.space'), 0.25)};
+  padding: ${themeVal('layout.space')};
+`;
 
 const plugins = [
   SoftBreak(),
@@ -68,8 +83,11 @@ export class FreeEditor extends React.Component {
   }
 
   selectTool(tool) {
-    this.setState({
-      activeTool: tool
+    this.setState((state) => {
+      if (state.activeTool === tool) {
+        return { activeTool: null };
+      }
+      return { activeTool: tool };
     });
   }
 
@@ -151,40 +169,48 @@ export class FreeEditor extends React.Component {
     return (
       <div className={className}>
         <Toolbar>
-          <Button
+          <ToolbarLabel>Insert</ToolbarLabel>
+
+          <ToolbarAction
             id={equation}
             onClick={() => { this.selectTool(equation); }}
             active={activeTool === equation}
           >
-            <Icon>Equation</Icon>
-          </Button>
-          <Button
+            <ToolbarIcon icon={{ icon: 'equal--small' }}>Equation</ToolbarIcon>
+          </ToolbarAction>
+
+          <ToolbarAction
             id={paragraph}
             onClick={() => { this.selectTool(paragraph); }}
             active={activeTool === paragraph}
           >
-            <Icon>Paragraph</Icon>
-          </Button>
-          <Button
+            <ToolbarIcon icon={{ icon: 'text-block' }}>Paragraph</ToolbarIcon>
+          </ToolbarAction>
+
+          <ToolbarAction
             id={table}
             onClick={() => { this.selectTool(table); }}
             active={activeTool === table}
           >
-            <Icon>Table</Icon>
-          </Button>
-          <Button onClick={save}>
-            <Icon>Save</Icon>
-          </Button>
+            <ToolbarIcon icon={{ icon: 'list' }}>Table</ToolbarIcon>
+          </ToolbarAction>
+
+          <ToolbarAction onClick={save}>
+            Save
+          </ToolbarAction>
+
         </Toolbar>
-        <Editor
-          schema={schema}
-          ref={editor => (this.editor = editor)}
-          value={value}
-          onChange={onChange}
-          onMouseDown={onMouseDown}
-          renderNode={renderNode}
-          plugins={plugins}
-        />
+        <EditorContainer>
+          <Editor
+            schema={schema}
+            ref={editor => (this.editor = editor)}
+            value={value}
+            onChange={onChange}
+            onMouseDown={onMouseDown}
+            renderNode={renderNode}
+            plugins={plugins}
+          />
+        </EditorContainer>
       </div>
     );
   }
@@ -200,23 +226,26 @@ const StyledFreeEditor = styled(FreeEditor)`
   table {
     width: 100%;
     border-collapse: collapse;
-    border-top: 1px solid black;
+    border-top: 1px solid ${themeVal('color.gray')};
+    margin: ${themeVal('layout.space')} 0;
+    table-layout: fixed;
   }
   table tr {
     border: none;
-    border-bottom: 1px solid black;
-    border-right: 1px solid black;
+    border-bottom: 1px solid ${themeVal('color.gray')};
+    border-right: 1px solid ${themeVal('color.gray')};
   }
   table thead tr {
     background: #f5f5f5;
     font-weight: bold;
   }
   table td {
-    border: 1px solid black;
+    border: 1px solid ${themeVal('color.gray')};
     border-top: none;
     border-bottom: none;
     border-right: none;
-    padding: .5em;
+    line-height: 1;
+    padding: 0.5rem;
     position: relative;
   }
 `;

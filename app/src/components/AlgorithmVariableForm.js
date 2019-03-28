@@ -5,6 +5,7 @@ import jsonschema from 'jsonschema';
 import apiSchema from '../schemas/schema.json';
 import transformErrors from '../schemas/transformErrors';
 import Input from './Input';
+import { InputFormGroup, InputSubmit } from './common/EditPage';
 
 const name = 'name';
 const long_name = 'long_name';
@@ -24,7 +25,7 @@ export const InnerAlgorithmVariableForm = (props) => {
   const submitEnabled = !Object.keys(errors).length
                                   && Object.keys(touched).length;
   return (
-    <form onSubmit={handleSubmit}>
+    <InputFormGroup onSubmit={handleSubmit}>
       <Input
         name={name}
         label="Name"
@@ -55,13 +56,12 @@ export const InnerAlgorithmVariableForm = (props) => {
         error={errors[unit]}
         touched={touched[unit]}
       />
-      <button
+      <InputSubmit
         type="submit"
         disabled={!submitEnabled}
-      >
-        Add Algorithm Variable
-      </button>
-    </form>
+        value="Add Algorithm Variable"
+      />
+    </InputFormGroup>
   );
 };
 

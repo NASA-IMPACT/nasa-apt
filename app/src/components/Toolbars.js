@@ -1,33 +1,44 @@
 import styled from 'styled-components';
 import collecticon from '../styles/collecticons';
+import { multiply } from '../styles/utils/math';
+import { themeVal } from '../styles/utils/general';
 
-export const Button = styled('span')`
+export const ToolbarAction = styled('span')`
   cursor: pointer;
-  background: ${props => (props.active ? 'grey' : 'white')};
-  color: ${props => (props.active ? 'white' : 'black')};
-`;
-
-export const Icon = styled.span`
-  font-size: 1rem;
-  &::after {
-    ${collecticon('plus')}
+  background: ${props => (props.active ? themeVal('color.shadow') : null)};
+  box-shadow: ${props => (props.active ? themeVal('boxShadow.inset') : null)};
+  font-weight: bold;
+  padding: ${themeVal('layout.space')};
+  transition: background .16s ease;
+  &:hover {
+    background: ${themeVal('color.shadow')}
   }
 `;
 
-export const Menu = styled('div')`
-  & > * {
-    display: inline-block;
-  }
-
-  & > * + * {
-    margin-left: 15px;
+export const ToolbarIcon = styled.span`
+  display: flex;
+  &::before {
+    font-size: 0.875rem;
+    margin-right: ${multiply(themeVal('layout.space'), 0.5)};
+    ${props => collecticon(props.icon.icon)}
   }
 `;
 
-export const Toolbar = styled(Menu)`
+export const Toolbar = styled.div`
+  align-items: center;
+  background: ${themeVal('color.shadow')};
+  border: 1px solid ${themeVal('color.gray')};
+  border-top-left-radius: ${multiply(themeVal('layout.space'), 0.25)};
+  border-top-right-radius: ${multiply(themeVal('layout.space'), 0.25)};
+  display: flex;
+  padding: 0 ${themeVal('layout.space')};
   position: relative;
-  padding: 1px 18px 17px;
-  margin: 0 -20px;
-  border-bottom: 2px solid #eee;
-  margin-bottom: 20px;
+`;
+
+export const ToolbarLabel = styled.span`
+  color: ${themeVal('color.darkgray')};
+  font-size: 0.875rem;
+  font-weight: lighter;
+  margin-right: ${themeVal('layout.space')};
+  text-transform: uppercase;
 `;

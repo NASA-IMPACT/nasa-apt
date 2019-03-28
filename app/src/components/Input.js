@@ -1,5 +1,10 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
+import {
+  InputLabel,
+  SmallTextInput,
+  InputLabelFeedback
+} from './common/EditPage';
 
 const Input = (props) => {
   const {
@@ -10,19 +15,21 @@ const Input = (props) => {
     ...inputProps
   } = props;
 
-  let feedback = <div />;
+  let feedback = null;
   if (Boolean(error) && touched) {
-    feedback = <div>{error}</div>;
+    feedback = error;
   }
   return (
     <Fragment>
-      <label htmlFor={name}>{label}</label>
-      <input
-        id={name}
-        name={name}
-        {...inputProps}
-      />
-      {feedback}
+      <InputLabel>
+        {label}
+        <InputLabelFeedback>{feedback}</InputLabelFeedback>
+        <SmallTextInput
+          id={name}
+          name={name}
+          {...inputProps}
+        />
+      </InputLabel>
     </Fragment>
   );
 };
