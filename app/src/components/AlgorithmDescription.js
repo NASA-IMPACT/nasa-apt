@@ -11,12 +11,10 @@ import {
 import FreeEditor from './FreeEditor';
 import AlgorithmVariables from './AlgorithmVariables';
 import AlgorithmVariableForm from './AlgorithmVariableForm';
-import PageSection, {
-  PageTitle,
-  Inner
-} from './common/Page';
+import { PageTitle } from './common/Page';
 import EditPage, {
   EditorSection,
+  EditorSectionTitle,
   EditorLabel
 } from './common/EditPage';
 
@@ -50,37 +48,39 @@ const AlgorithmDescription = (props) => {
           }}
         />
       </EditorSection>
-      <br />
-      <span>Scientifc Theory Assumptions</span>
-      <br />
-      <span>Algorithm Input Variables</span>
-      <AlgorithmVariables
-        schemaKey="algorithm_input_variable"
-        variables={algorithm_input_variables}
-      />
-      {atbd_id && atbd_version && (
-      <AlgorithmVariableForm
-        schemaKey="algorithm_input_variable"
-        atbd_id={atbd_id}
-        atbd_version={atbd_version}
-        create={(data) => { createInputVariable(data); }}
-      />
-      )
-      }
-      <span>Algorithm Output Variables</span>
-      <AlgorithmVariables
-        schemaKey="algorithm_output_variable"
-        variables={algorithm_output_variables}
-      />
-      {atbd_id && atbd_version && (
-      <AlgorithmVariableForm
-        schemaKey="algorithm_output_variable"
-        atbd_id={atbd_id}
-        atbd_version={atbd_version}
-        create={(data) => { createOutputVariable(data); }}
-      />
-      )
-      }
+
+      <EditorSection>
+        <EditorLabel>Scientifc Theory Assumptions</EditorLabel>
+        <EditorSectionTitle>Algorithm Input Variables</EditorSectionTitle>
+        <AlgorithmVariables
+          schemaKey="algorithm_input_variable"
+          variables={algorithm_input_variables}
+        />
+        {atbd_id && atbd_version && (
+          <AlgorithmVariableForm
+            schemaKey="algorithm_input_variable"
+            atbd_id={atbd_id}
+            atbd_version={atbd_version}
+            create={(data) => { createInputVariable(data); }}
+          />
+        )}
+      </EditorSection>
+
+      <EditorSection>
+        <EditorSectionTitle>Algorithm Output Variables</EditorSectionTitle>
+        <AlgorithmVariables
+          schemaKey="algorithm_output_variable"
+          variables={algorithm_output_variables}
+        />
+        {atbd_id && atbd_version && (
+          <AlgorithmVariableForm
+            schemaKey="algorithm_output_variable"
+            atbd_id={atbd_id}
+            atbd_version={atbd_version}
+            create={(data) => { createOutputVariable(data); }}
+          />
+        )}
+      </EditorSection>
     </EditPage>
   );
 };

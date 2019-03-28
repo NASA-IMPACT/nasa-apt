@@ -83,8 +83,8 @@ export class FreeEditor extends React.Component {
   }
 
   selectTool(tool) {
-    this.setState(state => {
-      if (this.state.activeTool === tool) {
+    this.setState((state) => {
+      if (state.activeTool === tool) {
         return { activeTool: null };
       }
       return { activeTool: tool };
@@ -192,7 +192,7 @@ export class FreeEditor extends React.Component {
             onClick={() => { this.selectTool(table); }}
             active={activeTool === table}
           >
-            <ToolbarIcon icon={{ icon: 'list'}}>Table</ToolbarIcon>
+            <ToolbarIcon icon={{ icon: 'list' }}>Table</ToolbarIcon>
           </ToolbarAction>
 
           <ToolbarAction onClick={save}>
