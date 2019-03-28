@@ -11,6 +11,11 @@ import PageSubNav, {
 import PageSection from './Page';
 import { multiply } from '../../styles/utils/math';
 import { themeVal } from '../../styles/utils/general';
+import Dropdown, {
+  DropdownTrigger,
+  DropdownList,
+  DropdownItem
+} from '../Dropdown';
 
 export const EditorSection = styled.div`
   background-color: ${themeVal('color.lightgray')};
@@ -70,7 +75,12 @@ export const InputSubmit = styled.input`
 `;
 
 const EditPage = (props) => {
-  const { children, title } = props;
+  const {
+    children,
+    step,
+    numSteps,
+    title
+  } = props;
   return (
     <Fragment>
       <PageSubNav>
@@ -80,8 +90,27 @@ const EditPage = (props) => {
         </SubNavTitle>
 
         <SubNavActions>
-          <SubNavAction>Search</SubNavAction>
-          <SubNavAction>Create</SubNavAction>
+          <SubNavAction>
+            Step {step} of {numSteps}
+            <Dropdown
+              triggerText=""
+              triggerTitle="Toggle menu options"
+              triggerElement={DropdownTrigger}
+            >
+              <DropdownList role="menu">
+                <DropdownItem>Identifying information</DropdownItem>
+                <DropdownItem>Introduction</DropdownItem>
+                <DropdownItem>Contact information</DropdownItem>
+                <DropdownItem>Algorithm description</DropdownItem>
+                <DropdownItem>Algorithm usage</DropdownItem>
+                <DropdownItem>Algorithm implementation</DropdownItem>
+                <DropdownItem>References</DropdownItem>
+              </DropdownList>
+            </Dropdown>
+          </SubNavAction>
+
+          <SubNavAction>Cancel</SubNavAction>
+          <SubNavAction>Save</SubNavAction>
         </SubNavActions>
       </PageSubNav>
       <PageSection>
@@ -95,6 +124,8 @@ const EditPage = (props) => {
 
 EditPage.propTypes = {
   title: PropTypes.string,
+  step: PropTypes.number,
+  numSteps: PropTypes.number,
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.node),
     PropTypes.node

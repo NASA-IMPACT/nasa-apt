@@ -16,42 +16,17 @@ import PageSubNav, {
   SubNavActions,
   SubNavAction
 } from './common/PageSubNav';
-import Dropdown from './Dropdown';
+import Dropdown, {
+  DropdownTrigger,
+  DropdownList,
+  DropdownItem
+} from './Dropdown';
 import { Inner } from './common/Page';
 
 const Separator = styled.span`
   border-right: 1px solid ${themeVal('color.lightgray')};
   padding-right: ${multiply(themeVal('layout.space'), 2)};
   margin-right: ${multiply(themeVal('layout.space'), 2)};
-`;
-
-const DropdownTrigger = styled.a`
-  color: #FFF;
-  font-weight: bold;
-  padding: ${themeVal('layout.space')};
-  &::after {
-    margin-left: ${divide(themeVal('layout.space'), 2)};
-    ${collecticon('chevron-down--small')};
-  }
-`;
-
-const DropdownList = styled.ul`
-  background-color: ${themeVal('color.background')};
-  border-radius: ${divide(themeVal('layout.space'), 4)};
-  box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 4px 16px 2px rgba(0,0,0,.08);
-
-  padding: ${divide(themeVal('layout.space'), 2)} 0;
-  text-align: center;
-`;
-
-const DropdownItem = styled.li`
-  background-color: ${themeVal('color.background')};
-  cursor: pointer;
-  padding: ${divide(themeVal('layout.space'), 4)} ${themeVal('layout.space')};
-  transition: background-color .16s ease;
-  &:hover {
-    background-color: ${themeVal('color.shadow')};
-  }
 `;
 
 const AtbdTable = styled.table`

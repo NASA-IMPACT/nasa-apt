@@ -36,7 +36,11 @@ export const AlgorithmDescription = (props) => {
   } = atbdVersion;
 
   return (
-    <EditPage title="Document title">
+    <EditPage
+      title="Document title"
+      step={4}
+      numSteps={7}
+    >
       <PageTitle>Algorithm Description</PageTitle>
       <EditorSection>
         <EditorLabel>Scientifc Theory</EditorLabel>
