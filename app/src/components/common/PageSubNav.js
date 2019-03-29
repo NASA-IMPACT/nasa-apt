@@ -2,13 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { themeVal } from '../../styles/utils/general';
-import { multiply } from '../../styles/utils/math';
-import { Inner } from './Page';
 
 const SubNav = styled.div`
-  background-color: ${themeVal('color.primary')};
-  color: #FFF;
-  padding: ${multiply(themeVal('layout.space'), 3)} ${themeVal('layout.space')} ${themeVal('layout.space')};
+  display: flex;
+  flex: row nowrap;
 `;
 
 export const SubNavTitle = styled.h2`
@@ -40,10 +37,6 @@ export const SubNavAction = styled.li`
   margin-left: ${themeVal('layout.space')};
 `;
 
-const SubNavContainer = styled(Inner)`
-  align-items: flex-end;
-`;
-
 const PageSubNav = (props) => {
   const {
     children
@@ -51,9 +44,7 @@ const PageSubNav = (props) => {
 
   return (
     <SubNav>
-      <SubNavContainer>
-        {children}
-      </SubNavContainer>
+      {children}
     </SubNav>
   );
 };
