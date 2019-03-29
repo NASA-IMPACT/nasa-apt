@@ -25,7 +25,7 @@ class PageFooter extends React.PureComponent {
     return (
       <PageFoot>
         <Inner>
-          <p>Copyright goes here.</p>
+          <p>2019 © NASA. All rights reserved</p>
         </Inner>
       </PageFoot>
     );
