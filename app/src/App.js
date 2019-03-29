@@ -20,6 +20,7 @@ import PageFooter from './components/common/PageFooter';
 import AtbdList from './components/AtbdList';
 import Contacts from './components/Contacts';
 import AlgorithmDescription from './components/AlgorithmDescription';
+import Help from './components/help';
 import Sandbox from './components/sandbox';
 import UhOh from './components/uhoh';
 
@@ -53,6 +54,7 @@ const App = () => (
                   path={`/${atbdsedit}/:atbd_id/${drafts}/:atbd_version/${algorithm_description}`}
                   component={AlgorithmDescription}
                 />
+                <Route exact path='/help' component={Help} />
                 <Route exact path='/sandbox' component={Sandbox} />
                 <Route path='*' component={UhOh} />
               </Switch>
