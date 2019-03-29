@@ -1,9 +1,5 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { antialiased } from '../../styles/helpers';
-import { themeVal } from '../../styles/utils/general';
-import { multiply } from '../../styles/utils/math';
-import Constrainer from '../../styles/atoms/Constrainer';
 
 import {
   Inpage,

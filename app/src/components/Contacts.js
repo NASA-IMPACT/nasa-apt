@@ -7,7 +7,6 @@ import {
 } from './common/Inpage';
 import EditPage, {
   EditorSection,
-  EditorSectionTitle,
   EditorLabel,
   RemovableListItem
 } from './common/EditPage';

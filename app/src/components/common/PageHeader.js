@@ -54,10 +54,10 @@ class PageHeader extends React.PureComponent {
           </PageHeadline>
           <PageNav>
             <GlobalMenu>
-              <li><a href="#" title="View">Dashboard</a></li>
-              <li><a href="#" title="View">Documents</a></li>
-              <li><a href="#" title="View">Help</a></li>
-              <li><a href="#" title="View">About</a></li>
+              <li><a href="/" title="View">Dashboard</a></li>
+              <li><a href="/atbds" title="View">Documents</a></li>
+              <li><a href="/help" title="View">Help</a></li>
+              <li><a href="/about" title="View">About</a></li>
             </GlobalMenu>
           </PageNav>
         </Inner>

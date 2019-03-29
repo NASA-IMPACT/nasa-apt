@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { rgba } from 'polished';
 import { stylizeFunction } from '../../styles/utils/general';
-import { truncated, antialiased } from '../../styles/helpers';
 import { headingAlt } from '../../styles/atoms/type/heading';
-import Constrainer from '../../styles/atoms/Constrainer';
 
 import {
   InpageHeader,
@@ -27,7 +25,6 @@ import {
   algorithm_description
 } from '../../constants/routes';
 
-import PageSection from './Page';
 import { multiply } from '../../styles/utils/math';
 import { themeVal } from '../../styles/utils/general';
 import Dropdown, {
