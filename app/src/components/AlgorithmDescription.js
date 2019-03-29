@@ -6,7 +6,9 @@ import {
   createAtbdVersion,
   updateAtbdVersion,
   createAlgorithmInputVariable,
-  createAlgorithmOutputVariable
+  createAlgorithmOutputVariable,
+  deleteAlgorithmInputVariable,
+  deleteAlgorithmOutputVariable
 } from '../actions/actions';
 import FreeEditor from './FreeEditor';
 import AlgorithmVariables from './AlgorithmVariables';
@@ -23,7 +25,9 @@ const AlgorithmDescription = (props) => {
     atbdVersion = {},
     save,
     createAlgorithmInputVariable: createInputVariable,
-    createAlgorithmOutputVariable: createOutputVariable
+    createAlgorithmOutputVariable: createOutputVariable,
+    deleteAlgorithmInputVariable: deleteInputVariable,
+    deleteAlgorithmOutputVariable: deleteOutputVariable
   } = props;
 
   const {
@@ -55,6 +59,7 @@ const AlgorithmDescription = (props) => {
         <AlgorithmVariables
           schemaKey="algorithm_input_variable"
           variables={algorithm_input_variables}
+          deleteVariable={deleteInputVariable}
         />
         {atbd_id && atbd_version && (
           <AlgorithmVariableForm
@@ -71,6 +76,7 @@ const AlgorithmDescription = (props) => {
         <AlgorithmVariables
           schemaKey="algorithm_output_variable"
           variables={algorithm_output_variables}
+          deleteVariable={deleteOutputVariable}
         />
         {atbd_id && atbd_version && (
           <AlgorithmVariableForm
@@ -89,7 +95,9 @@ AlgorithmDescription.propTypes = {
   atbdVersion: PropTypes.object,
   save: PropTypes.func.isRequired,
   createAlgorithmInputVariable: PropTypes.func.isRequired,
-  createAlgorithmOutputVariable: PropTypes.func.isRequired
+  createAlgorithmOutputVariable: PropTypes.func.isRequired,
+  deleteAlgorithmInputVariable: PropTypes.func.isRequired,
+  deleteAlgorithmOutputVariable: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -101,7 +109,9 @@ const mapDispatchToProps = {
   createAtbdVersion,
   updateAtbdVersion,
   createAlgorithmInputVariable,
-  createAlgorithmOutputVariable
+  createAlgorithmOutputVariable,
+  deleteAlgorithmInputVariable,
+  deleteAlgorithmOutputVariable
 };
 
 const mergeProps = (stateProps, dispatchProps) => {
