@@ -16,42 +16,17 @@ import PageSubNav, {
   SubNavActions,
   SubNavAction
 } from './common/PageSubNav';
-import Dropdown from './Dropdown';
+import Dropdown, {
+  DropdownTrigger,
+  DropdownList,
+  DropdownItem
+} from './Dropdown';
 import { Inner } from './common/Page';
 
 const Separator = styled.span`
-  border-right: 1px solid ${themeVal('color.lightgray')};
+  border-right: 1px solid ${themeVal('color.darkgray')};
   padding-right: ${multiply(themeVal('layout.space'), 2)};
   margin-right: ${multiply(themeVal('layout.space'), 2)};
-`;
-
-const DropdownTrigger = styled.a`
-  color: #FFF;
-  font-weight: bold;
-  padding: ${themeVal('layout.space')};
-  &::after {
-    margin-left: ${divide(themeVal('layout.space'), 2)};
-    ${collecticon('chevron-down--small')};
-  }
-`;
-
-const DropdownList = styled.ul`
-  background-color: ${themeVal('color.background')};
-  border-radius: ${divide(themeVal('layout.space'), 4)};
-  box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 4px 16px 2px rgba(0,0,0,.08);
-
-  padding: ${divide(themeVal('layout.space'), 2)} 0;
-  text-align: center;
-`;
-
-const DropdownItem = styled.li`
-  background-color: ${themeVal('color.background')};
-  cursor: pointer;
-  padding: ${divide(themeVal('layout.space'), 4)} ${themeVal('layout.space')};
-  transition: background-color .16s ease;
-  &:hover {
-    background-color: ${themeVal('color.shadow')};
-  }
 `;
 
 const AtbdTable = styled.table`
@@ -64,12 +39,12 @@ const AtbdRow = styled.tr`
 `;
 
 const AtbdCell = styled.td`
-  border-bottom: 1px solid ${themeVal('color.lightgray')};
+  border-bottom: 1px solid ${themeVal('color.darkgray')};
   padding: ${themeVal('layout.space')};
 `;
 
 const AtbdHeaderCell = styled.th`
-  color: ${themeVal('color.lightgray')};
+  color: ${themeVal('color.darkgray')};
   font-weight: normal;
   padding: ${themeVal('layout.space')} ${themeVal('layout.space')} 0;
   text-align: left;
@@ -77,7 +52,7 @@ const AtbdHeaderCell = styled.th`
 `;
 
 const AtbdPublishedState = styled.span`
-  background-color: ${themeVal('color.lightgray')};
+  background-color: ${themeVal('color.darkgray')};
   border-radius: ${multiply(themeVal('layout.space'), 2)};
   color: ${themeVal('color.surface')};
   display: inline-block;
@@ -94,7 +69,7 @@ const AtbdTitle = styled.h5`
 
 const AtbdVersion = styled.span`
   text-transform: uppercase;
-  color: ${themeVal('color.lightgray')};
+  color: ${themeVal('color.darkgray')};
 `;
 
 const EditIcon = styled.span`
