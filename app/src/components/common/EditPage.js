@@ -1,8 +1,12 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-
+import { rgba } from 'polished';
+import { stylizeFunction } from '../../styles/utils/general';
+import { truncated, antialiased } from '../../styles/helpers';
+import { headingAlt } from '../../styles/atoms/type/heading';
 import Constrainer from '../../styles/atoms/Constrainer';
+
 import {
   InpageHeader,
   InpageHeaderInner,
@@ -13,7 +17,6 @@ import {
   InpageBody,
   InpageBodyInner
 } from './Inpage';
-
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import collecticon from '../../styles/collecticons';
@@ -23,12 +26,6 @@ import {
   drafts,
   algorithm_description
 } from '../../constants/routes';
-import PageSubNav, {
-  SubNavTitle,
-  SubNavTagline,
-  SubNavActions,
-  SubNavAction
-} from './PageSubNav';
 
 import PageSection from './Page';
 import { multiply } from '../../styles/utils/math';
@@ -38,6 +35,26 @@ import Dropdown, {
   DropdownList,
   DropdownItem
 } from '../Dropdown';
+
+const _rgba = stylizeFunction(rgba);
+
+const Stepper = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  line-height: 2rem;
+
+  > * {
+    display: inline-flex;
+  }
+`;
+
+const StepperLabel = styled.div`
+  ${headingAlt()}
+  font-size: 0.875rem;
+  margin: 0;
+  color: ${_rgba('#FFFFFF', 0.64)};
+  margin-right: 0.5rem;
+`;
 
 export const EditorSection = styled.div`
   background-color: ${themeVal('color.lightgray')};
@@ -158,8 +175,10 @@ const EditPage = (props) => {
             <InpageTagline>Editing document</InpageTagline>
           </InpageHeadline>
           <InpageToolbar>
-            <SubNavAction>
-              { stepCount }
+            <Stepper>
+              <StepperLabel>
+                { stepCount }
+              </StepperLabel>
               <Dropdown
                 triggerText={items[step - 1].display}
                 triggerTitle="Toggle menu options"
@@ -177,7 +196,7 @@ const EditPage = (props) => {
                   ))}
                 </DropdownList>
               </Dropdown>
-            </SubNavAction>
+            </Stepper>
             <a href='#' title='Save document'>Save</a>
             <a href='#' title='Cancel edit'>Cancel</a>
           </InpageToolbar>
