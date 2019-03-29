@@ -50,6 +50,11 @@ export class FreeEditor extends React.Component {
     this.selectTool = this.selectTool.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
     this.save = this.save.bind(this);
+    this.insertColumn = this.insertColumn.bind(this);
+    this.insertRow = this.insertRow.bind(this);
+    this.removeColumn = this.removeColumn.bind(this);
+    this.removeRow = this.removeRow.bind(this);
+    this.removeTable = this.removeTable.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -136,6 +141,36 @@ export class FreeEditor extends React.Component {
     this.editor.insertTable();
   }
 
+  insertColumn() {
+    this.onChange(
+      this.editor.insertColumn()
+    );
+  }
+
+  insertRow() {
+    this.onChange(
+      this.editor.insertRow()
+    );
+  }
+
+  removeColumn() {
+    this.onChange(
+      this.editor.removeColumn()
+    );
+  }
+
+  removeRow() {
+    this.onChange(
+      this.editor.removeRow()
+    );
+  }
+
+  removeTable() {
+    this.onChange(
+      this.editor.removeTable()
+    );
+  }
+
   /* eslint-disable-next-line */
   renderNode(props, editor, next) {
     const { attributes, node, isFocused } = props;
@@ -164,13 +199,14 @@ export class FreeEditor extends React.Component {
       onChange,
       onMouseDown,
       renderNode,
+      editor
     } = this;
+    const inTable = editor && editor.isSelectionInTable(value);
     const { className } = this.props;
     return (
       <div className={className}>
         <Toolbar>
           <ToolbarLabel>Insert</ToolbarLabel>
-
           <ToolbarAction
             id={equation}
             onClick={() => { this.selectTool(equation); }}
@@ -194,7 +230,36 @@ export class FreeEditor extends React.Component {
           >
             <ToolbarIcon icon={{ icon: 'list' }}>Table</ToolbarIcon>
           </ToolbarAction>
-
+          <ToolbarAction
+            hidden={!inTable}
+            onClick={this.insertColumn}
+          >
+           Add Column
+          </ToolbarAction>
+          <ToolbarAction
+            hidden={!inTable}
+            onClick={this.insertRow}
+          >
+            Add Row
+          </ToolbarAction>
+          <ToolbarAction
+            hidden={!inTable}
+            onClick={this.removeColumn}
+          >
+           Remove Column
+          </ToolbarAction>
+          <ToolbarAction
+            hidden={!inTable}
+            onClick={this.removeRow}
+          >
+            Remove Row
+          </ToolbarAction>
+          <ToolbarAction
+            hidden={!inTable}
+            onClick={this.removeTable}
+          >
+            Remove Table
+          </ToolbarAction>
           <ToolbarAction onClick={save}>
             Save
           </ToolbarAction>
@@ -203,7 +268,7 @@ export class FreeEditor extends React.Component {
         <EditorContainer>
           <Editor
             schema={schema}
-            ref={editor => (this.editor = editor)}
+            ref={editorValue => (this.editor = editorValue)}
             value={value}
             onChange={onChange}
             onMouseDown={onMouseDown}

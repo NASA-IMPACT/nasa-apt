@@ -7,6 +7,7 @@ export const ToolbarAction = styled('span')`
   cursor: pointer;
   background: ${props => (props.active ? themeVal('color.shadow') : null)};
   box-shadow: ${props => (props.active ? themeVal('boxShadow.inset') : null)};
+  visibility: ${props => (props.hidden ? 'hidden' : 'visible')};
   font-weight: bold;
   padding: ${themeVal('layout.space')};
   transition: background .16s ease;

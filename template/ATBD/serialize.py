@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import subprocess
 from latex import build_pdf
+from urllib.parse import urlparse
 
 debug = True
 
@@ -15,18 +16,36 @@ def toCamelCase(snake_str):
     # with the 'title' method and join them together.
     return ''.join(x.title() for x in components)
 
+def processWYSIWYGElement(node):
+    if node['type'] == 'table':
+        tableList = []
+        for row in node['nodes']:
+            tableList.append([])
+            for cell in row['nodes']:
+                for subcell in cell['nodes']:
+                    text = processWYSIWYGElement(subcell)
+                    tableList[-1].append(text)
+        columnNames = tableList.pop(0)
+        df = pd.DataFrame(tableList, columns=columnNames)
+        latexTable = df.to_latex(index=False) + '\\\\ \\\\'
+        return latexTable
+    elif node['type'] == 'table_cell':
+        return processWYSIWYGElement(node['nodes'])
+    elif node['type'] != 'image' and node['type'] != 'table':
+        text = node['nodes'][0]['leaves'][0]['text']
+        if node['type'] == 'equation':
+            text = ' \\begin{equation} ' + text + ' \\end{equation} '
+        return text
+    elif node['type'] == 'image':
+        imgRef = node['data']['src']
+        # to_return += imgRef
+
 def processWYSIWYG(element):
     if debug:
         print('element in WYSIWYG is ' + str(element))
     to_return = ''
     for node in element['document']['nodes']:
-        if node['type'] != 'image':
-            text = node['nodes'][0]['leaves'][0]['text']
-            if node['type'] == 'equation':
-                text = ' \\begin{equation} ' + text + ' \\end{equation} '
-            to_return += text
-        else:
-            to_return
+        to_return += processWYSIWYGElement(node)
     return to_return
 
 def processVarList(element):
