@@ -49,7 +49,7 @@ const Contacts = (props) => {
   return (
     <Inpage>
       <EditPage title="Document title">
-        <h2>Algorithm Description</h2>
+        <h2>Contacts</h2>
         <span>Select an existing contact</span>
         <br />
         <select onChange={event => dispatchCreateAtbdContact({
