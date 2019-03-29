@@ -164,3 +164,33 @@ export function createAlgorithmOutputVariable(variable) {
     }
   };
 }
+
+export function deleteAlgorithmInputVariable(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_input_variables?algorithm_input_variable_id=eq.${id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ALGORITHM_INPUT_VARIABLE,
+        types.DELETE_ALGORITHM_INPUT_VARIABLE_SUCCEEDED,
+        types.DELETE_ALGORITHM_INPUT_VARIABLE_FAILED
+      ]
+    }
+  };
+}
+
+export function deleteAlgorithmOutputVariable(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_output_variables?algorithm_output_variable_id=eq.${id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ALGORITHM_OUTPUT_VARIABLE,
+        types.DELETE_ALGORITHM_OUTPUT_VARIABLE_SUCCEEDED,
+        types.DELETE_ALGORITHM_OUTPUT_VARIABLE_FAILED
+      ]
+    }
+  };
+}
