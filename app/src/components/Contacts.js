@@ -2,6 +2,14 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import ContactForm from './ContactForm';
+import {
+  Inpage
+} from './common/Inpage';
+import EditPage, {
+  EditorSection,
+  EditorSectionTitle,
+  EditorLabel
+} from './common/EditPage';
 import { createAtbdContact } from '../actions/actions';
 
 const Contacts = (props) => {
@@ -39,27 +47,30 @@ const Contacts = (props) => {
     );
   });
   return (
-    <Fragment>
-      <span>Select an existing contact</span>
-      <br />
-      <select onChange={event => dispatchCreateAtbdContact({
-        atbd_id: selectedAtbd.atbd_id,
-        contact_id: event.target.value
-      })
-      }
-      >
-        {contactOptions}
-      </select>
-      <br />
-      <span>Or create a new one</span>
-      <br />
-      <ContactForm />
-      <br />
-      <span>ATBD Contacts</span>
-      <ul>
-        {atbdContactItems}
-      </ul>
-    </Fragment>
+    <Inpage>
+      <EditPage title="Document title">
+        <h2>Algorithm Description</h2>
+        <span>Select an existing contact</span>
+        <br />
+        <select onChange={event => dispatchCreateAtbdContact({
+          atbd_id: selectedAtbd.atbd_id,
+          contact_id: event.target.value
+        })
+        }
+        >
+          {contactOptions}
+        </select>
+        <br />
+        <span>Or create a new one</span>
+        <br />
+        <ContactForm />
+        <br />
+        <span>ATBD Contacts</span>
+        <ul>
+          {atbdContactItems}
+        </ul>
+      </EditPage>
+    </Inpage>
   );
 };
 

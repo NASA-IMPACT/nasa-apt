@@ -23,10 +23,6 @@ import {
   InpageBody,
   InpageBodyInner
 } from './common/Inpage';
-import PageSubNav, {
-  SubNavTitle,
-  SubNavFilter
-} from './common/PageSubNav';
 import Dropdown from './Dropdown';
 
 const VerticalDivider = styled.hr`

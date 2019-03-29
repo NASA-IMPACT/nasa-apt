@@ -2,12 +2,16 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import Constrainer from '../../styles/atoms/Constrainer';
-import PageSubNav, {
-  SubNavTitle,
-  SubNavTagline,
-  SubNavActions,
-  SubNavAction
-} from './PageSubNav';
+import {
+  InpageHeader,
+  InpageHeaderInner,
+  InpageHeadline,
+  InpageTitle,
+  InpageTagline,
+  InpageToolbar,
+  InpageBody,
+  InpageBodyInner
+} from './Inpage';
 import PageSection from './Page';
 import { multiply } from '../../styles/utils/math';
 import { themeVal } from '../../styles/utils/general';
@@ -73,22 +77,23 @@ const EditPage = (props) => {
   const { children, title } = props;
   return (
     <Fragment>
-      <PageSubNav>
-        <SubNavTitle>
-          <SubNavTagline>Editing Document</SubNavTagline>
-          { title }
-        </SubNavTitle>
-
-        <SubNavActions>
-          <SubNavAction>Search</SubNavAction>
-          <SubNavAction>Create</SubNavAction>
-        </SubNavActions>
-      </PageSubNav>
-      <PageSection>
-        <Constrainer>
+      <InpageHeader>
+        <InpageHeaderInner>
+          <InpageHeadline>
+            <InpageTitle>{ title }</InpageTitle>
+            <InpageTagline>Editing document</InpageTagline>
+          </InpageHeadline>
+          <InpageToolbar>
+            <a href='#' title='Search documents'>Search</a>
+            <a href='#' title='Create new document'>Create</a>
+          </InpageToolbar>
+        </InpageHeaderInner>
+      </InpageHeader>
+      <InpageBody>
+        <InpageBodyInner>
           { children }
-        </Constrainer>
-      </PageSection>
+        </InpageBodyInner>
+      </InpageBody>
     </Fragment>
   );
 };
