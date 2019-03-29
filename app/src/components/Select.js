@@ -1,5 +1,9 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import {
+  InputLabel,
+  InputLabelFeedback
+} from './common/EditPage';
 
 const Select = (props) => {
   const {
@@ -26,8 +30,9 @@ const Select = (props) => {
   ));
 
   return (
-    <Fragment>
-      <label htmlFor={name}>{label}</label>
+    <InputLabel>
+      {label}
+      <InputLabelFeedback>{feedback}</InputLabelFeedback>
       <select
         id={name}
         name={name}
@@ -35,8 +40,7 @@ const Select = (props) => {
       >
         {optionElements}
       </select>
-      {feedback}
-    </Fragment>
+    </InputLabel>
   );
 };
 
