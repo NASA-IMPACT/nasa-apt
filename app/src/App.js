@@ -12,7 +12,7 @@ import {
   atbds,
   atbdsedit,
   contacts,
-  versions,
+  drafts,
   algorithm_description
 } from './constants/routes';
 import PageHeader from './components/common/PageHeader';
@@ -48,7 +48,7 @@ const App = () => (
                   component={Contacts}
                 />
                 <Route
-                  path={`/${atbdsedit}/:atbd_id/${versions}/:atbd_version/${algorithm_description}`}
+                  path={`/${atbdsedit}/:atbd_id/${drafts}/:atbd_version/${algorithm_description}`}
                   component={AlgorithmDescription}
                 />
               </Switch>
