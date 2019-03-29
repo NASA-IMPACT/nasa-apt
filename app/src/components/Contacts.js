@@ -6,7 +6,8 @@ import { createAtbdContact } from '../actions/actions';
 
 import EditPage, {
   EditorSection,
-  EditorLabel
+  EditorLabel,
+  RemovableListItem
 } from './common/EditPage';
 import Select from './Select';
 
@@ -38,9 +39,9 @@ const Contacts = (props) => {
       contact_id
     } = atbdContact;
     return (
-      <li key={contact_id}>
+      <RemovableListItem key={contact_id}>
         {`${first_name} ${last_name}`}
-      </li>
+      </RemovableListItem>
     );
   });
 

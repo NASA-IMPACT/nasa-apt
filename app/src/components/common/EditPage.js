@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import Constrainer from '../../styles/atoms/constrainer';
+import collecticon from '../../styles/collecticons';
 import { atbdsedit } from '../../constants/routes';
 import PageSubNav, {
   SubNavTitle,
@@ -76,6 +77,13 @@ export const InlineInput = styled.input`
 `;
 
 export const SmallTextInput = styled(InlineInput)`
+`;
+
+export const RemovableListItem = styled.li`
+  &::before {
+    cursor: pointer;
+    ${collecticon('xmark--small')}
+  }
 `;
 
 export const InputSubmit = styled(InlineInput)`

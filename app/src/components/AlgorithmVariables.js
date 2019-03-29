@@ -1,14 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import collecticon from '../styles/collecticons';
-
-const RemovableListItem = styled.li`
-  &::before {
-    cursor: pointer;
-    ${collecticon('xmark--small')}
-  }
-`;
+import { RemovableListItem } from './common/EditPage';
 
 const AlgorithmVariables = (props) => {
   const {
