@@ -1,19 +1,37 @@
 import React, { Component } from 'react';
+import styled from 'styled-components';
+import { antialiased } from '../../styles/helpers';
+import { themeVal } from '../../styles/utils/general';
+import { multiply } from '../../styles/utils/math';
+import Constrainer from '../../styles/atoms/Constrainer';
+
+import {
+  Inpage,
+  InpageHeader,
+  InpageHeaderInner,
+  InpageHeadline,
+  InpageTitle,
+  InpageBody,
+  InpageBodyInner
+} from '../common/Inpage';
 
 class Sandbox extends Component {
   render() {
     return (
-      <div>
-        <h1>Sandbox</h1>
-        <div>
-          Ad duis labore adipisicing ut mollit aliqua fugiat consequat occaecat
-          commodo labore. Lorem qui enim commodo ullamco nisi sint ullamco.
-          Adipisicing ad veniam fugiat dolore eu incididunt commodo. Et
-          cupidatat anim occaecat incididunt exercitation consequat occaecat
-          veniam magna laboris dolore aliquip. Commodo incididunt fugiat aute
-          magna ex minim sint consectetur.
-        </div>
-      </div>
+      <Inpage>
+        <InpageHeader>
+          <InpageHeaderInner>
+            <InpageHeadline>
+              <InpageTitle>Sandbox</InpageTitle>
+            </InpageHeadline>
+          </InpageHeaderInner>
+        </InpageHeader>
+        <InpageBody>
+          <InpageBodyInner>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin imperdiet diam magna, id pulvinar libero scelerisque et. Quisque sollicitudin massa nec arcu dapibus mollis.</p>
+          </InpageBodyInner>
+        </InpageBody>
+      </Inpage>
     );
   }
 }

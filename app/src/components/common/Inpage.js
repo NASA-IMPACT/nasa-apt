@@ -21,7 +21,8 @@ export const InpageHeaderInner = styled(Constrainer)`
   display: flex;
   flex-flow: row nowrap;
   align-items: flex-end;
-  padding: ${multiply(themeVal('layout.space'), 2)} ${themeVal('layout.space')} ${themeVal('layout.space')} ${themeVal('layout.space')};
+  padding: ${themeVal('layout.space')};
+  min-height: 5rem;
 `;
 
 export const InpageHeadline = styled.div`
