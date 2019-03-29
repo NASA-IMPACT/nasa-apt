@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {
   InputLabel,
@@ -20,17 +20,15 @@ const Input = (props) => {
     feedback = error;
   }
   return (
-    <Fragment>
-      <InputLabel>
-        {label}
-        <InputLabelFeedback>{feedback}</InputLabelFeedback>
-        <SmallTextInput
-          id={name}
-          name={name}
-          {...inputProps}
-        />
-      </InputLabel>
-    </Fragment>
+    <InputLabel>
+      {label}
+      <InputLabelFeedback>{feedback}</InputLabelFeedback>
+      <SmallTextInput
+        id={name}
+        name={name}
+        {...inputProps}
+      />
+    </InputLabel>
   );
 };
 

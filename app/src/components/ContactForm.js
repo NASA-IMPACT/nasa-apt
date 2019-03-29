@@ -11,6 +11,7 @@ import transformErrors from '../schemas/transformErrors';
 import validateEmail from '../schemas/validateEmail';
 import Input from './Input';
 import Select from './Select';
+import { InputFormGroup, InputSubmit } from './common/EditPage';
 
 const validator = new jsonschema.Validator();
 const contactsSchema = addMinLength(apiSchema.definitions.contacts);
@@ -38,7 +39,7 @@ export const InnerContactForm = (props) => {
   const submitEnabled = !Object.keys(errors).length
                                   && Object.keys(touched).length;
   return (
-    <form onSubmit={handleSubmit}>
+    <InputFormGroup onSubmit={handleSubmit}>
       <Input
         name={first_name}
         label="First Name"
@@ -71,17 +72,17 @@ export const InnerContactForm = (props) => {
       />
       <Select
         name={contact_mechanism_type}
-        label="Contact Mechanism Type"
+        label="Contact Type"
         onChange={handleChange}
         onBlur={handleBlur}
         value={values[contact_mechanism_type]}
         error={errors[contact_mechanism_type]}
         touched={touched[contact_mechanism_type]}
-        options={contact_mechanism_types}
+        options={contact_mechanism_types.map(d => ({ value: d, label: d }))}
       />
       <Input
         name={contact_mechanism_value}
-        label="Contact Mechanism Value"
+        label="Contact"
         type="text"
         onChange={handleChange}
         onBlur={handleBlur}
@@ -89,13 +90,12 @@ export const InnerContactForm = (props) => {
         error={errors[contact_mechanism_value]}
         touched={touched[contact_mechanism_value]}
       />
-      <button
+      <InputSubmit
         type="submit"
         disabled={!submitEnabled}
-      >
-       Create Contact
-      </button>
-    </form>
+        value="Create Contact"
+      />
+    </InputFormGroup>
   );
 };
 

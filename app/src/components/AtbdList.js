@@ -10,6 +10,7 @@ import {
 import { themeVal } from '../styles/utils/general';
 import { multiply, divide } from '../styles/utils/math';
 import collecticon from '../styles/collecticons';
+
 import {
   Inpage,
   InpageHeader,
@@ -23,7 +24,12 @@ import {
   InpageBody,
   InpageBodyInner
 } from './common/Inpage';
-import Dropdown from './Dropdown';
+
+import Dropdown, {
+  DropdownTrigger,
+  DropdownList,
+  DropdownItem
+} from './Dropdown';
 
 const VerticalDivider = styled.hr`
   display: inline-flex;
@@ -33,34 +39,6 @@ const VerticalDivider = styled.hr`
   margin: 0 ${themeVal('layout.space')};
   background: transparent linear-gradient(90deg, #FFFFFF, #FFFFFF) 50% / ${themeVal('layout.border')} auto no-repeat;
   opacity: 0.16;
-`;
-
-const DropdownTrigger = styled.a`
-  color: #FFF;
-  font-weight: bold;
-
-  &::after {
-    margin-left: ${divide(themeVal('layout.space'), 2)};
-    ${collecticon('chevron-down--small')};
-  }
-`;
-
-const DropdownList = styled.ul`
-  background-color: ${themeVal('color.background')};
-  border-radius: ${divide(themeVal('layout.space'), 4)};
-  box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 4px 16px 2px rgba(0,0,0,.08);
-  padding: ${divide(themeVal('layout.space'), 2)} 0;
-  text-align: center;
-`;
-
-const DropdownItem = styled.li`
-  background-color: ${themeVal('color.background')};
-  cursor: pointer;
-  padding: ${divide(themeVal('layout.space'), 4)} ${themeVal('layout.space')};
-  transition: background-color .16s ease;
-  &:hover {
-    background-color: ${themeVal('color.shadow')};
-  }
 `;
 
 const AtbdTable = styled.table`
@@ -73,12 +51,12 @@ const AtbdRow = styled.tr`
 `;
 
 const AtbdCell = styled.td`
-  border-bottom: 1px solid ${themeVal('color.lightgray')};
+  border-bottom: 1px solid ${themeVal('color.darkgray')};
   padding: ${themeVal('layout.space')};
 `;
 
 const AtbdHeaderCell = styled.th`
-  color: ${themeVal('color.lightgray')};
+  color: ${themeVal('color.darkgray')};
   font-weight: normal;
   padding: ${themeVal('layout.space')} ${themeVal('layout.space')} 0;
   text-align: left;
@@ -86,7 +64,7 @@ const AtbdHeaderCell = styled.th`
 `;
 
 const AtbdPublishedState = styled.span`
-  background-color: ${themeVal('color.lightgray')};
+  background-color: ${themeVal('color.darkgray')};
   border-radius: ${multiply(themeVal('layout.space'), 2)};
   color: ${themeVal('color.surface')};
   display: inline-block;
@@ -103,7 +81,7 @@ const AtbdTitle = styled.h5`
 
 const AtbdVersion = styled.span`
   text-transform: uppercase;
-  color: ${themeVal('color.lightgray')};
+  color: ${themeVal('color.darkgray')};
 `;
 
 const EditIcon = styled.span`

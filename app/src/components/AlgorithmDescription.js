@@ -34,6 +34,7 @@ export const AlgorithmDescription = (props) => {
   } = props;
 
   const {
+    atbd,
     atbd_id,
     atbd_version,
     scientific_theory = editorBlankDocument,
@@ -41,9 +42,16 @@ export const AlgorithmDescription = (props) => {
     algorithm_output_variables = []
   } = atbdVersion;
 
+  const title = atbd && atbd.title;
+
   return (
     <Inpage>
-      <EditPage title="Document title">
+      <EditPage
+        title={title || ''}
+        id={atbd_id}
+        step={4}
+        numSteps={7}
+      >
         <h2>Algorithm Description</h2>
         <EditorSection>
           <EditorLabel>Scientifc Theory</EditorLabel>
@@ -56,7 +64,6 @@ export const AlgorithmDescription = (props) => {
             }}
           />
         </EditorSection>
-
         <EditorSection>
           <EditorLabel>Scientifc Theory Assumptions</EditorLabel>
           <EditorSectionTitle>Algorithm Input Variables</EditorSectionTitle>

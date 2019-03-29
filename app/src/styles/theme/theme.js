@@ -13,7 +13,7 @@ color = {
   shadow: rgba(color.base, 0.08),
   lightgray: '#EEE',
   gray: '#DBDBDB',
-  darkgray: '#444',
+  darkgray: '#666',
   link: color.primary,
   danger: '#d85d3f',
   success: '#216869',

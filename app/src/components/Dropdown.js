@@ -3,6 +3,37 @@ import PropTypes from 'prop-types';
 import TetherComponent from 'react-tether';
 import { CSSTransition } from 'react-transition-group';
 import styled from 'styled-components';
+import { themeVal } from '../styles/utils/general';
+import { divide } from '../styles/utils/math';
+import collecticon from '../styles/collecticons';
+
+export const DropdownTrigger = styled.a`
+  color: #FFF;
+  font-weight: bold;
+  &::after {
+    margin-left: ${divide(themeVal('layout.space'), 2)};
+    ${collecticon('chevron-down--small')};
+  }
+`;
+
+export const DropdownList = styled.ul`
+  background-color: ${themeVal('color.background')};
+  border-radius: ${divide(themeVal('layout.space'), 4)};
+  box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 4px 16px 2px rgba(0,0,0,.08);
+
+  padding: ${divide(themeVal('layout.space'), 2)} 0;
+  text-align: center;
+`;
+
+export const DropdownItem = styled.li`
+  background-color: ${themeVal('color.background')};
+  cursor: pointer;
+  padding: ${divide(themeVal('layout.space'), 4)} ${themeVal('layout.space')};
+  transition: background-color .16s ease;
+  &:hover {
+    background-color: ${themeVal('color.shadow')};
+  }
+`;
 
 const TransitionWrap = styled.div`
   transition: opacity 0.16s ease;

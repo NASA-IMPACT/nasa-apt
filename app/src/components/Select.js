@@ -1,5 +1,17 @@
-import React, { Fragment } from 'react';
+import React from 'react';
+import ReactSelect from 'react-select';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
+import {
+  InputLabel,
+  InputLabelFeedback
+} from './common/EditPage';
+
+const SelectContainer = styled.div`
+  > * {
+    margin-top: 0.5rem;
+  }
+`;
 
 const Select = (props) => {
   const {
@@ -8,35 +20,31 @@ const Select = (props) => {
     label,
     name,
     options,
-    ...inputProps
+    value,
+    onChange,
+    onBlur
   } = props;
 
-  let feedback = <div />;
+  let feedback = null;
   if (Boolean(error) && touched) {
-    feedback = <div>{error}</div>;
+    feedback = error;
   }
-
-  const optionElements = options.map(option => (
-    <option
-      key={option}
-      value={option}
-    >
-      {option}
-    </option>
-  ));
+  const activeValue = options.find(d => d.value === value);
 
   return (
-    <Fragment>
-      <label htmlFor={name}>{label}</label>
-      <select
-        id={name}
-        name={name}
-        {...inputProps}
-      >
-        {optionElements}
-      </select>
-      {feedback}
-    </Fragment>
+    <InputLabel>
+      {label}
+      <InputLabelFeedback>{feedback}</InputLabelFeedback>
+      <SelectContainer>
+        <ReactSelect
+          options={options}
+          name={name}
+          value={activeValue}
+          onChange={e => onChange && onChange({ target: { name, value: e.value } })}
+          onBlur={() => onBlur && onBlur(({ target: { name } }))}
+        />
+      </SelectContainer>
+    </InputLabel>
   );
 };
 
@@ -45,6 +53,9 @@ Select.propTypes = {
   name: PropTypes.string.isRequired,
   options: PropTypes.array.isRequired,
   error: PropTypes.string,
-  touched: PropTypes.bool
+  touched: PropTypes.bool,
+  value: PropTypes.string,
+  onChange: PropTypes.func,
+  onBlur: PropTypes.func
 };
 export default Select;
