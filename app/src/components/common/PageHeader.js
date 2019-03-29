@@ -7,7 +7,6 @@ import { Inner } from './Page';
 
 const PageHead = styled.header`
   ${antialiased()}
-  padding: ${themeVal('layout.space')};
   background-color: ${themeVal('color.primary')};
   color: #FFF;
 `;
@@ -16,7 +15,7 @@ const PageHeadline = styled.div`
 
 `;
 
-const AppTitle = styled.h1`
+const PageTitle = styled.h1`
   font-size: 1.5rem;
   line-height: 1;
   text-transform: uppercase;
@@ -51,12 +50,12 @@ class PageHeader extends React.PureComponent {
       <PageHead>
         <Inner>
           <PageHeadline>
-            <AppTitle as="h1" variation="base">NASA APT</AppTitle>
+            <PageTitle>NASA APT</PageTitle>
           </PageHeadline>
           <PageNav>
             <GlobalMenu>
               <li><a href="#" title="View">Dashboard</a></li>
-              <li><a href="#" title="View">Projects</a></li>
+              <li><a href="#" title="View">Documents</a></li>
               <li><a href="#" title="View">Help</a></li>
               <li><a href="#" title="View">About</a></li>
             </GlobalMenu>

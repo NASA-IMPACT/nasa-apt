@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import Constrainer from '../../styles/atoms/constrainer';
+import Constrainer from '../../styles/atoms/Constrainer';
 import PageSubNav, {
   SubNavTitle,
   SubNavTagline,
