@@ -38,7 +38,7 @@ const AlgorithmVariables = (props) => {
 
     return (
       <li key={id}>
-        <Variable>{`${name} ${long_name} ${unit}`}</Variable>
+        <Variable>{`${name} || ${long_name} || ${unit}`}</Variable>
         <DeleteIcon onClick={() => deleteVariable(id)} />
       </li>
     );
