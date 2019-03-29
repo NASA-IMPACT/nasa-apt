@@ -24,7 +24,7 @@ import Dropdown, {
 import { Inner } from './common/Page';
 
 const Separator = styled.span`
-  border-right: 1px solid ${themeVal('color.lightgray')};
+  border-right: 1px solid ${themeVal('color.darkgray')};
   padding-right: ${multiply(themeVal('layout.space'), 2)};
   margin-right: ${multiply(themeVal('layout.space'), 2)};
 `;
@@ -39,12 +39,12 @@ const AtbdRow = styled.tr`
 `;
 
 const AtbdCell = styled.td`
-  border-bottom: 1px solid ${themeVal('color.lightgray')};
+  border-bottom: 1px solid ${themeVal('color.darkgray')};
   padding: ${themeVal('layout.space')};
 `;
 
 const AtbdHeaderCell = styled.th`
-  color: ${themeVal('color.lightgray')};
+  color: ${themeVal('color.darkgray')};
   font-weight: normal;
   padding: ${themeVal('layout.space')} ${themeVal('layout.space')} 0;
   text-align: left;
@@ -52,7 +52,7 @@ const AtbdHeaderCell = styled.th`
 `;
 
 const AtbdPublishedState = styled.span`
-  background-color: ${themeVal('color.lightgray')};
+  background-color: ${themeVal('color.darkgray')};
   border-radius: ${multiply(themeVal('layout.space'), 2)};
   color: ${themeVal('color.surface')};
   display: inline-block;
@@ -69,7 +69,7 @@ const AtbdTitle = styled.h5`
 
 const AtbdVersion = styled.span`
   text-transform: uppercase;
-  color: ${themeVal('color.lightgray')};
+  color: ${themeVal('color.darkgray')};
 `;
 
 const EditIcon = styled.span`

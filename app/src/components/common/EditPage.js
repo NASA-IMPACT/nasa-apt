@@ -1,7 +1,10 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { push } from 'connected-react-router';
+import { connect } from 'react-redux';
 import Constrainer from '../../styles/atoms/constrainer';
+import { atbdsedit } from '../../constants/routes';
 import PageSubNav, {
   SubNavTitle,
   SubNavTagline,
@@ -24,10 +27,10 @@ export const EditorSection = styled.div`
 `;
 
 export const EditorSectionTitle = styled.h4`
-font-size: 1em;
-font-weight: bold;
-line-height: 2;
-margin: 0;
+  font-size: 1em;
+  font-weight: bold;
+  line-height: 2;
+  margin: 0;
 `;
 
 export const EditorLabel = styled.label`
@@ -66,7 +69,7 @@ export const SmallTextInput = styled.input`
 
 export const InputSubmit = styled.input`
   background: #FFF;
-  border: 1px solid $lightgray;
+  border: 1px solid ${themeVal('color.lightgray')};
   box-shadow: ${themeVal('boxShadow.input')};
   font-size: 0.875rem;
   font-weight: bold;
@@ -74,13 +77,46 @@ export const InputSubmit = styled.input`
   padding: ${multiply(themeVal('layout.space'), 0.5)} ${multiply(themeVal('layout.space'), 2)};
 `;
 
+const Item = styled(DropdownItem)`
+  border-top: 1px solid ${themeVal('color.lightgray')};
+  font-weight: bold;
+  padding: ${multiply(themeVal('layout.space'), 0.5)} ${themeVal('layout.space')};
+  text-align: left;
+`;
+
+const ItemCount = styled.span`
+  align-items: center;
+  color: #FFF;
+  background-color: ${themeVal('color.darkgray')};
+  border-radius: ${multiply(themeVal('layout.space'), 1.2)};
+  display: inline-flex;
+  justify-content: center;
+  height: ${multiply(themeVal('layout.space'), 2)};
+  margin-right: ${multiply(themeVal('layout.space'), 0.5)};
+  width: ${multiply(themeVal('layout.space'), 2)};
+`;
+
 const EditPage = (props) => {
   const {
-    children,
+    title,
     step,
     numSteps,
-    title
+    id,
+    children
   } = props;
+
+  const items = [
+    { display: 'Identifying information' },
+    { display: 'Introduction' },
+    { display: 'Contact information', link: `/${atbdsedit}/${id}/contacts` },
+    { display: 'Algorithm description' },
+    { display: 'Algorithm usage' },
+    { display: 'Algorithm implementation' },
+    { display: 'References' }
+  ];
+
+  const stepCount = `Step ${step} of ${numSteps}`;
+
   return (
     <Fragment>
       <PageSubNav>
@@ -91,20 +127,22 @@ const EditPage = (props) => {
 
         <SubNavActions>
           <SubNavAction>
-            Step {step} of {numSteps}
+            { stepCount }
             <Dropdown
-              triggerText=""
+              triggerText={items[step - 1].display}
               triggerTitle="Toggle menu options"
               triggerElement={DropdownTrigger}
             >
-              <DropdownList role="menu">
-                <DropdownItem>Identifying information</DropdownItem>
-                <DropdownItem>Introduction</DropdownItem>
-                <DropdownItem>Contact information</DropdownItem>
-                <DropdownItem>Algorithm description</DropdownItem>
-                <DropdownItem>Algorithm usage</DropdownItem>
-                <DropdownItem>Algorithm implementation</DropdownItem>
-                <DropdownItem>References</DropdownItem>
+              <DropdownList>
+                {items.map((d, i) => (
+                  <Item
+                    key={d.display}
+                    onClick={() => d.link && props.push(d.link)}
+                  >
+                    <ItemCount>{i + 1}</ItemCount>
+                    {d.display}
+                  </Item>
+                ))}
               </DropdownList>
             </Dropdown>
           </SubNavAction>
@@ -123,13 +161,18 @@ const EditPage = (props) => {
 };
 
 EditPage.propTypes = {
-  title: PropTypes.string,
+  title: PropTypes.string.isRequired,
   step: PropTypes.number,
   numSteps: PropTypes.number,
+  id: PropTypes.number,
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.node),
     PropTypes.node
-  ])
+  ]),
+  push: PropTypes.func,
 };
 
-export default EditPage;
+const mapStateToProps = () => ({});
+const mapDispatch = { push };
+
+export default connect(mapStateToProps, mapDispatch)(EditPage);
