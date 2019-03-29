@@ -78,7 +78,7 @@ export const InnerContactForm = (props) => {
         value={values[contact_mechanism_type]}
         error={errors[contact_mechanism_type]}
         touched={touched[contact_mechanism_type]}
-        options={contact_mechanism_types}
+        options={contact_mechanism_types.map(d => ({ value: d, label: d }))}
       />
       <Input
         name={contact_mechanism_value}

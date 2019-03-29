@@ -6,9 +6,9 @@ import { createAtbdContact } from '../actions/actions';
 
 import EditPage, {
   EditorSection,
-  EditorSectionTitle,
   EditorLabel
 } from './common/EditPage';
+import Select from './Select';
 
 const Contacts = (props) => {
   const {
@@ -21,21 +21,16 @@ const Contacts = (props) => {
     title
   } = selectedAtbd;
   const atbdContacts = selectedAtbd.contacts || [];
+
   const contactOptions = contacts.map((contact) => {
     const {
       first_name,
       last_name,
       contact_id
     } = contact;
-    return (
-      <option
-        key={contact_id}
-        value={contact_id}
-      >
-        {`${first_name} ${last_name}`}
-      </option>
-    );
+    return { label: `${first_name} ${last_name}`, value: contact_id };
   });
+
   const atbdContactItems = atbdContacts.map((atbdContact) => {
     const {
       first_name,
@@ -58,15 +53,15 @@ const Contacts = (props) => {
     >
       <EditorSection>
         <EditorLabel>Existing contacts</EditorLabel>
-        <EditorSectionTitle>Select an existing contact</EditorSectionTitle>
-        <select onChange={event => dispatchCreateAtbdContact({
-          atbd_id: selectedAtbd.atbd_id,
-          contact_id: event.target.value
-        })
-        }
-        >
-          {contactOptions}
-        </select>
+        <Select
+          name="existing-contact"
+          label="Select an existing contact"
+          options={contactOptions}
+          onChange={e => dispatchCreateAtbdContact({
+            atbd_id: selectedAtbd.atbd_id,
+            contact_id: e.target.value
+          })}
+        />
       </EditorSection>
 
       <EditorSection>

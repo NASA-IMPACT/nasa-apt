@@ -44,11 +44,12 @@ export const EditorLabel = styled.label`
 `;
 
 export const InputFormGroup = styled.form`
-  margin-top: ${themeVal('layout.space')};
+  align-items: end;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 1rem;
   justify-content: space-between;
+  margin-top: ${themeVal('layout.space')};
 `;
 
 export const InputLabel = styled.label`
@@ -63,22 +64,23 @@ export const InputLabelFeedback = styled.span`
   margin-left: ${multiply(themeVal('layout.space'), 0.25)};
 `;
 
-export const SmallTextInput = styled.input`
+export const InlineInput = styled.input`
+  background: #FFF;
+  border: 1px solid ${themeVal('color.gray')};
+  border-radius: 4px;
   font-family: inherit;
   margin: ${multiply(themeVal('layout.space'), 0.5)} 0 0;
-  padding: ${multiply(themeVal('layout.space'), 0.5)};
+  height: ${multiply(themeVal('layout.space'), 2.4)}
+  padding: 0 ${multiply(themeVal('layout.space'), 0.5)};
   width: 100%;
 `;
 
-export const InputSubmit = styled.input`
-  align-self: end;
-  background: #FFF;
-  border: 1px solid ${themeVal('color.lightgray')};
+export const SmallTextInput = styled(InlineInput)`
+`;
+
+export const InputSubmit = styled(InlineInput)`
   box-shadow: ${themeVal('boxShadow.input')};
-  font-size: 0.875rem;
   font-weight: bold;
-  margin: ${themeVal('layout.space')} 0 0;
-  padding: ${multiply(themeVal('layout.space'), 0.75)} ${multiply(themeVal('layout.space'), 2)};
 `;
 
 const Item = styled(DropdownItem)`
