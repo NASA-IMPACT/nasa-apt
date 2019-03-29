@@ -4,7 +4,7 @@ import {
   atbds,
   atbdsedit,
   contacts,
-  versions,
+  drafts,
   algorithm_description
 } from '../constants/routes';
 
@@ -21,7 +21,7 @@ const locationMiddleware = store => next => async (action) => {
         store.dispatch(actions.fetchAtbd(pathComponents[2]));
         store.dispatch(actions.fetchContacts());
       }
-      if (pathComponents[3] === versions) {
+      if (pathComponents[3] === drafts) {
         if (pathComponents[5] === algorithm_description) {
           store.dispatch(actions.fetchAtbdVersion({
             atbd_id: pathComponents[2],
