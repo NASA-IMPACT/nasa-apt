@@ -5,7 +5,12 @@ import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import Constrainer from '../../styles/atoms/constrainer';
 import collecticon from '../../styles/collecticons';
-import { atbdsedit } from '../../constants/routes';
+import {
+  atbdsedit,
+  contacts,
+  drafts,
+  algorithm_description
+} from '../../constants/routes';
 import PageSubNav, {
   SubNavTitle,
   SubNavTagline,
@@ -122,8 +127,8 @@ const EditPage = (props) => {
   const items = [
     { display: 'Identifying information' },
     { display: 'Introduction' },
-    { display: 'Contact information', link: `/${atbdsedit}/${id}/contacts` },
-    { display: 'Algorithm description' },
+    { display: 'Contact information', link: `/${atbdsedit}/${id}/${contacts}` },
+    { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/1/${algorithm_description}` },
     { display: 'Algorithm usage' },
     { display: 'Algorithm implementation' },
     { display: 'References' }
