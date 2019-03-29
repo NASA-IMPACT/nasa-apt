@@ -15,25 +15,37 @@ import {
   InpageBodyInner
 } from '../common/Inpage';
 
-class Sandbox extends Component {
+const InpageBodyInnerUhOh = styled(InpageBodyInner)`
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  text-align: center;
+`;
+
+class UhOh extends Component {
   render() {
     return (
       <Inpage>
         <InpageHeader>
           <InpageHeaderInner>
             <InpageHeadline>
-              <InpageTitle>Sandbox</InpageTitle>
+              <InpageTitle>Page not found</InpageTitle>
             </InpageHeadline>
           </InpageHeaderInner>
         </InpageHeader>
         <InpageBody>
-          <InpageBodyInner>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin imperdiet diam magna, id pulvinar libero scelerisque et. Quisque sollicitudin massa nec arcu dapibus mollis.</p>
-          </InpageBodyInner>
+          <InpageBodyInnerUhOh>
+            <div>
+              <p>We were not able to find the page you are looking for. It may have been archived or removed.</p>
+              <p><a href='/' title='View page'>Visit the homepage</a>.</p>
+            </div>
+          </InpageBodyInnerUhOh>
         </InpageBody>
       </Inpage>
     );
   }
 }
 
-export default Sandbox;
+export default UhOh;

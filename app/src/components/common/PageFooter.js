@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { themeVal } from '../../styles/utils/general';
-import Constrainer from '../../styles/atoms/constrainer';
+import Constrainer from '../../styles/atoms/Constrainer';
 
 const PageFoot = styled.footer`
   padding: ${themeVal('layout.space')};
@@ -25,7 +25,7 @@ class PageFooter extends React.PureComponent {
     return (
       <PageFoot>
         <Inner>
-          <p>Copyright goes here.</p>
+          <p>2019 © NASA. All rights reserved</p>
         </Inner>
       </PageFoot>
     );
