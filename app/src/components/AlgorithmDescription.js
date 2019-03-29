@@ -17,8 +17,9 @@ import EditPage, {
   EditorSectionTitle,
   EditorLabel
 } from './common/EditPage';
+import editorBlankDocument from './editorBlankDocument';
 
-const AlgorithmDescription = (props) => {
+export const AlgorithmDescription = (props) => {
   const {
     atbdVersion = {},
     save,
@@ -29,7 +30,7 @@ const AlgorithmDescription = (props) => {
   const {
     atbd_id,
     atbd_version,
-    scientific_theory = {},
+    scientific_theory = editorBlankDocument,
     algorithm_input_variables = [],
     algorithm_output_variables = []
   } = atbdVersion;
