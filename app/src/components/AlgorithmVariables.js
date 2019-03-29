@@ -1,5 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
+import collecticon from '../styles/collecticons';
+
+const RemovableListItem = styled.li`
+  &::before {
+    cursor: pointer;
+    ${collecticon('xmark--small')}
+  }
+`;
 
 const AlgorithmVariables = (props) => {
   const {
@@ -16,9 +25,9 @@ const AlgorithmVariables = (props) => {
     } = variable;
 
     return (
-      <li key={id}>
+      <RemovableListItem key={id}>
         {`${name} ${long_name} ${unit}`}
-      </li>
+      </RemovableListItem>
     );
   });
 
