@@ -10,7 +10,6 @@ import collecticon from '../styles/collecticons';
 export const DropdownTrigger = styled.a`
   color: #FFF;
   font-weight: bold;
-  padding: ${themeVal('layout.space')};
   &::after {
     margin-left: ${divide(themeVal('layout.space'), 2)};
     ${collecticon('chevron-down--small')};

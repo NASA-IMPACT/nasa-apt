@@ -22,3 +22,9 @@ export const listReset = () => css`
   padding: 0;
   list-style: none;
 `;
+
+export const truncated = () => css`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;

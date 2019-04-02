@@ -16,9 +16,9 @@
  *
  * @param {string} op Math operation to perform. Can be + - * /
  */
-const createMathOperation = op => (a, b) => (...args) => {
-  a = typeof a === 'function' ? a(...args) : a;
-  b = typeof b === 'function' ? b(...args) : b;
+const createMathOperation = op => (inputA, inputB) => (...args) => {
+  const a = typeof inputA === 'function' ? inputA(...args) : inputA;
+  const b = typeof inputB === 'function' ? inputB(...args) : inputB;
 
   // The final unit is driven by the `a` value.
   const unit = (`${a}`).match(/[0-9]*(?:.[0-9]+)?(.*)/)[1];

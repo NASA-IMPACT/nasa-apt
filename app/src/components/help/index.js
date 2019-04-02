@@ -10,20 +10,20 @@ import {
   InpageBodyInner
 } from '../common/Inpage';
 
-class Sandbox extends Component {
+class Help extends Component {
   render() {
     return (
       <Inpage>
         <InpageHeader>
           <InpageHeaderInner>
             <InpageHeadline>
-              <InpageTitle>Sandbox</InpageTitle>
+              <InpageTitle>Help</InpageTitle>
             </InpageHeadline>
           </InpageHeaderInner>
         </InpageHeader>
         <InpageBody>
           <InpageBodyInner>
-            <p>Lorem ipsum dolor sit amet, <strong>consectetur</strong> adipiscing elit. Proin imperdiet diam magna, id pulvinar libero scelerisque et. Quisque sollicitudin massa nec arcu dapibus mollis.</p>
+            <p>Help content will appear here.</p>
           </InpageBodyInner>
         </InpageBody>
       </Inpage>
@@ -31,4 +31,4 @@ class Sandbox extends Component {
   }
 }
 
-export default Sandbox;
+export default Help;

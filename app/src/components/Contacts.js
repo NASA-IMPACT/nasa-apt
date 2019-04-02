@@ -2,13 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import ContactForm from './ContactForm';
-import { createAtbdContact } from '../actions/actions';
-
+import {
+  Inpage
+} from './common/Inpage';
 import EditPage, {
   EditorSection,
   EditorLabel,
   RemovableListItem
 } from './common/EditPage';
+import { createAtbdContact } from '../actions/actions';
+
 import Select from './Select';
 
 const Contacts = (props) => {
@@ -46,37 +49,40 @@ const Contacts = (props) => {
   });
 
   return (
-    <EditPage
-      title={title || ''}
-      id={atbd_id}
-      step={3}
-      numSteps={7}
-    >
-      <EditorSection>
-        <EditorLabel>Existing contacts</EditorLabel>
-        <Select
-          name="existing-contact"
-          label="Select an existing contact"
-          options={contactOptions}
-          onChange={e => dispatchCreateAtbdContact({
-            atbd_id: selectedAtbd.atbd_id,
-            contact_id: e.target.value
-          })}
-        />
-      </EditorSection>
+    <Inpage>
+      <EditPage
+        title={title || ''}
+        id={atbd_id}
+        step={3}
+        numSteps={7}
+      >
+        <h2>Contacts</h2>
+        <EditorSection>
+          <EditorLabel>Existing contacts</EditorLabel>
+          <Select
+            name="existing-contact"
+            label="Select an existing contact"
+            options={contactOptions}
+            onChange={e => dispatchCreateAtbdContact({
+              atbd_id: selectedAtbd.atbd_id,
+              contact_id: e.target.value
+            })}
+          />
+        </EditorSection>
 
-      <EditorSection>
-        <EditorLabel>Create new contacts</EditorLabel>
-        <ContactForm />
-      </EditorSection>
+        <EditorSection>
+          <EditorLabel>Create new contacts</EditorLabel>
+          <ContactForm />
+        </EditorSection>
 
-      <EditorSection>
-        <EditorLabel>ATBD contacts</EditorLabel>
-        <ul>
-          {atbdContactItems}
-        </ul>
-      </EditorSection>
-    </EditPage>
+        <EditorSection>
+          <EditorLabel>ATBD contacts</EditorLabel>
+          <ul>
+            {atbdContactItems}
+          </ul>
+        </EditorSection>
+      </EditPage>
+    </Inpage>
   );
 };
 

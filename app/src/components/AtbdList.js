@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
@@ -10,23 +10,35 @@ import {
 import { themeVal } from '../styles/utils/general';
 import { multiply, divide } from '../styles/utils/math';
 import collecticon from '../styles/collecticons';
-import PageSubNav, {
-  SubNavTitle,
-  SubNavFilter,
-  SubNavActions,
-  SubNavAction
-} from './common/PageSubNav';
+
+import {
+  Inpage,
+  InpageHeader,
+  InpageHeaderInner,
+  InpageHeadline,
+  InpageTitle,
+  InpageFilters,
+  FilterItem,
+  FilterLabel,
+  InpageToolbar,
+  InpageBody,
+  InpageBodyInner
+} from './common/Inpage';
+
 import Dropdown, {
   DropdownTrigger,
   DropdownList,
   DropdownItem
 } from './Dropdown';
-import { Inner } from './common/Page';
 
-const Separator = styled.span`
-  border-right: 1px solid ${themeVal('color.darkgray')};
-  padding-right: ${multiply(themeVal('layout.space'), 2)};
-  margin-right: ${multiply(themeVal('layout.space'), 2)};
+const VerticalDivider = styled.hr`
+  display: inline-flex;
+  border: 0;
+  width: ${divide(themeVal('layout.space'), 2)};
+  height: 2rem;
+  margin: 0 ${themeVal('layout.space')};
+  background: transparent linear-gradient(90deg, #FFFFFF, #FFFFFF) 50% / ${themeVal('layout.border')} auto no-repeat;
+  opacity: 0.16;
 `;
 
 const AtbdTable = styled.table`
@@ -99,87 +111,96 @@ const AtbdList = (props) => {
     );
   });
   return (
-    <Fragment>
-      <PageSubNav>
-        <Separator><SubNavTitle>Documents</SubNavTitle></Separator>
+    <Inpage>
+      <InpageHeader>
+        <InpageHeaderInner>
+          <InpageHeadline>
+            <InpageTitle>Documents</InpageTitle>
+          </InpageHeadline>
+          <VerticalDivider />
 
-        <SubNavFilter>
-          Status
-          <Dropdown
-            triggerText="All"
-            triggerTitle="Toggle menu options"
-            triggerElement={DropdownTrigger}
-          >
-            <DropdownList role="menu">
-              <DropdownItem>All</DropdownItem>
-              <DropdownItem>Published</DropdownItem>
-              <DropdownItem>Draft</DropdownItem>
-            </DropdownList>
-          </Dropdown>
-        </SubNavFilter>
+          <InpageFilters>
+            <FilterItem>
+              <FilterLabel>Status</FilterLabel>
+              <Dropdown
+                triggerText="All"
+                triggerTitle="Toggle menu options"
+                triggerElement={DropdownTrigger}
+              >
+                <DropdownList role="menu">
+                  <DropdownItem>All</DropdownItem>
+                  <DropdownItem>Published</DropdownItem>
+                  <DropdownItem>Draft</DropdownItem>
+                </DropdownList>
+              </Dropdown>
+            </FilterItem>
 
-        <SubNavFilter>
-          Authors
-          <Dropdown
-            triggerText="All"
-            triggerTitle="Toggle menu options"
-            triggerElement={DropdownTrigger}
-          >
-            <DropdownList role="menu">
-              <DropdownItem>All</DropdownItem>
-            </DropdownList>
-          </Dropdown>
-        </SubNavFilter>
+            <FilterItem>
+              <FilterLabel>Authors</FilterLabel>
+              <Dropdown
+                triggerText="All"
+                triggerTitle="Toggle menu options"
+                triggerElement={DropdownTrigger}
+              >
+                <DropdownList role="menu">
+                  <DropdownItem>All</DropdownItem>
+                </DropdownList>
+              </Dropdown>
+            </FilterItem>
 
-        <SubNavFilter>
-          Topics
-          <Dropdown
-            triggerText="All"
-            triggerTitle="Toggle menu options"
-            triggerElement={DropdownTrigger}
-          >
-            <DropdownList role="menu">
-              <DropdownItem>All</DropdownItem>
-            </DropdownList>
-          </Dropdown>
-        </SubNavFilter>
+            <FilterItem>
+              <FilterLabel>Topics</FilterLabel>
+              <Dropdown
+                triggerText="All"
+                triggerTitle="Toggle menu options"
+                triggerElement={DropdownTrigger}
+              >
+                <DropdownList role="menu">
+                  <DropdownItem>All</DropdownItem>
+                </DropdownList>
+              </Dropdown>
+            </FilterItem>
 
-        <SubNavFilter>
-          Sort
-          <Dropdown
-            triggerText="Newest"
-            triggerTitle="Toggle menu options"
-            triggerElement={DropdownTrigger}
-          >
-            <DropdownList role="menu">
-              <DropdownItem>Newest</DropdownItem>
-            </DropdownList>
-          </Dropdown>
-        </SubNavFilter>
+            <FilterItem>
+              <FilterLabel>Sort</FilterLabel>
+              <Dropdown
+                triggerText="Newest"
+                triggerTitle="Toggle menu options"
+                triggerElement={DropdownTrigger}
+              >
+                <DropdownList role="menu">
+                  <DropdownItem>Newest</DropdownItem>
+                </DropdownList>
+              </Dropdown>
+            </FilterItem>
+          </InpageFilters>
 
-        <SubNavActions>
-          <SubNavAction>Search</SubNavAction>
-          <SubNavAction>Create</SubNavAction>
-        </SubNavActions>
-      </PageSubNav>
+          <InpageToolbar>
+            <a href="#" title="Search documents">Search</a>
+            <a href="#" title="Create new document">Create</a>
+          </InpageToolbar>
 
-      <Inner>
-        <AtbdTable>
-          <thead>
-            <tr>
-              <AtbdHeaderCell scope="col" />
-              <AtbdHeaderCell scope="col" />
-              <AtbdHeaderCell scope="col">Last Edit</AtbdHeaderCell>
-              <AtbdHeaderCell scope="col">Authors</AtbdHeaderCell>
-              <AtbdHeaderCell scope="col">Topics</AtbdHeaderCell>
-            </tr>
-          </thead>
-          <tbody>
-            {atbdElements}
-          </tbody>
-        </AtbdTable>
-      </Inner>
-    </Fragment>
+        </InpageHeaderInner>
+      </InpageHeader>
+      <InpageBody>
+        <InpageBodyInner>
+          <AtbdTable>
+            <thead>
+              <tr>
+                <AtbdHeaderCell scope="col" />
+                <AtbdHeaderCell scope="col" />
+                <AtbdHeaderCell scope="col">Last Edit</AtbdHeaderCell>
+                <AtbdHeaderCell scope="col">Authors</AtbdHeaderCell>
+                <AtbdHeaderCell scope="col">Topics</AtbdHeaderCell>
+              </tr>
+            </thead>
+            <tbody>
+              {atbdElements}
+            </tbody>
+          </AtbdTable>
+        </InpageBodyInner>
+      </InpageBody>
+    </Inpage>
   );
 };
 

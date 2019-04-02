@@ -1,9 +1,5 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { antialiased } from '../../styles/helpers';
-import { themeVal } from '../../styles/utils/general';
-import { multiply } from '../../styles/utils/math';
-import Constrainer from '../../styles/atoms/Constrainer';
 
 import {
   Inpage,
@@ -39,7 +35,7 @@ class UhOh extends Component {
           <InpageBodyInnerUhOh>
             <div>
               <p>We were not able to find the page you are looking for. It may have been archived or removed.</p>
-              <p><a href='/' title='View page'>Visit the homepage</a>.</p>
+              <p>hello this is <a href="/" title="View page">Visit the homepage</a>.</p>
             </div>
           </InpageBodyInnerUhOh>
         </InpageBody>

@@ -1,30 +1,58 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
-import Constrainer from '../../styles/atoms/constrainer';
+
+import styled from 'styled-components';
+import { rgba } from 'polished';
+import { themeVal, stylizeFunction } from '../../styles/utils/general';
+import { multiply } from '../../styles/utils/math';
+import { headingAlt } from '../../styles/atoms/type/heading';
 import collecticon from '../../styles/collecticons';
+
+import {
+  InpageHeader,
+  InpageHeaderInner,
+  InpageHeadline,
+  InpageTitle,
+  InpageTagline,
+  InpageToolbar,
+  InpageBody,
+  InpageBodyInner
+} from './Inpage';
+
 import {
   atbdsedit,
   contacts,
   drafts,
   algorithm_description
 } from '../../constants/routes';
-import PageSubNav, {
-  SubNavTitle,
-  SubNavTagline,
-  SubNavActions,
-  SubNavAction
-} from './PageSubNav';
-import PageSection from './Page';
-import { multiply } from '../../styles/utils/math';
-import { themeVal } from '../../styles/utils/general';
+
 import Dropdown, {
   DropdownTrigger,
   DropdownList,
   DropdownItem
 } from '../Dropdown';
+
+const _rgba = stylizeFunction(rgba);
+
+const Stepper = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  line-height: 2rem;
+
+  > * {
+    display: inline-flex;
+  }
+`;
+
+const StepperLabel = styled.div`
+  ${headingAlt()}
+  font-size: 0.875rem;
+  margin: 0;
+  color: ${_rgba('#FFFFFF', 0.64)};
+  margin-right: 0.5rem;
+`;
 
 export const EditorSection = styled.div`
   background-color: ${themeVal('color.lightgray')};
@@ -138,43 +166,45 @@ const EditPage = (props) => {
 
   return (
     <Fragment>
-      <PageSubNav>
-        <SubNavTitle>
-          <SubNavTagline>Editing Document</SubNavTagline>
-          { title }
-        </SubNavTitle>
-
-        <SubNavActions>
-          <SubNavAction>
-            { stepCount }
-            <Dropdown
-              triggerText={items[step - 1].display}
-              triggerTitle="Toggle menu options"
-              triggerElement={DropdownTrigger}
-            >
-              <DropdownList>
-                {items.map((d, i) => (
-                  <Item
-                    key={d.display}
-                    onClick={() => d.link && props.push(d.link)}
-                  >
-                    <ItemCount>{i + 1}</ItemCount>
-                    {d.display}
-                  </Item>
-                ))}
-              </DropdownList>
-            </Dropdown>
-          </SubNavAction>
-
-          <SubNavAction>Cancel</SubNavAction>
-          <SubNavAction>Save</SubNavAction>
-        </SubNavActions>
-      </PageSubNav>
-      <PageSection>
-        <Constrainer>
+      <InpageHeader>
+        <InpageHeaderInner>
+          <InpageHeadline>
+            <InpageTitle>{ title }</InpageTitle>
+            <InpageTagline>Editing document</InpageTagline>
+          </InpageHeadline>
+          <InpageToolbar>
+            <Stepper>
+              <StepperLabel>
+                { stepCount }
+              </StepperLabel>
+              <Dropdown
+                triggerText={items[step - 1].display}
+                triggerTitle="Toggle menu options"
+                triggerElement={DropdownTrigger}
+              >
+                <DropdownList>
+                  {items.map((d, i) => (
+                    <Item
+                      key={d.display}
+                      onClick={() => d.link && props.push(d.link)}
+                    >
+                      <ItemCount>{i + 1}</ItemCount>
+                      {d.display}
+                    </Item>
+                  ))}
+                </DropdownList>
+              </Dropdown>
+            </Stepper>
+            <a href="#" title="Save document">Save</a>
+            <a href="#" title="Cancel edit">Cancel</a>
+          </InpageToolbar>
+        </InpageHeaderInner>
+      </InpageHeader>
+      <InpageBody>
+        <InpageBodyInner>
           { children }
-        </Constrainer>
-      </PageSection>
+        </InpageBodyInner>
+      </InpageBody>
     </Fragment>
   );
 };
