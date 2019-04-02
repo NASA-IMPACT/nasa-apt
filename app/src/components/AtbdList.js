@@ -105,7 +105,6 @@ const AtbdList = (props) => {
         </AtbdCell>
         <AtbdCell>2 hours ago</AtbdCell>
         <AtbdCell>Author Name</AtbdCell>
-        <AtbdCell>Topic</AtbdCell>
         <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${contacts}`)}><EditIcon /></AtbdCell>
       </AtbdRow>
     );
@@ -149,19 +148,6 @@ const AtbdList = (props) => {
             </FilterItem>
 
             <FilterItem>
-              <FilterLabel>Topics</FilterLabel>
-              <Dropdown
-                triggerText="All"
-                triggerTitle="Toggle menu options"
-                triggerElement={DropdownTrigger}
-              >
-                <DropdownList role="menu">
-                  <DropdownItem>All</DropdownItem>
-                </DropdownList>
-              </Dropdown>
-            </FilterItem>
-
-            <FilterItem>
               <FilterLabel>Sort</FilterLabel>
               <Dropdown
                 triggerText="Newest"
@@ -191,7 +177,6 @@ const AtbdList = (props) => {
                 <AtbdHeaderCell scope="col" />
                 <AtbdHeaderCell scope="col">Last Edit</AtbdHeaderCell>
                 <AtbdHeaderCell scope="col">Authors</AtbdHeaderCell>
-                <AtbdHeaderCell scope="col">Topics</AtbdHeaderCell>
               </tr>
             </thead>
             <tbody>
