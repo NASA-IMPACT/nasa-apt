@@ -176,8 +176,8 @@ const AtbdList = (props) => {
           </InpageFilters>
 
           <InpageToolbar>
-            <a href='#' title='Search documents'>Search</a>
-            <a href='#' title='Create new document'>Create</a>
+            <a href="#" title="Search documents">Search</a>
+            <a href="#" title="Create new document">Create</a>
           </InpageToolbar>
 
         </InpageHeaderInner>

@@ -1,9 +1,14 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
+import { push } from 'connected-react-router';
+import { connect } from 'react-redux';
+
 import styled from 'styled-components';
 import { rgba } from 'polished';
-import { stylizeFunction } from '../../styles/utils/general';
+import { themeVal, stylizeFunction } from '../../styles/utils/general';
+import { multiply } from '../../styles/utils/math';
 import { headingAlt } from '../../styles/atoms/type/heading';
+import collecticon from '../../styles/collecticons';
 
 import {
   InpageHeader,
@@ -15,9 +20,7 @@ import {
   InpageBody,
   InpageBodyInner
 } from './Inpage';
-import { push } from 'connected-react-router';
-import { connect } from 'react-redux';
-import collecticon from '../../styles/collecticons';
+
 import {
   atbdsedit,
   contacts,
@@ -25,8 +28,6 @@ import {
   algorithm_description
 } from '../../constants/routes';
 
-import { multiply } from '../../styles/utils/math';
-import { themeVal } from '../../styles/utils/general';
 import Dropdown, {
   DropdownTrigger,
   DropdownList,
@@ -194,8 +195,8 @@ const EditPage = (props) => {
                 </DropdownList>
               </Dropdown>
             </Stepper>
-            <a href='#' title='Save document'>Save</a>
-            <a href='#' title='Cancel edit'>Cancel</a>
+            <a href="#" title="Save document">Save</a>
+            <a href="#" title="Cancel edit">Cancel</a>
           </InpageToolbar>
         </InpageHeaderInner>
       </InpageHeader>

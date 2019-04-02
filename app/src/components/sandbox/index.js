@@ -23,7 +23,7 @@ class Sandbox extends Component {
         </InpageHeader>
         <InpageBody>
           <InpageBodyInner>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin imperdiet diam magna, id pulvinar libero scelerisque et. Quisque sollicitudin massa nec arcu dapibus mollis.</p>
+            <p>Lorem ipsum dolor sit amet, <strong>consectetur</strong> adipiscing elit. Proin imperdiet diam magna, id pulvinar libero scelerisque et. Quisque sollicitudin massa nec arcu dapibus mollis.</p>
           </InpageBodyInner>
         </InpageBody>
       </Inpage>

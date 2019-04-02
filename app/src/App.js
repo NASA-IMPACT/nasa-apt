@@ -55,10 +55,10 @@ const App = () => (
                   path={`/${atbdsedit}/:atbd_id/${drafts}/:atbd_version/${algorithm_description}`}
                   component={AlgorithmDescription}
                 />
-                <Route exact path='/help' component={Help} />
-                <Route exact path='/about' component={About} />
-                <Route exact path='/sandbox' component={Sandbox} />
-                <Route path='*' component={UhOh} />
+                <Route exact path="/help" component={Help} />
+                <Route exact path="/about" component={About} />
+                <Route exact path="/sandbox" component={Sandbox} />
+                <Route path="*" component={UhOh} />
               </Switch>
             </PageBody>
             <PageFooter />

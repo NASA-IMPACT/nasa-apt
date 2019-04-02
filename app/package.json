@@ -51,6 +51,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
+    "babel-eslint": "^10.0.1",
     "@babel/register": "^7.0.0",
     "collecticons-processor": "^4.0.1",
     "enzyme": "^3.9.0",
