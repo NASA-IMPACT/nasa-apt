@@ -54,7 +54,7 @@ export const AlgorithmDescription = (props) => {
       >
         <h2>Algorithm Description</h2>
         <EditorSection>
-          <EditorLabel>Scientifc Theory</EditorLabel>
+          <EditorLabel>Scientific Theory</EditorLabel>
           <FreeEditor
             value={Value.fromJSON(scientific_theory)}
             save={(document) => {
@@ -65,7 +65,7 @@ export const AlgorithmDescription = (props) => {
           />
         </EditorSection>
         <EditorSection>
-          <EditorLabel>Scientifc Theory Assumptions</EditorLabel>
+          <EditorLabel>Scientific Theory Assumptions</EditorLabel>
           <EditorSectionTitle>Algorithm Input Variables</EditorSectionTitle>
           <AlgorithmVariables
             schemaKey="algorithm_input_variable"
