@@ -24,12 +24,11 @@ const Label = styled('span')`
 
 const RemovableListItem = (props) => {
   const {
-    id,
     label,
     deleteAction
   } = props;
   return (
-    <li key={id}>
+    <li>
       <Label>
         {label}
       </Label>
@@ -39,7 +38,6 @@ const RemovableListItem = (props) => {
 };
 
 RemovableListItem.propTypes = {
-  id: PropTypes.number.isRequired,
   label: PropTypes.string.isRequired,
   deleteAction: PropTypes.func.isRequired
 };

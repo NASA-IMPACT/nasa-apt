@@ -22,6 +22,23 @@ const deleteAtbdVersionChildItem = (schemaKey, state, action) => {
   };
 };
 
+const deleteAtbdChildItem = (schemaKey, state, action) => {
+  const idKey = `${schemaKey}_id`;
+  const keyPlural = `${schemaKey}s`;
+
+  const { payload } = action;
+  const { [idKey]: id } = payload;
+  const variables = state.selectedAtbd[keyPlural]
+    .filter(variable => (variable[idKey] !== id));
+  return {
+    ...state,
+    selectedAtbd: {
+      ...state.selectedAtbd,
+      [keyPlural]: variables
+    }
+  };
+};
+
 export default function (state = initialState, action) {
   switch (action.type) {
     case actions.FETCH_ATBD_VERSION_SUCCEEDED: {
@@ -96,6 +113,11 @@ export default function (state = initialState, action) {
     case actions.DELETE_ALGORITHM_OUTPUT_VARIABLE_SUCCEEDED: {
       const schemaKey = 'algorithm_output_variable';
       return deleteAtbdVersionChildItem(schemaKey, state, action);
+    }
+
+    case actions.DELETE_ATBD_CONTACT_SUCCEEDED: {
+      const schemaKey = 'contact';
+      return deleteAtbdChildItem(schemaKey, state, action);
     }
 
     default: return state;
