@@ -1,0 +1,47 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+
+import styled from 'styled-components';
+import { multiply } from '../../styles/utils/math';
+import collecticon from '../../styles/collecticons';
+import { themeVal } from '../../styles/utils/general';
+
+const DeleteIcon = styled('span')`
+  cursor: pointer ;
+  &:hover {
+    color: ${themeVal('color.danger')}
+  }
+  &::before {
+    margin-left: ${multiply(themeVal('layout.space'), 0.5)};
+    vertical-align: middle;
+    ${collecticon('trash-bin')}
+  }
+`;
+
+const Label = styled('span')`
+  vertical-align: middle
+`;
+
+const RemovableListItem = (props) => {
+  const {
+    id,
+    label,
+    deleteAction
+  } = props;
+  return (
+    <li key={id}>
+      <Label>
+        {label}
+      </Label>
+      <DeleteIcon onClick={deleteAction} />
+    </li>
+  );
+};
+
+RemovableListItem.propTypes = {
+  id: PropTypes.number.isRequired,
+  label: PropTypes.string.isRequired,
+  deleteAction: PropTypes.func.isRequired
+};
+
+export default RemovableListItem;
