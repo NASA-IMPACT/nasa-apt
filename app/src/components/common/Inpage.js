@@ -5,7 +5,7 @@ import { truncated, antialiased } from '../../styles/helpers';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
 import { headingAlt } from '../../styles/atoms/type/heading';
-import Constrainer from '../../styles/atoms/Constrainer';
+import Constrainer from '../../styles/atoms/constrainer';
 
 const _rgba = stylizeFunction(rgba);
 
@@ -25,7 +25,6 @@ export const InpageHeaderInner = styled(Constrainer)`
   display: flex;
   flex-flow: row nowrap;
   align-items: flex-end;
-  padding: ${themeVal('layout.space')};
   min-height: 5rem;
 `;
 
@@ -97,5 +96,6 @@ export const InpageBody = styled.div`
 `;
 
 export const InpageBodyInner = styled(Constrainer)`
-  padding: ${themeVal('layout.space')};
+  padding-top: ${multiply(themeVal('layout.space'), 4)};
+  padding-bottom: ${multiply(themeVal('layout.space'), 4)};
 `;

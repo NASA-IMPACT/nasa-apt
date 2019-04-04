@@ -3,12 +3,18 @@ import styled from 'styled-components';
 import { antialiased } from '../../styles/helpers';
 import { themeVal } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
-import { Inner } from './Page';
+import Constrainer from '../../styles/atoms/constrainer';
 
 const PageHead = styled.header`
   ${antialiased()}
   background-color: ${themeVal('color.primary')};
   color: #FFF;
+`;
+
+const PageHeadInner = styled(Constrainer)`
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-end;
 `;
 
 const PageHeadline = styled.div`
@@ -48,7 +54,7 @@ class PageHeader extends React.PureComponent {
   render() {
     return (
       <PageHead>
-        <Inner>
+        <PageHeadInner>
           <PageHeadline>
             <PageTitle>NASA APT</PageTitle>
           </PageHeadline>
@@ -60,7 +66,7 @@ class PageHeader extends React.PureComponent {
               <li><a href="/about" title="View">About</a></li>
             </GlobalMenu>
           </PageNav>
-        </Inner>
+        </PageHeadInner>
       </PageHead>
     );
   }
