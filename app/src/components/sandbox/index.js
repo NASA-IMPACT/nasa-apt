@@ -1,4 +1,8 @@
 import React, { Component } from 'react';
+import styled from 'styled-components';
+
+import { themeVal } from '../../styles/utils/general';
+import collecticon from '../../styles/collecticons';
 
 import {
   Inpage,
@@ -9,6 +13,54 @@ import {
   InpageBody,
   InpageBodyInner
 } from '../common/Inpage';
+import Button from '../../styles/atoms/button';
+import ButtonGroup from '../../styles/molecules/button-group';
+
+// Create a ul component to include some styling.
+const Ul = styled.ul`
+  margin-bottom: 2rem;
+
+  > li {
+    margin-bottom: 1rem;
+  }
+
+  > li:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+// Extend the component previously created to change the background
+// This is needed to see the achromic buttons.
+const DarkUl = styled(Ul)`
+  background: ${themeVal('color.base')};
+`;
+
+// Extend a button to add an icon.
+const ButtonIconBrand = styled(Button)`
+  ::before {
+    ${collecticon('plus')}
+  }
+`;
+
+// Below the differente button variations and sizes to render all buttons.
+
+const variations = [
+  'base-raised-light',
+  'base-raised-semidark',
+  'base-raised-dark',
+  'base-plain',
+  'primary-raised-light',
+  'primary-raised-semidark',
+  'primary-raised-dark',
+  'primary-plain',
+  'danger-raised-light',
+  'danger-raised-dark',
+  'danger-plain'
+];
+
+const lightVariations = ['achromic-plain', 'achromic-glass'];
+
+const sizes = ['small', 'default', 'large', 'xlarge'];
 
 class Sandbox extends Component {
   render() {
@@ -24,6 +76,65 @@ class Sandbox extends Component {
         <InpageBody>
           <InpageBodyInner>
             <p>Lorem ipsum dolor sit amet, <strong>consectetur</strong> adipiscing elit. Proin imperdiet diam magna, id pulvinar libero scelerisque et. Quisque sollicitudin massa nec arcu dapibus mollis.</p>
+
+            <div>
+              <h1>Button Group</h1>
+              <ButtonGroup orientation='horizontal'>
+                <Button variation='base-raised-light'>First</Button>
+                <Button variation='base-raised-light'>Second</Button>
+                <Button variation='base-raised-light'>Third</Button>
+                <Button variation='base-raised-light'>Last</Button>
+              </ButtonGroup>
+              <ButtonGroup orientation='horizontal'>
+                <ButtonIconBrand variation='base-raised-light'>
+                  First
+                </ButtonIconBrand>
+                <ButtonIconBrand variation='base-raised-light'>
+                  Second
+                </ButtonIconBrand>
+                <ButtonIconBrand variation='base-raised-light'>
+                  Third
+                </ButtonIconBrand>
+              </ButtonGroup>
+              <ButtonGroup orientation='vertical'>
+                <Button variation='base-raised-light'>First</Button>
+                <Button variation='base-raised-light'>Second</Button>
+                <Button variation='base-raised-light'>Third</Button>
+                <Button variation='base-raised-light'>Last</Button>
+              </ButtonGroup>
+            </div>
+            <div>
+              <h1>Buttons</h1>
+              <ButtonIconBrand variation='base-raised-light'>
+                I have an icon
+              </ButtonIconBrand>
+              <ButtonIconBrand variation='base-raised-light' hideText>
+                this text is hidden
+              </ButtonIconBrand>
+
+              {variations.map(variation => (
+                <Ul key={variation}>
+                  {sizes.map(size => (
+                    <li key={size}>
+                      <Button variation={variation} size={size}>
+                        {size} - {variation}
+                      </Button>
+                    </li>
+                  ))}
+                </Ul>
+              ))}
+              {lightVariations.map(variation => (
+                <DarkUl key={variation}>
+                  {sizes.map(size => (
+                    <li key={size}>
+                      <Button variation={variation} size={size}>
+                        {size} - {variation}
+                      </Button>
+                    </li>
+                  ))}
+                </DarkUl>
+              ))}
+            </div>
           </InpageBodyInner>
         </InpageBody>
       </Inpage>
