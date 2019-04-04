@@ -6,6 +6,7 @@ import SoftBreak from 'slate-soft-break';
 import PluginDeepTable from 'slate-deep-table';
 import styled from 'styled-components/macro';
 import EquationEditor from './EquationEditor';
+import TrailingBlock from '../slate-plugins/TrailingBlock';
 import {
   ToolbarAction,
   ToolbarIcon,
@@ -30,8 +31,9 @@ const EditorContainer = styled.div`
 `;
 
 const plugins = [
+  TrailingBlock(),
   SoftBreak(),
-  PluginDeepTable()
+  PluginDeepTable(),
 ];
 
 export class FreeEditor extends React.Component {
@@ -136,8 +138,6 @@ export class FreeEditor extends React.Component {
   }
 
   insertTable() {
-    this.insertParagraph();
-    this.editor.moveBackward(1);
     this.editor.insertTable();
   }
 

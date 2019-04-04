@@ -51,8 +51,8 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "babel-eslint": "^10.0.1",
     "@babel/register": "^7.0.0",
+    "babel-eslint": "^10.0.1",
     "collecticons-processor": "^4.0.1",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.9.1",
