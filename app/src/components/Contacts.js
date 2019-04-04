@@ -8,9 +8,9 @@ import {
 import EditPage, {
   EditorSection,
   EditorLabel,
-  RemovableListItem
 } from './common/EditPage';
-import { createAtbdContact } from '../actions/actions';
+import RemovableListItem from './common/RemovableListItem';
+import { createAtbdContact, deleteAtbdContact } from '../actions/actions';
 
 import Select from './Select';
 
@@ -18,12 +18,15 @@ const Contacts = (props) => {
   const {
     contacts,
     selectedAtbd = {},
-    createAtbdContact: dispatchCreateAtbdContact
+    createAtbdContact: dispatchCreateAtbdContact,
+    deleteAtbdContact: dispatchDeleteAtbdContact
   } = props;
+
   const {
     atbd_id,
     title
   } = selectedAtbd;
+
   const atbdContacts = selectedAtbd.contacts || [];
 
   const contactOptions = contacts.map((contact) => {
@@ -42,9 +45,11 @@ const Contacts = (props) => {
       contact_id
     } = atbdContact;
     return (
-      <RemovableListItem key={contact_id}>
-        {`${first_name} ${last_name}`}
-      </RemovableListItem>
+      <RemovableListItem
+        key={contact_id}
+        label={`${first_name} ${last_name}`}
+        deleteAction={() => { dispatchDeleteAtbdContact(atbd_id, contact_id); }}
+      />
     );
   });
 
@@ -98,7 +103,8 @@ Contacts.propTypes = {
     atbd_id: PropTypes.number.isRequired,
     contacts: PropTypes.array
   }),
-  createAtbdContact: PropTypes.func.isRequired
+  createAtbdContact: PropTypes.func.isRequired,
+  deleteAtbdContact: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -113,6 +119,6 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = { createAtbdContact };
+const mapDispatchToProps = { createAtbdContact, deleteAtbdContact };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Contacts);

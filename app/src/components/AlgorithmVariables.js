@@ -1,26 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
-import styled from 'styled-components';
-import { multiply } from '../styles/utils/math';
-import collecticon from '../styles/collecticons';
-import { themeVal } from '../styles/utils/general';
-
-const DeleteIcon = styled('span')`
-  cursor: pointer ;
-  &:hover {
-    color: ${themeVal('color.danger')}
-  }
-  &::before {
-    margin-left: ${multiply(themeVal('layout.space'), 0.5)};
-    vertical-align: middle;
-    ${collecticon('trash-bin')}
-  }
-`;
-
-const Variable = styled('span')`
-  vertical-align: middle;
-`;
+import RemovableListItem from './common/RemovableListItem';
 
 const AlgorithmVariables = (props) => {
   const {
@@ -38,10 +18,11 @@ const AlgorithmVariables = (props) => {
     } = variable;
 
     return (
-      <li key={id}>
-        <Variable>{`${name} || ${long_name} || ${unit}`}</Variable>
-        <DeleteIcon onClick={() => deleteVariable(id)} />
-      </li>
+      <RemovableListItem
+        key={id}
+        label={`${name} || ${long_name} || ${unit}`}
+        deleteAction={() => deleteVariable(id)}
+      />
     );
   });
 

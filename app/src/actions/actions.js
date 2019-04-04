@@ -194,3 +194,19 @@ export function deleteAlgorithmOutputVariable(id) {
     }
   };
 }
+
+export function deleteAtbdContact(atbd_id, contact_id) {
+  return {
+    [RSAA]: {
+      endpoint:
+        `${BASE_URL}/atbd_contacts?atbd_id=eq.${atbd_id}&contact_id=eq.${contact_id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ATBD_CONTACT,
+        types.DELETE_ATBD_CONTACT_SUCCEEDED,
+        types.DELETE_ATBD_CONTACT_FAILED
+      ]
+    }
+  };
+}
