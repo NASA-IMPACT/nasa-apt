@@ -4,20 +4,13 @@ import { shallow, configure } from 'enzyme';
 import test from 'tape';
 import sinon from 'sinon';
 import { InputSubmit } from '../src/components/common/Input';
+import { InnerContactForm } from '../src/components/ContactForm';
 
 const proxyquire = require('proxyquire').noCallThru();
 
 configure({ adapter: new Adapter() });
 
 test('InnerContactForm submit disabled', (t) => {
-  const { InnerContactForm } = proxyquire(
-    '../src/components/ContactForm',
-    {
-      '../actions/actions': {
-        createContact: () => {}
-      }
-    }
-  );
   const props = {
     values: {},
     touched: {
