@@ -4,8 +4,7 @@ import { withFormik } from 'formik';
 import jsonschema from 'jsonschema';
 import apiSchema from '../schemas/schema.json';
 import transformErrors from '../schemas/transformErrors';
-import Input from './Input';
-import { InputFormGroup, InputSubmit } from './common/EditPage';
+import Input, { InputFormGroup, InputSubmit } from './common/Input';
 
 const name = 'name';
 const long_name = 'long_name';

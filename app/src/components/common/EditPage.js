@@ -2,7 +2,6 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
-
 import styled from 'styled-components';
 import { rgba } from 'polished';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
@@ -77,51 +76,11 @@ export const EditorLabel = styled.label`
   text-transform: uppercase;
 `;
 
-export const InputFormGroup = styled.form`
-  align-items: end;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-gap: 1rem;
-  justify-content: space-between;
-  margin-top: ${themeVal('layout.space')};
-`;
-
-export const InputLabel = styled.label`
-  display: block
-  font-weight: bold;
-  width: 100%;
-`;
-
-export const InputLabelFeedback = styled.span`
-  color: ${themeVal('color.danger')};
-  font-weight: normal;
-  margin-left: ${multiply(themeVal('layout.space'), 0.25)};
-`;
-
-export const InlineInput = styled.input`
-  background: #FFF;
-  border: 1px solid ${themeVal('color.gray')};
-  border-radius: 4px;
-  font-family: inherit;
-  margin: ${multiply(themeVal('layout.space'), 0.5)} 0 0;
-  height: ${multiply(themeVal('layout.space'), 2.4)}
-  padding: 0 ${multiply(themeVal('layout.space'), 0.5)};
-  width: 100%;
-`;
-
-export const SmallTextInput = styled(InlineInput)`
-`;
-
 export const RemovableListItem = styled.li`
   &::before {
     cursor: pointer;
     ${collecticon('xmark--small')}
   }
-`;
-
-export const InputSubmit = styled(InlineInput)`
-  box-shadow: ${themeVal('boxShadow.input')};
-  font-weight: bold;
 `;
 
 const Item = styled(DropdownItem)`
