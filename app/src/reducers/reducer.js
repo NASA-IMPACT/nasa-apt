@@ -1,4 +1,4 @@
-import * as actions from '../constants/action_types';
+import actions from '../constants/action_types';
 
 const initialState = {
   atbds: [],
@@ -41,32 +41,32 @@ const deleteAtbdChildItem = (schemaKey, state, action) => {
 
 export default function (state = initialState, action) {
   switch (action.type) {
-    case actions.FETCH_ATBD_VERSION_SUCCEEDED: {
+    case actions.FETCH_ATBD_VERSION_SUCCESS: {
       const { payload } = action;
       return { ...state, atbdVersion: payload };
     }
 
-    case actions.FETCH_ATBDS_SUCCEEDED: {
+    case actions.FETCH_ATBDS_SUCCESS: {
       const { payload } = action;
       return { ...state, atbds: [...payload] };
     }
 
-    case actions.FETCH_CONTACTS_SUCCEEDED: {
+    case actions.FETCH_CONTACTS_SUCCESS: {
       const { payload } = action;
       return { ...state, contacts: [...payload] };
     }
 
-    case actions.FETCH_ATBD_SUCCEEDED: {
+    case actions.FETCH_ATBD_SUCCESS: {
       const { payload } = action;
       return { ...state, selectedAtbd: payload };
     }
 
-    case actions.CREATE_CONTACT_SUCCEEDED: {
+    case actions.CREATE_CONTACT_SUCCESS: {
       const { payload } = action;
       return { ...state, contacts: [...state.contacts, payload] };
     }
 
-    case actions.CREATE_ATBD_CONTACT_SUCCEEDED: {
+    case actions.CREATE_ATBD_CONTACT_SUCCESS: {
       const { payload } = action;
       const addedContact = state.contacts.find(contact => (
         contact.contact_id === payload.contact_id
@@ -81,7 +81,7 @@ export default function (state = initialState, action) {
       return newState;
     }
 
-    case actions.CREATE_ALGORITHM_INPUT_VARIABLE_SUCCEEDED: {
+    case actions.CREATE_ALGORITHM_INPUT_VARIABLE_SUCCESS: {
       const { payload } = action;
       return {
         ...state,
@@ -93,7 +93,7 @@ export default function (state = initialState, action) {
       };
     }
 
-    case actions.CREATE_ALGORITHM_OUTPUT_VARIABLE_SUCCEEDED: {
+    case actions.CREATE_ALGORITHM_OUTPUT_VARIABLE_SUCCESS: {
       const { payload } = action;
       return {
         ...state,
@@ -105,17 +105,17 @@ export default function (state = initialState, action) {
       };
     }
 
-    case actions.DELETE_ALGORITHM_INPUT_VARIABLE_SUCCEEDED: {
+    case actions.DELETE_ALGORITHM_INPUT_VARIABLE_SUCCESS: {
       const schemaKey = 'algorithm_input_variable';
       return deleteAtbdVersionChildItem(schemaKey, state, action);
     }
 
-    case actions.DELETE_ALGORITHM_OUTPUT_VARIABLE_SUCCEEDED: {
+    case actions.DELETE_ALGORITHM_OUTPUT_VARIABLE_SUCCESS: {
       const schemaKey = 'algorithm_output_variable';
       return deleteAtbdVersionChildItem(schemaKey, state, action);
     }
 
-    case actions.DELETE_ATBD_CONTACT_SUCCEEDED: {
+    case actions.DELETE_ATBD_CONTACT_SUCCESS: {
       const schemaKey = 'contact';
       return deleteAtbdChildItem(schemaKey, state, action);
     }

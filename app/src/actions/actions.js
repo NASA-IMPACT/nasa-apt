@@ -1,5 +1,5 @@
 import { RSAA } from 'redux-api-middleware';
-import * as types from '../constants/action_types';
+import types from '../constants/action_types';
 
 const BASE_URL = process.env.REACT_APP_API_URL;
 const returnObjectHeaders = {
@@ -17,8 +17,8 @@ export function createContact(contact) {
       headers: returnObjectHeaders,
       types: [
         types.CREATE_CONTACT,
-        types.CREATE_CONTACT_SUCCEEDED,
-        types.CREATE_CONTACT_FAILED
+        types.CREATE_CONTACT_SUCCESS,
+        types.CREATE_CONTACT_FAIL
       ]
     }
   };
@@ -33,8 +33,8 @@ export function createAtbdVersion(atbd_version) {
       headers: returnObjectHeaders,
       types: [
         types.CREATE_ATBD_VERSION,
-        types.CREATE_ATBD_VERSION_SUCCEEDED,
-        types.CREATE_ATBD_VERSION_FAILED
+        types.CREATE_ATBD_VERSION_SUCCESS,
+        types.CREATE_ATBD_VERSION_FAIL
       ]
     }
   };
@@ -49,8 +49,8 @@ export function updateAtbdVersion(atbd_id, atbd_version, document) {
       headers: returnObjectHeaders,
       types: [
         types.UPDATE_ATBD_VERSION,
-        types.UPDATE_ATBD_VERSION_SUCCEEDED,
-        types.UPDATE_ATBD_VERSION_FAILED
+        types.UPDATE_ATBD_VERSION_SUCCESS,
+        types.UPDATE_ATBD_VERSION_FAIL
       ]
     }
   };
@@ -67,8 +67,8 @@ export function fetchAtbdVersion(versionObject) {
       headers: returnObjectHeaders,
       types: [
         types.FETCH_ATBD_VERSION,
-        types.FETCH_ATBD_VERSION_SUCCEEDED,
-        types.FETCH_ATBD_VERSION_FAILED
+        types.FETCH_ATBD_VERSION_SUCCESS,
+        types.FETCH_ATBD_VERSION_FAIL
       ]
     }
   };
@@ -81,8 +81,8 @@ export function fetchAtbds() {
       method: 'GET',
       types: [
         types.FETCH_ATBDS,
-        types.FETCH_ATBDS_SUCCEEDED,
-        types.FETCH_ATBDS_FAILED
+        types.FETCH_ATBDS_SUCCESS,
+        types.FETCH_ATBDS_FAIL
       ]
     }
   };
@@ -96,8 +96,8 @@ export function fetchAtbd(atbd_id) {
       headers: { Accept: 'application/vnd.pgrst.object+json' },
       types: [
         types.FETCH_ATBD,
-        types.FETCH_ATBD_SUCCEEDED,
-        types.FETCH_ATBD_FAILED
+        types.FETCH_ATBD_SUCCESS,
+        types.FETCH_ATBD_FAIL
       ]
     }
   };
@@ -110,8 +110,8 @@ export function fetchContacts() {
       method: 'GET',
       types: [
         types.FETCH_CONTACTS,
-        types.FETCH_CONTACTS_SUCCEEDED,
-        types.FETCH_CONTACTS_FAILED
+        types.FETCH_CONTACTS_SUCCESS,
+        types.FETCH_CONTACTS_FAIL
       ]
     }
   };
@@ -126,8 +126,8 @@ export function createAtbdContact(atbd_contact) {
       headers: returnObjectHeaders,
       types: [
         types.CREATE_ATBD_CONTACT,
-        types.CREATE_ATBD_CONTACT_SUCCEEDED,
-        types.CREATE_ATBD_CONTACT_FAILED
+        types.CREATE_ATBD_CONTACT_SUCCESS,
+        types.CREATE_ATBD_CONTACT_FAIL
       ]
     }
   };
@@ -142,8 +142,8 @@ export function createAlgorithmInputVariable(variable) {
       headers: returnObjectHeaders,
       types: [
         types.CREATE_ALGORITHM_INPUT_VARIABLE,
-        types.CREATE_ALGORITHM_INPUT_VARIABLE_SUCCEEDED,
-        types.CREATE_ALGORITHM_INPUT_VARIABLE_FAILED
+        types.CREATE_ALGORITHM_INPUT_VARIABLE_SUCCESS,
+        types.CREATE_ALGORITHM_INPUT_VARIABLE_FAIL
       ]
     }
   };
@@ -158,8 +158,8 @@ export function createAlgorithmOutputVariable(variable) {
       headers: returnObjectHeaders,
       types: [
         types.CREATE_ALGORITHM_OUTPUT_VARIABLE,
-        types.CREATE_ALGORITHM_OUTPUT_VARIABLE_SUCCEEDED,
-        types.CREATE_ALGORITHM_OUTPUT_VARIABLE_FAILED
+        types.CREATE_ALGORITHM_OUTPUT_VARIABLE_SUCCESS,
+        types.CREATE_ALGORITHM_OUTPUT_VARIABLE_FAIL
       ]
     }
   };
@@ -173,8 +173,8 @@ export function deleteAlgorithmInputVariable(id) {
       headers: returnObjectHeaders,
       types: [
         types.DELETE_ALGORITHM_INPUT_VARIABLE,
-        types.DELETE_ALGORITHM_INPUT_VARIABLE_SUCCEEDED,
-        types.DELETE_ALGORITHM_INPUT_VARIABLE_FAILED
+        types.DELETE_ALGORITHM_INPUT_VARIABLE_SUCCESS,
+        types.DELETE_ALGORITHM_INPUT_VARIABLE_FAIL
       ]
     }
   };
@@ -188,8 +188,8 @@ export function deleteAlgorithmOutputVariable(id) {
       headers: returnObjectHeaders,
       types: [
         types.DELETE_ALGORITHM_OUTPUT_VARIABLE,
-        types.DELETE_ALGORITHM_OUTPUT_VARIABLE_SUCCEEDED,
-        types.DELETE_ALGORITHM_OUTPUT_VARIABLE_FAILED
+        types.DELETE_ALGORITHM_OUTPUT_VARIABLE_SUCCESS,
+        types.DELETE_ALGORITHM_OUTPUT_VARIABLE_FAIL
       ]
     }
   };
@@ -204,8 +204,8 @@ export function deleteAtbdContact(atbd_id, contact_id) {
       headers: returnObjectHeaders,
       types: [
         types.DELETE_ATBD_CONTACT,
-        types.DELETE_ATBD_CONTACT_SUCCEEDED,
-        types.DELETE_ATBD_CONTACT_FAILED
+        types.DELETE_ATBD_CONTACT_SUCCESS,
+        types.DELETE_ATBD_CONTACT_FAIL
       ]
     }
   };
