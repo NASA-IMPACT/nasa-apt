@@ -14,6 +14,7 @@ import {
   ToolbarLabel
 } from './Toolbars';
 import EditorImage from './EditorImage';
+import EditorTable from './EditorTable';
 import schema from './editorSchema';
 import { themeVal } from '../styles/utils/general';
 import { multiply } from '../styles/utils/math';
@@ -27,13 +28,13 @@ const EditorContainer = styled.div`
   border: 1px solid ${themeVal('color.gray')};
   border-bottom-left-radius: ${multiply(themeVal('layout.space'), 0.25)};
   border-bottom-right-radius: ${multiply(themeVal('layout.space'), 0.25)};
-  padding: ${themeVal('layout.space')};
+  padding: 1rem 3rem;
 `;
 
 const plugins = [
   TrailingBlock(),
   SoftBreak(),
-  PluginDeepTable(),
+  PluginDeepTable()
 ];
 
 export class FreeEditor extends React.Component {
@@ -187,6 +188,18 @@ export class FreeEditor extends React.Component {
           />
         );
       }
+      case 'table': {
+        return (
+          <EditorTable
+            remove={this.removeTable}
+            insertRow={this.insertRow}
+            removeRow={this.removeRow}
+            insertColumn={this.insertColumn}
+            removeColumn={this.removeColumn}
+            {...props}
+          />
+        );
+      }
       default:
         return next();
     }
@@ -198,10 +211,8 @@ export class FreeEditor extends React.Component {
       save,
       onChange,
       onMouseDown,
-      renderNode,
-      editor
+      renderNode
     } = this;
-    const inTable = editor && editor.isSelectionInTable(value);
     const { className } = this.props;
     return (
       <div className={className}>
@@ -229,36 +240,6 @@ export class FreeEditor extends React.Component {
             active={activeTool === table}
           >
             <ToolbarIcon icon={{ icon: 'list' }}>Table</ToolbarIcon>
-          </ToolbarAction>
-          <ToolbarAction
-            hidden={!inTable}
-            onClick={this.insertColumn}
-          >
-           Add Column
-          </ToolbarAction>
-          <ToolbarAction
-            hidden={!inTable}
-            onClick={this.insertRow}
-          >
-            Add Row
-          </ToolbarAction>
-          <ToolbarAction
-            hidden={!inTable}
-            onClick={this.removeColumn}
-          >
-           Remove Column
-          </ToolbarAction>
-          <ToolbarAction
-            hidden={!inTable}
-            onClick={this.removeRow}
-          >
-            Remove Row
-          </ToolbarAction>
-          <ToolbarAction
-            hidden={!inTable}
-            onClick={this.removeTable}
-          >
-            Remove Table
           </ToolbarAction>
           <ToolbarAction onClick={save}>
             Save
