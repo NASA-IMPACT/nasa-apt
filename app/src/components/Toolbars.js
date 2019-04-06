@@ -7,10 +7,11 @@ export const ToolbarAction = styled('span')`
   cursor: pointer;
   background: ${props => (props.active ? themeVal('color.shadow') : null)};
   box-shadow: ${props => (props.active ? themeVal('boxShadow.inset') : null)};
-  visibility: ${props => (props.hidden ? 'hidden' : 'visible')};
   font-weight: bold;
-  padding: ${themeVal('layout.space')};
+  line-height: 1;
+  padding: .5rem 1rem;
   transition: background .16s ease;
+  visibility: ${props => (props.hidden ? 'hidden' : 'visible')};
   &:hover {
     background: ${themeVal('color.shadow')}
   }
@@ -32,7 +33,7 @@ export const Toolbar = styled.div`
   border-top-left-radius: ${multiply(themeVal('layout.space'), 0.25)};
   border-top-right-radius: ${multiply(themeVal('layout.space'), 0.25)};
   display: flex;
-  padding: 0 ${themeVal('layout.space')};
+  padding: 0 3rem;
   position: relative;
 `;
 
