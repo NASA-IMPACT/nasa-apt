@@ -1,7 +1,7 @@
 import styled from 'styled-components/macro';
 
 const EditorImage = styled.img`
-  display: block;
+  display: inline-block;
   max-width: 100%;
   max-height: 20em;
   box-shadow: ${props => (
