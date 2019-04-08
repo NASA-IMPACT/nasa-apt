@@ -43,7 +43,7 @@ export default function (state = initialState, action) {
   switch (action.type) {
     case actions.FETCH_ATBD_VERSION_SUCCESS: {
       const { payload } = action;
-      return { ...state, atbdVersion: payload };
+      return { ...state, atbdVersion: { ...payload } };
     }
 
     case actions.FETCH_ATBDS_SUCCESS: {
@@ -58,7 +58,7 @@ export default function (state = initialState, action) {
 
     case actions.FETCH_ATBD_SUCCESS: {
       const { payload } = action;
-      return { ...state, selectedAtbd: payload };
+      return { ...state, selectedAtbd: { ...payload } };
     }
 
     case actions.CREATE_CONTACT_SUCCESS: {

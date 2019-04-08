@@ -21,6 +21,8 @@ test('AlgorithmDescription editor values', (t) => {
       save={() => {}}
       createAlgorithmInputVariable={() => {}}
       createAlgorithmOutputVariable={() => {}}
+      deleteAlgorithmInputVariable={() => {}}
+      deleteAlgorithmOutputVariable={() => {}}
     />
   );
   const editor = wrapper.find(FreeEditor).first();
