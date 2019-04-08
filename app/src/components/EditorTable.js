@@ -94,54 +94,52 @@ function splitHeader({ children, node }) {
   };
 }
 
-export class EditorTable extends React.Component {
-  render() {
-    const {
-      attributes,
-      isFocused,
-      remove,
-      insertColumn,
-      removeColumn,
-      insertRow,
-      removeRow
-    } = this.props;
-    const { header, rows } = splitHeader(this.props);
-    return (
-      <TableContainer>
-        {!!isFocused && (
-          <div contentEditable={false}>
-            <TableActionsTopRight>
-              <TableAction onClick={remove}>
-                <TableIcon icon={{ icon: 'trash-bin' }} />
-              </TableAction>
-            </TableActionsTopRight>
+export function EditorTable(props) {
+  const {
+    attributes,
+    isFocused,
+    remove,
+    insertColumn,
+    removeColumn,
+    insertRow,
+    removeRow
+  } = props;
+  const { header, rows } = splitHeader(props);
+  return (
+    <TableContainer>
+      {!!isFocused && (
+        <div contentEditable={false}>
+          <TableActionsTopRight>
+            <TableAction onClick={remove}>
+              <TableIcon icon={{ icon: 'trash-bin' }} />
+            </TableAction>
+          </TableActionsTopRight>
 
-            <TableActionsTopLeft>
-              <TableAction onClick={removeColumn}>
-                <TableIcon icon={{ icon: 'minus' }} />
-              </TableAction>
-              <TableAction onClick={insertColumn}>
-                <TableIcon icon={{ icon: 'plus' }} />
-              </TableAction>
-            </TableActionsTopLeft>
+          <TableActionsTopLeft>
+            <TableAction onClick={removeColumn}>
+              <TableIcon icon={{ icon: 'minus' }} />
+            </TableAction>
+            <TableAction onClick={insertColumn}>
+              <TableIcon icon={{ icon: 'plus' }} />
+            </TableAction>
+          </TableActionsTopLeft>
 
-            <TableActionsLeft>
-              <ColumnTableAction onClick={removeRow}>
-                <TableIcon icon={{ icon: 'minus' }} />
-              </ColumnTableAction>
-              <ColumnTableAction onClick={insertRow}>
-                <TableIcon icon={{ icon: 'plus' }} />
-              </ColumnTableAction>
-            </TableActionsLeft>
-          </div>
-        )}
-        <table>
-          {!!header && <thead {...attributes}>{header}</thead>}
-          <tbody {...attributes}>{rows}</tbody>
-        </table>
-      </TableContainer>
-    );
-  }
+          <TableActionsLeft>
+            <ColumnTableAction onClick={removeRow}>
+              <TableIcon icon={{ icon: 'minus' }} />
+            </ColumnTableAction>
+            <ColumnTableAction onClick={insertRow}>
+              <TableIcon icon={{ icon: 'plus' }} />
+            </ColumnTableAction>
+          </TableActionsLeft>
+        </div>
+      )}
+      <table>
+        {!!header && <thead {...attributes}>{header}</thead>}
+        <tbody {...attributes}>{rows}</tbody>
+      </table>
+    </TableContainer>
+  );
 }
 
 EditorTable.propTypes = {
