@@ -75,40 +75,45 @@ class Sandbox extends Component {
         </InpageHeader>
         <InpageBody>
           <InpageBodyInner>
-            <p>Lorem ipsum dolor sit amet, <strong>consectetur</strong> adipiscing elit. Proin imperdiet diam magna, id pulvinar libero scelerisque et. Quisque sollicitudin massa nec arcu dapibus mollis.</p>
+            <p>
+              Lorem ipsum dolor sit amet,
+              <strong>consectetur</strong>
+              {' '}
+              adipiscing elit. Proin imperdiet diam magna, id pulvinar libero scelerisque et. Quisque sollicitudin massa nec arcu dapibus mollis.
+            </p>
 
             <div>
               <h1>Button Group</h1>
-              <ButtonGroup orientation='horizontal'>
-                <Button variation='base-raised-light'>First</Button>
-                <Button variation='base-raised-light'>Second</Button>
-                <Button variation='base-raised-light'>Third</Button>
-                <Button variation='base-raised-light'>Last</Button>
+              <ButtonGroup orientation="horizontal">
+                <Button variation="base-raised-light">First</Button>
+                <Button variation="base-raised-light">Second</Button>
+                <Button variation="base-raised-light">Third</Button>
+                <Button variation="base-raised-light">Last</Button>
               </ButtonGroup>
-              <ButtonGroup orientation='horizontal'>
-                <ButtonIconBrand variation='base-raised-light'>
+              <ButtonGroup orientation="horizontal">
+                <ButtonIconBrand variation="base-raised-light">
                   First
                 </ButtonIconBrand>
-                <ButtonIconBrand variation='base-raised-light'>
+                <ButtonIconBrand variation="base-raised-light">
                   Second
                 </ButtonIconBrand>
-                <ButtonIconBrand variation='base-raised-light'>
+                <ButtonIconBrand variation="base-raised-light">
                   Third
                 </ButtonIconBrand>
               </ButtonGroup>
-              <ButtonGroup orientation='vertical'>
-                <Button variation='base-raised-light'>First</Button>
-                <Button variation='base-raised-light'>Second</Button>
-                <Button variation='base-raised-light'>Third</Button>
-                <Button variation='base-raised-light'>Last</Button>
+              <ButtonGroup orientation="vertical">
+                <Button variation="base-raised-light">First</Button>
+                <Button variation="base-raised-light">Second</Button>
+                <Button variation="base-raised-light">Third</Button>
+                <Button variation="base-raised-light">Last</Button>
               </ButtonGroup>
             </div>
             <div>
               <h1>Buttons</h1>
-              <ButtonIconBrand variation='base-raised-light'>
+              <ButtonIconBrand variation="base-raised-light">
                 I have an icon
               </ButtonIconBrand>
-              <ButtonIconBrand variation='base-raised-light' hideText>
+              <ButtonIconBrand variation="base-raised-light" hideText>
                 this text is hidden
               </ButtonIconBrand>
 
