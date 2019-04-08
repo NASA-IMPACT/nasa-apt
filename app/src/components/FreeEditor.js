@@ -18,6 +18,7 @@ import EditorTable from './EditorTable';
 import schema from './editorSchema';
 import { themeVal } from '../styles/utils/general';
 import { multiply } from '../styles/utils/math';
+import Strong from '../styles/atoms/Strong';
 
 const equation = 'equation';
 const paragraph = 'paragraph';
@@ -36,6 +37,58 @@ const plugins = [
   SoftBreak(),
   PluginDeepTable()
 ];
+
+function onKeyDown(event, editor, next) {
+  if (!event.metaKey) return next();
+
+  let nextMark;
+  switch (event.key) {
+    case 'b': {
+      nextMark = 'bold';
+      break;
+    }
+    case 'i': {
+      nextMark = 'italic';
+      break;
+    }
+    case 'u': {
+      nextMark = 'underline';
+      break;
+    }
+    default: {
+      return next();
+    }
+  }
+
+  if (nextMark) {
+    event.preventDefault();
+    editor.toggleMark(nextMark);
+  }
+}
+
+function renderMark(props, editor, next) {
+  const {
+    mark: { type },
+    children
+  } = props;
+  switch (type) {
+    case 'bold': {
+      return <Strong {...props}>{children}</Strong>;
+    }
+    case 'italic': {
+      return <em {...props}>{children}</em>;
+    }
+    case 'underline': {
+      return <u {...props}>{children}</u>;
+    }
+    case 'strikethrough': {
+      return <s {...props}>{children}</s>;
+    }
+    default: {
+      return next();
+    }
+  }
+}
 
 export class FreeEditor extends React.Component {
   constructor(props) {
@@ -253,7 +306,9 @@ export class FreeEditor extends React.Component {
             value={value}
             onChange={onChange}
             onMouseDown={onMouseDown}
+            onKeyDown={onKeyDown}
             renderNode={renderNode}
+            renderMark={renderMark}
             plugins={plugins}
           />
         </EditorContainer>
