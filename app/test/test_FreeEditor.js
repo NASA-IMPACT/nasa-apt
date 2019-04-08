@@ -44,5 +44,8 @@ test('FreeEditor tool selection', (t) => {
   TableButton.simulate('click');
   t.equal(wrapper.state().activeTool, table);
 
+  TableButton.simulate('click');
+  t.notOk(wrapper.state().activeTool,
+    'Click active tool a second time disables it');
   t.end();
 });

@@ -2,10 +2,7 @@ import React from 'react';
 import ReactSelect from 'react-select';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import {
-  InputLabel,
-  InputLabelFeedback
-} from './common/EditPage';
+import { InputLabel, InputLabelFeedback } from './common/Input';
 
 const SelectContainer = styled.div`
   > * {

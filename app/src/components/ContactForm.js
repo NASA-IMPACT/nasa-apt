@@ -9,9 +9,8 @@ import apiSchema from '../schemas/schema.json';
 import addMinLength from '../schemas/addMinLength';
 import transformErrors from '../schemas/transformErrors';
 import validateEmail from '../schemas/validateEmail';
-import Input from './Input';
 import Select from './Select';
-import { InputFormGroup, InputSubmit } from './common/EditPage';
+import Input, { InputFormGroup, InputSubmit } from './common/Input';
 
 const validator = new jsonschema.Validator();
 const contactsSchema = addMinLength(apiSchema.definitions.contacts);
