@@ -94,7 +94,7 @@ function splitHeader({ children, node }) {
   };
 }
 
-class EditorTable extends React.Component {
+export class EditorTable extends React.Component {
   render() {
     const {
       attributes,
