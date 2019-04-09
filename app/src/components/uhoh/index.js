@@ -35,7 +35,11 @@ class UhOh extends Component {
           <InpageBodyInnerUhOh>
             <div>
               <p>We were not able to find the page you are looking for. It may have been archived or removed.</p>
-              <p>hello this is <a href="/" title="View page">Visit the homepage</a>.</p>
+              <p>
+                hello this is
+                <a href="/" title="View page">Visit the homepage</a>
+                .
+              </p>
             </div>
           </InpageBodyInnerUhOh>
         </InpageBody>

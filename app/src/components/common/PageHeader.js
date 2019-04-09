@@ -4,13 +4,19 @@ import { Link, withRouter, NavLink } from 'react-router-dom';
 import { antialiased } from '../../styles/helpers';
 import { themeVal } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
-import { Inner } from './Page';
+import Constrainer from '../../styles/atoms/constrainer';
 
 
 const PageHead = styled.header`
   ${antialiased()}
   background-color: ${themeVal('color.primary')};
   color: #FFF;
+`;
+
+const PageHeadInner = styled(Constrainer)`
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-end;
 `;
 
 const PageHeadline = styled.div`
@@ -65,7 +71,7 @@ class PageHeader extends React.PureComponent {
   render() {
     return (
       <PageHead>
-        <Inner>
+        <PageHeadInner>
           <PageHeadline>
             <PageTitle>
               <Link to="/" title="Go to Homepage">NASA APT</Link>
@@ -79,7 +85,7 @@ class PageHeader extends React.PureComponent {
               <li><NavLink exact to="/about" title="View page"><span>About</span></NavLink></li>
             </GlobalMenu>
           </PageNav>
-        </Inner>
+        </PageHeadInner>
       </PageHead>
     );
   }
