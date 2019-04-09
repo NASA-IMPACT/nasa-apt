@@ -120,6 +120,14 @@ export default function (state = initialState, action) {
       return deleteAtbdChildItem(schemaKey, state, action);
     }
 
+    case actions.UPLOAD_FILE_SUCCESS: {
+      const { payload } = action;
+      return {
+        ...state,
+        uploadedFile: payload
+      };
+    }
+
     default: return state;
   }
 }

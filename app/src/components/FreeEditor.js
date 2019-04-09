@@ -24,6 +24,7 @@ import { multiply } from '../styles/utils/math';
 const equation = 'equation';
 const paragraph = 'paragraph';
 const table = 'table';
+const image = 'image';
 
 const EditorContainer = styled.div`
   background-color: ${themeVal('color.surface')};
@@ -60,6 +61,8 @@ export class FreeEditor extends React.Component {
     this.removeColumn = this.removeColumn.bind(this);
     this.removeRow = this.removeRow.bind(this);
     this.removeTable = this.removeTable.bind(this);
+    this.insertImage = this.insertImage.bind(this);
+    this.setImagePath = this.setImagePath.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -80,6 +83,9 @@ export class FreeEditor extends React.Component {
         if (activeTool === table) {
           this.insertTable();
         }
+        if (activeTool === image) {
+          this.insertImage();
+        }
       }, 0);
     }
   }
@@ -89,6 +95,13 @@ export class FreeEditor extends React.Component {
     this.setState({
       value,
       activeTool: null
+    });
+  }
+
+  setImagePath(path) {
+    this.setState({
+      imagePath: path,
+      activeTool: image
     });
   }
 
@@ -121,6 +134,15 @@ export class FreeEditor extends React.Component {
           },
         ],
       })
+      .focus();
+  }
+
+  insertImage() {
+    const { imagePath } = this.state;
+    this.editor.insertBlock({
+      type: 'image',
+      data: { src: imagePath },
+    })
       .focus();
   }
 
@@ -235,7 +257,6 @@ export class FreeEditor extends React.Component {
           >
             <ToolbarIcon icon={{ icon: 'text-block' }}>Paragraph</ToolbarIcon>
           </ToolbarAction>
-
           <ToolbarAction
             id={table}
             onClick={() => { this.selectTool(table); }}
@@ -243,10 +264,12 @@ export class FreeEditor extends React.Component {
           >
             <ToolbarIcon icon={{ icon: 'list' }}>Table</ToolbarIcon>
           </ToolbarAction>
+          <EditorFigureTool
+            setImagePath={this.setImagePath}
+          />
           <ToolbarAction onClick={save}>
             Save
           </ToolbarAction>
-          <EditorFigureTool />
         </Toolbar>
         <EditorContainer>
           <Editor

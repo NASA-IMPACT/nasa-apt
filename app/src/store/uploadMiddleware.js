@@ -20,6 +20,7 @@ const renameFile = (file, id) => {
 
 const uploadMiddleware = store => next => async (action) => {
   const { type, payload } = action;
+  next(action);
   if (type === actions.UPLOAD_FILE) {
     try {
       const { file } = payload;
@@ -32,14 +33,16 @@ const uploadMiddleware = store => next => async (action) => {
         Bucket: 'figures',
         ContentType: keyedFile.type
       }).promise();
-      console.log(response);
       const { Location } = response;
       store.dispatch({
         type: actions.UPLOAD_FILE_SUCCESS,
         payload: Location
       });
     } catch (error) {
-      console.log(error);
+      store.dispatch({
+        type: actions.UPLOAD_FILE_FAIL,
+        payload: error
+      });
     }
   }
   next(action);

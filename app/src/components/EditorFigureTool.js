@@ -27,15 +27,38 @@ const FigureInputLabel = styled.label`
   }
 `;
 
+const InsertButton = styled.span`
+  cursor: pointer;
+  background: ${props => (props.active ? themeVal('color.shadow') : null)};
+  box-shadow: ${props => (props.active ? themeVal('boxShadow.inset') : null)};
+  font-weight: bold;
+  line-height: 1;
+  padding: .5rem 1rem;
+  transition: background .16s ease;
+  visibility: ${props => (props.hidden ? 'hidden' : 'visible')};
+  &:hover {
+    background: ${themeVal('color.shadow')}
+  }
+`;
+
 const EditorFigureTool = (props) => {
-  const { uploadFile: upload } = props;
+  const {
+    uploadFile: upload,
+    uploadedFile,
+    setImagePath
+  } = props;
+
   return (
     <Fragment>
       <FigureInput
         id="file"
         type="file"
         onChange={
-          (event) => { upload({ file: event.currentTarget.files[0] }); }
+          (event) => {
+            if (event.currentTarget.files.length) {
+              upload({ file: event.currentTarget.files[0] });
+            }
+          }
         }
       />
       <FigureInputLabel
@@ -43,10 +66,20 @@ const EditorFigureTool = (props) => {
       >
         Figure
       </FigureInputLabel>
+      <InsertButton
+        hidden={!uploadedFile}
+        onClick={() => { setImagePath(uploadedFile); }}
+      >
+        Insert
+      </InsertButton>
     </Fragment>
   );
 };
 
 const mapDispatch = { uploadFile };
 
-export default connect(null, mapDispatch)(EditorFigureTool);
+const mapStateToProps = (state) => {
+  const { uploadedFile } = state.application;
+  return { uploadedFile };
+};
+export default connect(mapStateToProps, mapDispatch)(EditorFigureTool);
