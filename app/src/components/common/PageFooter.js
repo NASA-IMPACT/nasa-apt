@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { themeVal } from '../../styles/utils/general';
-import Constrainer from '../../styles/atoms/Constrainer';
+import Constrainer from '../../styles/atoms/constrainer';
 
 const PageFoot = styled.footer`
   padding: ${themeVal('layout.space')};
@@ -10,7 +10,7 @@ const PageFoot = styled.footer`
   line-height: 1rem;
 `;
 
-export const Inner = styled(Constrainer)`
+const PageFootInner = styled(Constrainer)`
   display: flex;
   flex-flow: row nowrap;
   justify-content: center;
@@ -24,9 +24,9 @@ class PageFooter extends React.PureComponent {
   render() {
     return (
       <PageFoot>
-        <Inner>
+        <PageFootInner>
           <p>2019 © NASA. All rights reserved</p>
-        </Inner>
+        </PageFootInner>
       </PageFoot>
     );
   }
