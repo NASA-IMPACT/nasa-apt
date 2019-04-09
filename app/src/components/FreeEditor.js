@@ -15,6 +15,7 @@ import {
 } from './Toolbars';
 import EditorImage from './EditorImage';
 import EditorTable from './EditorTable';
+import EditorFormattableText from './EditorFormattableText';
 import schema from './editorSchema';
 import { themeVal } from '../styles/utils/general';
 import { multiply } from '../styles/utils/math';
@@ -37,34 +38,6 @@ const plugins = [
   SoftBreak(),
   PluginDeepTable()
 ];
-
-function onKeyDown(event, editor, next) {
-  if (!event.metaKey) return next();
-
-  let nextMark;
-  switch (event.key) {
-    case 'b': {
-      nextMark = 'bold';
-      break;
-    }
-    case 'i': {
-      nextMark = 'italic';
-      break;
-    }
-    case 'u': {
-      nextMark = 'underline';
-      break;
-    }
-    default: {
-      return next();
-    }
-  }
-
-  if (nextMark) {
-    event.preventDefault();
-    editor.toggleMark(nextMark);
-  }
-}
 
 function renderMark(props, editor, next) {
   const {
@@ -105,6 +78,8 @@ export class FreeEditor extends React.Component {
     this.insertTable = this.insertTable.bind(this);
     this.selectTool = this.selectTool.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
+    this.onKeyDown = this.onKeyDown.bind(this);
+    this.toggleMark = this.toggleMark.bind(this);
     this.save = this.save.bind(this);
     this.insertColumn = this.insertColumn.bind(this);
     this.insertRow = this.insertRow.bind(this);
@@ -135,12 +110,44 @@ export class FreeEditor extends React.Component {
     }
   }
 
+  onKeyDown(event, editor, next) {
+    if (!event.metaKey) return next();
+
+    let nextMark;
+    switch (event.key) {
+      case 'b': {
+        nextMark = 'bold';
+        break;
+      }
+      case 'i': {
+        nextMark = 'italic';
+        break;
+      }
+      case 'u': {
+        nextMark = 'underline';
+        break;
+      }
+      default: {
+        return next();
+      }
+    }
+
+    if (nextMark) {
+      event.preventDefault();
+      this.toggleMark(nextMark);
+    }
+  }
+
   onChange(event) {
     const { value } = event;
     this.setState({
       value,
       activeTool: null
     });
+  }
+
+  toggleMark(nextMark) {
+    this.editor.toggleMark(nextMark);
   }
 
   selectTool(tool) {
@@ -225,9 +232,9 @@ export class FreeEditor extends React.Component {
     );
   }
 
-  /* eslint-disable-next-line */
   renderNode(props, editor, next) {
     const { attributes, node, isFocused } = props;
+    const { value } = this.state;
     switch (node.type) {
       case 'equation':
         return <EquationEditor {...props} />;
@@ -253,6 +260,19 @@ export class FreeEditor extends React.Component {
           />
         );
       }
+      case 'paragraph': {
+        const hasSelection = !!value.fragment.text.length;
+        const activeMarks = Array.from(value.activeMarks)
+          .map(Mark => Mark.type);
+        return (
+          <EditorFormattableText
+            hasSelection={hasSelection}
+            activeMarks={activeMarks}
+            toggleMark={this.toggleMark}
+            {...props}
+          />
+        );
+      }
       default:
         return next();
     }
@@ -264,6 +284,7 @@ export class FreeEditor extends React.Component {
       save,
       onChange,
       onMouseDown,
+      onKeyDown,
       renderNode
     } = this;
     const { className } = this.props;
