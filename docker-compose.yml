@@ -31,3 +31,10 @@ services:
       - "8080"
     environment:
       API_URL: http://localhost:3000/
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - 4572:4572 #s3
+    environment:
+      - SERVICES=s3
+      - DATA_DIR=./figures

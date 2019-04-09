@@ -162,7 +162,7 @@ INSERT INTO atbd_versions(atbd_id, atbd_version, scientific_theory, introduction
 VALUES (1, 1, 
 '{"document":{"nodes":[{"object":"block","type":"paragraph","nodes":[{"object":"text","leaves":[{"text":"A line of text in a paragraph."}]}]},
 {"object":"block","type":"equation","nodes":[{"object":"text","leaves":[{"text":"\\int_0^\\infty x^2 dx"}]}]},
-{"object":"block","type":"image","data":{"src":"https://img.washingtonpost.com/wp-apps/imrs.php?src=https://img.washingtonpost.com/news/speaking-of-science/wp-content/uploads/sites/36/2015/10/as12-49-7278-1024x1024.jpg&w=1484"}}]}}',
+{"object":"block","type":"image","data":{"src":"http://localhost:4572/figures/fullmoon.jpg"}}]}}',
 'Introduction Lorem Ipsum Text', 'Historical Perspective Lorem Ipsum Text');
 INSERT INTO algorithm_input_variables(atbd_id, atbd_version, name, long_name)
 VALUES (1, 1, 'Input Var 1', 'Input variable 1');
