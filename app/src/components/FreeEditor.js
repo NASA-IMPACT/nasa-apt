@@ -8,8 +8,9 @@ import styled from 'styled-components/macro';
 import EquationEditor from './EquationEditor';
 import TrailingBlock from '../slate-plugins/TrailingBlock';
 import {
-  ToolbarAction,
-  ToolbarIcon,
+  EquationBtn,
+  ParagraphBtn,
+  TableBtn,
   Toolbar,
   ToolbarLabel
 } from './Toolbars';
@@ -20,6 +21,8 @@ import schema from './editorSchema';
 import { themeVal } from '../styles/utils/general';
 import { multiply } from '../styles/utils/math';
 import Strong from '../styles/atoms/Strong';
+import Button from '../styles/atoms/button';
+import ButtonGroup from '../styles/molecules/button-group';
 
 const equation = 'equation';
 const paragraph = 'paragraph';
@@ -291,34 +294,45 @@ export class FreeEditor extends React.Component {
     return (
       <div className={className}>
         <Toolbar>
-          <ToolbarLabel>Insert</ToolbarLabel>
-          <ToolbarAction
-            id={equation}
-            onClick={() => { this.selectTool(equation); }}
-            active={activeTool === equation}
-          >
-            <ToolbarIcon icon={{ icon: 'equal--small' }}>Equation</ToolbarIcon>
-          </ToolbarAction>
+          <ButtonGroup orientation="horizontal">
+            <ToolbarLabel>Insert</ToolbarLabel>
+            <EquationBtn
+              id={equation}
+              onClick={() => { this.selectTool(equation); }}
+              active={activeTool === equation}
+              variation="base-plain"
+              size="large"
+            >
+              Equation
+            </EquationBtn>
 
-          <ToolbarAction
-            id={paragraph}
-            onClick={() => { this.selectTool(paragraph); }}
-            active={activeTool === paragraph}
-          >
-            <ToolbarIcon icon={{ icon: 'text-block' }}>Paragraph</ToolbarIcon>
-          </ToolbarAction>
+            <ParagraphBtn
+              id={paragraph}
+              onClick={() => { this.selectTool(paragraph); }}
+              active={activeTool === paragraph}
+              variation="base-plain"
+              size="large"
+            >
+              Paragraph
+            </ParagraphBtn>
 
-          <ToolbarAction
-            id={table}
-            onClick={() => { this.selectTool(table); }}
-            active={activeTool === table}
-          >
-            <ToolbarIcon icon={{ icon: 'list' }}>Table</ToolbarIcon>
-          </ToolbarAction>
-          <ToolbarAction onClick={save}>
-            Save
-          </ToolbarAction>
-
+            <TableBtn
+              id={table}
+              onClick={() => { this.selectTool(table); }}
+              active={activeTool === table}
+              variation="base-plain"
+              size="large"
+            >
+              Table
+            </TableBtn>
+            <Button
+              onClick={save}
+              variation="base-plain"
+              size="large"
+            >
+              Save
+            </Button>
+          </ButtonGroup>
         </Toolbar>
         <EditorContainer>
           <Editor
