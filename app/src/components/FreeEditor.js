@@ -15,9 +15,11 @@ import {
 } from './Toolbars';
 import EditorImage from './EditorImage';
 import EditorTable from './EditorTable';
+import EditorFigureTool from './EditorFigureTool';
 import schema from './editorSchema';
 import { themeVal } from '../styles/utils/general';
 import { multiply } from '../styles/utils/math';
+
 
 const equation = 'equation';
 const paragraph = 'paragraph';
@@ -244,7 +246,7 @@ export class FreeEditor extends React.Component {
           <ToolbarAction onClick={save}>
             Save
           </ToolbarAction>
-
+          <EditorFigureTool />
         </Toolbar>
         <EditorContainer>
           <Editor
