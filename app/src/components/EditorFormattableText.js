@@ -42,7 +42,7 @@ export function FormattableText(props) {
   return (
     <TextContainer>
       {hasSelection && isFocused && (
-        <ActionsContainer>
+        <ActionsContainer contentEditable={false}>
           <ButtonGroup orientation="horizontal">
             {buttonConfig.map(config => (
               <Button
