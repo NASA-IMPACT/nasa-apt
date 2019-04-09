@@ -264,7 +264,13 @@ export class FreeEditor extends React.Component {
         );
       }
       case 'paragraph': {
-        const hasSelection = !!value.fragment.text.length;
+        // Focus text applies when a single text block is focused.
+        // Importantly, it's empty when multiple, non-text blocks are focused.
+        // Use focus text in addition to the length of any highlighted text
+        // to determine whether we have a selection.
+        const focusText = value.focusText ? value.focusText.text : '';
+        const selectedText = value.fragment.text;
+        const hasSelection = !!(focusText.length && selectedText.length);
         const activeMarks = Array.from(value.activeMarks)
           .map(Mark => Mark.type);
         return (
