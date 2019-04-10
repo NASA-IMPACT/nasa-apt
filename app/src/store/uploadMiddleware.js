@@ -19,8 +19,8 @@ const renameFile = (file, id) => {
 };
 
 const uploadMiddleware = store => next => async (action) => {
+  let returnAction;
   const { type, payload } = action;
-  next(action);
   if (type === actions.UPLOAD_FILE) {
     try {
       const { file } = payload;
@@ -44,8 +44,11 @@ const uploadMiddleware = store => next => async (action) => {
         payload: error
       });
     }
+    returnAction = next(action);
+  } else {
+    returnAction = next(action);
   }
-  next(action);
+  return returnAction;
 };
 
 export default uploadMiddleware;

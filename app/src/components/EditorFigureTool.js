@@ -1,9 +1,9 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import styled from 'styled-components/macro';
+import collecticon from '../styles/collecticons';
 import { themeVal } from '../styles/utils/general';
-import { uploadFile } from '../actions/actions';
+import { multiply } from '../styles/utils/math';
 
 const FigureInput = styled.input`
   width: 0.1px;
@@ -25,27 +25,18 @@ const FigureInputLabel = styled.label`
   &:hover {
     background: ${themeVal('color.shadow')}
   }
-`;
-
-const InsertButton = styled.span`
-  cursor: pointer;
-  background: ${props => (props.active ? themeVal('color.shadow') : null)};
-  box-shadow: ${props => (props.active ? themeVal('boxShadow.inset') : null)};
-  font-weight: bold;
-  line-height: 1;
-  padding: .5rem 1rem;
-  transition: background .16s ease;
-  visibility: ${props => (props.hidden ? 'hidden' : 'visible')};
-  &:hover {
-    background: ${themeVal('color.shadow')}
+  &::before {
+    font-size: 0.875rem;
+    margin-right: ${multiply(themeVal('layout.space'), 0.5)};
+    ${props => collecticon(props.icon.icon)}
   }
 `;
 
 const EditorFigureTool = (props) => {
   const {
-    uploadFile: upload,
-    uploadedFile,
-    setImagePath
+    upload,
+    active,
+    icon
   } = props;
 
   return (
@@ -53,6 +44,7 @@ const EditorFigureTool = (props) => {
       <FigureInput
         id="file"
         type="file"
+        accept=".png,.jpg,.jpeg"
         onChange={
           (event) => {
             if (event.currentTarget.files.length) {
@@ -62,24 +54,20 @@ const EditorFigureTool = (props) => {
         }
       />
       <FigureInputLabel
+        active={active}
         htmlFor="file"
+        icon={icon}
       >
         Figure
       </FigureInputLabel>
-      <InsertButton
-        hidden={!uploadedFile}
-        onClick={() => { setImagePath(uploadedFile); }}
-      >
-        Insert
-      </InsertButton>
     </Fragment>
   );
 };
 
-const mapDispatch = { uploadFile };
-
-const mapStateToProps = (state) => {
-  const { uploadedFile } = state.application;
-  return { uploadedFile };
+EditorFigureTool.propTypes = {
+  upload: PropTypes.func.isRequired,
+  active: PropTypes.bool,
+  icon: PropTypes.object.isRequired
 };
-export default connect(mapStateToProps, mapDispatch)(EditorFigureTool);
+
+export default EditorFigureTool;
