@@ -9,8 +9,9 @@ const FormGroup = styled.div`
     "form-group-label form-group-toolbar"
     "form-group-body form-group-body";
   }
+  grid-gap: ${themeVal('layout.space')};
 
-  * {
+  > * {
     grid-column-start: 1;
     grid-column-end: -1;
   }

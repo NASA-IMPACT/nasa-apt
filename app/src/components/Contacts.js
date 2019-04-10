@@ -2,11 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import styled from 'styled-components';
-import ReactTooltip from 'react-tooltip';
-
 import { themeVal } from '../styles/utils/general';
-import collecticon from '../styles/collecticons';
 
 import ContactForm from './ContactForm';
 import {
@@ -19,18 +15,7 @@ import EditPage, {
 import RemovableListItem from './common/RemovableListItem';
 import { createAtbdContact, deleteAtbdContact } from '../actions/actions';
 
-import FormGroup from '../styles/molecules/form/group';
-import FormToolbar from '../styles/molecules/form/toolbar';
-import FormLabel from '../styles/atoms/form/label';
-
-import Button from '../styles/atoms/button';
-import Select from './Select';
-
-const InfoButton = styled(Button)`
-  ::before {
-    ${collecticon('circle-information')}
-  }
-`;
+import Select from './common/Select';
 
 const Contacts = (props) => {
   const {
@@ -81,21 +66,16 @@ const Contacts = (props) => {
       >
         <h2>Contacts</h2>
         <EditorSection>
-          <FormGroup>
-            <FormLabel>Existing contacts</FormLabel>
-            <FormToolbar>
-              <InfoButton variation='base-plain' size='small' hideText data-tip='Lorem ipsum dolor sit amet.'>Learn more</InfoButton>
-              <ReactTooltip effect='solid' className='type-primary' />
-            </FormToolbar>
-            <Select
-              name="existing-contact"
-              options={contactOptions}
-              onChange={e => dispatchCreateAtbdContact({
-                atbd_id: selectedAtbd.atbd_id,
-                contact_id: e.target.value
-              })}
-            />
-          </FormGroup>
+          <EditorLabel>Existing contacts</EditorLabel>
+          <Select
+            name="existing-contact"
+            label="Select contact"
+            options={contactOptions}
+            onChange={e => dispatchCreateAtbdContact({
+              atbd_id: selectedAtbd.atbd_id,
+              contact_id: e.target.value
+            })}
+          />
         </EditorSection>
 
         <EditorSection>

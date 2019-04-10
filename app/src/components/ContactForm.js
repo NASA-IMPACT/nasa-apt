@@ -9,7 +9,7 @@ import apiSchema from '../schemas/schema.json';
 import addMinLength from '../schemas/addMinLength';
 import transformErrors from '../schemas/transformErrors';
 import validateEmail from '../schemas/validateEmail';
-import Select from './Select';
+import Select from './common/Select';
 import Input, { InputFormGroup, InputSubmit } from './common/Input';
 
 const validator = new jsonschema.Validator();
