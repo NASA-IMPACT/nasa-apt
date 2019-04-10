@@ -43,6 +43,13 @@ const ButtonIconBrand = styled(Button)`
   }
 `;
 
+const InfoButton = styled(Button)`
+  ::before {
+    ${collecticon('circle-information')}
+  }
+`;
+
+
 // Below the differente button variations and sizes to render all buttons.
 
 const variations = [
@@ -77,7 +84,7 @@ class Sandbox extends Component {
         <InpageBody>
           <InpageBodyInner>
             <h2>Help tooltips</h2>
-            <p data-tip='Lorem ipsum dolor sit amet.'>Hover me!</p>
+            <InfoButton variation='base-plain' size='small' hideText data-tip='Lorem ipsum dolor sit amet.'>Learn more</InfoButton>
             <ReactTooltip effect='solid' className='type-primary' />
 
             <h2>Button Group</h2>
