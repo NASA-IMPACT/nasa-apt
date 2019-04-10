@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import ReactTooltip from 'react-tooltip';
 
 import { themeVal } from '../../styles/utils/general';
 import collecticon from '../../styles/collecticons';
@@ -75,71 +76,65 @@ class Sandbox extends Component {
         </InpageHeader>
         <InpageBody>
           <InpageBodyInner>
-            <p>
-              Lorem ipsum dolor sit amet,
-              <strong>consectetur</strong>
-              {' '}
-              adipiscing elit. Proin imperdiet diam magna, id pulvinar libero scelerisque et. Quisque sollicitudin massa nec arcu dapibus mollis.
-            </p>
+            <h2>Help tooltips</h2>
+            <p data-tip='Lorem ipsum dolor sit amet.'>Hover me!</p>
+            <ReactTooltip effect='solid' className='type-primary' />
 
-            <div>
-              <h1>Button Group</h1>
-              <ButtonGroup orientation="horizontal">
-                <Button variation="base-raised-light">First</Button>
-                <Button variation="base-raised-light">Second</Button>
-                <Button variation="base-raised-light">Third</Button>
-                <Button variation="base-raised-light">Last</Button>
-              </ButtonGroup>
-              <ButtonGroup orientation="horizontal">
-                <ButtonIconBrand variation="base-raised-light">
-                  First
-                </ButtonIconBrand>
-                <ButtonIconBrand variation="base-raised-light">
-                  Second
-                </ButtonIconBrand>
-                <ButtonIconBrand variation="base-raised-light">
-                  Third
-                </ButtonIconBrand>
-              </ButtonGroup>
-              <ButtonGroup orientation="vertical">
-                <Button variation="base-raised-light">First</Button>
-                <Button variation="base-raised-light">Second</Button>
-                <Button variation="base-raised-light">Third</Button>
-                <Button variation="base-raised-light">Last</Button>
-              </ButtonGroup>
-            </div>
-            <div>
-              <h1>Buttons</h1>
+            <h2>Button Group</h2>
+            <ButtonGroup orientation="horizontal">
+              <Button variation="base-raised-light">First</Button>
+              <Button variation="base-raised-light">Second</Button>
+              <Button variation="base-raised-light">Third</Button>
+              <Button variation="base-raised-light">Last</Button>
+            </ButtonGroup>
+            <ButtonGroup orientation="horizontal">
               <ButtonIconBrand variation="base-raised-light">
-                I have an icon
+                First
               </ButtonIconBrand>
-              <ButtonIconBrand variation="base-raised-light" hideText>
-                this text is hidden
+              <ButtonIconBrand variation="base-raised-light">
+                Second
               </ButtonIconBrand>
+              <ButtonIconBrand variation="base-raised-light">
+                Third
+              </ButtonIconBrand>
+            </ButtonGroup>
+            <ButtonGroup orientation="vertical">
+              <Button variation="base-raised-light">First</Button>
+              <Button variation="base-raised-light">Second</Button>
+              <Button variation="base-raised-light">Third</Button>
+              <Button variation="base-raised-light">Last</Button>
+            </ButtonGroup>
 
-              {variations.map(variation => (
-                <Ul key={variation}>
-                  {sizes.map(size => (
-                    <li key={size}>
-                      <Button variation={variation} size={size}>
-                        {size} - {variation}
-                      </Button>
-                    </li>
-                  ))}
-                </Ul>
-              ))}
-              {lightVariations.map(variation => (
-                <DarkUl key={variation}>
-                  {sizes.map(size => (
-                    <li key={size}>
-                      <Button variation={variation} size={size}>
-                        {size} - {variation}
-                      </Button>
-                    </li>
-                  ))}
-                </DarkUl>
-              ))}
-            </div>
+            <h2>Buttons</h2>
+            <ButtonIconBrand variation="base-raised-light">
+              I have an icon
+            </ButtonIconBrand>
+            <ButtonIconBrand variation="base-raised-light" hideText>
+              this text is hidden
+            </ButtonIconBrand>
+
+            {variations.map(variation => (
+              <Ul key={variation}>
+                {sizes.map(size => (
+                  <li key={size}>
+                    <Button variation={variation} size={size}>
+                      {size} - {variation}
+                    </Button>
+                  </li>
+                ))}
+              </Ul>
+            ))}
+            {lightVariations.map(variation => (
+              <DarkUl key={variation}>
+                {sizes.map(size => (
+                  <li key={size}>
+                    <Button variation={variation} size={size}>
+                      {size} - {variation}
+                    </Button>
+                  </li>
+                ))}
+              </DarkUl>
+            ))}
           </InpageBodyInner>
         </InpageBody>
       </Inpage>
