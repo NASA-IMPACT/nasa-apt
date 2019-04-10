@@ -360,13 +360,6 @@ function renderButtonVariation(props) {
         'dark',
         props
       );
-    case 'base-plain':
-      return buttonVariation(
-        props.theme.type.base.color,
-        'plain',
-        'light',
-        props
-      );
     case 'primary-raised-light':
       return buttonVariation(
         props.theme.color.primary,
@@ -420,6 +413,14 @@ function renderButtonVariation(props) {
       return buttonVariation('#fff', 'plain', null, props);
     case 'achromic-glass':
       return buttonVariation('#fff', 'glass', null, props);
+    case 'base-plain':
+    default:
+      return buttonVariation(
+        props.theme.type.base.color,
+        'plain',
+        'light',
+        props
+      );
   }
 }
 
