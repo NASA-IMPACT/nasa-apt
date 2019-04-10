@@ -83,7 +83,7 @@ class Sandbox extends Component {
         </InpageHeader>
         <InpageBody>
           <InpageBodyInner>
-            <h2>Help tooltips</h2>
+            <h2>Info tooltip</h2>
             <InfoButton variation='base-plain' size='small' hideText data-tip='Lorem ipsum dolor sit amet.'>Learn more</InfoButton>
             <ReactTooltip effect='solid' className='type-primary' />
 
