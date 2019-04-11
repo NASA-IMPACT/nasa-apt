@@ -45,7 +45,7 @@ export const SmallTextInput = styled(InlineInput)`
 `;
 
 const InfoButton = styled(Button)`
-  ::before {
+  &::before {
     ${collecticon('circle-information')}
   }
 `;
@@ -56,6 +56,8 @@ const Input = (props) => {
     touched,
     label,
     name,
+    info,
+    id,
     ...inputProps
   } = props;
 
@@ -65,24 +67,28 @@ const Input = (props) => {
   }
   return (
     <FormGroup>
-      <FormLabel>{label}</FormLabel>
-      <FormToolbar>
-        <InfoButton
-          variation="base-plain"
-          size="small"
-          hideText
-          data-tip="Lorem ipsum dolor sit amet."
-        >
-          Learn more
-        </InfoButton>
-        <ReactTooltip effect="solid" className="type-primary" />
-      </FormToolbar>
+      <FormLabel htmlFor={id}>{label}</FormLabel>
+      {info && (
+        <FormToolbar>
+          <InfoButton
+            variation="base-plain"
+            size="small"
+            hideText
+            data-tip={info}
+          >
+            Learn more
+          </InfoButton>
+          <ReactTooltip effect="solid" className="type-primary" />
+        </FormToolbar>
+      )}
       <SmallTextInput
-        id={name}
+        id={id}
         name={name}
         {...inputProps}
       />
-      <FormHelp>{feedback}</FormHelp>
+      {feedback && (
+        <FormHelp>{feedback}</FormHelp>
+      )}
     </FormGroup>
   );
 };
@@ -91,7 +97,9 @@ Input.propTypes = {
   label: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   error: PropTypes.string,
-  touched: PropTypes.bool
+  touched: PropTypes.bool,
+  info: PropTypes.string,
+  id: PropTypes.string
 };
 
 export default Input;

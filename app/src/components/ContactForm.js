@@ -40,6 +40,7 @@ export const InnerContactForm = (props) => {
   return (
     <InputFormGroup onSubmit={handleSubmit}>
       <Input
+        id="cf-first-name"
         name={first_name}
         label="First Name"
         type="text"
@@ -48,8 +49,10 @@ export const InnerContactForm = (props) => {
         value={values[first_name]}
         error={errors[first_name]}
         touched={touched[first_name]}
+        info="This is some info text. Awesome!"
       />
       <Input
+        id="cf-middle-name"
         name={middle_name}
         label="Middle Name"
         type="text"
@@ -60,6 +63,7 @@ export const InnerContactForm = (props) => {
         touched={touched[middle_name]}
       />
       <Input
+        id="cf-last-name"
         name={last_name}
         label="Last Name"
         type="text"
@@ -70,6 +74,7 @@ export const InnerContactForm = (props) => {
         touched={touched[last_name]}
       />
       <Select
+        id="cf-contact-type"
         name={contact_mechanism_type}
         label="Contact Type"
         onChange={handleChange}
@@ -80,6 +85,7 @@ export const InnerContactForm = (props) => {
         options={contact_mechanism_types.map(d => ({ value: d, label: d }))}
       />
       <Input
+        id="cf-contact-mechanism-value"
         name={contact_mechanism_value}
         label="Contact"
         type="text"

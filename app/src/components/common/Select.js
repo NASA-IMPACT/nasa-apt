@@ -12,7 +12,7 @@ import FormHelp from '../../styles/atoms/form/help';
 import Button from '../../styles/atoms/button';
 
 const InfoButton = styled(Button)`
-  ::before {
+  &::before {
     ${collecticon('circle-information')}
   }
 `;
@@ -26,7 +26,9 @@ const Select = (props) => {
     options,
     value,
     onChange,
-    onBlur
+    onBlur,
+    info,
+    id
   } = props;
 
   let feedback = null;
@@ -37,26 +39,31 @@ const Select = (props) => {
 
   return (
     <FormGroup>
-      <FormLabel>{label}</FormLabel>
-      <FormToolbar>
-        <InfoButton
-          variation="base-plain"
-          size="small"
-          hideText
-          data-tip="Lorem ipsum dolor sit amet."
-        >
-          Learn more
-        </InfoButton>
-        <ReactTooltip effect="solid" className="type-primary" />
-      </FormToolbar>
+      <FormLabel htmlFor={id}>{label}</FormLabel>
+      {info && (
+        <FormToolbar>
+          <InfoButton
+            variation="base-plain"
+            size="small"
+            hideText
+            data-tip={info}
+          >
+            Learn more
+          </InfoButton>
+          <ReactTooltip effect="solid" className="type-primary" />
+        </FormToolbar>
+      )}
       <ReactSelect
         options={options}
         name={name}
         value={activeValue}
         onChange={e => onChange && onChange({ target: { name, value: e.value } })}
         onBlur={() => onBlur && onBlur(({ target: { name } }))}
+        id={id}
       />
-      <FormHelp>{feedback}</FormHelp>
+      {feedback && (
+        <FormHelp>{feedback}</FormHelp>
+      )}
     </FormGroup>
   );
 };
@@ -69,6 +76,8 @@ Select.propTypes = {
   touched: PropTypes.bool,
   value: PropTypes.string,
   onChange: PropTypes.func,
-  onBlur: PropTypes.func
+  onBlur: PropTypes.func,
+  info: PropTypes.string,
+  id: PropTypes.string
 };
 export default Select;
