@@ -6,23 +6,26 @@ import collecticon from '../styles/collecticons';
 
 export const EquationBtn = styled(Button)`
   ::before {
-    ${collecticon('equal--small')}
+    ${collecticon('pi')}
   }
 `;
 
 export const ParagraphBtn = styled(Button)`
   ::before {
-    ${collecticon('text-block')}
+    ${collecticon('pilcrow')}
   }
 `;
 
 export const TableBtn = styled(Button)`
   ::before {
-    ${collecticon('list')}
+    ${collecticon('table')}
   }
 `;
 
 export const Toolbar = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
   background: ${themeVal('color.shadow')};
   border-top-left-radius: ${multiply(themeVal('layout.space'), 0.25)};
   border-top-right-radius: ${multiply(themeVal('layout.space'), 0.25)};

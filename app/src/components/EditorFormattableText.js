@@ -6,6 +6,10 @@ import ButtonGroup from '../styles/molecules/button-group';
 
 const TextContainer = styled.div`
   position: relative;
+
+  > * {
+    margin-bottom: 1.5rem;
+  }
 `;
 
 const ActionsContainer = styled.div`

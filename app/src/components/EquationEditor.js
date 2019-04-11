@@ -1,7 +1,14 @@
 import React from 'react';
 import propTypes from 'prop-types';
+import styled from 'styled-components';
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
+
+const EquationBlock = styled.div`
+  > * {
+    margin-bottom: 1.5rem;
+  }
+`;
 
 const EquationEditor = (props) => {
   const latexClass = {
@@ -10,14 +17,14 @@ const EquationEditor = (props) => {
   };
   const { children, node: { text } } = props;
   return (
-    <div>
+    <EquationBlock>
       <pre style={latexClass}>
         {children}
       </pre>
       <div contentEditable={false}>
         <BlockMath math={text} />
       </div>
-    </div>
+    </EquationBlock>
   );
 };
 

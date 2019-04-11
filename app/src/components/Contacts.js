@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+
 import ContactForm from './ContactForm';
 import {
   Inpage
@@ -12,7 +13,7 @@ import EditPage, {
 import RemovableListItem from './common/RemovableListItem';
 import { createAtbdContact, deleteAtbdContact } from '../actions/actions';
 
-import Select from './Select';
+import Select from './common/Select';
 
 const Contacts = (props) => {
   const {
@@ -66,7 +67,7 @@ const Contacts = (props) => {
           <EditorLabel>Existing contacts</EditorLabel>
           <Select
             name="existing-contact"
-            label="Select an existing contact"
+            label="Select contact"
             options={contactOptions}
             onChange={e => dispatchCreateAtbdContact({
               atbd_id: selectedAtbd.atbd_id,
