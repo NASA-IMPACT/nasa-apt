@@ -14,13 +14,13 @@ import {
   InpageBody,
   InpageBodyInner
 } from '../common/Inpage';
+import Prose from '../../styles/molecules/type/prose';
 import Button from '../../styles/atoms/button';
 import ButtonGroup from '../../styles/molecules/button-group';
 
 // Create a ul component to include some styling.
-const Ul = styled.ul`
-  margin-bottom: 2rem;
 
+const Ul = styled.ul`
   > li {
     margin-bottom: 1rem;
   }
@@ -32,11 +32,13 @@ const Ul = styled.ul`
 
 // Extend the component previously created to change the background
 // This is needed to see the achromic buttons.
+
 const DarkUl = styled(Ul)`
   background: ${themeVal('color.base')};
 `;
 
 // Extend a button to add an icon.
+
 const ButtonIconBrand = styled(Button)`
   ::before {
     ${collecticon('plus')}
@@ -48,7 +50,6 @@ const InfoButton = styled(Button)`
     ${collecticon('circle-information')}
   }
 `;
-
 
 // Below the differente button variations and sizes to render all buttons.
 
@@ -83,65 +84,67 @@ class Sandbox extends Component {
         </InpageHeader>
         <InpageBody>
           <InpageBodyInner>
-            <h2>Info tooltip</h2>
-            <InfoButton variation='base-plain' size='small' hideText data-tip='Lorem ipsum dolor sit amet.'>Learn more</InfoButton>
-            <ReactTooltip effect='solid' className='type-primary' />
+            <Prose>
+              <h2>Info tooltip</h2>
+              <InfoButton variation='base-plain' size='small' hideText data-tip='Lorem ipsum dolor sit amet.'>Learn more</InfoButton>
+              <ReactTooltip effect='solid' className='type-primary' />
 
-            <h2>Button Group</h2>
-            <ButtonGroup orientation="horizontal">
-              <Button variation="base-raised-light">First</Button>
-              <Button variation="base-raised-light">Second</Button>
-              <Button variation="base-raised-light">Third</Button>
-              <Button variation="base-raised-light">Last</Button>
-            </ButtonGroup>
-            <ButtonGroup orientation="horizontal">
-              <ButtonIconBrand variation="base-raised-light">
-                First
-              </ButtonIconBrand>
-              <ButtonIconBrand variation="base-raised-light">
-                Second
-              </ButtonIconBrand>
-              <ButtonIconBrand variation="base-raised-light">
-                Third
-              </ButtonIconBrand>
-            </ButtonGroup>
-            <ButtonGroup orientation="vertical">
-              <Button variation="base-raised-light">First</Button>
-              <Button variation="base-raised-light">Second</Button>
-              <Button variation="base-raised-light">Third</Button>
-              <Button variation="base-raised-light">Last</Button>
-            </ButtonGroup>
+              <h2>Button Group</h2>
+              <ButtonGroup orientation="horizontal">
+                <Button variation="base-raised-light">First</Button>
+                <Button variation="base-raised-light">Second</Button>
+                <Button variation="base-raised-light">Third</Button>
+                <Button variation="base-raised-light">Last</Button>
+              </ButtonGroup>
+              <ButtonGroup orientation="horizontal">
+                <ButtonIconBrand variation="base-raised-light">
+                  First
+                </ButtonIconBrand>
+                <ButtonIconBrand variation="base-raised-light">
+                  Second
+                </ButtonIconBrand>
+                <ButtonIconBrand variation="base-raised-light">
+                  Third
+                </ButtonIconBrand>
+              </ButtonGroup>
+              <ButtonGroup orientation="vertical">
+                <Button variation="base-raised-light">First</Button>
+                <Button variation="base-raised-light">Second</Button>
+                <Button variation="base-raised-light">Third</Button>
+                <Button variation="base-raised-light">Last</Button>
+              </ButtonGroup>
 
-            <h2>Buttons</h2>
-            <ButtonIconBrand variation="base-raised-light">
-              I have an icon
-            </ButtonIconBrand>
-            <ButtonIconBrand variation="base-raised-light" hideText>
-              this text is hidden
-            </ButtonIconBrand>
+              <h2>Buttons</h2>
+              <ButtonIconBrand variation="base-raised-light">
+                I have an icon
+              </ButtonIconBrand>
+              <ButtonIconBrand variation="base-raised-light" hideText>
+                this text is hidden
+              </ButtonIconBrand>
 
-            {variations.map(variation => (
-              <Ul key={variation}>
-                {sizes.map(size => (
-                  <li key={size}>
-                    <Button variation={variation} size={size}>
-                      {size} - {variation}
-                    </Button>
-                  </li>
-                ))}
-              </Ul>
-            ))}
-            {lightVariations.map(variation => (
-              <DarkUl key={variation}>
-                {sizes.map(size => (
-                  <li key={size}>
-                    <Button variation={variation} size={size}>
-                      {size} - {variation}
-                    </Button>
-                  </li>
-                ))}
-              </DarkUl>
-            ))}
+              {variations.map(variation => (
+                <Ul key={variation}>
+                  {sizes.map(size => (
+                    <li key={size}>
+                      <Button variation={variation} size={size}>
+                        {size} - {variation}
+                      </Button>
+                    </li>
+                  ))}
+                </Ul>
+              ))}
+              {lightVariations.map(variation => (
+                <DarkUl key={variation}>
+                  {sizes.map(size => (
+                    <li key={size}>
+                      <Button variation={variation} size={size}>
+                        {size} - {variation}
+                      </Button>
+                    </li>
+                  ))}
+                </DarkUl>
+              ))}
+            </Prose>
           </InpageBodyInner>
         </InpageBody>
       </Inpage>
