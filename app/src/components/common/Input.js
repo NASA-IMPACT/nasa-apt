@@ -67,8 +67,15 @@ const Input = (props) => {
     <FormGroup>
       <FormLabel>{label}</FormLabel>
       <FormToolbar>
-        <InfoButton variation='base-plain' size='small' hideText data-tip='Lorem ipsum dolor sit amet.'>Learn more</InfoButton>
-        <ReactTooltip effect='solid' className='type-primary' />
+        <InfoButton
+          variation="base-plain"
+          size="small"
+          hideText
+          data-tip="Lorem ipsum dolor sit amet."
+        >
+          Learn more
+        </InfoButton>
+        <ReactTooltip effect="solid" className="type-primary" />
       </FormToolbar>
       <SmallTextInput
         id={name}

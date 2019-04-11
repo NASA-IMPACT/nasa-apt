@@ -2,8 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { themeVal } from '../styles/utils/general';
-
 import ContactForm from './ContactForm';
 import {
   Inpage

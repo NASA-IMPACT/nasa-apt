@@ -86,8 +86,15 @@ class Sandbox extends Component {
           <InpageBodyInner>
             <Prose>
               <h2>Info tooltip</h2>
-              <InfoButton variation='base-plain' size='small' hideText data-tip='Lorem ipsum dolor sit amet.'>Learn more</InfoButton>
-              <ReactTooltip effect='solid' className='type-primary' />
+              <InfoButton
+                variation="base-plain"
+                size="small"
+                hideText
+                data-tip="Lorem ipsum dolor sit amet."
+              >
+                Learn more
+              </InfoButton>
+              <ReactTooltip effect="solid" className="type-primary" />
 
               <h2>Button Group</h2>
               <ButtonGroup orientation="horizontal">

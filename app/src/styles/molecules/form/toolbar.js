@@ -1,5 +1,4 @@
-import styled, { css } from 'styled-components';
-import { themeVal } from '../../utils/general';
+import styled from 'styled-components';
 
 const FormToolbar = styled.div`
   grid-area: form-group-toolbar;

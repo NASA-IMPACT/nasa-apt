@@ -4,8 +4,6 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import ReactTooltip from 'react-tooltip';
 import collecticon from '../../styles/collecticons';
-import { themeVal } from '../../styles/utils/general';
-import { multiply } from '../../styles/utils/math';
 
 import FormGroup from '../../styles/molecules/form/group';
 import FormToolbar from '../../styles/molecules/form/toolbar';
@@ -41,8 +39,15 @@ const Select = (props) => {
     <FormGroup>
       <FormLabel>{label}</FormLabel>
       <FormToolbar>
-        <InfoButton variation='base-plain' size='small' hideText data-tip='Lorem ipsum dolor sit amet.'>Learn more</InfoButton>
-        <ReactTooltip effect='solid' className='type-primary' />
+        <InfoButton
+          variation="base-plain"
+          size="small"
+          hideText
+          data-tip="Lorem ipsum dolor sit amet."
+        >
+          Learn more
+        </InfoButton>
+        <ReactTooltip effect="solid" className="type-primary" />
       </FormToolbar>
       <ReactSelect
         options={options}

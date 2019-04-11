@@ -5,6 +5,7 @@
     "no-return-assign": 0,
     "react/prefer-es6-class": 0,
     "react/jsx-filename-extension": 0,
+    "react/jsx-one-expression-per-line": 0,
     "jsx-a11y/click-events-have-key-events": 0,
     "jsx-a11y/no-static-element-interactions": 0,
     "jsx-a11y/label-has-for": 0,
@@ -18,7 +19,8 @@
     "camelcase": 0,
     "consistent-return": 0,
     "no-underscore-dangle": "off",
-    "no-use-before-define": "off"
+    "no-use-before-define": "off",
+    "max-len": 0
   },
   "parser": "babel-eslint"
 }

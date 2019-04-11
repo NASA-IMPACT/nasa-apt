@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { themeVal } from '../../utils/general';
 
 const FormLabel = styled.label`
