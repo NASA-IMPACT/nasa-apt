@@ -9,6 +9,7 @@ import {
   InpageBody,
   InpageBodyInner
 } from '../common/Inpage';
+import Prose from '../../styles/molecules/type/prose';
 
 class About extends Component {
   render() {
@@ -23,7 +24,9 @@ class About extends Component {
         </InpageHeader>
         <InpageBody>
           <InpageBodyInner>
-            <p>About content will appear here.</p>
+            <Prose>
+              <p>About content will appear here.</p>
+            </Prose>
           </InpageBodyInner>
         </InpageBody>
       </Inpage>
