@@ -300,8 +300,8 @@ export class FreeEditor extends React.Component {
     return (
       <div className={className}>
         <Toolbar>
+          <ToolbarLabel>Insert</ToolbarLabel>
           <ButtonGroup orientation="horizontal">
-            <ToolbarLabel>Insert</ToolbarLabel>
             <EquationBtn
               id={equation}
               onClick={() => { this.selectTool(equation); }}
