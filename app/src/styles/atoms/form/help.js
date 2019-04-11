@@ -1,12 +1,13 @@
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { rgba } from 'polished';
-import { themeVal } from '../../utils/general';
+import { themeVal, stylizeFunction } from '../../utils/general';
+
+const _rgba = stylizeFunction(rgba);
 
 const FormHelp = styled.p`
-  text-align: right;
   font-size: 0.875rem;
   line-height: 1.25rem;
-  color: rgba(theme.color.base, 0.48);
+  color: ${_rgba(themeVal('color.base'), 0.48)};
 `;
 
 export default FormHelp;
