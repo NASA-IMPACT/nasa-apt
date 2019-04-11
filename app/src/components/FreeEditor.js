@@ -98,10 +98,9 @@ export class FreeEditor extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     const { value, uploadedFile } = nextProps;
-    const { value: stateValue } = this.state;
-    if (uploadedFile) {
+    const { uploadedFile: previousUploadedFile } = this.props;
+    if (uploadedFile !== previousUploadedFile) {
       this.setState({
-        value: stateValue,
         activeTool: image
       });
     } else {
