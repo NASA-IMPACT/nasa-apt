@@ -12,12 +12,6 @@ import FormLabel from '../../styles/atoms/form/label';
 import FormHelp from '../../styles/atoms/form/help';
 import Button from '../../styles/atoms/button';
 
-export const InputLabelFeedback = styled.span`
-  color: ${themeVal('color.danger')};
-  font-weight: normal;
-  margin-left: ${multiply(themeVal('layout.space'), 0.25)};
-`;
-
 export const InputFormGroup = styled.form`
   display: grid;
   align-items: start;
@@ -39,6 +33,7 @@ const InlineInput = styled.input`
 export const InputSubmit = styled(InlineInput)`
   box-shadow: ${themeVal('boxShadow.input')};
   font-weight: bold;
+  grid-row-start: 4;
 `;
 
 export const SmallTextInput = styled(InlineInput)`
