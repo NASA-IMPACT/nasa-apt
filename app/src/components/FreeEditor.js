@@ -369,7 +369,7 @@ const StyledFreeEditor = styled(FreeEditor)`
     width: 100%;
     border-collapse: collapse;
     border-top: 1px solid ${themeVal('color.gray')};
-    margin: ${themeVal('layout.space')} 0;
+    margin-bottom: ${themeVal('layout.space')};
     table-layout: fixed;
   }
   table tr {
