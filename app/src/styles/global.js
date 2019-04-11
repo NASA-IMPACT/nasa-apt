@@ -1,8 +1,10 @@
 import { createGlobalStyle, css } from 'styled-components';
-import { normalize } from 'polished';
+import { normalize, rgba } from 'polished';
 
-import { themeVal } from './utils/general';
+import { themeVal, stylizeFunction } from './utils/general';
 import { collecticonsFont } from './collecticons';
+
+const _rgba = stylizeFunction(rgba);
 
 // Global styles for these components are included here for performance reasons.
 // This way they're only rendered when absolutely needed.
@@ -11,8 +13,6 @@ const baseStyles = css`
   html {
     box-sizing: border-box;
     font-size: ${themeVal('type.base.root')};
-
-    /* Changes the default tap highlight to be completely transparent in iOS. */
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   }
 
@@ -22,17 +22,25 @@ const baseStyles = css`
     box-sizing: inherit;
   }
 
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
   body {
-    background: ${themeVal('color.background')};
+    background-color: ${themeVal('color.background')};
     color: ${themeVal('type.base.color')};
     font-size: ${themeVal('type.base.size')};
     line-height: ${themeVal('type.base.line')};
-    /* stylelint-disable-next-line */
     font-family: ${themeVal('type.base.family')};
     font-weight: ${themeVal('type.base.weight')};
     font-style: ${themeVal('type.base.style')};
     min-width: ${themeVal('layout.min')};
   }
+
+
+  /* Links
+   ========================================================================== */
 
   a {
     cursor: pointer;
@@ -53,24 +61,71 @@ const baseStyles = css`
     transform: translate(0, 1px);
   }
 
-  /* Thether element */
-  .tether-element {
-    z-index: 1000;
+
+  /* Buttons
+   ========================================================================== */
+
+  [role="button"] {
+    cursor: pointer;
+  }
+
+
+  /* Forms
+     ========================================================================== */
+
+  input, select, textarea {
+    font: inherit;
+    height: auto;
+    width: auto;
+    margin: 0;
+  }
+
+
+  /* Tables
+   ========================================================================== */
+
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+
+  /* Lists
+   ========================================================================== */
+
+  ol, ul {
+    list-style: none;
+  }
+
+
+  /* Blockquotes
+   ========================================================================== */
+
+  blockquote, q {
+    quotes: none;
+  }
+
+  blockquote::before, blockquote::after,
+  q::before, q::after {
+    content: '';
+    content: none;
+  }
+
+
+  /* Misc
+     ========================================================================== */
+
+  ::selection {
+    background-color: ${_rgba(themeVal('color.base'), 0.64)};
+    color: #fff;
   }
 
   #root {
     min-height: 100vh;
   }
 
-  ul {
-    list-style: none;
-    margin: 0;
-    margin-block-start: 0;
-    margin-block-end: 0;
-    margin-inline-start: 0;
-    margin-inline-end: 0;
-    padding-inline-start: 0;
-
+  .tether-element {
+    z-index: 1000;
   }
 `;
 
