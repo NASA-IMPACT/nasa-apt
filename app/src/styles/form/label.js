@@ -28,7 +28,6 @@ LabelBase.propTypes = {
 };
 
 const FormLabel = styled(LabelBase)`
-  grid-area: form-group-label;
   display: inline-flex;
   align-items: center;
   font-family: ${themeVal('type.base.family')};
