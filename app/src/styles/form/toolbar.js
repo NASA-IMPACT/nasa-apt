@@ -1,12 +1,14 @@
 import styled from 'styled-components';
+import { themeVal } from '../utils/general';
+import { divide } from '../utils/math';
 
 const FormToolbar = styled.div`
-  grid-area: form-group-toolbar;
   display: flex;
   flex-flow: row nowrap;
+  padding-left: ${themeVal('layout.space')};
 
-  > *:not[:first-child] {
-    margin-left: 0.25rem;
+  > *:not(:first-child) {
+    margin-left: ${divide(themeVal('layout.space'), 4)};
   }
 `;
 
