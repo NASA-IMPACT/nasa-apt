@@ -1,6 +1,8 @@
 # nasa-apt
 Code and issues relevant to the NASA APT project
 
+[![CircleCI](https://circleci.com/gh/developmentseed/nasa-apt/tree/master.svg?style=svg)](https://circleci.com/gh/developmentseed/nasa-apt/tree/master)
+
 The project API is built using [Postgrest](https://github.com/PostgREST/postgrest).
 
 To create a test instance of the database and API with `docker-compose` run
