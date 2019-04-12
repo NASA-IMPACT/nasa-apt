@@ -398,7 +398,7 @@ export class FreeEditor extends React.Component {
 FreeEditor.propTypes = {
   value: ImmutableTypes.record.isRequired,
   save: PropTypes.func.isRequired,
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   uploadFile: PropTypes.func.isRequired,
   uploadedFile: PropTypes.string
 };
