@@ -10,6 +10,7 @@ export const FormGroup = styled.div`
 
 export const FormGroupHeader = styled.div`
   display: flex;
+  flex-flow: wrap nowrap;
   justify-content: space-between;
 `;
 

@@ -10,6 +10,7 @@ color = {
   ...color,
   background: '#FFFFFF',
   surface: '#FFFFFF',
+  mist: rgba(color.base, 0.04),
   shadow: rgba(color.base, 0.08),
   lightgray: '#EEEEEE',
   gray: '#DBDBDB',

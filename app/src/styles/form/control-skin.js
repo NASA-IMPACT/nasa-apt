@@ -2,7 +2,7 @@ import { css } from 'styled-components';
 import { rgba } from 'polished';
 import { disabled } from '../helpers';
 import { themeVal, stylizeFunction } from '../utils/general';
-import { multiply, divide } from '../utils/math';
+import { multiply } from '../utils/math';
 
 const _rgba = stylizeFunction(rgba);
 

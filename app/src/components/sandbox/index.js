@@ -18,6 +18,11 @@ import Prose from '../../styles/type/prose';
 import Button from '../../styles/button/button';
 import Form from '../../styles/form/form';
 import {
+  FormFieldset,
+  FormFieldsetHeader
+} from '../../styles/form/fieldset';
+import FormLegend from '../../styles/form/legend';
+import {
   FormGroup,
   FormGroupHeader,
   FormGroupBody
@@ -56,6 +61,12 @@ const DarkUl = styled(Ul)`
 const ButtonIconBrand = styled(Button)`
   ::before {
     ${collecticon('plus')}
+  }
+`;
+
+const RemoveButton = styled(Button)`
+  ::before {
+    ${collecticon('trash-bin')}
   }
 `;
 
@@ -101,35 +112,47 @@ class Sandbox extends Component {
             <Prose>
               <h2>Form elements</h2>
               <Form>
-                <FormGroup>
-                  <FormGroupHeader>
-                    <FormLabel htmlFor="input-text-a" optional>Form label</FormLabel>
-                    <FormToolbar>
-                      <InfoButton
-                        variation="base-plain"
-                        size="small"
-                        hideText
-                        data-tip="This is a very helpful tooltip."
-                      >
-                        Learn more
-                      </InfoButton>
-                      <ReactTooltip effect="solid" className="type-primary" />
-                    </FormToolbar>
-                  </FormGroupHeader>
-                  <FormGroupBody>
-                    <FormInput
-                      type="text"
-                      size="large"
-                      id="input-text-a"
+                <FormFieldset>
+                  <FormFieldsetHeader>
+                    <FormLegend>Form legend</FormLegend>
+                    <RemoveButton
+                      variation="base-plain"
+                      size="small"
+                      hideText
+                    >
+                      Remove fieldset
+                    </RemoveButton>
+                  </FormFieldsetHeader>
+                  <FormGroup>
+                    <FormGroupHeader>
+                      <FormLabel htmlFor="input-text-a" optional>Form label</FormLabel>
+                      <FormToolbar>
+                        <InfoButton
+                          variation="base-plain"
+                          size="small"
+                          hideText
+                          data-tip="This is a very helpful tooltip."
+                        >
+                          Learn more
+                        </InfoButton>
+                        <ReactTooltip effect="solid" className="type-primary" />
+                      </FormToolbar>
+                    </FormGroupHeader>
+                    <FormGroupBody>
+                      <FormInput
+                        type="text"
+                        size="large"
+                        id="input-text-a"
 
-                      placeholder="This is a text input"
-                    />
-                    <FormHelper>
-                      <FormHelperMessage>This is some help text.</FormHelperMessage>
-                      <FormHelperCounter>0 / 80</FormHelperCounter>
-                    </FormHelper>
-                  </FormGroupBody>
-                </FormGroup>
+                        placeholder="This is a text input"
+                      />
+                      <FormHelper>
+                        <FormHelperMessage>This is some help text.</FormHelperMessage>
+                        <FormHelperCounter>0 / 80</FormHelperCounter>
+                      </FormHelper>
+                    </FormGroupBody>
+                  </FormGroup>
+                </FormFieldset>
               </Form>
 
               <h2>Button Group</h2>
