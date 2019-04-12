@@ -210,3 +210,10 @@ export function deleteAtbdContact(atbd_id, contact_id) {
     }
   };
 }
+
+export function uploadFile(file) {
+  return {
+    type: types.UPLOAD_FILE,
+    payload: file
+  };
+}

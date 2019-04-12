@@ -2,7 +2,8 @@ import actions from '../constants/action_types';
 
 const initialState = {
   atbds: [],
-  contacts: []
+  contacts: [],
+  uploadedFile: null
 };
 
 const deleteAtbdVersionChildItem = (schemaKey, state, action) => {
@@ -118,6 +119,14 @@ export default function (state = initialState, action) {
     case actions.DELETE_ATBD_CONTACT_SUCCESS: {
       const schemaKey = 'contact';
       return deleteAtbdChildItem(schemaKey, state, action);
+    }
+
+    case actions.UPLOAD_FILE_SUCCESS: {
+      const { payload } = action;
+      return {
+        ...state,
+        uploadedFile: payload
+      };
     }
 
     default: return state;

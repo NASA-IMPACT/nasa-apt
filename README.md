@@ -7,9 +7,12 @@ To create a test instance of the database and API with `docker-compose` run
 
 `docker-compose build` 
 
-Follwed by
+Followed by
 
-`docker-compose up`
+`./startserver.sh`
+
+This will create a test instance of the DB with data loaded, the API and some
+stubbed versions of supporting services.
 
 The Swagger API documentation is accessible via [http://localhost:8080](http://localhost:8080).
 The API is accessible via [http://localhost:3000](http://localhost:3000).
