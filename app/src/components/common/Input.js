@@ -6,10 +6,17 @@ import collecticon from '../../styles/collecticons';
 import { themeVal } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
 
-import FormGroup from '../../styles/form/group';
+import {
+  FormGroup,
+  FormGroupHeader,
+  FormGroupBody
+} from '../../styles/form/group';
 import FormToolbar from '../../styles/form/toolbar';
 import FormLabel from '../../styles/form/label';
-import FormHelp from '../../styles/form/help';
+import {
+  FormHelper,
+  FormHelperMessage
+} from '../../styles/form/helper';
 import Button from '../../styles/button/button';
 
 export const InputFormGroup = styled.form`
@@ -26,7 +33,7 @@ const InlineInput = styled.input`
   border-radius: 4px;
   font-family: inherit;
   height: ${multiply(themeVal('layout.space'), 2.4)}
-  padding: 0 ${multiply(themeVal('layout.space'), 0.5)};
+  padding: 0 ${multiply(themeVal('layout.space'), 2)};
   width: 100%;
 `;
 
@@ -62,6 +69,7 @@ const Input = (props) => {
   }
   return (
     <FormGroup>
+      <FormGroupHeader>
       <FormLabel htmlFor={id}>{label}</FormLabel>
       {info && (
         <FormToolbar>
@@ -76,14 +84,21 @@ const Input = (props) => {
           <ReactTooltip effect="solid" className="type-primary" />
         </FormToolbar>
       )}
-      <SmallTextInput
-        id={id}
-        name={name}
-        {...inputProps}
-      />
-      {feedback && (
-        <FormHelp>{feedback}</FormHelp>
-      )}
+      </FormGroupHeader>
+      <FormGroupBody>
+        <SmallTextInput
+          id={id}
+          name={name}
+          {...inputProps}
+        />
+        {feedback && (
+          <FormHelper>
+            <FormHelperMessage>
+              {feedback}
+            </FormHelperMessage>
+          </FormHelper>
+        )}
+      </FormGroupBody>
     </FormGroup>
   );
 };

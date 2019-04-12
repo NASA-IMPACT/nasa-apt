@@ -5,10 +5,17 @@ import styled from 'styled-components';
 import ReactTooltip from 'react-tooltip';
 import collecticon from '../../styles/collecticons';
 
-import FormGroup from '../../styles/form/group';
+import {
+  FormGroup,
+  FormGroupHeader,
+  FormGroupBody
+} from '../../styles/form/group';
 import FormToolbar from '../../styles/form/toolbar';
 import FormLabel from '../../styles/form/label';
-import FormHelp from '../../styles/form/help';
+import {
+  FormHelper,
+  FormHelperMessage
+} from '../../styles/form/helper';
 import Button from '../../styles/button/button';
 
 const InfoButton = styled(Button)`
@@ -39,31 +46,39 @@ const Select = (props) => {
 
   return (
     <FormGroup>
+      <FormGroupHeader>
       <FormLabel htmlFor={id}>{label}</FormLabel>
-      {info && (
-        <FormToolbar>
-          <InfoButton
-            variation="base-plain"
-            size="small"
-            hideText
-            data-tip={info}
-          >
-            Learn more
-          </InfoButton>
-          <ReactTooltip effect="solid" className="type-primary" />
-        </FormToolbar>
-      )}
-      <ReactSelect
-        options={options}
-        name={name}
-        value={activeValue}
-        onChange={e => onChange && onChange({ target: { name, value: e.value } })}
-        onBlur={() => onBlur && onBlur(({ target: { name } }))}
-        id={id}
-      />
-      {feedback && (
-        <FormHelp>{feedback}</FormHelp>
-      )}
+        {info && (
+          <FormToolbar>
+            <InfoButton
+              variation="base-plain"
+              size="small"
+              hideText
+              data-tip={info}
+            >
+              Learn more
+            </InfoButton>
+            <ReactTooltip effect="solid" className="type-primary" />
+          </FormToolbar>
+        )}
+      </FormGroupHeader>
+      <FormGroupBody>
+        <ReactSelect
+          options={options}
+          name={name}
+          value={activeValue}
+          onChange={e => onChange && onChange({ target: { name, value: e.value } })}
+          onBlur={() => onBlur && onBlur(({ target: { name } }))}
+          id={id}
+        />
+        {feedback && (
+          <FormHelper>
+            <FormHelperMessage>
+              {feedback}
+            </FormHelperMessage>
+          </FormHelper>
+        )}
+      </FormGroupBody>
     </FormGroup>
   );
 };
