@@ -76,7 +76,7 @@ export class FreeEditor extends React.Component {
     const { value } = props;
     this.state = {
       value,
-      activeTool: null,
+      activeTool: null
     };
     this.onChange = this.onChange.bind(this);
     this.renderNode = this.renderNode.bind(this);
