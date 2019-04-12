@@ -20,7 +20,6 @@ import EditorFormattableText from './EditorFormattableText';
 import schema from './editorSchema';
 import { themeVal } from '../styles/utils/general';
 import { multiply } from '../styles/utils/math';
-import Strong from '../styles/type/strong';
 import Button from '../styles/button/button';
 import ButtonGroup from '../styles/button/group';
 
@@ -49,7 +48,7 @@ function renderMark(props, editor, next) {
   } = props;
   switch (type) {
     case 'bold': {
-      return <Strong {...props}>{children}</Strong>;
+      return <strong {...props}>{children}</strong>;
     }
     case 'italic': {
       return <em {...props}>{children}</em>;
