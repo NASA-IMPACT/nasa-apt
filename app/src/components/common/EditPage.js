@@ -106,7 +106,6 @@ const EditPage = (props) => {
   const {
     title,
     step,
-    numSteps,
     id,
     children
   } = props;
@@ -121,6 +120,7 @@ const EditPage = (props) => {
     { display: 'References' }
   ];
 
+  const numSteps = items.length;
   const stepCount = `Step ${step} of ${numSteps}`;
 
   return (
@@ -171,7 +171,6 @@ const EditPage = (props) => {
 EditPage.propTypes = {
   title: PropTypes.string.isRequired,
   step: PropTypes.number,
-  numSteps: PropTypes.number,
   id: PropTypes.number,
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.node),

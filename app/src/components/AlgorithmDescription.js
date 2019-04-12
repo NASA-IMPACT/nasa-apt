@@ -50,7 +50,6 @@ export const AlgorithmDescription = (props) => {
         title={title || ''}
         id={atbd_id}
         step={4}
-        numSteps={7}
       >
         <h2>Algorithm Description</h2>
         <EditorSection>
