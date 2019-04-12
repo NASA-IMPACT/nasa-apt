@@ -17,11 +17,20 @@ import {
 import Prose from '../../styles/type/prose';
 import Button from '../../styles/button/button';
 import Form from '../../styles/form/form';
+import {
+  FormGroup,
+  FormGroupHeader,
+  FormGroupBody
+} from '../../styles/form/group';
 import FormLabel from '../../styles/form/label';
 import FormInput from '../../styles/form/input';
-import FormGroup from '../../styles/form/group';
 import FormToolbar from '../../styles/form/toolbar';
 import ButtonGroup from '../../styles/button/group';
+import {
+  FormHelper,
+  FormHelperMessage,
+  FormHelperCounter
+} from '../../styles/form/helper';
 
 // Create a ul component to include some styling.
 
@@ -93,24 +102,33 @@ class Sandbox extends Component {
               <h2>Form elements</h2>
               <Form>
                 <FormGroup>
-                  <FormLabel htmlFor="input-text-a" optional>Form label</FormLabel>
-                  <FormToolbar>
-                    <InfoButton
-                      variation="base-plain"
-                      size="small"
-                      hideText
-                      data-tip="This is a very helpful tooltip."
-                    >
-                      Learn more
-                    </InfoButton>
-                    <ReactTooltip effect="solid" className="type-primary" />
-                  </FormToolbar>
-                  <FormInput
-                    type="text"
-                    size="small"
-                    id="input-text-a"
-                    placeholder="First name"
-                  />
+                  <FormGroupHeader>
+                    <FormLabel htmlFor="input-text-a" optional>Form label</FormLabel>
+                    <FormToolbar>
+                      <InfoButton
+                        variation="base-plain"
+                        size="small"
+                        hideText
+                        data-tip="This is a very helpful tooltip."
+                      >
+                        Learn more
+                      </InfoButton>
+                      <ReactTooltip effect="solid" className="type-primary" />
+                    </FormToolbar>
+                  </FormGroupHeader>
+                  <FormGroupBody>
+                    <FormInput
+                      type="text"
+                      size="large"
+                      id="input-text-a"
+
+                      placeholder="This is a text input"
+                    />
+                    <FormHelper>
+                      <FormHelperMessage>This is some help text.</FormHelperMessage>
+                      <FormHelperCounter>0 / 80</FormHelperCounter>
+                    </FormHelper>
+                  </FormGroupBody>
                 </FormGroup>
               </Form>
 
