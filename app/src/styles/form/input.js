@@ -1,13 +1,10 @@
 import styled from 'styled-components';
-import { rgba } from 'polished';
-import { themeVal, stylizeFunction } from '../utils/general';
+import controlSkin from './control-skin';
 
-const _rgba = stylizeFunction(rgba);
-
-const FormInput = styled.input`
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  color: ${_rgba(themeVal('color.base'), 0.48)};
+const FormInput = styled.input.attrs(props => ({
+  size: props.size || 'medium'
+}))`
+  ${controlSkin()}
 `;
 
 export default FormInput;
