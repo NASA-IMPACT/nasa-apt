@@ -5,11 +5,11 @@ import styled from 'styled-components';
 import ReactTooltip from 'react-tooltip';
 import collecticon from '../../styles/collecticons';
 
-import FormGroup from '../../styles/molecules/form/group';
-import FormToolbar from '../../styles/molecules/form/toolbar';
-import FormLabel from '../../styles/atoms/form/label';
-import FormHelp from '../../styles/atoms/form/help';
-import Button from '../../styles/atoms/button';
+import FormGroup from '../../styles/form/group';
+import FormToolbar from '../../styles/form/toolbar';
+import FormLabel from '../../styles/form/label';
+import FormHelp from '../../styles/form/help';
+import Button from '../../styles/button/button';
 
 const InfoButton = styled(Button)`
   &::before {

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { themeVal } from '../../utils/general';
+import { themeVal } from '../utils/general';
 
 const FormGroup = styled.div`
   display: grid;

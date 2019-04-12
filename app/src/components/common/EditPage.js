@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { rgba } from 'polished';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
-import { headingAlt } from '../../styles/atoms/type/heading';
+import { headingAlt } from '../../styles/type/heading';
 import collecticon from '../../styles/collecticons';
 
 import {

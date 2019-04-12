@@ -20,9 +20,9 @@ import EditorFormattableText from './EditorFormattableText';
 import schema from './editorSchema';
 import { themeVal } from '../styles/utils/general';
 import { multiply } from '../styles/utils/math';
-import Strong from '../styles/atoms/Strong';
-import Button from '../styles/atoms/button';
-import ButtonGroup from '../styles/molecules/button-group';
+import Strong from '../styles/type/strong';
+import Button from '../styles/button/button';
+import ButtonGroup from '../styles/button/group';
 
 const equation = 'equation';
 const paragraph = 'paragraph';

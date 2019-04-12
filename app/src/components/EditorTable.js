@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components/macro';
-import Button from '../styles/atoms/button';
-import ButtonGroup from '../styles/molecules/button-group';
+import Button from '../styles/button/button';
+import ButtonGroup from '../styles/button/group';
 import collecticon from '../styles/collecticons';
 
 const TableContainer = styled.div`

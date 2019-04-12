@@ -4,8 +4,8 @@ import { rgba } from 'polished';
 import { truncated, antialiased } from '../../styles/helpers';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
-import { headingAlt } from '../../styles/atoms/type/heading';
-import Constrainer from '../../styles/atoms/constrainer';
+import { headingAlt } from '../../styles/type/heading';
+import Constrainer from '../../styles/constrainer';
 
 const _rgba = stylizeFunction(rgba);
 

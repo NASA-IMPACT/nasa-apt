@@ -14,9 +14,14 @@ import {
   InpageBody,
   InpageBodyInner
 } from '../common/Inpage';
-import Prose from '../../styles/molecules/type/prose';
-import Button from '../../styles/atoms/button';
-import ButtonGroup from '../../styles/molecules/button-group';
+import Prose from '../../styles/type/prose';
+import Button from '../../styles/button/button';
+import Form from '../../styles/form/form';
+import FormLabel from '../../styles/form/label';
+import FormInput from '../../styles/form/input';
+import FormGroup from '../../styles/form/group';
+import FormToolbar from '../../styles/form/toolbar';
+import ButtonGroup from '../../styles/button/group';
 
 // Create a ul component to include some styling.
 
@@ -85,16 +90,29 @@ class Sandbox extends Component {
         <InpageBody>
           <InpageBodyInner>
             <Prose>
-              <h2>Info tooltip</h2>
-              <InfoButton
-                variation="base-plain"
-                size="small"
-                hideText
-                data-tip="Lorem ipsum dolor sit amet."
-              >
-                Learn more
-              </InfoButton>
-              <ReactTooltip effect="solid" className="type-primary" />
+              <h2>Form elements</h2>
+              <Form>
+                <FormGroup>
+                  <FormLabel htmlFor="input-text-a" optional>Form label</FormLabel>
+                  <FormToolbar>
+                    <InfoButton
+                      variation="base-plain"
+                      size="small"
+                      hideText
+                      data-tip="This is a very helpful tooltip."
+                    >
+                      Learn more
+                    </InfoButton>
+                    <ReactTooltip effect="solid" className="type-primary" />
+                  </FormToolbar>
+                  <FormInput
+                    type="text"
+                    size="small"
+                    id="input-text-a"
+                    placeholder="First name"
+                  />
+                </FormGroup>
+              </Form>
 
               <h2>Button Group</h2>
               <ButtonGroup orientation="horizontal">

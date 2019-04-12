@@ -9,7 +9,7 @@ import {
   InpageBody,
   InpageBodyInner
 } from '../common/Inpage';
-import Prose from '../../styles/molecules/type/prose';
+import Prose from '../../styles/type/prose';
 
 class About extends Component {
   render() {

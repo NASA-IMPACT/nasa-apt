@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components';
-import { themeVal } from '../../utils/general';
+import { themeVal } from '../utils/general';
 
 const sizeMapping = {
   small: '0.875rem',

@@ -1,9 +1,9 @@
 import T from 'prop-types';
 import styled, { css } from 'styled-components';
 
-import { themeVal } from '../utils/general';
+import Button from './button';
 
-import Button from '../atoms/button';
+import { themeVal } from '../utils/general';
 
 const ButtonGroup = styled.div`
   position: relative;
