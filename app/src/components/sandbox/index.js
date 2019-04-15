@@ -29,6 +29,8 @@ import {
 } from '../../styles/form/group';
 import FormLabel from '../../styles/form/label';
 import FormInput from '../../styles/form/input';
+import FormSelect from '../../styles/form/select';
+import FormTextarea from '../../styles/form/textarea';
 import FormToolbar from '../../styles/form/toolbar';
 import ButtonGroup from '../../styles/button/group';
 import {
@@ -125,7 +127,7 @@ class Sandbox extends Component {
                   </FormFieldsetHeader>
                   <FormGroup>
                     <FormGroupHeader>
-                      <FormLabel htmlFor="input-text-a" optional>Form label</FormLabel>
+                      <FormLabel htmlFor="input-text-a">Form label</FormLabel>
                       <FormToolbar>
                         <InfoButton
                           variation="base-plain"
@@ -143,13 +145,46 @@ class Sandbox extends Component {
                         type="text"
                         size="large"
                         id="input-text-a"
-
                         placeholder="This is a text input"
                       />
                       <FormHelper>
                         <FormHelperMessage>This is some help text.</FormHelperMessage>
                         <FormHelperCounter>0 / 80</FormHelperCounter>
                       </FormHelper>
+                    </FormGroupBody>
+                  </FormGroup>
+
+                  <FormGroup>
+                    <FormGroupHeader>
+                      <FormLabel htmlFor="input-text-a" optional>Form label</FormLabel>
+                    </FormGroupHeader>
+                    <FormGroupBody>
+                      <FormSelect
+                        size="large"
+                        id="input-select-a"
+                      >
+                        <option value="option-1">Option 1</option>
+                        <option value="option-2">Option 2</option>
+                        <option value="option-3">Option 3</option>
+                        <option value="option-4">Option 4</option>
+                      </FormSelect>
+                      <FormHelper>
+                        <FormHelperMessage>This is some help text.</FormHelperMessage>
+                      </FormHelper>
+                    </FormGroupBody>
+                  </FormGroup>
+
+                  <FormGroup>
+                    <FormGroupHeader>
+                      <FormLabel htmlFor="textarea-a">Form label</FormLabel>
+                    </FormGroupHeader>
+                    <FormGroupBody>
+                      <FormTextarea
+                        size="large"
+                        id="input-select-a"
+                        placeholder="This is a textarea"
+                      >
+                      </FormTextarea>
                     </FormGroupBody>
                   </FormGroup>
                 </FormFieldset>
