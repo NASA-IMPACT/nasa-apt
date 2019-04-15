@@ -156,12 +156,12 @@ class Sandbox extends Component {
 
                   <FormGroup>
                     <FormGroupHeader>
-                      <FormLabel htmlFor="input-text-a" optional>Form label</FormLabel>
+                      <FormLabel htmlFor="select-a" optional>Form label</FormLabel>
                     </FormGroupHeader>
                     <FormGroupBody>
                       <FormSelect
                         size="large"
-                        id="input-select-a"
+                        id="select-a"
                       >
                         <option value="option-1">Option 1</option>
                         <option value="option-2">Option 2</option>
@@ -181,10 +181,9 @@ class Sandbox extends Component {
                     <FormGroupBody>
                       <FormTextarea
                         size="large"
-                        id="input-select-a"
+                        id="textarea-a"
                         placeholder="This is a textarea"
-                      >
-                      </FormTextarea>
+                      />
                     </FormGroupBody>
                   </FormGroup>
                 </FormFieldset>

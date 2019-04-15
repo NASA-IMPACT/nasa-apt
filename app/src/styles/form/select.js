@@ -9,8 +9,8 @@ const FormSelect = styled.select.attrs(props => ({
   ${controlSkin()}
   cursor: pointer;
   padding-right: ${multiply(themeVal('layout.space'), 2)};
-  background-image: ${({ theme }) => `url('data:image/svg+xml;utf8,${encodeURIComponent(`<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10px" height="5px" viewBox="0 0 10 5"><polygon fill="${theme.color.base}" points="5,5 0,0 10,0"/></svg>`)}');`}
-  background-position: calc(100% - 0.75rem) center;
+  background-image: ${({ theme }) => `url('data:image/svg+xml;utf8,${encodeURIComponent(`<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="16px" height="16px" viewBox="0 0 16 16"><polygon fill="${theme.color.base}" points="12.586,4.586 8,9.172 3.414,4.586 2,6 8,12 14,6" /></svg>`)}');`}
+  background-position: calc(100% - 0.5rem) center;
   background-repeat: no-repeat;
 
   /* IE specific */

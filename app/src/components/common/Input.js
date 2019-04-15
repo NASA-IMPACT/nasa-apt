@@ -70,8 +70,8 @@ const Input = (props) => {
   return (
     <FormGroup>
       <FormGroupHeader>
-      <FormLabel htmlFor={id}>{label}</FormLabel>
-      {info && (
+        <FormLabel htmlFor={id}>{label}</FormLabel>
+        {info && (
         <FormToolbar>
           <InfoButton
             variation="base-plain"
@@ -83,7 +83,7 @@ const Input = (props) => {
           </InfoButton>
           <ReactTooltip effect="solid" className="type-primary" />
         </FormToolbar>
-      )}
+        )}
       </FormGroupHeader>
       <FormGroupBody>
         <SmallTextInput

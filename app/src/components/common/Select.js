@@ -47,7 +47,7 @@ const Select = (props) => {
   return (
     <FormGroup>
       <FormGroupHeader>
-      <FormLabel htmlFor={id}>{label}</FormLabel>
+        <FormLabel htmlFor={id}>{label}</FormLabel>
         {info && (
           <FormToolbar>
             <InfoButton
