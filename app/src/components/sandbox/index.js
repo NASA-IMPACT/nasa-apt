@@ -183,7 +183,11 @@ class Sandbox extends Component {
                         size="large"
                         id="textarea-a"
                         placeholder="This is a textarea"
+                        invalid
                       />
+                      <FormHelper>
+                        <FormHelperMessage>This is an error message.</FormHelperMessage>
+                      </FormHelper>
                     </FormGroupBody>
                   </FormGroup>
                 </FormFieldset>
