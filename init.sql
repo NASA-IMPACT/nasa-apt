@@ -1,6 +1,6 @@
 CREATE TYPE e_contact_mechanism_type AS ENUM (
- 'Direct Line', 
- 'Email', 
+ 'Direct Line',
+ 'Email',
  'Facebook',
  'Fax',
  'Mobile',
@@ -55,8 +55,8 @@ CREATE TABLE atbd_versions(
   scientific_theory_assumptions json,
   mathematical_theory json,
   mathematical_theory_assumptions json,
-  introduction VARCHAR (1024),
-  historical_perspective VARCHAR (1024)
+  introduction json,
+  historical_perspective json
 );
 CREATE TABLE algorithm_input_variables(
   algorithm_input_variable_id serial PRIMARY KEY,
@@ -159,11 +159,12 @@ VALUES ('Test ATBD 1');
 INSERT INTO atbd_contacts(atbd_id, contact_id)
 VALUES (1, 1);
 INSERT INTO atbd_versions(atbd_id, atbd_version, scientific_theory, introduction, historical_perspective)
-VALUES (1, 1, 
+VALUES (1, 1,
 '{"document":{"nodes":[{"object":"block","type":"paragraph","nodes":[{"object":"text","leaves":[{"text":"A line of text in a paragraph."}]}]},
 {"object":"block","type":"equation","nodes":[{"object":"text","leaves":[{"text":"\\int_0^\\infty x^2 dx"}]}]},
 {"object":"block","type":"image","data":{"src":"http://localhost:4572/figures/fullmoon.jpg"}}]}}',
-'Introduction Lorem Ipsum Text', 'Historical Perspective Lorem Ipsum Text');
+'{"document":{"nodes":[{"object":"block","type":"paragraph","nodes":[{"object":"text","leaves":[{"text":"An introduction."}]}]}]}}',
+'{"document":{"nodes":[{"object":"block","type":"paragraph","nodes":[{"object":"text","leaves":[{"text":"A historical perspective."}]}]}]}}');
 INSERT INTO algorithm_input_variables(atbd_id, atbd_version, name, long_name)
 VALUES (1, 1, 'Input Var 1', 'Input variable 1');
 INSERT INTO algorithm_output_variables(atbd_id, atbd_version, name, long_name)
