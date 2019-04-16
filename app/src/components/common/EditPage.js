@@ -45,10 +45,9 @@ const Stepper = styled.div`
   }
 `;
 
-const StepperLabel = styled.div`
+const StepperLabel = styled.h6`
   ${headingAlt()}
   font-size: 0.875rem;
-  margin: 0;
   color: ${_rgba('#FFFFFF', 0.64)};
   margin-right: 0.5rem;
 `;

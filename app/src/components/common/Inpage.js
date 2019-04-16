@@ -37,8 +37,8 @@ export const InpageTitle = styled.h1`
   ${truncated()}
   font-size: 1.25rem;
   line-height: 2rem;
-  margin: 0;
   max-width: 24rem;
+  margin: 0;
 `;
 
 export const InpageTagline = styled.p`
@@ -46,7 +46,6 @@ export const InpageTagline = styled.p`
   order: -1;
   font-size: 0.875rem;
   line-height: 1rem;
-  margin: 0;
   color: ${_rgba('#FFFFFF', 0.64)};
 `;
 
@@ -66,10 +65,9 @@ export const FilterItem = styled.div`
   }
 `;
 
-export const FilterLabel = styled.div`
+export const FilterLabel = styled.h6`
   ${headingAlt()}
   font-size: 0.875rem;
-  margin: 0;
   color: ${_rgba('#FFFFFF', 0.64)};
   margin-right: 0.5rem;
 `;
