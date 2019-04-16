@@ -13,7 +13,8 @@ const types = createTypes([
   ...async('CREATE_ALGORITHM_INPUT_VARIABLE'),
   ...async('DELETE_ALGORITHM_INPUT_VARIABLE'),
   ...async('CREATE_ALGORITHM_OUTPUT_VARIABLE'),
-  ...async('DELETE_ALGORITHM_OUTPUT_VARIABLE')
+  ...async('DELETE_ALGORITHM_OUTPUT_VARIABLE'),
+  ...async('UPLOAD_FILE')
 ]);
 
 export default types;

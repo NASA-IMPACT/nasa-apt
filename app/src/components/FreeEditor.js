@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import ImmutableTypes from 'react-immutable-proptypes';
 import { Editor } from 'slate-react';
 import SoftBreak from 'slate-soft-break';
@@ -7,6 +8,7 @@ import PluginDeepTable from 'slate-deep-table';
 import styled from 'styled-components/macro';
 import EquationEditor from './EquationEditor';
 import TrailingBlock from '../slate-plugins/TrailingBlock';
+import { uploadFile } from '../actions/actions';
 import {
   EquationBtn,
   ParagraphBtn,
@@ -16,6 +18,7 @@ import {
 } from './Toolbars';
 import EditorImage from './EditorImage';
 import EditorTable from './EditorTable';
+import EditorFigureTool from './EditorFigureTool';
 import EditorFormattableText from './EditorFormattableText';
 import schema from './editorSchema';
 import { themeVal } from '../styles/utils/general';
@@ -26,6 +29,7 @@ import ButtonGroup from '../styles/button/group';
 const equation = 'equation';
 const paragraph = 'paragraph';
 const table = 'table';
+const image = 'image';
 
 const EditorContainer = styled.div`
   background-color: ${themeVal('color.surface')};
@@ -88,11 +92,19 @@ export class FreeEditor extends React.Component {
     this.removeColumn = this.removeColumn.bind(this);
     this.removeRow = this.removeRow.bind(this);
     this.removeTable = this.removeTable.bind(this);
+    this.insertImage = this.insertImage.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
-    const { value } = nextProps;
-    this.setState({ value });
+    const { value, uploadedFile } = nextProps;
+    const { uploadedFile: previousUploadedFile } = this.props;
+    if (uploadedFile !== previousUploadedFile) {
+      this.setState({
+        activeTool: image
+      });
+    } else {
+      this.setState({ value });
+    }
   }
 
   onMouseDown() {
@@ -107,6 +119,9 @@ export class FreeEditor extends React.Component {
         }
         if (activeTool === table) {
           this.insertTable();
+        }
+        if (activeTool === image) {
+          this.insertImage();
         }
       }, 0);
     }
@@ -184,6 +199,14 @@ export class FreeEditor extends React.Component {
       .focus();
   }
 
+  insertImage() {
+    const { uploadedFile } = this.props;
+    this.editor.insertBlock({
+      type: 'image',
+      data: { src: uploadedFile },
+    });
+  }
+
   insertParagraph() {
     this.editor
       .insertBlock({
@@ -234,6 +257,7 @@ export class FreeEditor extends React.Component {
     );
   }
 
+  /* eslint-disable-next-line */
   renderNode(props, editor, next) {
     const { attributes, node, isFocused } = props;
     const { value } = this.state;
@@ -288,14 +312,22 @@ export class FreeEditor extends React.Component {
 
   render() {
     const {
-      state: { value, activeTool },
+      state: {
+        value,
+        activeTool
+      },
       save,
       onChange,
       onMouseDown,
       onKeyDown,
       renderNode
     } = this;
-    const { className } = this.props;
+
+    const {
+      className,
+      uploadFile: upload
+    } = this.props;
+
     return (
       <div className={className}>
         <Toolbar>
@@ -330,6 +362,11 @@ export class FreeEditor extends React.Component {
             >
               Table
             </TableBtn>
+            <EditorFigureTool
+              upload={upload}
+              active={activeTool === image}
+              icon={{ icon: 'picture' }}
+            />
             <Button
               onClick={save}
               variation="base-plain"
@@ -360,7 +397,9 @@ export class FreeEditor extends React.Component {
 FreeEditor.propTypes = {
   value: ImmutableTypes.record.isRequired,
   save: PropTypes.func.isRequired,
-  className: PropTypes.string.isRequired
+  className: PropTypes.string,
+  uploadFile: PropTypes.func.isRequired,
+  uploadedFile: PropTypes.string
 };
 
 const StyledFreeEditor = styled(FreeEditor)`
@@ -391,4 +430,11 @@ const StyledFreeEditor = styled(FreeEditor)`
   }
 `;
 
-export default StyledFreeEditor;
+const mapDispatchToProps = { uploadFile };
+
+const mapStateToProps = (state) => {
+  const { uploadedFile } = state.application;
+  return { uploadedFile };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(StyledFreeEditor);

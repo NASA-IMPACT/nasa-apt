@@ -10,6 +10,8 @@ import { createBrowserHistory } from 'history';
 import { connectRouter, routerMiddleware } from 'connected-react-router';
 import reducer from '../reducers/reducer';
 import locationMiddleware from './locationMiddleware';
+import uploadMiddleware from './uploadMiddleware';
+
 /*
 const composeEnhancers = composeWithDevTools({
   serialize: {
@@ -27,7 +29,8 @@ const store = createStore(
     routerMiddleware(history),
     thunk,
     apiMiddleware,
-    locationMiddleware
+    locationMiddleware,
+    uploadMiddleware
   )
   /*
   composeEnhancers(
