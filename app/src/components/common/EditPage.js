@@ -22,6 +22,7 @@ import {
 
 import {
   atbdsedit,
+  introduction,
   contacts,
   drafts,
   algorithm_description
@@ -112,7 +113,7 @@ const EditPage = (props) => {
 
   const items = [
     { display: 'Identifying information' },
-    { display: 'Introduction' },
+    { display: 'Introduction', link: `/${atbdsedit}/${id}/${drafts}/1/${introduction}` },
     { display: 'Contact information', link: `/${atbdsedit}/${id}/${contacts}` },
     { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/1/${algorithm_description}` },
     { display: 'Algorithm usage' },
