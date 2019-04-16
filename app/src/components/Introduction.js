@@ -9,7 +9,8 @@ import {
   Inpage
 } from './common/Inpage';
 import EditPage, {
-  EditorSection
+  EditorSection,
+  EditorLabel
 } from './common/EditPage';
 import editorBlankDocument from './editorBlankDocument';
 
@@ -23,6 +24,7 @@ export function Introduction(props) {
     atbd,
     atbd_id,
     atbd_version,
+    historical_perspective = editorBlankDocument,
     introduction = editorBlankDocument
   } = atbdVersion;
 
@@ -38,11 +40,23 @@ export function Introduction(props) {
       >
         <h2>Introduction</h2>
         <EditorSection>
+          <EditorLabel>Introduction</EditorLabel>
           <FreeEditor
             value={Value.fromJSON(introduction)}
             save={(document) => {
               update(atbd_id, atbd_version, {
                 introduction: document
+              });
+            }}
+          />
+        </EditorSection>
+        <EditorSection>
+          <EditorLabel>Historical Perspective</EditorLabel>
+          <FreeEditor
+            value={Value.fromJSON(historical_perspective)}
+            save={(document) => {
+              update(atbd_id, atbd_version, {
+                historical_perspective: document
               });
             }}
           />
