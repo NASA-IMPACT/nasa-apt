@@ -9,12 +9,11 @@ import {
   Inpage
 } from './common/Inpage';
 import EditPage, {
-  EditorSection,
-  EditorSectionTitle
+  EditorSection
 } from './common/EditPage';
 import editorBlankDocument from './editorBlankDocument';
 
-export function Introduction (props) {
+export function Introduction(props) {
   const {
     atbdVersion = {},
     update
@@ -42,10 +41,9 @@ export function Introduction (props) {
           <FreeEditor
             value={Value.fromJSON(introduction)}
             save={(document) => {
-              console.log('save', document);
               update(atbd_id, atbd_version, {
                 introduction: document
-              })
+              });
             }}
           />
         </EditorSection>
@@ -55,10 +53,11 @@ export function Introduction (props) {
 }
 
 Introduction.propTypes = {
-  atbdVersion: PropTypes.object
+  atbdVersion: PropTypes.object,
+  update: PropTypes.func
 };
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   atbdVersion: state.application.atbdVersion
 });
 
