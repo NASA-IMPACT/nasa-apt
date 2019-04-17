@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components/macro';
 import collecticon from '../styles/collecticons';
-import Button from '../styles/atoms/button';
+import Button from '../styles/button/button';
 
 const FigureInput = styled.input`
   width: 0.1px;

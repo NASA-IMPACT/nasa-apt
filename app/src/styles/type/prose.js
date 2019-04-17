@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import { themeVal } from '../../utils/general';
-import { multiply } from '../../utils/math';
+import { themeVal } from '../utils/general';
+import { multiply } from '../utils/math';
 
 const Prose = styled.div`
   font-size: ${themeVal('type.base.size')};                                             // 16px
