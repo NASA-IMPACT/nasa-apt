@@ -25,7 +25,8 @@ import {
   introduction,
   contacts,
   drafts,
-  algorithm_description
+  algorithm_description,
+  algorithm_usage
 } from '../../constants/routes';
 
 import Dropdown, {
@@ -111,12 +112,14 @@ const EditPage = (props) => {
     children
   } = props;
 
+  const version = 1;
+
   const items = [
     { display: 'Identifying information' },
-    { display: 'Introduction', link: `/${atbdsedit}/${id}/${drafts}/1/${introduction}` },
+    { display: 'Introduction', link: `/${atbdsedit}/${id}/${drafts}/${version}/${introduction}` },
     { display: 'Contact information', link: `/${atbdsedit}/${id}/${contacts}` },
-    { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/1/${algorithm_description}` },
-    { display: 'Algorithm usage' },
+    { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_description}` },
+    { display: 'Algorithm usage', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_usage}` },
     { display: 'Algorithm implementation' },
     { display: 'References' }
   ];
