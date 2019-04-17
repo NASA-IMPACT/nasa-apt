@@ -60,8 +60,7 @@ def processWYSIWYGElement(node):
     elif node['type'] == 'image':
         imgUrl = node['data']['src']
         filename = saveImage(imgUrl)
-        to_append = wrapImage(filename)
-        return to_append
+        return wrapImage(filename)
 
 def processWYSIWYG(element):
     if debug:
