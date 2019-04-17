@@ -6,7 +6,8 @@ import {
   introduction,
   contacts,
   drafts,
-  algorithm_description
+  algorithm_description,
+  algorithm_usage
 } from '../constants/routes';
 
 const locationMiddleware = store => next => async (action) => {
@@ -25,6 +26,14 @@ const locationMiddleware = store => next => async (action) => {
       if (pathComponents[3] === drafts) {
         if (pathComponents[5] === algorithm_description || pathComponents[5] === introduction) {
           store.dispatch(actions.fetchAtbdVersion({
+            atbd_id: pathComponents[2],
+            atbd_version: pathComponents[4]
+          }));
+        }
+
+        // Query performance validation tables
+        if (pathComponents[5] === algorithm_usage) {
+          store.dispatch(actions.fetchAtbdPerformanceAssessment({
             atbd_id: pathComponents[2],
             atbd_version: pathComponents[4]
           }));

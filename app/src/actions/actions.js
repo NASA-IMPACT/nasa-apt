@@ -217,3 +217,23 @@ export function uploadFile(file) {
     payload: file
   };
 }
+
+export function fetchAtbdPerformanceAssessment(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}&select=atbd(*),`
+        + `performance_assessment_validation_methods(*),`
+        + `performance_assessment_validation_uncertainties(*),`
+        + `performance_assessment_validation_errors(*)`,
+      method: 'GET',
+      headers: returnObjectHeaders,
+      types: [
+        types.FETCH_ATBD_VERSION_PERFORMANCE_ASSESSMENT,
+        types.FETCH_ATBD_VERSION_PERFORMANCE_ASSESSMENT_SUCCESS,
+        types.FETCH_ATBD_VERSION_PERFORMANCE_ASSESSMENT_FAIL
+      ]
+    }
+  };
+}
