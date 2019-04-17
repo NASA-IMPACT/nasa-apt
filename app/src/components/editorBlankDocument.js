@@ -12,3 +12,8 @@ const editorBlankDocument = {
 };
 
 export default editorBlankDocument;
+
+export function getValidOrBlankDocument(doc) {
+  if (!doc || !Array.isArray(doc.nodes)) return editorBlankDocument;
+  return doc;
+}
