@@ -59,6 +59,7 @@ export const EditorSection = styled.div`
   background-color: ${themeVal('color.lightgray')};
   padding: ${multiply(themeVal('layout.space'), 2)};
   margin-top: ${multiply(themeVal('layout.space'), 2)};
+  margin-bottom: ${multiply(themeVal('layout.space'), 2)};
 `;
 
 export const EditorSectionTitle = styled.h4`
@@ -75,7 +76,11 @@ export const EditorLabel = styled.label`
   font-weight: lighter;
   line-height: 2;
   margin-bottom: ${multiply(themeVal('layout.space'), 2)};
+  margin-top: ${multiply(themeVal('layout.space'), 2)};
   text-transform: uppercase;
+  &&:first-child {
+    margin-top: 0;
+  }
 `;
 
 export const RemovableListItem = styled.li`
