@@ -6,11 +6,18 @@ import collecticon from '../../styles/collecticons';
 import { themeVal } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
 
-import FormGroup from '../../styles/molecules/form/group';
-import FormToolbar from '../../styles/molecules/form/toolbar';
-import FormLabel from '../../styles/atoms/form/label';
-import FormHelp from '../../styles/atoms/form/help';
-import Button from '../../styles/atoms/button';
+import {
+  FormGroup,
+  FormGroupHeader,
+  FormGroupBody
+} from '../../styles/form/group';
+import FormToolbar from '../../styles/form/toolbar';
+import FormLabel from '../../styles/form/label';
+import {
+  FormHelper,
+  FormHelperMessage
+} from '../../styles/form/helper';
+import Button from '../../styles/button/button';
 
 export const InputFormGroup = styled.form`
   display: grid;
@@ -26,7 +33,7 @@ const InlineInput = styled.input`
   border-radius: 4px;
   font-family: inherit;
   height: ${multiply(themeVal('layout.space'), 2.4)}
-  padding: 0 ${multiply(themeVal('layout.space'), 0.5)};
+  padding: 0 ${multiply(themeVal('layout.space'), 2)};
   width: 100%;
 `;
 
@@ -62,8 +69,9 @@ const Input = (props) => {
   }
   return (
     <FormGroup>
-      <FormLabel htmlFor={id}>{label}</FormLabel>
-      {info && (
+      <FormGroupHeader>
+        <FormLabel htmlFor={id}>{label}</FormLabel>
+        {info && (
         <FormToolbar>
           <InfoButton
             variation="base-plain"
@@ -75,15 +83,22 @@ const Input = (props) => {
           </InfoButton>
           <ReactTooltip effect="solid" className="type-primary" />
         </FormToolbar>
-      )}
-      <SmallTextInput
-        id={id}
-        name={name}
-        {...inputProps}
-      />
-      {feedback && (
-        <FormHelp>{feedback}</FormHelp>
-      )}
+        )}
+      </FormGroupHeader>
+      <FormGroupBody>
+        <SmallTextInput
+          id={id}
+          name={name}
+          {...inputProps}
+        />
+        {feedback && (
+          <FormHelper>
+            <FormHelperMessage>
+              {feedback}
+            </FormHelperMessage>
+          </FormHelper>
+        )}
+      </FormGroupBody>
     </FormGroup>
   );
 };

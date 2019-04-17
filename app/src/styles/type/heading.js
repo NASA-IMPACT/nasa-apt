@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components';
-import { themeVal } from '../../utils/general';
+import { themeVal } from '../utils/general';
 
 const sizeMapping = {
   small: '0.875rem',
@@ -48,6 +48,6 @@ export default Heading;
 export const headingAlt = () => css`
   font-feature-settings: "pnum" 0; /* Use proportional numbers */
   font-family: ${themeVal('type.heading.family')};
-  font-weight: ${themeVal('type.heading.regular')};
+  font-weight: ${themeVal('type.heading.light')};
   text-transform: uppercase;
 `;

@@ -10,15 +10,16 @@ color = {
   ...color,
   background: '#FFFFFF',
   surface: '#FFFFFF',
+  mist: rgba(color.base, 0.04),
   shadow: rgba(color.base, 0.08),
-  lightgray: '#EEE',
+  lightgray: '#EEEEEE',
   gray: '#DBDBDB',
-  darkgray: '#666',
+  darkgray: '#666666',
   link: color.primary,
-  danger: '#d85d3f',
+  danger: '#D85D3F',
   success: '#216869',
-  warning: '#ffc700',
-  info: '#5860ff'
+  warning: '#FFC700',
+  info: '#5860FF'
 };
 
 const type = {

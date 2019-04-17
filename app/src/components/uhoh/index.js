@@ -11,7 +11,7 @@ import {
   InpageBody,
   InpageBodyInner
 } from '../common/Inpage';
-import Prose from '../../styles/molecules/type/prose';
+import Prose from '../../styles/type/prose';
 
 const InpageBodyInnerUhOh = styled(InpageBodyInner)`
   display: flex;
