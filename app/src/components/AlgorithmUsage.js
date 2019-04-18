@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Value } from 'slate';
 import { get } from 'object-path';
-import { updateAtbdVersion } from '../actions/actions';
+import {
+  savePerformanceAssessmentMethods,
+  savePerformanceAssessmentUncertainties,
+  savePerformanceAssessmentErrors
+} from '../actions/actions';
 
 import FreeEditor from './FreeEditor';
 import {
@@ -17,15 +21,21 @@ import { getValidOrBlankDocument } from './editorBlankDocument';
 
 export function AlgorithmUsage(props) {
   const {
-    atbd = {},
+    atbd,
+    atbd_version,
     methods,
     uncertainties,
     errors,
+    saveMethods,
+    saveUncertainties,
+    saveErrors
   } = props;
+
   const {
     atbd_id,
     title
   } = atbd;
+
   return (
     <Inpage>
       <EditPage
@@ -47,20 +57,41 @@ export function AlgorithmUsage(props) {
         <EditorSection>
           <EditorLabel>Validation methods</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(methods))}
-            save={() => true}
+            value={Value.fromJSON(getValidOrBlankDocument(methods.description))}
+            save={(document) => {
+              saveMethods({
+                id: methods.performance_assessment_validation_method_id,
+                atbd_id,
+                atbd_version,
+                description: document
+              });
+            }}
           />
 
           <EditorLabel>Validation uncertainties</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(uncertainties))}
-            save={() => true}
+            value={Value.fromJSON(getValidOrBlankDocument(uncertainties.description))}
+            save={(document) => {
+              saveUncertainties({
+                id: uncertainties.performance_assessment_validation_uncertainty,
+                atbd_id,
+                atbd_version,
+                description: document
+              });
+            }}
           />
 
           <EditorLabel>Validation errors</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(errors))}
-            save={() => true}
+            value={Value.fromJSON(getValidOrBlankDocument(errors.description))}
+            save={(document) => {
+              saveErrors({
+                id: errors.performance_assessment_validation_error,
+                atbd_id,
+                atbd_version,
+                description: document
+              });
+            }}
           />
         </EditorSection>
       </EditPage>
@@ -70,23 +101,30 @@ export function AlgorithmUsage(props) {
 
 AlgorithmUsage.propTypes = {
   atbd: PropTypes.object,
-  methods: PropTypes.array,
-  uncertainties: PropTypes.array,
-  errors: PropTypes.array
+  atbd_version: PropTypes.number,
+  methods: PropTypes.object,
+  uncertainties: PropTypes.object,
+  errors: PropTypes.object,
+  saveMethods: PropTypes.func,
+  saveUncertainties: PropTypes.func,
+  saveErrors: PropTypes.func
 };
 
 const mapStateToProps = (state) => {
   const { application: app } = state;
   return {
     atbd: get(app, 'atbdVersion.atbd', {}),
-    methods: app.performanceAssessment.methods,
-    uncertainties: app.performanceAssessment.uncertainties,
-    errors: app.performanceAssessment.errors
+    atbd_version: get(app, 'atbdVersion.atbd_version'),
+    methods: get(app.performanceAssessment, 'methods', {}),
+    uncertainties: get(app.performanceAssessment, 'uncertainties', {}),
+    errors: get(app.performanceAssessment, 'errors', {})
   };
 };
 
 const mapDispatchToProps = {
-  update: updateAtbdVersion
+  saveMethods: savePerformanceAssessmentMethods,
+  saveUncertainties: savePerformanceAssessmentUncertainties,
+  saveErrors: savePerformanceAssessmentErrors
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlgorithmUsage);
