@@ -142,7 +142,9 @@ export default function (state = initialState, action) {
         performance_assessment_validation_methods: methods,
         performance_assessment_validation_uncertainties: uncertainties,
         performance_assessment_validation_errors: errors,
-        atbd
+        atbd,
+        atbd_id,
+        atbd_version
       } = payload;
       return {
         ...state,
@@ -161,7 +163,9 @@ export default function (state = initialState, action) {
           errors: errors[0]
         },
         atbdVersion: {
-          atbd
+          atbd,
+          atbd_id,
+          atbd_version
         }
       };
     }

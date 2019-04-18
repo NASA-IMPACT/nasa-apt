@@ -223,7 +223,7 @@ export function fetchAtbdPerformanceAssessment(versionObject) {
   return {
     [RSAA]: {
       endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
-        + `atbd_version=eq.${atbd_version}&select=atbd(*),`
+        + `atbd_version=eq.${atbd_version}&select=atbd_version,atbd_id,atbd(*),`
         + `performance_assessment_validation_methods(*),`
         + `performance_assessment_validation_uncertainties(*),`
         + `performance_assessment_validation_errors(*)`,
@@ -236,4 +236,74 @@ export function fetchAtbdPerformanceAssessment(versionObject) {
       ]
     }
   };
+}
+
+export function createOrUpdatePerformanceAssessment(table, idPropertyName, payload) {
+  const {
+    id,
+    atbd_id,
+    atbd_version,
+    description
+  } = payload;
+
+  if (id) {
+    // Patch an existing record.
+    return {
+      [RSAA]: {
+        endpoint: `${BASE_URL}/${table}?${idPropertyName}=eq.${id}`,
+        method: 'PATCH',
+        body: JSON.stringify({ description }),
+        headers: returnObjectHeaders,
+        types: [
+          types.UPDATE_PERFORMANCE_ASSESSMENT,
+          types.UPDATE_PERFORMANCE_ASSESSMENT_SUCCESS,
+          types.UPDATE_PERFORMANCE_ASSESSMENT_FAIL,
+        ]
+      }
+    };
+  }
+
+  // Create a new record.
+  const body = JSON.stringify({
+    atbd_id,
+    atbd_version,
+    description
+  });
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/${table}`,
+      method: 'POST',
+      body,
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_PERFORMANCE_ASSESSMENT,
+        types.CREATE_PERFORMANCE_ASSESSMENT_SUCCESS,
+        types.CREATE_PERFORMANCE_ASSESSMENT_FAIL,
+      ]
+    }
+  };
+}
+
+export function savePerformanceAssessmentMethods(payload) {
+  return createOrUpdatePerformanceAssessment(
+    'performance_assessment_validation_methods',
+    'performance_assessment_validation_method_id',
+    payload
+  );
+}
+
+export function savePerformanceAssessmentUncertainties(payload) {
+  return createOrUpdatePerformanceAssessment(
+    'performance_assessment_validation_uncertainties',
+    'performance_assessment_validation_uncertainty',
+    payload
+  );
+}
+
+export function savePerformanceAssessmentErrors(payload) {
+  return createOrUpdatePerformanceAssessment(
+    'performance_assessment_validation_errors',
+    'performance_assessment_validation_error',
+    payload
+  );
 }

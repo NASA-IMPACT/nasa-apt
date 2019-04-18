@@ -6,6 +6,8 @@ const types = createTypes([
   ...async('UPDATE_ATBD_VERSION'),
   ...async('FETCH_ATBD_VERSION'),
   ...async('FETCH_ATBD_VERSION_PERFORMANCE_ASSESSMENT'),
+  ...async('UPDATE_PERFORMANCE_ASSESSMENT'),
+  ...async('CREATE_PERFORMANCE_ASSESSMENT'),
   ...async('FETCH_ATBDS'),
   ...async('FETCH_ATBD'),
   ...async('FETCH_CONTACTS'),
