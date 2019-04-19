@@ -98,27 +98,36 @@ export class FormatOptions extends React.Component {
       isUrlEditor: false,
       urlValue: ''
     };
-    this.toggleUrlEditor = this.toggleUrlEditor.bind(this);
+    this.setUrlEditor = this.setUrlEditor.bind(this);
     this.insertLink = this.insertLink.bind(this);
+    this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.input = React.createRef();
   }
 
-  componentWillUnmount() {
-    const { isUrlEditor, urlValue } = this.state;
-    if (isUrlEditor && urlValue.length) {
-      this.insertLink();
+  componentDidUpdate(_, prevState) {
+    const { isUrlEditor } = this.state;
+    if (isUrlEditor && !prevState.isUrlEditor) {
+      // Focus the input after rendering it
+      this.input.current.focus();
     }
   }
 
-  toggleUrlEditor() {
-    return this.setState(state => ({
-      isUrlEditor: !state.isUrlEditor
-    }));
+  setUrlEditor(isUrlEditor) {
+    this.setState({ isUrlEditor });
   }
 
   insertLink() {
     const { insertLink } = this.props;
     const { urlValue } = this.state;
     insertLink(urlValue);
+  }
+
+  handleKeyPress(e) {
+    const { keyCode } = e;
+    if (keyCode === 13) {
+      e.preventDefault();
+      this.insertLink();
+    }
   }
 
   renderUrlEditor() {
@@ -133,6 +142,8 @@ export class FormatOptions extends React.Component {
         onChange={(e) => {
           this.setState({ urlValue: e.currentTarget.value });
         }}
+        onKeyDown={this.handleKeyPress}
+        ref={this.input}
       />
     );
   }
@@ -142,7 +153,7 @@ export class FormatOptions extends React.Component {
       activeMarks,
       toggleMark
     } = this.props;
-    const { toggleUrlEditor } = this;
+    const { setUrlEditor } = this;
     return (
       <ButtonGroup orientation="horizontal">
         {buttonConfig.map(config => (
@@ -159,7 +170,7 @@ export class FormatOptions extends React.Component {
           key="link"
           hideText
           variation={baseVariation}
-          onClick={toggleUrlEditor}
+          onClick={() => setUrlEditor(true)}
         >
           Add a link
         </LinkButton>
