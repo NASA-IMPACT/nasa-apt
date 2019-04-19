@@ -60,7 +60,8 @@ export function FormattableText(props) {
     hasSelection,
     isFocused,
     activeMarks,
-    toggleMark
+    toggleMark,
+    insertLink
   } = props;
 
   return (
@@ -69,6 +70,7 @@ export function FormattableText(props) {
         <FormatOptions
           activeMarks={activeMarks}
           toggleMark={toggleMark}
+          insertLink={insertLink}
         />
       )}
       <p {...attributes}>{children}</p>
@@ -82,7 +84,8 @@ FormattableText.propTypes = {
   hasSelection: PropTypes.bool,
   isFocused: PropTypes.bool,
   activeMarks: PropTypes.array.isRequired,
-  toggleMark: PropTypes.func.isRequired
+  toggleMark: PropTypes.func.isRequired,
+  insertLink: PropTypes.func.isRequired
 };
 
 // The FormatOptions component is more useful as a separate component,
@@ -96,12 +99,26 @@ export class FormatOptions extends React.Component {
       urlValue: ''
     };
     this.toggleUrlEditor = this.toggleUrlEditor.bind(this);
+    this.insertLink = this.insertLink.bind(this);
+  }
+
+  componentWillUnmount() {
+    const { isUrlEditor, urlValue } = this.state;
+    if (isUrlEditor && urlValue.length) {
+      this.insertLink();
+    }
   }
 
   toggleUrlEditor() {
     return this.setState(state => ({
       isUrlEditor: !state.isUrlEditor
     }));
+  }
+
+  insertLink() {
+    const { insertLink } = this.props;
+    const { urlValue } = this.state;
+    insertLink(urlValue);
   }
 
   renderUrlEditor() {
@@ -162,7 +179,8 @@ export class FormatOptions extends React.Component {
 
 FormatOptions.propTypes = {
   activeMarks: PropTypes.array.isRequired,
-  toggleMark: PropTypes.func.isRequired
+  toggleMark: PropTypes.func.isRequired,
+  insertLink: PropTypes.func.isRequired
 };
 
 export default FormattableText;
