@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { rgba } from 'polished';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
-import { headingAlt } from '../../styles/atoms/type/heading';
+import { headingAlt } from '../../styles/type/heading';
 import collecticon from '../../styles/collecticons';
 
 import {
@@ -47,10 +47,9 @@ const Stepper = styled.div`
   }
 `;
 
-const StepperLabel = styled.div`
+const StepperLabel = styled.h6`
   ${headingAlt()}
   font-size: 0.875rem;
-  margin: 0;
   color: ${_rgba('#FFFFFF', 0.64)};
   margin-right: 0.5rem;
 `;

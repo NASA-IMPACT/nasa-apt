@@ -28,3 +28,9 @@ export const truncated = () => css`
   overflow: hidden;
   text-overflow: ellipsis;
 `;
+
+export const disabled = () => css`
+  opacity: 0.48;
+  pointer-events: none;
+  cursor: not-allowed;
+`;

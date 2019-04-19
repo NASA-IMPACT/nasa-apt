@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { multiply } from '../styles/utils/math';
 import { themeVal } from '../styles/utils/general';
-import Button from '../styles/atoms/button';
+import Button from '../styles/button/button';
 import collecticon from '../styles/collecticons';
 
 export const EquationBtn = styled(Button)`

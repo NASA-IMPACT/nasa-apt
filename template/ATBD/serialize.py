@@ -16,19 +16,40 @@ def toCamelCase(snake_str):
     # with the 'title' method and join them together.
     return ''.join(x.title() for x in components)
 
+def processTable(nodeRows):
+    tableList = []
+    for row in nodeRows['nodes']:
+        tableList.append([])
+        for cell in row['nodes']:
+            for subcell in cell['nodes']:
+                text = processWYSIWYGElement(subcell)
+                tableList[-1].append(text)
+    columnNames = tableList.pop(0)
+    df = pd.DataFrame(tableList, columns=columnNames)
+    col_width = int(12/len(df.columns))
+    col_format = 'p{' + str(col_width) + 'cm}'
+    col_format *= len(df.columns)
+    latexTable = '\\\\ \\\\' + \
+        df.to_latex(index=False, column_format=col_format) + '\\\\ \\\\'
+    return latexTable
+
+def saveImage(imgUrl):
+    r = requests.get(imgUrl, allow_redirects=True)
+    filename = os.path.join(os.getcwd(), 'template/ATBD/imgs', imgUrl.rsplit('/', 1)[1])
+    open(filename, 'wb').write(r.content)
+    print('IMAGE: ', filename)
+    return filename
+
+def wrapImage(img):
+    wrapper = f''' \\begin{{center}}
+        \\includegraphics[width=\\linewidth]{{{img}}}
+        \\end{{center}}
+    '''
+    return wrapper
+
 def processWYSIWYGElement(node):
     if node['type'] == 'table':
-        tableList = []
-        for row in node['nodes']:
-            tableList.append([])
-            for cell in row['nodes']:
-                for subcell in cell['nodes']:
-                    text = processWYSIWYGElement(subcell)
-                    tableList[-1].append(text)
-        columnNames = tableList.pop(0)
-        df = pd.DataFrame(tableList, columns=columnNames)
-        latexTable = df.to_latex(index=False) + '\\\\ \\\\'
-        return latexTable
+        processTable(node['nodes'])
     elif node['type'] == 'table_cell':
         return processWYSIWYGElement(node['nodes'])
     elif node['type'] != 'image' and node['type'] != 'table':
@@ -37,8 +58,9 @@ def processWYSIWYGElement(node):
             text = ' \\begin{equation} ' + text + ' \\end{equation} '
         return text
     elif node['type'] == 'image':
-        imgRef = node['data']['src']
-        # to_return += imgRef
+        imgUrl = node['data']['src']
+        filename = saveImage(imgUrl)
+        return wrapImage(filename)
 
 def processWYSIWYG(element):
     if debug:

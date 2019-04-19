@@ -4,7 +4,7 @@ import { Link, withRouter, NavLink } from 'react-router-dom';
 import { antialiased } from '../../styles/helpers';
 import { themeVal } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
-import Constrainer from '../../styles/atoms/constrainer';
+import Constrainer from '../../styles/constrainer';
 
 
 const PageHead = styled.header`
