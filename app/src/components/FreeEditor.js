@@ -63,6 +63,9 @@ function renderMark(props, editor, next) {
     case 'strikethrough': {
       return <s {...props}>{children}</s>;
     }
+    case 'link': {
+      return <a href="#" {...props}>{children}</a>;
+    }
     default: {
       return next();
     }
