@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components/macro';
 import Button from '../styles/button/button';
 import ButtonGroup from '../styles/button/group';
+import collecticon from '../styles/collecticons';
 
 const TextContainer = styled.div`
   position: relative;
@@ -17,6 +18,18 @@ const ActionsContainer = styled.div`
   top: -2.4rem;
 `;
 
+const LinkIcon = styled.span`
+  ::before {
+    ${collecticon('link')}
+    line-height: 1;
+    vertical-align: middle;
+  }
+`;
+
+const FixedWidthButton = styled(Button)`
+  width: 3rem;
+`;
+
 const buttonConfig = [{
   display: <strong>B</strong>,
   mark: 'bold'
@@ -29,6 +42,9 @@ const buttonConfig = [{
 }, {
   display: <s>S</s>,
   mark: 'strikethrough'
+}, {
+  display: <LinkIcon></LinkIcon>,
+  mark: 'link'
 }];
 
 const baseVariation = 'base-raised-light';
@@ -49,14 +65,14 @@ export function FormattableText(props) {
         <ActionsContainer contentEditable={false}>
           <ButtonGroup orientation="horizontal">
             {buttonConfig.map(config => (
-              <Button
+              <FixedWidthButton
                 key={config.mark}
                 onClick={() => toggleMark(config.mark)}
                 variation={activeMarks.indexOf(config.mark) >= 0 ? activeVariation
                   : baseVariation}
               >
                 {config.display}
-              </Button>
+              </FixedWidthButton>
             ))}
           </ButtonGroup>
         </ActionsContainer>
