@@ -47,7 +47,7 @@ CREATE TABLE atbd_contact_groups(
   FOREIGN KEY (contact_group_id) REFERENCES contact_groups(contact_group_id)
 );
 CREATE TABLE atbd_versions(
-  atbd_version INTEGER NOT NULL,
+  atbd_version serial,
   atbd_id INTEGER NOT NULL,
   FOREIGN KEY (atbd_id) REFERENCES atbds(atbd_id),
   PRIMARY KEY (atbd_id, atbd_version),
@@ -150,6 +150,16 @@ CREATE TABLE data_access_related_urls(
   url VARCHAR (1024),
   description VARCHAR (4000)
 );
+CREATE FUNCTION create_atbd_version(OUT created_atbd_id INTEGER, OUT result atbd_versions)
+  AS $$
+  DECLARE
+  BEGIN
+  INSERT INTO atbds(title) VALUES ('') RETURNING atbds.atbd_id INTO created_atbd_id;
+  INSERT INTO atbd_versions(atbd_id) VALUES (created_atbd_id) RETURNING * INTO result;
+  END;
+  $$ LANGUAGE plpgsql
+  VOLATILE;
+
 INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
 VALUES ('Leonardo', 'Davinci', 'ld@gmail.comn');
 INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
