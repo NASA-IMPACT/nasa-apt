@@ -20,7 +20,7 @@ import EditorImage from './EditorImage';
 import EditorTable from './EditorTable';
 import EditorFigureTool from './EditorFigureTool';
 import EditorFormattableText from './EditorFormattableText';
-import schema from './editorSchema';
+// import schema from './editorSchema';
 import { themeVal } from '../styles/utils/general';
 import { multiply } from '../styles/utils/math';
 import Button from '../styles/button/button';
@@ -93,6 +93,7 @@ export class FreeEditor extends React.Component {
     this.removeRow = this.removeRow.bind(this);
     this.removeTable = this.removeTable.bind(this);
     this.insertImage = this.insertImage.bind(this);
+    this.insertLink = this.insertLink.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -207,6 +208,22 @@ export class FreeEditor extends React.Component {
     });
   }
 
+  insertLink(url) {
+    const { value } = this.state;
+    const { selection } = value;
+    const text = selection.isCollapsed ? 'link' : value.fragment.text;
+    this.editor.insertInline({
+      type: 'link',
+      data: { url },
+      nodes: [{
+        object: 'text',
+        leaves: [{
+          text
+        }]
+      }]
+    });
+  }
+
   insertParagraph() {
     this.editor
       .insertBlock({
@@ -259,7 +276,12 @@ export class FreeEditor extends React.Component {
 
   /* eslint-disable-next-line */
   renderNode(props, editor, next) {
-    const { attributes, node, isFocused } = props;
+    const {
+      attributes,
+      children,
+      node,
+      isFocused
+    } = props;
     const { value } = this.state;
     switch (node.type) {
       case 'equation':
@@ -301,8 +323,15 @@ export class FreeEditor extends React.Component {
             hasSelection={hasSelection}
             activeMarks={activeMarks}
             toggleMark={this.toggleMark}
+            insertLink={this.insertLink}
             {...props}
           />
+        );
+      }
+      case 'link': {
+        const url = node.data.get('url');
+        return (
+          <a href={url} rel="noopener noreferrer" target="_blank" {...attributes}>{children}</a>
         );
       }
       default:
@@ -378,7 +407,6 @@ export class FreeEditor extends React.Component {
         </Toolbar>
         <EditorContainer>
           <Editor
-            schema={schema}
             ref={editorValue => (this.editor = editorValue)}
             value={value}
             onChange={onChange}
