@@ -92,7 +92,7 @@ export function fetchAtbdVersion(versionObject) {
 export function fetchAtbds() {
   return {
     [RSAA]: {
-      endpoint: `${BASE_URL}/atbds?select=*,contacts(*),atbd_versions(atbd_id, atbd_version)`,
+      endpoint: `${BASE_URL}/atbds?select=*,contacts(*),atbd_versions(atbd_id, atbd_version, status)`,
       method: 'GET',
       types: [
         types.FETCH_ATBDS,

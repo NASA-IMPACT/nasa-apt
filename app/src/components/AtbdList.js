@@ -96,10 +96,13 @@ const EditIcon = styled.span`
 const AtbdList = (props) => {
   const { atbds, createAtbd: create } = props;
   const atbdElements = atbds.map((atbd) => {
-    const { atbd_id, title } = atbd;
+    const { atbd_id, title, atbd_versions } = atbd;
+    // We are using a default single version for the prototype.
+    // This should be updated in the future.
+    const { status } = atbd_versions[0];
     return (
       <AtbdRow scope="row" key={atbd_id}>
-        <AtbdCell><AtbdPublishedState>Status</AtbdPublishedState></AtbdCell>
+        <AtbdCell><AtbdPublishedState>{status}</AtbdPublishedState></AtbdCell>
         <AtbdCell>
           <AtbdTitle>{title}</AtbdTitle>
           { false && <AtbdVersion>Version 1.0</AtbdVersion> }
