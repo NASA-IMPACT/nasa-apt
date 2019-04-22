@@ -24,6 +24,21 @@ export function createContact(contact) {
   };
 }
 
+export function createAtbd() {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/rpc/create_atbd_version`,
+      method: 'POST',
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ATBD,
+        types.CREATE_ATBD_SUCCESS,
+        types.CREATE_ATBD_FAIL
+      ]
+    }
+  };
+}
+
 export function createAtbdVersion(atbd_version) {
   return {
     [RSAA]: {
@@ -77,7 +92,7 @@ export function fetchAtbdVersion(versionObject) {
 export function fetchAtbds() {
   return {
     [RSAA]: {
-      endpoint: `${BASE_URL}/atbds?select=*,contacts(*)`,
+      endpoint: `${BASE_URL}/atbds?select=*,contacts(*),atbd_versions(atbd_id, atbd_version)`,
       method: 'GET',
       types: [
         types.FETCH_ATBDS,

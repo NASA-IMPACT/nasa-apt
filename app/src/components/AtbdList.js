@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { push } from 'connected-react-router';
+import { createAtbd } from '../actions/actions';
 import {
   atbdsedit,
   contacts
@@ -93,7 +94,7 @@ const EditIcon = styled.span`
 `;
 
 const AtbdList = (props) => {
-  const { atbds } = props;
+  const { atbds, createAtbd: create } = props;
   const atbdElements = atbds.map((atbd) => {
     const { atbd_id, title } = atbd;
     return (
@@ -163,7 +164,13 @@ const AtbdList = (props) => {
 
           <InpageToolbar>
             <a href="#" title="Search documents">Search</a>
-            <a href="#" title="Create new document">Create</a>
+            <a
+              href="#"
+              title="Create new document"
+              onClick={create}
+            >
+              Create
+            </a>
           </InpageToolbar>
 
         </InpageHeaderInner>
@@ -194,7 +201,8 @@ AtbdList.propTypes = {
     atbd_id: PropTypes.number.isRequired,
     title: PropTypes.string.isRequired
   })),
-  push: PropTypes.func
+  push: PropTypes.func,
+  createAtbd: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -202,6 +210,6 @@ const mapStateToProps = (state) => {
   return { atbds };
 };
 
-const mapDispatch = { push };
+const mapDispatch = { push, createAtbd };
 
 export default connect(mapStateToProps, mapDispatch)(AtbdList);
