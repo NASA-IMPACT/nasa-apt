@@ -5,12 +5,7 @@ const initialState = {
   contacts: [],
   uploadedFile: undefined,
   atbdVersion: undefined,
-  selectedAtbd: undefined,
-  performanceAssessment: {
-    methods: undefined,
-    uncertainties: undefined,
-    errors: undefined
-  }
+  selectedAtbd: undefined
 };
 
 const deleteAtbdVersionChildItem = (schemaKey, state, action) => {
@@ -133,40 +128,6 @@ export default function (state = initialState, action) {
       return {
         ...state,
         uploadedFile: payload
-      };
-    }
-
-    case actions.FETCH_ATBD_VERSION_PERFORMANCE_ASSESSMENT_SUCCESS: {
-      const { payload } = action;
-      const {
-        performance_assessment_validation_methods: methods,
-        performance_assessment_validation_uncertainties: uncertainties,
-        performance_assessment_validation_errors: errors,
-        atbd,
-        atbd_id,
-        atbd_version
-      } = payload;
-      return {
-        ...state,
-
-        // The performance assessment validation tables are
-        // many-to-one with the ATBD versions table; however,
-        // in our editing UI it doesn't make sense to display a
-        // rich editor for each method, uncertainty, or error.
-        //
-        // Instead, users have multiple formatting options to
-        // write this data as tables, lists, etc. within a single
-        // rich editor form.
-        performanceAssessment: {
-          methods: methods[0],
-          uncertainties: uncertainties[0],
-          errors: errors[0]
-        },
-        atbdVersion: {
-          atbd,
-          atbd_id,
-          atbd_version
-        }
       };
     }
 
