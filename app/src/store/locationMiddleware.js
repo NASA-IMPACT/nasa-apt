@@ -26,16 +26,9 @@ const locationMiddleware = store => next => async (action) => {
         store.dispatch(actions.fetchContacts());
       }
       if (pathComponents[3] === drafts) {
-        if (pathComponents[5] === algorithm_description || pathComponents[5] === introduction) {
+        if (pathComponents[5] === algorithm_description || pathComponents[5] === introduction
+          || pathComponents[5] === algorithm_usage) {
           store.dispatch(actions.fetchAtbdVersion({
-            atbd_id: pathComponents[2],
-            atbd_version: pathComponents[4]
-          }));
-        }
-
-        // Query performance validation tables
-        if (pathComponents[5] === algorithm_usage) {
-          store.dispatch(actions.fetchAtbdPerformanceAssessment({
             atbd_id: pathComponents[2],
             atbd_version: pathComponents[4]
           }));

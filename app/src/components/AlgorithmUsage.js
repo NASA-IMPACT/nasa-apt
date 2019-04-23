@@ -2,12 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Value } from 'slate';
-import { get } from 'object-path';
-import {
-  savePerformanceAssessmentMethods,
-  savePerformanceAssessmentUncertainties,
-  savePerformanceAssessmentErrors
-} from '../actions/actions';
+import { updateAtbdVersion } from '../actions/actions';
 
 import FreeEditor from './FreeEditor';
 import {
@@ -26,9 +21,8 @@ export function AlgorithmUsage(props) {
     methods,
     uncertainties,
     errors,
-    saveMethods,
-    saveUncertainties,
-    saveErrors
+    constraints,
+    updateAtbdVersion: update
   } = props;
 
   const {
@@ -48,8 +42,12 @@ export function AlgorithmUsage(props) {
         <EditorSection>
           <EditorLabel>Constraints</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(null))}
-            save={() => true}
+            value={Value.fromJSON(getValidOrBlankDocument(constraints))}
+            save={(document) => {
+              update(atbd_id, atbd_version, {
+                algorithm_usage_constraints: document
+              });
+            }}
           />
         </EditorSection>
 
@@ -57,39 +55,30 @@ export function AlgorithmUsage(props) {
         <EditorSection>
           <EditorLabel>Validation methods</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(methods.description))}
+            value={Value.fromJSON(getValidOrBlankDocument(methods))}
             save={(document) => {
-              saveMethods({
-                id: methods.performance_assessment_validation_method_id,
-                atbd_id,
-                atbd_version,
-                description: document
+              update(atbd_id, atbd_version, {
+                performance_assessment_validation_methods: document
               });
             }}
           />
 
           <EditorLabel>Validation uncertainties</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(uncertainties.description))}
+            value={Value.fromJSON(getValidOrBlankDocument(uncertainties))}
             save={(document) => {
-              saveUncertainties({
-                id: uncertainties.performance_assessment_validation_uncertainty,
-                atbd_id,
-                atbd_version,
-                description: document
+              update(atbd_id, atbd_version, {
+                performance_assessment_validation_uncertainties: document
               });
             }}
           />
 
           <EditorLabel>Validation errors</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(errors.description))}
+            value={Value.fromJSON(getValidOrBlankDocument(errors))}
             save={(document) => {
-              saveErrors({
-                id: errors.performance_assessment_validation_error,
-                atbd_id,
-                atbd_version,
-                description: document
+              update(atbd_id, atbd_version, {
+                performance_assessment_validation_errors: document
               });
             }}
           />
@@ -105,26 +94,24 @@ AlgorithmUsage.propTypes = {
   methods: PropTypes.object,
   uncertainties: PropTypes.object,
   errors: PropTypes.object,
-  saveMethods: PropTypes.func,
-  saveUncertainties: PropTypes.func,
-  saveErrors: PropTypes.func
+  constraints: PropTypes.object,
+  updateAtbdVersion: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
   const { application: app } = state;
+  const atbdVersion = app.atbdVersion || {};
+  const atbd = atbdVersion.atbd || {};
   return {
-    atbd: get(app, 'atbdVersion.atbd', {}),
-    atbd_version: get(app, 'atbdVersion.atbd_version'),
-    methods: get(app.performanceAssessment, 'methods', {}),
-    uncertainties: get(app.performanceAssessment, 'uncertainties', {}),
-    errors: get(app.performanceAssessment, 'errors', {})
+    atbd,
+    atbd_version: atbdVersion.atbd_version,
+    methods: atbdVersion.performance_assessment_validation_methods,
+    uncertainties: atbdVersion.performance_assessment_validation_uncertainties,
+    errors: atbdVersion.performance_assessment_validation_errors,
+    constraints: atbdVersion.algorithm_usage_constraints
   };
 };
 
-const mapDispatchToProps = {
-  saveMethods: savePerformanceAssessmentMethods,
-  saveUncertainties: savePerformanceAssessmentUncertainties,
-  saveErrors: savePerformanceAssessmentErrors
-};
+const mapDispatchToProps = { updateAtbdVersion };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlgorithmUsage);
