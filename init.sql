@@ -12,6 +12,10 @@ CREATE TYPE e_contact_mechanism_type AS ENUM (
  'U.S.',
  'Other'
 );
+CREATE TYPE atbd_status AS ENUM (
+  'Draft',
+  'Published'
+);
 CREATE TABLE contacts(
  contact_id serial PRIMARY KEY,
  first_name VARCHAR (1024) NOT NULL,
@@ -56,7 +60,8 @@ CREATE TABLE atbd_versions(
   mathematical_theory json,
   mathematical_theory_assumptions json,
   introduction VARCHAR (1024),
-  historical_perspective VARCHAR (1024)
+  historical_perspective VARCHAR (1024),
+  status atbd_status default 'Draft'
 );
 CREATE TABLE algorithm_input_variables(
   algorithm_input_variable_id serial PRIMARY KEY,
@@ -150,6 +155,17 @@ CREATE TABLE data_access_related_urls(
   url VARCHAR (1024),
   description VARCHAR (4000)
 );
+CREATE FUNCTION create_atbd_version(OUT created_atbd atbds, OUT created_version atbd_versions)
+  AS $$
+  DECLARE
+  BEGIN
+  INSERT INTO atbds(title) VALUES ('') RETURNING * INTO created_atbd;
+  INSERT INTO atbd_versions(atbd_id, atbd_version)
+  VALUES (created_atbd.atbd_id, 1) RETURNING * INTO created_version;
+  END;
+  $$ LANGUAGE plpgsql
+  VOLATILE;
+
 INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
 VALUES ('Leonardo', 'Davinci', 'ld@gmail.comn');
 INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
