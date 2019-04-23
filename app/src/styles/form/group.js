@@ -5,7 +5,7 @@ import { divide } from '../utils/math';
 export const FormGroup = styled.div`
   display: grid;
   grid-template-rows: auto;
-  grid-gap: ${themeVal('layout.space')};
+  grid-gap: ${divide(themeVal('layout.space'), 2)};
 `;
 
 export const FormGroupHeader = styled.div`
@@ -17,5 +17,5 @@ export const FormGroupHeader = styled.div`
 export const FormGroupBody = styled.div`
   display: grid;
   grid-template-rows: auto;
-  grid-gap: ${divide(themeVal('layout.space'), 2)};
+  grid-gap: ${divide(themeVal('layout.space'), 4)};
 `;
