@@ -18,77 +18,82 @@ import Select from './common/Select';
 const Contacts = (props) => {
   const {
     contacts,
-    selectedAtbd = {},
+    selectedAtbd,
     createAtbdContact: dispatchCreateAtbdContact,
     deleteAtbdContact: dispatchDeleteAtbdContact
   } = props;
-
-  const {
-    atbd_id,
-    title
-  } = selectedAtbd;
-
-  const atbdContacts = selectedAtbd.contacts || [];
-
-  const contactOptions = contacts.map((contact) => {
+  let returnValue;
+  if (selectedAtbd) {
     const {
-      first_name,
-      last_name,
-      contact_id
-    } = contact;
-    return { label: `${first_name} ${last_name}`, value: contact_id };
-  });
+      atbd_id,
+      title
+    } = selectedAtbd;
 
-  const atbdContactItems = atbdContacts.map((atbdContact) => {
-    const {
-      first_name,
-      last_name,
-      contact_id
-    } = atbdContact;
-    return (
-      <RemovableListItem
-        key={contact_id}
-        label={`${first_name} ${last_name}`}
-        deleteAction={() => { dispatchDeleteAtbdContact(atbd_id, contact_id); }}
-      />
+    const atbdContacts = selectedAtbd.contacts || [];
+
+    const contactOptions = contacts.map((contact) => {
+      const {
+        first_name,
+        last_name,
+        contact_id
+      } = contact;
+      return { label: `${first_name} ${last_name}`, value: contact_id };
+    });
+
+    const atbdContactItems = atbdContacts.map((atbdContact) => {
+      const {
+        first_name,
+        last_name,
+        contact_id
+      } = atbdContact;
+      return (
+        <RemovableListItem
+          key={contact_id}
+          label={`${first_name} ${last_name}`}
+          deleteAction={() => { dispatchDeleteAtbdContact(atbd_id, contact_id); }}
+        />
+      );
+    });
+
+    returnValue = (
+      <Inpage>
+        <EditPage
+          title={title || ''}
+          id={atbd_id}
+          step={3}
+        >
+          <h2>Contacts</h2>
+          <EditorSection>
+            <EditorLabel>Existing contacts</EditorLabel>
+            <Select
+              name="existing-contact"
+              label="Select contact"
+              options={contactOptions}
+              onChange={e => dispatchCreateAtbdContact({
+                atbd_id: selectedAtbd.atbd_id,
+                contact_id: e.target.value
+              })}
+            />
+          </EditorSection>
+
+          <EditorSection>
+            <EditorLabel>Create new contacts</EditorLabel>
+            <ContactForm />
+          </EditorSection>
+
+          <EditorSection>
+            <EditorLabel>ATBD contacts</EditorLabel>
+            <ul>
+              {atbdContactItems}
+            </ul>
+          </EditorSection>
+        </EditPage>
+      </Inpage>
     );
-  });
-
-  return (
-    <Inpage>
-      <EditPage
-        title={title || ''}
-        id={atbd_id}
-        step={3}
-      >
-        <h2>Contacts</h2>
-        <EditorSection>
-          <EditorLabel>Existing contacts</EditorLabel>
-          <Select
-            name="existing-contact"
-            label="Select contact"
-            options={contactOptions}
-            onChange={e => dispatchCreateAtbdContact({
-              atbd_id: selectedAtbd.atbd_id,
-              contact_id: e.target.value
-            })}
-          />
-        </EditorSection>
-
-        <EditorSection>
-          <EditorLabel>Create new contacts</EditorLabel>
-          <ContactForm />
-        </EditorSection>
-
-        <EditorSection>
-          <EditorLabel>ATBD contacts</EditorLabel>
-          <ul>
-            {atbdContactItems}
-          </ul>
-        </EditorSection>
-      </EditPage>
-    </Inpage>
-  );
+  } else {
+    returnValue = <div>Loading</div>;
+  }
+  return returnValue;
 };
 
 const contactShape = PropTypes.shape({

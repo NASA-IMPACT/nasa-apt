@@ -170,6 +170,17 @@ export default function (state = initialState, action) {
       };
     }
 
+    case actions.CREATE_ATBD_SUCCESS: {
+      const { payload } = action;
+      const { created_atbd, created_version } = payload;
+      const newAtbd = {
+        ...created_atbd,
+        contacts: [],
+        atbd_versions: [{ ...created_version }]
+      };
+      return { ...state, atbds: [...state.atbds, newAtbd] };
+    }
+
     default: return state;
   }
 }

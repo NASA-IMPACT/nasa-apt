@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { push } from 'connected-react-router';
+import { createAtbd } from '../actions/actions';
 import {
   atbdsedit,
   contacts
@@ -93,12 +94,15 @@ const EditIcon = styled.span`
 `;
 
 const AtbdList = (props) => {
-  const { atbds } = props;
+  const { atbds, createAtbd: create } = props;
   const atbdElements = atbds.map((atbd) => {
-    const { atbd_id, title } = atbd;
+    const { atbd_id, title, atbd_versions } = atbd;
+    // We are using a default single version for the prototype.
+    // This should be updated in the future.
+    const { status } = atbd_versions[0];
     return (
       <AtbdRow scope="row" key={atbd_id}>
-        <AtbdCell><AtbdPublishedState>Status</AtbdPublishedState></AtbdCell>
+        <AtbdCell><AtbdPublishedState>{status}</AtbdPublishedState></AtbdCell>
         <AtbdCell>
           <AtbdTitle>{title}</AtbdTitle>
           { false && <AtbdVersion>Version 1.0</AtbdVersion> }
@@ -163,7 +167,13 @@ const AtbdList = (props) => {
 
           <InpageToolbar>
             <a href="#" title="Search documents">Search</a>
-            <a href="#" title="Create new document">Create</a>
+            <a
+              href="#"
+              title="Create new document"
+              onClick={create}
+            >
+              Create
+            </a>
           </InpageToolbar>
 
         </InpageHeaderInner>
@@ -194,7 +204,8 @@ AtbdList.propTypes = {
     atbd_id: PropTypes.number.isRequired,
     title: PropTypes.string.isRequired
   })),
-  push: PropTypes.func
+  push: PropTypes.func,
+  createAtbd: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -202,6 +213,6 @@ const mapStateToProps = (state) => {
   return { atbds };
 };
 
-const mapDispatch = { push };
+const mapDispatch = { push, createAtbd };
 
 export default connect(mapStateToProps, mapDispatch)(AtbdList);

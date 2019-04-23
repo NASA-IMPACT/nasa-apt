@@ -1,5 +1,6 @@
-import { LOCATION_CHANGE } from 'connected-react-router';
+import { LOCATION_CHANGE, push } from 'connected-react-router';
 import * as actions from '../actions/actions';
+import types from '../constants/action_types';
 import {
   atbds,
   atbdsedit,
@@ -7,7 +8,8 @@ import {
   contacts,
   drafts,
   algorithm_description,
-  algorithm_usage
+  algorithm_usage,
+  error
 } from '../constants/routes';
 
 const locationMiddleware = store => next => async (action) => {
@@ -40,6 +42,12 @@ const locationMiddleware = store => next => async (action) => {
         }
       }
     }
+  }
+  if (type === types.FETCH_ATBD_VERSION_FAIL) {
+    store.dispatch(push(`/${error}`));
+  }
+  if (type === types.FETCH_ATBD_FAIL) {
+    store.dispatch(push(`/${error}`));
   }
   return next(action);
 };
