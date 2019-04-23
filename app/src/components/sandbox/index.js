@@ -19,7 +19,8 @@ import Button from '../../styles/button/button';
 import Form from '../../styles/form/form';
 import {
   FormFieldset,
-  FormFieldsetHeader
+  FormFieldsetHeader,
+  FormFieldsetBody
 } from '../../styles/form/fieldset';
 import FormLegend from '../../styles/form/legend';
 import {
@@ -125,71 +126,103 @@ class Sandbox extends Component {
                       Remove fieldset
                     </RemoveButton>
                   </FormFieldsetHeader>
-                  <FormGroup>
-                    <FormGroupHeader>
-                      <FormLabel htmlFor="input-text-a">Form label</FormLabel>
-                      <FormToolbar>
-                        <InfoButton
+                  <FormFieldsetBody>
+                    <FormGroup>
+                      <FormGroupHeader>
+                        <FormLabel htmlFor="input-text-a">Form label</FormLabel>
+                        <FormToolbar>
+                          <InfoButton
+                            variation="base-plain"
+                            size="small"
+                            hideText
+                            data-tip="This is a very helpful tooltip."
+                          >
+                            Learn more
+                          </InfoButton>
+                          <ReactTooltip effect="solid" className="type-primary" />
+                        </FormToolbar>
+                      </FormGroupHeader>
+                      <FormGroupBody>
+                        <FormInput
+                          type="text"
+                          size="large"
+                          id="input-text-a"
+                          placeholder="This is a text input"
+                        />
+                        <FormHelper>
+                          <FormHelperMessage>This is some help text.</FormHelperMessage>
+                          <FormHelperCounter>0 / 80</FormHelperCounter>
+                        </FormHelper>
+                      </FormGroupBody>
+                    </FormGroup>
+
+                    <FormFieldset>
+                      <FormFieldsetHeader>
+                        <FormLegend>Form legend</FormLegend>
+                        <RemoveButton
                           variation="base-plain"
                           size="small"
                           hideText
-                          data-tip="This is a very helpful tooltip."
                         >
-                          Learn more
-                        </InfoButton>
-                        <ReactTooltip effect="solid" className="type-primary" />
-                      </FormToolbar>
-                    </FormGroupHeader>
-                    <FormGroupBody>
-                      <FormInput
-                        type="text"
-                        size="large"
-                        id="input-text-a"
-                        placeholder="This is a text input"
-                      />
-                      <FormHelper>
-                        <FormHelperMessage>This is some help text.</FormHelperMessage>
-                        <FormHelperCounter>0 / 80</FormHelperCounter>
-                      </FormHelper>
-                    </FormGroupBody>
-                  </FormGroup>
+                          Remove fieldset
+                        </RemoveButton>
+                      </FormFieldsetHeader>
+                      <FormFieldsetBody>
+                        <FormGroup>
+                          <FormGroupHeader>
+                            <FormLabel htmlFor="textarea-b">Form label</FormLabel>
+                          </FormGroupHeader>
+                          <FormGroupBody>
+                            <FormTextarea
+                              size="large"
+                              id="textarea-b"
+                              placeholder="This is a textarea"
+                            />
+                            <FormHelper>
+                              <FormHelperMessage>This is an error message.</FormHelperMessage>
+                            </FormHelper>
+                          </FormGroupBody>
+                        </FormGroup>
+                      </FormFieldsetBody>
+                    </FormFieldset>
 
-                  <FormGroup>
-                    <FormGroupHeader>
-                      <FormLabel htmlFor="select-a" optional>Form label</FormLabel>
-                    </FormGroupHeader>
-                    <FormGroupBody>
-                      <FormSelect
-                        size="large"
-                        id="select-a"
-                      >
-                        <option value="option-1">Option 1</option>
-                        <option value="option-2">Option 2</option>
-                        <option value="option-3">Option 3</option>
-                        <option value="option-4">Option 4</option>
-                      </FormSelect>
-                      <FormHelper>
-                        <FormHelperMessage>This is some help text.</FormHelperMessage>
-                      </FormHelper>
-                    </FormGroupBody>
-                  </FormGroup>
+                    <FormGroup>
+                      <FormGroupHeader>
+                        <FormLabel htmlFor="select-a" optional>Form label</FormLabel>
+                      </FormGroupHeader>
+                      <FormGroupBody>
+                        <FormSelect
+                          size="large"
+                          id="select-a"
+                        >
+                          <option value="option-1">Option 1</option>
+                          <option value="option-2">Option 2</option>
+                          <option value="option-3">Option 3</option>
+                          <option value="option-4">Option 4</option>
+                        </FormSelect>
+                        <FormHelper>
+                          <FormHelperMessage>This is some help text.</FormHelperMessage>
+                        </FormHelper>
+                      </FormGroupBody>
+                    </FormGroup>
 
-                  <FormGroup>
-                    <FormGroupHeader>
-                      <FormLabel htmlFor="textarea-a">Form label</FormLabel>
-                    </FormGroupHeader>
-                    <FormGroupBody>
-                      <FormTextarea
-                        size="large"
-                        id="textarea-a"
-                        placeholder="This is a textarea"
-                        invalid
-                      />
-                      <FormHelper>
-                        <FormHelperMessage>This is an error message.</FormHelperMessage>
-                      </FormHelper>
-                    </FormGroupBody>
-                  </FormGroup>
+                    <FormGroup>
+                      <FormGroupHeader>
+                        <FormLabel htmlFor="textarea-a">Form label</FormLabel>
+                      </FormGroupHeader>
+                      <FormGroupBody>
+                        <FormTextarea
+                          size="large"
+                          id="textarea-a"
+                          placeholder="This is a textarea"
+                          invalid
+                        />
+                        <FormHelper>
+                          <FormHelperMessage>This is an error message.</FormHelperMessage>
+                        </FormHelper>
+                      </FormGroupBody>
+                    </FormGroup>
+                  </FormFieldsetBody>
                 </FormFieldset>
               </Form>
 
