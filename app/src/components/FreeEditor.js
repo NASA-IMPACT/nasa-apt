@@ -37,6 +37,7 @@ const EditorContainer = styled.div`
   border-bottom-left-radius: ${multiply(themeVal('layout.space'), 0.25)};
   border-bottom-right-radius: ${multiply(themeVal('layout.space'), 0.25)};
   padding: 1rem 3rem;
+  margin-bottom: 1rem;
 `;
 
 const plugins = [
@@ -354,6 +355,7 @@ export class FreeEditor extends React.Component {
 
     const {
       className,
+      externalSaveBtn,
       uploadFile: upload
     } = this.props;
 
@@ -396,13 +398,15 @@ export class FreeEditor extends React.Component {
               active={activeTool === image}
               icon={{ icon: 'picture' }}
             />
-            <Button
-              onClick={save}
-              variation="base-plain"
-              size="large"
-            >
-              Save
-            </Button>
+            {!externalSaveBtn && (
+              <Button
+                onClick={save}
+                variation="base-plain"
+                size="large"
+              >
+                Save
+              </Button>
+            )}
           </ButtonGroup>
         </Toolbar>
         <EditorContainer>
@@ -417,6 +421,15 @@ export class FreeEditor extends React.Component {
             plugins={plugins}
           />
         </EditorContainer>
+        {externalSaveBtn && (
+          <Button
+            onClick={save}
+            variation="base-raised-light"
+            size="large"
+          >
+            Save
+          </Button>
+        )}
       </div>
     );
   }
@@ -427,7 +440,8 @@ FreeEditor.propTypes = {
   save: PropTypes.func.isRequired,
   className: PropTypes.string,
   uploadFile: PropTypes.func.isRequired,
-  uploadedFile: PropTypes.string
+  uploadedFile: PropTypes.string,
+  externalSaveBtn: PropTypes.bool
 };
 
 const StyledFreeEditor = styled(FreeEditor)`
