@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Value } from 'slate';
 import {
   updateAtbdVersion,
   createAlgorithmInputVariable,
@@ -20,7 +19,6 @@ import EditPage, {
   EditorSectionTitle,
   EditorLabel
 } from './common/EditPage';
-import editorBlankDocument from './editorBlankDocument';
 
 export const AlgorithmDescription = (props) => {
   const {
@@ -42,9 +40,7 @@ export const AlgorithmDescription = (props) => {
       algorithm_output_variables = []
     } = atbdVersion;
 
-    const scientific_theory = atbdVersion.scientific_theory
-      || editorBlankDocument;
-
+    const { scientific_theory } = atbdVersion;
     const title = atbd && atbd.title;
 
     returnValue = (
@@ -58,7 +54,7 @@ export const AlgorithmDescription = (props) => {
           <EditorSection>
             <EditorLabel>Scientific Theory</EditorLabel>
             <FreeEditor
-              value={Value.fromJSON(scientific_theory)}
+              initialValue={scientific_theory}
               save={(document) => {
                 update(atbd_id, atbd_version, {
                   scientific_theory: document

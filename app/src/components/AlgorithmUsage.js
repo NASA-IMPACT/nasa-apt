@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Value } from 'slate';
 import { updateAtbdVersion } from '../actions/actions';
 
 import FreeEditor from './FreeEditor';
@@ -12,7 +11,6 @@ import EditPage, {
   EditorSection,
   EditorLabel
 } from './common/EditPage';
-import { getValidOrBlankDocument } from './editorBlankDocument';
 
 export function AlgorithmUsage(props) {
   const {
@@ -42,7 +40,7 @@ export function AlgorithmUsage(props) {
         <EditorSection>
           <EditorLabel>Constraints</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(constraints))}
+            initialValue={constraints}
             save={(document) => {
               update(atbd_id, atbd_version, {
                 algorithm_usage_constraints: document
@@ -55,7 +53,7 @@ export function AlgorithmUsage(props) {
         <EditorSection>
           <EditorLabel>Validation methods</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(methods))}
+            initialValue={methods}
             save={(document) => {
               update(atbd_id, atbd_version, {
                 performance_assessment_validation_methods: document
@@ -65,7 +63,7 @@ export function AlgorithmUsage(props) {
 
           <EditorLabel>Validation uncertainties</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(uncertainties))}
+            initialValue={uncertainties}
             save={(document) => {
               update(atbd_id, atbd_version, {
                 performance_assessment_validation_uncertainties: document
@@ -75,7 +73,7 @@ export function AlgorithmUsage(props) {
 
           <EditorLabel>Validation errors</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(errors))}
+            initialValue={errors}
             save={(document) => {
               update(atbd_id, atbd_version, {
                 performance_assessment_validation_errors: document

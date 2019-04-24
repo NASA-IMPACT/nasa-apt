@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Value } from 'slate';
 import isUrl from 'is-url';
 import Plain from 'slate-plain-serializer';
 
@@ -20,7 +19,6 @@ import {
   FormHelper,
   FormHelperMessage
 } from '../styles/form/helper';
-import { getValidOrBlankDocument } from './editorBlankDocument';
 
 class AlgorithmImplementationForm extends Component {
   constructor(props) {
@@ -111,7 +109,7 @@ class AlgorithmImplementationForm extends Component {
             )}
           </FormGroupHeader>
           <FreeEditor
-            value={Value.fromJSON(getValidOrBlankDocument(executionDescription))}
+            initialValue={executionDescription}
             save={onSave}
             invalid={executionDescriptionInvalid}
             externalSaveBtn

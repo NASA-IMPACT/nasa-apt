@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Value } from 'slate';
 import { updateAtbdVersion } from '../actions/actions';
 
 import FreeEditor from './FreeEditor';
@@ -12,7 +11,6 @@ import EditPage, {
   EditorSection,
   EditorLabel
 } from './common/EditPage';
-import editorBlankDocument from './editorBlankDocument';
 
 export function Introduction(props) {
   const {
@@ -24,8 +22,8 @@ export function Introduction(props) {
     atbd,
     atbd_id,
     atbd_version,
-    historical_perspective = editorBlankDocument,
-    introduction = editorBlankDocument
+    historical_perspective,
+    introduction
   } = atbdVersion;
 
   const title = atbd && atbd.title;
@@ -42,7 +40,7 @@ export function Introduction(props) {
         <EditorSection>
           <EditorLabel>Introduction</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(introduction)}
+            initialValue={introduction}
             save={(document) => {
               update(atbd_id, atbd_version, {
                 introduction: document
@@ -53,7 +51,7 @@ export function Introduction(props) {
         <EditorSection>
           <EditorLabel>Historical Perspective</EditorLabel>
           <FreeEditor
-            value={Value.fromJSON(historical_perspective)}
+            initialValue={historical_perspective}
             save={(document) => {
               update(atbd_id, atbd_version, {
                 historical_perspective: document
