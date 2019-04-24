@@ -30,6 +30,8 @@ import {
   algorithm_implementation
 } from '../../constants/routes';
 
+import Prose from '../../styles/type/prose';
+
 import Dropdown, {
   DropdownTrigger,
   DropdownList,
@@ -56,7 +58,7 @@ const StepperLabel = styled.h6`
 `;
 
 export const EditorSection = styled.div`
-  background-color: ${themeVal('color.lightgray')};
+  background-color: ${themeVal('color.mist')};
   padding: ${multiply(themeVal('layout.space'), 2)};
   margin-top: ${multiply(themeVal('layout.space'), 2)};
   margin-bottom: ${multiply(themeVal('layout.space'), 2)};
@@ -170,7 +172,9 @@ const EditPage = (props) => {
       </InpageHeader>
       <InpageBody>
         <InpageBodyInner>
-          { children }
+          <Prose>
+            { children }
+          </Prose>
         </InpageBodyInner>
       </InpageBody>
     </Fragment>
