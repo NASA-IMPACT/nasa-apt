@@ -9,6 +9,7 @@ import {
   drafts,
   algorithm_description,
   algorithm_usage,
+  algorithm_implementation,
   error
 } from '../constants/routes';
 
@@ -29,6 +30,13 @@ const locationMiddleware = store => next => async (action) => {
         if (pathComponents[5] === algorithm_description || pathComponents[5] === introduction
           || pathComponents[5] === algorithm_usage) {
           store.dispatch(actions.fetchAtbdVersion({
+            atbd_id: pathComponents[2],
+            atbd_version: pathComponents[4]
+          }));
+        }
+
+        if (pathComponents[5] === algorithm_implementation) {
+          store.dispatch(actions.fetchAlgorithmImplmentations({
             atbd_id: pathComponents[2],
             atbd_version: pathComponents[4]
           }));

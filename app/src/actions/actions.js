@@ -226,6 +226,23 @@ export function deleteAtbdContact(atbd_id, contact_id) {
   };
 }
 
+export function fetchAlgorithmImplmentations(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}&select=atbd_version,atbd(*),algorithm_implementations(*)`,
+      method: 'GET',
+      headers: returnObjectHeaders,
+      types: [
+        types.FETCH_ALGORITHM_IMPLEMENTATION,
+        types.FETCH_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.FETCH_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
 export function uploadFile(file) {
   return {
     type: types.UPLOAD_FILE,

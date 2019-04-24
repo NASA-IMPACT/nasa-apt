@@ -44,6 +44,7 @@ const deleteAtbdChildItem = (schemaKey, state, action) => {
 
 export default function (state = initialState, action) {
   switch (action.type) {
+    case actions.FETCH_ALGORITHM_IMPLEMENTATION_SUCCESS:
     case actions.FETCH_ATBD_VERSION_SUCCESS: {
       const { payload } = action;
       return { ...state, atbdVersion: { ...payload } };

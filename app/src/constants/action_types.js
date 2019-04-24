@@ -17,6 +17,7 @@ const types = createTypes([
   ...async('DELETE_ALGORITHM_INPUT_VARIABLE'),
   ...async('CREATE_ALGORITHM_OUTPUT_VARIABLE'),
   ...async('DELETE_ALGORITHM_OUTPUT_VARIABLE'),
+  ...async('FETCH_ALGORITHM_IMPLEMENTATION'),
   ...async('UPLOAD_FILE')
 ]);
 
