@@ -1,12 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: A stack for deploying containerized applications in AWS Fargate.
-             This stack runs containers in a public VPC subnet, and includes a
-             public facing load balancer to register the services in.
+Description: Stack for nasa-apt.
 Parameters:
-  ProjectTag:
-    Type: String
-    Description: The constant used for tagging with project name
-    Default: Project
   Prefix:
     Type: String
     Description: The prefix used for resources in the application
@@ -67,10 +61,6 @@ Resources:
       EnableDnsSupport: true
       EnableDnsHostnames: true
       CidrBlock: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
-      Tags:
-        -
-          Key: !Sub '${ProjectTag}'
-          Value: !Sub 1${Prefix}'
   # Two public subnets, where containers can have public IP addresses
   PublicSubnetOne:
     Type: AWS::EC2::Subnet
@@ -95,6 +85,7 @@ Resources:
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
+      DBSubnetGroupDescription: 'rds-subnet'
       SubnetIds:
         - !Ref 'PublicSubnetOne'
         - !Ref 'PublicSubnetTwo'
@@ -134,19 +125,14 @@ Resources:
   DB:
     Type: AWS::RDS::DBInstance
     Properties:
-      DBName: !Sub '${Prefix}-${DBName}'
+      DBName: !Sub '${DBName}'
       DBSubnetGroupName: !Ref 'DBSubnetGroup'
       MasterUsername: !Ref 'DBUser'
       MasterUserPassword: !Ref 'DBPassword'
-      AvailabilityZone: us-east-1
       AllocatedStorage: '5'
       DBInstanceClass: db.t2.small
       Engine: Postgres
       EngineVersion: 9.4
-    Tags:
-      -
-        Key: !Sub '${ProjectTag}'
-        Value: !Sub 1${Prefix}'
 
   # ECS Resources
   ECSCluster:
@@ -239,70 +225,15 @@ Resources:
       Port: 80
       Protocol: HTTP
 
-  # This is an IAM role which authorizes ECS to manage resources on your
-  # account on your behalf, such as updating your load balancer with the
-  # details of where your containers are, so that traffic can reach your
-  # containers.
-  ECSRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-      Principal:
-        Service: [ecs.amazonaws.com]
-        Action: ['sts:AssumeRole']
-      Path: /
-      Policies:
-        - PolicyName: ecs-service
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              # Rules which allow ECS to attach network interfaces to instances
-              # on your behalf in order for awsvpc networking mode to work right
-              - 'ec2:AttachNetworkInterface'
-              - 'ec2:CreateNetworkInterface'
-              - 'ec2:CreateNetworkInterfacePermission'
-              - 'ec2:DeleteNetworkInterface'
-              - 'ec2:DeleteNetworkInterfacePermission'
-              - 'ec2:Describe*'
-              - 'ec2:DetachNetworkInterface'
-
-              # Rules which allow ECS to update load balancers on your behalf
-              # with the information sabout how to send traffic to
-              # your containers
-              - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
-              - 'elasticloadbalancing:DeregisterTargets'
-              - 'elasticloadbalancing:Describe*'
-              - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
-              - 'elasticloadbalancing:RegisterTargets'
-            Resource: '*'
-
   # This is a role which is used by the ECS tasks themselves.
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
-            Service: [ecs-tasks.amazonaws.com]
-            Action: ['sts:AssumeRole']
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
       Path: /
-      Policies:
-        - PolicyName: AmazonECSTaskExecutionRolePolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  # Allow the ECS Tasks to download images from ECR
-                  - 'ecr:GetAuthorizationToken'
-                  - 'ecr:BatchCheckLayerAvailability'
-                  - 'ecr:GetDownloadUrlForLayer'
-                  - 'ecr:BatchGetImage'
-
-                  # Allow the ECS tasks to upload logs to CloudWatch
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-            Resource: '*'
