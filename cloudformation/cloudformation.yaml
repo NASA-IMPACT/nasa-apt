@@ -145,7 +145,7 @@ Resources:
     Properties:
       SubnetId: !Ref PublicSubnetTwo
       RouteTableId: !Ref PublicRouteTable
-
+  # Allows access from ECS to RDS
   # RDS Resources
   DB:
     Type: AWS::RDS::DBInstance
@@ -158,6 +158,8 @@ Resources:
       DBInstanceClass: db.t2.small
       Engine: Postgres
       EngineVersion: 9.4
+      VPCSecurityGroups:
+        - !Ref FargateContainerSecurityGroup
 
   # ECS Resources
   ECSCluster:
@@ -299,7 +301,17 @@ Resources:
           Environment:
             -
               Name: PGRST_DB_URI
-              Value:
+              Value: !Join ['', ['postgres://', 'masteruser', ':',
+                                 !Ref 'DBPassword', '@',
+                                 !GetAtt [DB, Endpoint.Address],
+                                 ':', !GetAtt [DB, Endpoint.Port], /,
+                                 !Ref 'DBName']]
+            -
+              Name: PGRST_DB_SCHEMA
+              Value: public
+            -
+              Name: PGRST_DB_ANON_ROLE
+              Value: app_user
 
   # The service. The service is a resource which allows you to run multiple
   # copies of a type of task, and gather up their logs and metrics, as well
