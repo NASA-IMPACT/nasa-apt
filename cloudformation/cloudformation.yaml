@@ -149,6 +149,7 @@ Resources:
   # RDS Resources
   DB:
     Type: AWS::RDS::DBInstance
+    DependsOn: GatewayAttachement
     Properties:
       DBName: !Sub '${DBName}'
       DBSubnetGroupName: !Ref 'DBSubnetGroup'
@@ -158,6 +159,7 @@ Resources:
       DBInstanceClass: db.t2.small
       Engine: Postgres
       EngineVersion: 9.4
+      PubliclyAccessible: true
       VPCSecurityGroups:
         - !Ref FargateContainerSecurityGroup
 
