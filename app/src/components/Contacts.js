@@ -61,7 +61,6 @@ const Contacts = (props) => {
           title={title || ''}
           id={atbd_id}
           step={3}
-          numSteps={7}
         >
           <h2>Contacts</h2>
           <EditorSection>

@@ -3,7 +3,9 @@ import actions from '../constants/action_types';
 const initialState = {
   atbds: [],
   contacts: [],
-  uploadedFile: null
+  uploadedFile: undefined,
+  atbdVersion: undefined,
+  selectedAtbd: undefined
 };
 
 const deleteAtbdVersionChildItem = (schemaKey, state, action) => {

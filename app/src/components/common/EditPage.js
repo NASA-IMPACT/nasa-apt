@@ -22,9 +22,11 @@ import {
 
 import {
   atbdsedit,
+  introduction,
   contacts,
   drafts,
-  algorithm_description
+  algorithm_description,
+  algorithm_usage
 } from '../../constants/routes';
 
 import Dropdown, {
@@ -56,6 +58,7 @@ export const EditorSection = styled.div`
   background-color: ${themeVal('color.lightgray')};
   padding: ${multiply(themeVal('layout.space'), 2)};
   margin-top: ${multiply(themeVal('layout.space'), 2)};
+  margin-bottom: ${multiply(themeVal('layout.space'), 2)};
 `;
 
 export const EditorSectionTitle = styled.h4`
@@ -72,7 +75,11 @@ export const EditorLabel = styled.label`
   font-weight: lighter;
   line-height: 2;
   margin-bottom: ${multiply(themeVal('layout.space'), 2)};
+  margin-top: ${multiply(themeVal('layout.space'), 2)};
   text-transform: uppercase;
+  &&:first-child {
+    margin-top: 0;
+  }
 `;
 
 export const RemovableListItem = styled.li`
@@ -105,21 +112,23 @@ const EditPage = (props) => {
   const {
     title,
     step,
-    numSteps,
     id,
     children
   } = props;
 
+  const version = 1;
+
   const items = [
     { display: 'Identifying information' },
-    { display: 'Introduction' },
+    { display: 'Introduction', link: `/${atbdsedit}/${id}/${drafts}/${version}/${introduction}` },
     { display: 'Contact information', link: `/${atbdsedit}/${id}/${contacts}` },
-    { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/1/${algorithm_description}` },
-    { display: 'Algorithm usage' },
+    { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_description}` },
+    { display: 'Algorithm usage', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_usage}` },
     { display: 'Algorithm implementation' },
     { display: 'References' }
   ];
 
+  const numSteps = items.length;
   const stepCount = `Step ${step} of ${numSteps}`;
 
   return (
@@ -170,7 +179,6 @@ const EditPage = (props) => {
 EditPage.propTypes = {
   title: PropTypes.string.isRequired,
   step: PropTypes.number,
-  numSteps: PropTypes.number,
   id: PropTypes.number,
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.node),
