@@ -61,6 +61,10 @@ CREATE TABLE atbd_versions(
   mathematical_theory_assumptions json,
   introduction json,
   historical_perspective json,
+  performance_assessment_validation_methods json,
+  performance_assessment_validation_uncertainties json,
+  performance_assessment_validation_errors json,
+  algorithm_usage_constraints json,
   status atbd_status default 'Draft'
 );
 CREATE TABLE algorithm_input_variables(
@@ -88,27 +92,6 @@ CREATE TABLE algorithm_implementations(
   FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
   access_url VARCHAR (1024),
   execution_description json NOT NULL
-);
-CREATE TABLE performance_assessment_validation_methods(
-  performance_assessment_validation_method_id serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  description json
-);
-CREATE TABLE performance_assessment_validation_uncertainties(
-  performance_assessment_validation_uncertainty serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  description json
-);
-CREATE TABLE performance_assessment_validation_errors(
-  performance_assessment_validation_error serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  description json
 );
 CREATE TABLE publication_references(
   publication_reference_id serial PRIMARY KEY,
