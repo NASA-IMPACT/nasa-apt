@@ -1,0 +1,78 @@
+[
+    {
+        "atbd_version": 1,
+        "atbd_id": 1,
+        "scientific_theory": {
+            "document": {
+                "nodes": [
+                    {
+                        "object": "block",
+                        "type": "paragraph",
+                        "nodes": [
+                            {
+                                "object": "text",
+                                "leaves": [
+                                    {
+                                        "text": "A line of text in a paragraph."
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "object": "block",
+                        "type": "equation",
+                        "nodes": [
+                            {
+                                "object": "text",
+                                "leaves": [
+                                    {
+                                        "text": "\\int_0^\\infty x^2 dx"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "object": "block",
+                        "type": "image",
+                        "data": {
+                            "src": "imgs/fullmoon.jpg"
+                        }
+                    }
+                ]
+            }
+        },
+        "scientific_theory_assumptions": null,
+        "mathematical_theory": null,
+        "mathematical_theory_assumptions": null,
+        "introduction": "Introduction Lorem Ipsum Text",
+        "historical_perspective": "Historical Perspective Lorem Ipsum Text",
+        "algorithm_input_variables": [
+            {
+                "algorithm_input_variable_id": 1,
+                "atbd_version": 1,
+                "atbd_id": 1,
+                "name": "Input Var 1",
+                "long_name": "Input variable 1",
+                "unit": null
+            }
+        ],
+        "algorithm_output_variables": [
+            {
+                "algorithm_output_variable_id": 1,
+                "atbd_version": 1,
+                "atbd_id": 1,
+                "name": "Output Var 1",
+                "long_name": "Output variable 1",
+                "unit": null
+            }
+        ],
+        "publication_references": [],
+        "atbd": {
+            "atbd_id": 1,
+            "title": "Test ATBD 1"
+        },
+        "data_access_input_data": []
+    }
+]
