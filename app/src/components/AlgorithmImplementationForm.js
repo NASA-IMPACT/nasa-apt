@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import isUrl from 'is-url';
-import Plain from 'slate-plain-serializer';
+import styled from 'styled-components';
 
+import collecticon from '../styles/collecticons';
 import FreeEditor from './FreeEditor';
 import {
   FormGroup,
@@ -10,7 +11,8 @@ import {
   FormGroupHeader
 } from '../styles/form/group';
 import {
-  FormFieldset
+  FormFieldset,
+  FormFieldsetHeader
 } from '../styles/form/fieldset';
 import FormLegend from '../styles/form/legend';
 import FormLabel from '../styles/form/label';
@@ -19,6 +21,14 @@ import {
   FormHelper,
   FormHelperMessage
 } from '../styles/form/helper';
+import Button from '../styles/button/button';
+import { isBlankDocument } from './editorBlankDocument';
+
+const RemoveButton = styled(Button)`
+  ::before {
+    ${collecticon('trash-bin')}
+  }
+`;
 
 class AlgorithmImplementationForm extends Component {
   constructor(props) {
@@ -50,11 +60,19 @@ class AlgorithmImplementationForm extends Component {
   onSave(executionDescription) {
     const { accessUrl } = this.state;
     const accessUrlInvalid = !isUrl(accessUrl);
-    const executionDescriptionInvalid = !Plain.serialize(executionDescription).length;
+    const executionDescriptionInvalid = isBlankDocument(executionDescription);
     this.setState({
       accessUrlInvalid,
       executionDescriptionInvalid
     });
+
+    if (!accessUrlInvalid && !executionDescriptionInvalid) {
+      const { save } = this.props;
+      save({
+        accessUrl,
+        executionDescription
+      });
+    }
   }
 
   render() {
@@ -62,7 +80,7 @@ class AlgorithmImplementationForm extends Component {
       id,
       label,
       executionDescription,
-      save
+      del
     } = this.props;
     const {
       accessUrl,
@@ -77,7 +95,19 @@ class AlgorithmImplementationForm extends Component {
     return (
       <FormFieldset>
         <FormGroup>
-          {!!label && <FormLegend>{label}</FormLegend>}
+          <FormFieldsetHeader>
+            <FormLegend>{label}</FormLegend>
+            {!!del && (
+              <RemoveButton
+                variation="base-plain"
+                size="small"
+                hideText
+                onClick={() => del()}
+              >
+                Remove fieldset
+              </RemoveButton>
+            )}
+          </FormFieldsetHeader>
           <FormGroupHeader>
             <FormLabel htmlFor={`${id}-access`}>Access URL</FormLabel>
             {accessUrlInvalid && (
@@ -122,10 +152,11 @@ class AlgorithmImplementationForm extends Component {
 
 AlgorithmImplementationForm.propTypes = {
   id: PropTypes.string.isRequired,
-  label: PropTypes.string,
+  label: PropTypes.string.isRequired,
   accessUrl: PropTypes.string,
   executionDescription: PropTypes.object,
-  save: PropTypes.func
+  save: PropTypes.func,
+  del: PropTypes.func
 };
 
 export default AlgorithmImplementationForm;

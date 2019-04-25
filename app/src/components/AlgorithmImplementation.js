@@ -3,6 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import {
+  createAlgorithmImplementation,
+  updateAlgorithmImplementation,
+  deleteAlgorithmImplementation
+} from '../actions/actions';
+import {
   Inpage
 } from './common/Inpage';
 import EditPage from './common/EditPage';
@@ -11,7 +16,10 @@ import AlgorithmImplementationForm from './AlgorithmImplementationForm';
 export function AlgorithmImplementation(props) {
   const {
     atbdVersion,
-    atbd
+    atbd,
+    createAlgorithmImplementation: create,
+    updateAlgorithmImplementation: update,
+    deleteAlgorithmImplementation: del
   } = props;
   let returnValue;
   if (atbdVersion && Array.isArray(atbdVersion.algorithm_implementations)) {
@@ -19,6 +27,10 @@ export function AlgorithmImplementation(props) {
       title,
       atbd_id
     } = atbd;
+    const {
+      algorithm_implementations,
+      atbd_version
+    } = atbdVersion;
 
     returnValue = (
       <Inpage>
@@ -29,20 +41,34 @@ export function AlgorithmImplementation(props) {
         >
           <h2>Algorithm Implementation</h2>
 
-          {atbdVersion.algorithm_implementations.map((d, i) => (
+          {algorithm_implementations.map((d, i) => (
             <AlgorithmImplementationForm
+              key={`algorithm-implementation-form-${i}`} // eslint-disable-line react/no-array-index-key
               id={`algorithm-implementation-form-${i}`}
               label={`Implementation #${i + 1}`}
               accessUrl={d.access_url}
               executionDescription={d.execution_description}
-              save={() => true}
+              save={(object) => {
+                update(d.algorithm_implementation_id, {
+                  access_url: object.accessUrl,
+                  execution_description: object.executionDescription
+                });
+              }}
+              del={() => del(d.algorithm_implementation_id)}
             />
           ))}
 
           <AlgorithmImplementationForm
             id="algorithm-implementation-form-new"
             label="New Implementation"
-            save={(payload) => console.log(payload)}
+            save={(object) => {
+              create({
+                atbd_id,
+                atbd_version,
+                access_url: object.accessUrl,
+                execution_description: object.executionDescription
+              });
+            }}
           />
         </EditPage>
       </Inpage>
@@ -52,6 +78,14 @@ export function AlgorithmImplementation(props) {
   }
   return returnValue;
 }
+
+AlgorithmImplementation.propTypes = {
+  atbdVersion: PropTypes.object,
+  atbd: PropTypes.object,
+  createAlgorithmImplementation: PropTypes.func,
+  updateAlgorithmImplementation: PropTypes.func,
+  deleteAlgorithmImplementation: PropTypes.func
+};
 
 const mapStateToProps = (state) => {
   const { application: app } = state;
@@ -63,6 +97,10 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+  createAlgorithmImplementation,
+  updateAlgorithmImplementation,
+  deleteAlgorithmImplementation
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlgorithmImplementation);

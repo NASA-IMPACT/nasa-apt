@@ -243,6 +243,55 @@ export function fetchAlgorithmImplmentations(versionObject) {
   };
 }
 
+export function createAlgorithmImplementation(implementation) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_implementations`,
+      method: 'POST',
+      body: JSON.stringify(implementation),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ALGORITHM_IMPLEMENTATION,
+        types.CREATE_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.CREATE_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
+export function updateAlgorithmImplementation(id, implementation) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_implementations`
+        + `?algorithm_implementation_id=eq.${id}`,
+      method: 'PATCH',
+      body: JSON.stringify(implementation),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_ALGORITHM_IMPLEMENTATION,
+        types.UPDATE_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.UPDATE_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
+export function deleteAlgorithmImplementation(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_implementations`
+        + `?algorithm_implementation_id=eq.${id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ALGORITHM_IMPLEMENTATION,
+        types.DELETE_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.DELETE_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
 export function uploadFile(file) {
   return {
     type: types.UPLOAD_FILE,

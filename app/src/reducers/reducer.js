@@ -143,6 +143,33 @@ export default function (state = initialState, action) {
       return { ...state, atbds: [...state.atbds, newAtbd] };
     }
 
+    case actions.CREATE_ALGORITHM_IMPLEMENTATION_SUCCESS: {
+      const { payload } = action;
+      const next = (state.atbdVersion.algorithm_implementations || [])
+        .concat([payload]);
+      return {
+        ...state,
+        atbdVersion: {
+          ...state.atbdVersion,
+          algorithm_implementations: next
+        }
+      };
+    }
+
+    case actions.DELETE_ALGORITHM_IMPLEMENTATION_SUCCESS: {
+      const { payload } = action;
+      const id = payload.algorithm_implementation_id;
+      const next = state.atbdVersion.algorithm_implementations
+        .filter(d => id !== d.algorithm_implementation_id);
+      return {
+        ...state,
+        atbdVersion: {
+          ...state.atbdVersion,
+          algorithm_implementations: next
+        }
+      };
+    }
+
     default: return state;
   }
 }
