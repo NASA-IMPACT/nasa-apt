@@ -11,14 +11,19 @@ import {
 import FreeEditor from './FreeEditor';
 import AlgorithmVariables from './AlgorithmVariables';
 import AlgorithmVariableForm from './AlgorithmVariableForm';
+import { Inpage } from './common/Inpage';
+import EditPage from './common/EditPage';
 import {
-  Inpage
-} from './common/Inpage';
-import EditPage, {
-  EditorSection,
-  EditorSectionTitle,
-  EditorLabel
-} from './common/EditPage';
+  FormFieldset,
+  FormFieldsetHeader
+} from '../styles/form/fieldset';
+import {
+  FormGroup,
+  FormGroupBody,
+  FormGroupHeader
+} from '../styles/form/group';
+import FormLabel from '../styles/form/label';
+import FormLegend from '../styles/form/legend';
 
 export const AlgorithmDescription = (props) => {
   const {
@@ -51,51 +56,72 @@ export const AlgorithmDescription = (props) => {
           step={4}
         >
           <h2>Algorithm Description</h2>
-          <EditorSection>
-            <EditorLabel>Scientific Theory</EditorLabel>
-            <FreeEditor
-              initialValue={scientific_theory}
-              save={(document) => {
-                update(atbd_id, atbd_version, {
-                  scientific_theory: document
-                });
-              }}
-            />
-          </EditorSection>
-          <EditorSection>
-            <EditorLabel>Scientific Theory Assumptions</EditorLabel>
-            <EditorSectionTitle>Algorithm Input Variables</EditorSectionTitle>
-            <AlgorithmVariables
-              schemaKey="algorithm_input_variable"
-              variables={algorithm_input_variables}
-              deleteVariable={deleteInputVariable}
-            />
-            {atbd_id && atbd_version && (
-              <AlgorithmVariableForm
-                schemaKey="algorithm_input_variable"
-                atbd_id={atbd_id}
-                atbd_version={atbd_version}
-                create={(data) => { createInputVariable(data); }}
-              />
-            )}
-          </EditorSection>
+          <FormFieldset>
+            <FormGroup>
+              <FormFieldsetHeader>
+                <FormLegend>Algorithm</FormLegend>
+              </FormFieldsetHeader>
+              <FormGroupHeader>
+                <FormLabel>Describe the scientific theory</FormLabel>
+              </FormGroupHeader>
+              <FormGroupBody>
+                <FreeEditor
+                  initialValue={scientific_theory}
+                  save={(document) => {
+                    update(atbd_id, atbd_version, {
+                      scientific_theory: document
+                    });
+                  }}
+                />
+              </FormGroupBody>
+            </FormGroup>
+          </FormFieldset>
 
-          <EditorSection>
-            <EditorSectionTitle>Algorithm Output Variables</EditorSectionTitle>
-            <AlgorithmVariables
-              schemaKey="algorithm_output_variable"
-              variables={algorithm_output_variables}
-              deleteVariable={deleteOutputVariable}
-            />
-            {atbd_id && atbd_version && (
-              <AlgorithmVariableForm
-                schemaKey="algorithm_output_variable"
-                atbd_id={atbd_id}
-                atbd_version={atbd_version}
-                create={(data) => { createOutputVariable(data); }}
-              />
-            )}
-          </EditorSection>
+          <FormFieldset>
+            <FormGroup>
+              <FormFieldsetHeader>
+                <FormLegend>Scientific Theory Assumptions</FormLegend>
+              </FormFieldsetHeader>
+              <FormGroupHeader>
+                <FormLabel>Input variables</FormLabel>
+              </FormGroupHeader>
+              <FormGroupBody>
+                <AlgorithmVariables
+                  schemaKey="algorithm_input_variable"
+                  variables={algorithm_input_variables}
+                  deleteVariable={deleteInputVariable}
+                />
+              </FormGroupBody>
+              {atbd_id && atbd_version && (
+                <AlgorithmVariableForm
+                  schemaKey="algorithm_input_variable"
+                  atbd_id={atbd_id}
+                  atbd_version={atbd_version}
+                  create={(data) => { createInputVariable(data); }}
+                />
+              )}
+
+              <FormGroupHeader>
+                <FormLabel>Output variables</FormLabel>
+              </FormGroupHeader>
+              <FormGroupBody>
+                <AlgorithmVariables
+                  schemaKey="algorithm_output_variable"
+                  variables={algorithm_output_variables}
+                  deleteVariable={deleteOutputVariable}
+                />
+              </FormGroupBody>
+              {atbd_id && atbd_version && (
+                <AlgorithmVariableForm
+                  schemaKey="algorithm_output_variable"
+                  atbd_id={atbd_id}
+                  atbd_version={atbd_version}
+                  create={(data) => { createOutputVariable(data); }}
+                />
+              )}
+
+            </FormGroup>
+          </FormFieldset>
         </EditPage>
       </Inpage>
     );

@@ -23,7 +23,6 @@ export const InputFormGroup = styled.form`
   display: grid;
   align-items: start;
   grid-template-columns: repeat(3, 1fr);
-  grid-gap: ${themeVal('layout.space')};
   justify-content: space-between;
 `;
 
@@ -33,14 +32,17 @@ const InlineInput = styled.input`
   border-radius: 4px;
   font-family: inherit;
   height: ${multiply(themeVal('layout.space'), 2.4)}
-  padding: 0 ${multiply(themeVal('layout.space'), 2)};
   width: 100%;
 `;
 
 export const InputSubmit = styled(InlineInput)`
   box-shadow: ${themeVal('boxShadow.input')};
   font-weight: bold;
+`;
+
+export const InputWrapper = styled.div`
   grid-row-start: 4;
+  padding: 2rem;
 `;
 
 export const SmallTextInput = styled(InlineInput)`

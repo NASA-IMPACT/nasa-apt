@@ -3,14 +3,18 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import ContactForm from './ContactForm';
-import {
-  Inpage
-} from './common/Inpage';
-import EditPage, {
-  EditorSection,
-  EditorLabel,
-} from './common/EditPage';
+import { Inpage } from './common/Inpage';
+import EditPage from './common/EditPage';
 import RemovableListItem from './common/RemovableListItem';
+import {
+  FormGroup,
+  FormGroupBody
+} from '../styles/form/group';
+import {
+  FormFieldset,
+  FormFieldsetHeader
+} from '../styles/form/fieldset';
+import FormLegend from '../styles/form/legend';
 import { createAtbdContact, deleteAtbdContact } from '../actions/actions';
 
 import Select from './common/Select';
@@ -63,30 +67,44 @@ const Contacts = (props) => {
           step={3}
         >
           <h2>Contacts</h2>
-          <EditorSection>
-            <EditorLabel>Existing contacts</EditorLabel>
-            <Select
-              name="existing-contact"
-              label="Select contact"
-              options={contactOptions}
-              onChange={e => dispatchCreateAtbdContact({
-                atbd_id: selectedAtbd.atbd_id,
-                contact_id: e.target.value
-              })}
-            />
-          </EditorSection>
+          <FormFieldset>
+            <FormGroup>
+              <FormFieldsetHeader>
+                <FormLegend>Existing contacts</FormLegend>
+              </FormFieldsetHeader>
+              <Select
+                name="existing-contact"
+                label="Select contact"
+                options={contactOptions}
+                onChange={e => dispatchCreateAtbdContact({
+                  atbd_id: selectedAtbd.atbd_id,
+                  contact_id: e.target.value
+                })}
+              />
+            </FormGroup>
+          </FormFieldset>
 
-          <EditorSection>
-            <EditorLabel>Create new contacts</EditorLabel>
-            <ContactForm />
-          </EditorSection>
+          <FormFieldset>
+            <FormGroup>
+              <FormFieldsetHeader>
+                <FormLegend>Create new contacts</FormLegend>
+              </FormFieldsetHeader>
+              <ContactForm />
+            </FormGroup>
+          </FormFieldset>
 
-          <EditorSection>
-            <EditorLabel>ATBD contacts</EditorLabel>
-            <ul>
-              {atbdContactItems}
-            </ul>
-          </EditorSection>
+          <FormFieldset>
+            <FormGroup>
+              <FormFieldsetHeader>
+                <FormLegend>ATBD contacts</FormLegend>
+              </FormFieldsetHeader>
+              <FormGroupBody>
+                <ul>
+                  {atbdContactItems}
+                </ul>
+              </FormGroupBody>
+            </FormGroup>
+          </FormFieldset>
         </EditPage>
       </Inpage>
     );

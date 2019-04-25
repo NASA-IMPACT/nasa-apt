@@ -4,13 +4,19 @@ import { connect } from 'react-redux';
 import { updateAtbdVersion } from '../actions/actions';
 
 import FreeEditor from './FreeEditor';
+import { Inpage } from './common/Inpage';
+import EditPage from './common/EditPage';
 import {
-  Inpage
-} from './common/Inpage';
-import EditPage, {
-  EditorSection,
-  EditorLabel
-} from './common/EditPage';
+  FormGroup,
+  FormGroupBody,
+  FormGroupHeader
+} from '../styles/form/group';
+import {
+  FormFieldset,
+  FormFieldsetHeader
+} from '../styles/form/fieldset';
+import FormLegend from '../styles/form/legend';
+import FormLabel from '../styles/form/label';
 
 export function AlgorithmUsage(props) {
   const {
@@ -37,50 +43,76 @@ export function AlgorithmUsage(props) {
         numSteps={7}
       >
         <h2>Algorithm Usage</h2>
-        <EditorSection>
-          <EditorLabel>Constraints</EditorLabel>
-          <FreeEditor
-            initialValue={constraints}
-            save={(document) => {
-              update(atbd_id, atbd_version, {
-                algorithm_usage_constraints: document
-              });
-            }}
-          />
-        </EditorSection>
+        <FormFieldset>
+          <FormGroup>
+            <FormFieldsetHeader>
+              <FormLegend>Constraints</FormLegend>
+            </FormFieldsetHeader>
+            <FormGroupHeader>
+              <FormLabel>Describe the algorithm constraints</FormLabel>
+            </FormGroupHeader>
+            <FormGroupBody>
+              <FreeEditor
+                initialValue={constraints}
+                save={(document) => {
+                  update(atbd_id, atbd_version, {
+                    algorithm_usage_constraints: document
+                  });
+                }}
+              />
+            </FormGroupBody>
+          </FormGroup>
+        </FormFieldset>
 
         <h2>Performance Assessment</h2>
-        <EditorSection>
-          <EditorLabel>Validation methods</EditorLabel>
-          <FreeEditor
-            initialValue={methods}
-            save={(document) => {
-              update(atbd_id, atbd_version, {
-                performance_assessment_validation_methods: document
-              });
-            }}
-          />
+        <FormFieldset>
+          <FormGroup>
+            <FormFieldsetHeader>
+              <FormLegend>Validation</FormLegend>
+            </FormFieldsetHeader>
+            <FormGroupHeader>
+              <FormLabel>Validation methods</FormLabel>
+            </FormGroupHeader>
+            <FormGroupBody>
+              <FreeEditor
+                initialValue={methods}
+                save={(document) => {
+                  update(atbd_id, atbd_version, {
+                    performance_assessment_validation_methods: document
+                  });
+                }}
+              />
+            </FormGroupBody>
 
-          <EditorLabel>Validation uncertainties</EditorLabel>
-          <FreeEditor
-            initialValue={uncertainties}
-            save={(document) => {
-              update(atbd_id, atbd_version, {
-                performance_assessment_validation_uncertainties: document
-              });
-            }}
-          />
+            <FormGroupHeader>
+              <FormLabel>Uncertainties</FormLabel>
+            </FormGroupHeader>
+            <FormGroupBody>
+              <FreeEditor
+                initialValue={uncertainties}
+                save={(document) => {
+                  update(atbd_id, atbd_version, {
+                    performance_assessment_validation_uncertainties: document
+                  });
+                }}
+              />
+            </FormGroupBody>
 
-          <EditorLabel>Validation errors</EditorLabel>
-          <FreeEditor
-            initialValue={errors}
-            save={(document) => {
-              update(atbd_id, atbd_version, {
-                performance_assessment_validation_errors: document
-              });
-            }}
-          />
-        </EditorSection>
+            <FormGroupHeader>
+              <FormLabel>Errors</FormLabel>
+            </FormGroupHeader>
+            <FormGroupBody>
+              <FreeEditor
+                initialValue={errors}
+                save={(document) => {
+                  update(atbd_id, atbd_version, {
+                    performance_assessment_validation_errors: document
+                  });
+                }}
+              />
+            </FormGroupBody>
+          </FormGroup>
+        </FormFieldset>
       </EditPage>
     </Inpage>
   );
