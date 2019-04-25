@@ -376,7 +376,7 @@ export class FreeEditor extends React.Component {
 
     const {
       className,
-      externalSaveBtn,
+      inlineSaveBtn,
       invalid,
       uploadFile: upload
     } = this.props;
@@ -421,7 +421,7 @@ export class FreeEditor extends React.Component {
                 active={activeTool === image}
                 icon={{ icon: 'picture' }}
               />
-              {!externalSaveBtn && (
+              {inlineSaveBtn && (
                 <Button
                   onClick={save}
                   variation="base-plain"
@@ -445,7 +445,7 @@ export class FreeEditor extends React.Component {
             />
           </EditorContainer>
         </EditorStatus>
-        {externalSaveBtn && (
+        {!inlineSaveBtn && (
           <Button
             onClick={save}
             variation="base-raised-light"
@@ -465,7 +465,7 @@ FreeEditor.propTypes = {
   className: PropTypes.string,
   uploadFile: PropTypes.func.isRequired,
   uploadedFile: PropTypes.string,
-  externalSaveBtn: PropTypes.bool,
+  inlineSaveBtn: PropTypes.bool,
   invalid: PropTypes.bool
 };
 

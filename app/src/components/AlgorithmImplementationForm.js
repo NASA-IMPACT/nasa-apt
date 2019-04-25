@@ -142,7 +142,6 @@ class AlgorithmImplementationForm extends Component {
               initialValue={executionDescription}
               save={onSave}
               invalid={executionDescriptionInvalid}
-              externalSaveBtn
             />
           </FormGroupBody>
         </FormGroup>
