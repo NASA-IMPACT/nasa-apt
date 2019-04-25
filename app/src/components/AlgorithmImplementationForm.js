@@ -128,8 +128,7 @@ class AlgorithmImplementationForm extends Component {
               invalid={accessUrlInvalid}
             />
           </FormGroupBody>
-        </FormGroup>
-        <FormGroup>
+
           <FormGroupHeader>
             <FormLabel>Execution Description</FormLabel>
             {executionDescriptionInvalid && (
@@ -138,12 +137,14 @@ class AlgorithmImplementationForm extends Component {
               </FormHelper>
             )}
           </FormGroupHeader>
-          <FreeEditor
-            initialValue={executionDescription}
-            save={onSave}
-            invalid={executionDescriptionInvalid}
-            externalSaveBtn
-          />
+          <FormGroupBody>
+            <FreeEditor
+              initialValue={executionDescription}
+              save={onSave}
+              invalid={executionDescriptionInvalid}
+              externalSaveBtn
+            />
+          </FormGroupBody>
         </FormGroup>
       </FormFieldset>
     );
