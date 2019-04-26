@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import isUrl from 'is-url';
 import styled from 'styled-components';
 
 import collecticon from '../styles/collecticons';
 import FreeEditor from './FreeEditor';
+import InfoButton from './common/InfoButton';
 import {
   FormGroup,
   FormGroupBody,
@@ -80,7 +82,8 @@ class AlgorithmImplementationForm extends Component {
       id,
       label,
       executionDescription,
-      del
+      del,
+      t
     } = this.props;
     const {
       accessUrl,
@@ -109,7 +112,10 @@ class AlgorithmImplementationForm extends Component {
             )}
           </FormFieldsetHeader>
           <FormGroupHeader>
-            <FormLabel htmlFor={`${id}-access`}>Access URL</FormLabel>
+            <FormLabel htmlFor={`${id}-access`}>
+              Access URL
+              <InfoButton text={t.access_url} />
+            </FormLabel>
             {accessUrlInvalid && (
               <FormHelper>
                 <FormHelperMessage>Please enter a valid URL.</FormHelperMessage>
@@ -130,7 +136,10 @@ class AlgorithmImplementationForm extends Component {
           </FormGroupBody>
 
           <FormGroupHeader>
-            <FormLabel>Execution Description</FormLabel>
+            <FormLabel>
+              Execution Description
+              <InfoButton text={t.execution_description} />
+            </FormLabel>
             {executionDescriptionInvalid && (
               <FormHelper>
                 <FormHelperMessage>This field is required.</FormHelperMessage>
@@ -156,7 +165,12 @@ AlgorithmImplementationForm.propTypes = {
   accessUrl: PropTypes.string,
   executionDescription: PropTypes.object,
   save: PropTypes.func,
-  del: PropTypes.func
+  del: PropTypes.func,
+  t: PropTypes.object
 };
 
-export default AlgorithmImplementationForm;
+const mapStateToProps = state => ({
+  t: state.application.static ? state.application.static.algorithm_implementation : {}
+});
+
+export default connect(mapStateToProps)(AlgorithmImplementationForm);
