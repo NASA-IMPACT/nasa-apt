@@ -5,7 +5,8 @@ const initialState = {
   contacts: [],
   uploadedFile: undefined,
   atbdVersion: undefined,
-  selectedAtbd: undefined
+  selectedAtbd: undefined,
+  static: undefined
 };
 
 const deleteAtbdVersionChildItem = (schemaKey, state, action) => {
@@ -167,6 +168,14 @@ export default function (state = initialState, action) {
           ...state.atbdVersion,
           algorithm_implementations: next
         }
+      };
+    }
+
+    case actions.FETCH_STATIC_SUCCESS: {
+      const { payload } = action;
+      return {
+        ...state,
+        static: payload
       };
     }
 

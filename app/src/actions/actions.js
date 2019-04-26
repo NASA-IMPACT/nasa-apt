@@ -298,3 +298,18 @@ export function uploadFile(file) {
     payload: file
   };
 }
+
+
+export function fetchStatic() {
+  return {
+    [RSAA]: {
+      endpoint: `${process.env.PUBLIC_URL}/static.json`,
+      method: 'GET',
+      types: [
+        types.FETCH_STATIC,
+        types.FETCH_STATIC_SUCCESS,
+        types.FETCH_STATIC_FAIL
+      ]
+    }
+  };
+}
