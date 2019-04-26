@@ -43,6 +43,11 @@ const locationMiddleware = store => next => async (action) => {
         }
       }
     }
+
+    // Fetch static json assets if undefined
+    if (!store.getState().application.static) {
+      store.dispatch(actions.fetchStatic());
+    }
   }
   if (type === types.FETCH_ATBD_VERSION_FAIL) {
     store.dispatch(push(`/${error}`));
