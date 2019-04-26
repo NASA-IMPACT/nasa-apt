@@ -30,6 +30,7 @@ import {
 } from '../../styles/form/group';
 import FormLabel from '../../styles/form/label';
 import FormInput from '../../styles/form/input';
+import { FormCheckbox } from '../../styles/form/checkbox';
 import FormSelect from '../../styles/form/select';
 import FormTextarea from '../../styles/form/textarea';
 import FormToolbar from '../../styles/form/toolbar';
@@ -153,6 +154,19 @@ class Sandbox extends Component {
                           <FormHelperMessage>This is some help text.</FormHelperMessage>
                           <FormHelperCounter>0 / 80</FormHelperCounter>
                         </FormHelper>
+                      </FormGroupBody>
+                    </FormGroup>
+
+                    <FormGroup>
+                      <FormGroupHeader>
+                        <FormLabel>Form label</FormLabel>
+                      </FormGroupHeader>
+                      <FormGroupBody>
+                        <FormCheckbox
+                          textPlacement="right"
+                        >
+                          Option
+                        </FormCheckbox>
                       </FormGroupBody>
                     </FormGroup>
 
