@@ -401,3 +401,77 @@ Resources:
                 -
                   Ref: FiguresBucket
                 - "/*"
+
+  # ATBD json bucket
+  AtbdJsonBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: nasa-apt-json
+    Description: Bucket for storing json
+
+  #AtbdJsonEvent:
+    #Type: AWS::Events::Rule
+    #Properties:
+      #Description: 'Event when atbd json is uploaded'
+      #State: ENABLED
+      #EventPattern:
+        #source:
+          #- "aws.s3"
+        #detail:
+          #eventSource:
+            #- "s3.amazonaws.com"
+          #eventName:
+            #- "PutObject"
+          #requestParameters:
+            #bucketName:
+              #- !Ref AtbdJsonBucket
+
+
+    AtbdJsonBucketLambda:
+      Type: AWS::Lambda::Function
+      Properties:
+        Environment:
+          Variables:
+            CLUSTER: !Ref ECSCluster
+            TASK: !Ref PostgRESTTaskDefinition
+            SUBNETS:
+              - !Ref 'PublicSubnetOne'
+              - !Ref 'PublicSubnetTwo'
+            SECURITY_GROUPS:
+              - !Ref FargateContainerSecurityGroup
+            ECS_TASK_EXECUTION_ROLE: !Ref ECSTaskExecutionRole
+            ECS_TASK_ROLE: wat
+        Code:
+          ZipFile: >
+            const AWS = require('aws-sdk');
+            exports.handler = async function handler(event) {
+              const ecs = new AWS.ECS()
+              const params = {
+                cluster: process.env.CLUSTER,
+                taskDefinition: process.env.TASK,
+                launchType: 'FARGATE',
+                networkConfiguration: {
+                  awsvpcConfiguration: {
+                    subnets: process.env.SUBNETS.split(' '),
+                    assignPublicIp: 'ENABLED',
+                    securityGroups: process.env.SECURITY_GROUPS.split(' ')
+                  }
+                },
+                overrides: {
+                  containerOverrides: [
+                    {
+                      command: [
+                        'node',
+                        'packages/ingest/bin/ingest.js',
+                        JSON.stringify(input)
+                      ],
+                      environment: envvars,
+                      name: 'SatApi'
+                    }
+                  ],
+                  executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
+                  taskRoleArn: process.env.ECS_TASK_ROLE
+                }
+            }
+            return ecs.runTask(params).promise();
+          };
