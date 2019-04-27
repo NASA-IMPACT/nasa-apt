@@ -402,13 +402,6 @@ Resources:
                   Ref: FiguresBucket
                 - "/*"
 
-  # ATBD json bucket
-  AtbdJsonBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: nasa-apt-json
-    Description: Bucket for storing json
-
   #AtbdJsonEvent:
     #Type: AWS::Events::Rule
     #Properties:
@@ -426,10 +419,31 @@ Resources:
             #bucketName:
               #- !Ref AtbdJsonBucket
 
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - Effect: Allow
+          Action:
+            - ecs:RunTask
+            - iam:PassRole
+          Resource:
+            - "*"
 
     AtbdJsonBucketLambda:
       Type: AWS::Lambda::Function
       Properties:
+        Role: !Ref LambdaRole
         Environment:
           Variables:
             CLUSTER: !Ref ECSCluster
@@ -475,3 +489,27 @@ Resources:
             }
             return ecs.runTask(params).promise();
           };
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn: AtbdJsonBucketLambda
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref AtbdJsonBucketLambda
+      Principal: 's3:amazonaws.com'
+      SourceArn: 'arn:aws:s3::nasa-apt-json'
+
+  # ATBD json bucket
+  AtbdJsonBucket:
+    Type: AWS::S3::Bucket
+    DependsOn:
+      - AtbdJsonBucketLambda
+      - LambdaInvokePermission
+    Properties:
+      BucketName: nasa-apt-json
+      NotificationConfiguration:
+        LambdaConfigurations:
+          -
+            Event: 's3:ObjectCreated:*'
+            Function: !Ref AtbdJsonBucketLambda
+    Description: Bucket for storing json
