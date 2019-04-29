@@ -1,18 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Value } from 'slate';
 import { updateAtbdVersion } from '../actions/actions';
 
 import FreeEditor from './FreeEditor';
+import { Inpage } from './common/Inpage';
+import EditPage from './common/EditPage';
 import {
-  Inpage
-} from './common/Inpage';
-import EditPage, {
-  EditorSection,
-  EditorLabel
-} from './common/EditPage';
-import editorBlankDocument from './editorBlankDocument';
+  FormGroup,
+  FormGroupBody,
+  FormGroupHeader
+} from '../styles/form/group';
+import {
+  FormFieldset,
+  FormFieldsetHeader
+} from '../styles/form/fieldset';
+import FormLabel from '../styles/form/label';
+import FormLegend from '../styles/form/legend';
 
 export function Introduction(props) {
   const {
@@ -24,8 +28,8 @@ export function Introduction(props) {
     atbd,
     atbd_id,
     atbd_version,
-    historical_perspective = editorBlankDocument,
-    introduction = editorBlankDocument
+    historical_perspective,
+    introduction
   } = atbdVersion;
 
   const title = atbd && atbd.title;
@@ -39,28 +43,47 @@ export function Introduction(props) {
         numSteps={7}
       >
         <h2>Introduction</h2>
-        <EditorSection>
-          <EditorLabel>Introduction</EditorLabel>
-          <FreeEditor
-            value={Value.fromJSON(introduction)}
-            save={(document) => {
-              update(atbd_id, atbd_version, {
-                introduction: document
-              });
-            }}
-          />
-        </EditorSection>
-        <EditorSection>
-          <EditorLabel>Historical Perspective</EditorLabel>
-          <FreeEditor
-            value={Value.fromJSON(historical_perspective)}
-            save={(document) => {
-              update(atbd_id, atbd_version, {
-                historical_perspective: document
-              });
-            }}
-          />
-        </EditorSection>
+        <FormFieldset>
+          <FormGroup>
+            <FormFieldsetHeader>
+              <FormLegend>Introduction</FormLegend>
+            </FormFieldsetHeader>
+            <FormGroupHeader>
+              <FormLabel>Introduce the algorithm</FormLabel>
+            </FormGroupHeader>
+            <FormGroupBody>
+              <FreeEditor
+                initialValue={introduction}
+                save={(document) => {
+                  update(atbd_id, atbd_version, {
+                    introduction: document
+                  });
+                }}
+              />
+            </FormGroupBody>
+          </FormGroup>
+        </FormFieldset>
+
+        <FormFieldset>
+          <FormGroup>
+            <FormFieldsetHeader>
+              <FormLegend>Historical Perspective</FormLegend>
+            </FormFieldsetHeader>
+            <FormGroupHeader>
+              <FormLabel>Describe the historical perspective</FormLabel>
+            </FormGroupHeader>
+            <FormGroupBody>
+              <FreeEditor
+                initialValue={historical_perspective}
+                save={(document) => {
+                  update(atbd_id, atbd_version, {
+                    historical_perspective: document
+                  });
+                }}
+              />
+            </FormGroupBody>
+          </FormGroup>
+        </FormFieldset>
       </EditPage>
     </Inpage>
   );

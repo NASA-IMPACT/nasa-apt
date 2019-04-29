@@ -26,8 +26,11 @@ import {
   contacts,
   drafts,
   algorithm_description,
-  algorithm_usage
+  algorithm_usage,
+  algorithm_implementation
 } from '../../constants/routes';
+
+import Prose from '../../styles/type/prose';
 
 import Dropdown, {
   DropdownTrigger,
@@ -52,34 +55,6 @@ const StepperLabel = styled.h6`
   font-size: 0.875rem;
   color: ${_rgba('#FFFFFF', 0.64)};
   margin-right: 0.5rem;
-`;
-
-export const EditorSection = styled.div`
-  background-color: ${themeVal('color.lightgray')};
-  padding: ${multiply(themeVal('layout.space'), 2)};
-  margin-top: ${multiply(themeVal('layout.space'), 2)};
-  margin-bottom: ${multiply(themeVal('layout.space'), 2)};
-`;
-
-export const EditorSectionTitle = styled.h4`
-  font-size: 1em;
-  font-weight: bold;
-  line-height: 2;
-  margin: 0;
-`;
-
-export const EditorLabel = styled.label`
-  color: ${themeVal('color.darkgray')};
-  display: block;
-  font-size: 0.875rem;
-  font-weight: lighter;
-  line-height: 2;
-  margin-bottom: ${multiply(themeVal('layout.space'), 2)};
-  margin-top: ${multiply(themeVal('layout.space'), 2)};
-  text-transform: uppercase;
-  &&:first-child {
-    margin-top: 0;
-  }
 `;
 
 export const RemovableListItem = styled.li`
@@ -124,7 +99,7 @@ const EditPage = (props) => {
     { display: 'Contact information', link: `/${atbdsedit}/${id}/${contacts}` },
     { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_description}` },
     { display: 'Algorithm usage', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_usage}` },
-    { display: 'Algorithm implementation' },
+    { display: 'Algorithm implementation', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_implementation}` },
     { display: 'References' }
   ];
 
@@ -169,7 +144,9 @@ const EditPage = (props) => {
       </InpageHeader>
       <InpageBody>
         <InpageBodyInner>
-          { children }
+          <Prose>
+            { children }
+          </Prose>
         </InpageBodyInner>
       </InpageBody>
     </Fragment>

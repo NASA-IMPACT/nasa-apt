@@ -16,6 +16,7 @@ import {
   drafts,
   algorithm_description,
   algorithm_usage,
+  algorithm_implementation,
   error
 } from './constants/routes';
 import PageHeader from './components/common/PageHeader';
@@ -25,6 +26,7 @@ import Introduction from './components/Introduction';
 import Contacts from './components/Contacts';
 import AlgorithmDescription from './components/AlgorithmDescription';
 import AlgorithmUsage from './components/AlgorithmUsage';
+import AlgorithmImplementation from './components/AlgorithmImplementation';
 import Help from './components/help';
 import About from './components/about';
 import Sandbox from './components/sandbox';
@@ -67,6 +69,10 @@ const App = () => (
                 <Route
                   path={`/${atbdsedit}/:atbd_id/${drafts}/:atbd_version/${algorithm_usage}`}
                   component={AlgorithmUsage}
+                />
+                <Route
+                  path={`/${atbdsedit}/:atbd_id/${drafts}/:atbd_version/${algorithm_implementation}`}
+                  component={AlgorithmImplementation}
                 />
                 <Route
                   path={`/${error}`}

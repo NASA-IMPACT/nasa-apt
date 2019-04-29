@@ -33,8 +33,8 @@ test('AlgorithmDescription editor values', (t) => {
     />
   );
   const editor = wrapper.find(FreeEditor).first();
-  t.equal(editor.props().value.getIn(['document', 'nodes']).size, 1,
-    'Initializes the FreeEditor with the blankDocument value with no atbd_version');
+  t.equal(editor.props().initialValue, undefined,
+    'Initializes the FreeEditor without a defined initialValue');
 
   const loadingWrapper = shallow(
     <AlgorithmDescription

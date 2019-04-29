@@ -4,7 +4,11 @@ import { withFormik } from 'formik';
 import jsonschema from 'jsonschema';
 import apiSchema from '../schemas/schema.json';
 import transformErrors from '../schemas/transformErrors';
-import Input, { InputFormGroup, InputSubmit } from './common/Input';
+import Input, {
+  InputFormGroup,
+  InputSubmit,
+  InputWrapper
+} from './common/Input';
 
 const name = 'name';
 const long_name = 'long_name';
@@ -55,11 +59,13 @@ export const InnerAlgorithmVariableForm = (props) => {
         error={errors[unit]}
         touched={touched[unit]}
       />
-      <InputSubmit
-        type="submit"
-        disabled={!submitEnabled}
-        value="Add Algorithm Variable"
-      />
+      <InputWrapper>
+        <InputSubmit
+          type="submit"
+          disabled={!submitEnabled}
+          value="Add Algorithm Variable"
+        />
+      </InputWrapper>
     </InputFormGroup>
   );
 };
