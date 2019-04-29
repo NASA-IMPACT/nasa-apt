@@ -278,6 +278,14 @@ Resources:
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
                 Resource: '*'
+        - PolicyName: s3PutObject
+          # Allow serialize task to write to bucket.
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: 's3:PutObject*'
+                Resource: !Sub '${arn:aws:s3:::${AtbdBucket}*'
+
   # The task definition. This is a simple metadata description of what
   # container to run, and what resource requirements it has.
   PostgRESTTaskDefinition:
@@ -459,6 +467,9 @@ Resources:
           ZipFile: >
             const AWS = require('aws-sdk');
             exports.handler = async function handler(event) {
+              const record = event.Records[0];
+              const bucketName = record.s3.bucket.name;
+              const key = record.s3.object.key;
               const ecs = new AWS.ECS()
               const params = {
                 cluster: process.env.CLUSTER,
@@ -513,3 +524,34 @@ Resources:
             Event: 's3:ObjectCreated:*'
             Function: !Ref AtbdJsonBucketLambda
     Description: Bucket for storing json
+
+  AtbdBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+        BucketName: nasa-apt-atbd
+    Description: Bucket for storing output ATBDs.
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ['', [/ecs/, !Ref SerializeTaskDefinition]]
+
+  SerializeTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'serialize'
+      Cpu: 1024
+      Memory: 2048
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: 'serialize'
+          Cpu: 1024
+          Memory: 2048
+          Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt:latest'
+          Environment:
+            -
+              Name: ATBD_BUCKET
+              Value: !Ref AtbdBucket
