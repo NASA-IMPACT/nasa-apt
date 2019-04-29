@@ -48,10 +48,6 @@ Parameters:
     Description: The priority for the routing rule added to the load balancer.
                  This only applies if your have multiple services which are
                  assigned to different paths on the load balancer.
-  DesiredCount:
-    Type: Number
-    Default: 2
-    Description: How many copies of the service task to run
 
 Mappings:
   # Hard values for the subnet masks. These masks define
@@ -155,7 +151,7 @@ Resources:
       AllocatedStorage: '5'
       DBInstanceClass: db.t2.small
       Engine: Postgres
-      EngineVersion: 9.4
+      EngineVersion: '9.4'
       PubliclyAccessible: true
       VPCSecurityGroups:
         - !Ref FargateContainerSecurityGroup
@@ -278,13 +274,6 @@ Resources:
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
                 Resource: '*'
-        - PolicyName: s3PutObject
-          # Allow serialize task to write to bucket.
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action: 's3:PutObject*'
-                Resource: !Sub 'arn:aws:s3:::${AtbdBucket}*'
 
   # The task definition. This is a simple metadata description of what
   # container to run, and what resource requirements it has.
@@ -386,7 +375,6 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: nasa-apt-figures
-    Description: Bucket for storing figures
 
   # Figures bucket policy
   FiguresBucketPolicy:
@@ -441,28 +429,43 @@ Resources:
               - sts:AssumeRole
       Path: "/"
       Policies:
-        - Effect: Allow
-          Action:
-            - ecs:RunTask
-            - iam:PassRole
-          Resource:
-            - "*"
+        -
+          PolicyName: LambdaRunECSTask
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecs:RunTask
+                  - iam:PassRole
+                Resource:
+                  - "*"
+        -
+          PolicyName: Logging
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - "arn:aws:logs:*:*:*"
 
   AtbdJsonBucketLambda:
     Type: AWS::Lambda::Function
     Properties:
-      Role: !Ref LambdaRole
+      Role: !GetAtt LambdaRole.Arn
       Environment:
         Variables:
-          CLUSTER: !Ref ECSCluster
-          TASK: !Ref PostgRESTTaskDefinition
-          SUBNETS:
-            - !Ref 'PublicSubnetOne'
-            - !Ref 'PublicSubnetTwo'
-          SECURITY_GROUPS:
-            - !Ref FargateContainerSecurityGroup
-          ECS_TASK_EXECUTION_ROLE: !Ref ECSTaskExecutionRole
-          ECS_TASK_ROLE: wat
+          CLUSTER: !GetAtt ECSCluster.Arn
+          TASK: !Ref SerializeTaskDefinition
+          SUBNET1: !Ref 'PublicSubnetOne'
+          SUBNET2: !Ref 'PublicSubnetTwo'
+          SECURITY_GROUP: !Ref FargateContainerSecurityGroup
+          ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
+          ECS_TASK_ROLE: !GetAtt SerializeTaskRole.Arn
+      Handler: index.handler
+      Runtime: nodejs8.10
       Code:
         ZipFile: >
           const AWS = require('aws-sdk');
@@ -477,9 +480,14 @@ Resources:
               launchType: 'FARGATE',
               networkConfiguration: {
                 awsvpcConfiguration: {
-                  subnets: process.env.SUBNETS.split(' '),
+                  subnets: [
+                    process.env.SUBNET1,
+                    process.env.SUBNET2
+                  ],
                   assignPublicIp: 'ENABLED',
-                  securityGroups: process.env.SECURITY_GROUPS.split(' ')
+                  securityGroups: [
+                    process.env.SECURITY_GROUP
+                  ]
                 }
               },
               overrides: {
@@ -490,23 +498,25 @@ Resources:
                       './s3eventHandler.py',
                       bucketName,
                       key
-                    ]
+                    ],
+                    name: 'serialize'
                   }
                 ],
                 executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
                 taskRoleArn: process.env.ECS_TASK_ROLE
-              };
+              }
             };
             return ecs.runTask(params).promise();
           }
+
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     DependsOn: AtbdJsonBucketLambda
     Properties:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref AtbdJsonBucketLambda
-      Principal: 's3:amazonaws.com'
-      SourceArn: 'arn:aws:s3::nasa-apt-json'
+      Principal: 's3.amazonaws.com'
+      SourceArn: 'arn:aws:s3:::nasa-apt-json'
 
   # ATBD json bucket
   AtbdJsonBucket:
@@ -520,19 +530,35 @@ Resources:
         LambdaConfigurations:
           -
             Event: 's3:ObjectCreated:*'
-            Function: !Ref AtbdJsonBucketLambda
-    Description: Bucket for storing json
+            Function: !GetAtt AtbdJsonBucketLambda.Arn
 
+  SerializeTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ecs-tasks.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: s3PutObject
+          # Allow serialize task to write to bucket.
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: 's3:PutObject*'
+                Resource: !Sub 'arn:aws:s3:::${AtbdBucket}*'
   AtbdBucket:
     Type: AWS::S3::Bucket
     Properties:
-        BucketName: nasa-apt-atbd
-    Description: Bucket for storing output ATBDs.
+      BucketName: nasa-apt-atbd
 
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Join ['', [/ecs/, !Ref SerializeTaskDefinition]]
+      LogGroupName: /ecs/nasa-apt-serializetask
 
   SerializeTaskDefinition:
     Type: AWS::ECS::TaskDefinition
