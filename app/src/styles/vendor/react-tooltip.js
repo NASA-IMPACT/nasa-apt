@@ -7,6 +7,7 @@ export default () => css`
   .__react_component_tooltip {
     border-radius: 0;
     font-size: 0.875rem;
+    max-width: 16rem;
 
     &.type-primary {
       background: ${themeVal('colors.primaryDark')};

@@ -133,7 +133,7 @@ class Sandbox extends Component {
                           variation="base-plain"
                           size="small"
                           hideText
-                          data-tip="This is a very helpful tooltip."
+                          data-tip="This is a super helpful tooltip."
                         >
                           Learn more
                         </InfoButton>
