@@ -284,7 +284,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: 's3:PutObject*'
-                Resource: !Sub '${arn:aws:s3:::${AtbdBucket}*'
+                Resource: !Sub 'arn:aws:s3:::${AtbdBucket}*'
 
   # The task definition. This is a simple metadata description of what
   # container to run, and what resource requirements it has.
@@ -448,59 +448,57 @@ Resources:
           Resource:
             - "*"
 
-    AtbdJsonBucketLambda:
-      Type: AWS::Lambda::Function
-      Properties:
-        Role: !Ref LambdaRole
-        Environment:
-          Variables:
-            CLUSTER: !Ref ECSCluster
-            TASK: !Ref PostgRESTTaskDefinition
-            SUBNETS:
-              - !Ref 'PublicSubnetOne'
-              - !Ref 'PublicSubnetTwo'
-            SECURITY_GROUPS:
-              - !Ref FargateContainerSecurityGroup
-            ECS_TASK_EXECUTION_ROLE: !Ref ECSTaskExecutionRole
-            ECS_TASK_ROLE: wat
-        Code:
-          ZipFile: >
-            const AWS = require('aws-sdk');
-            exports.handler = async function handler(event) {
-              const record = event.Records[0];
-              const bucketName = record.s3.bucket.name;
-              const key = record.s3.object.key;
-              const ecs = new AWS.ECS()
-              const params = {
-                cluster: process.env.CLUSTER,
-                taskDefinition: process.env.TASK,
-                launchType: 'FARGATE',
-                networkConfiguration: {
-                  awsvpcConfiguration: {
-                    subnets: process.env.SUBNETS.split(' '),
-                    assignPublicIp: 'ENABLED',
-                    securityGroups: process.env.SECURITY_GROUPS.split(' ')
-                  }
-                },
-                overrides: {
-                  containerOverrides: [
-                    {
-                      command: [
-                        'node',
-                        'packages/ingest/bin/ingest.js',
-                        JSON.stringify(input)
-                      ],
-                      environment: envvars,
-                      name: 'SatApi'
-                    }
-                  ],
-                  executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
-                  taskRoleArn: process.env.ECS_TASK_ROLE
+  AtbdJsonBucketLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Role: !Ref LambdaRole
+      Environment:
+        Variables:
+          CLUSTER: !Ref ECSCluster
+          TASK: !Ref PostgRESTTaskDefinition
+          SUBNETS:
+            - !Ref 'PublicSubnetOne'
+            - !Ref 'PublicSubnetTwo'
+          SECURITY_GROUPS:
+            - !Ref FargateContainerSecurityGroup
+          ECS_TASK_EXECUTION_ROLE: !Ref ECSTaskExecutionRole
+          ECS_TASK_ROLE: wat
+      Code:
+        ZipFile: >
+          const AWS = require('aws-sdk');
+          exports.handler = async function handler(event) {
+            const record = event.Records[0];
+            const bucketName = record.s3.bucket.name;
+            const key = record.s3.object.key;
+            const ecs = new AWS.ECS();
+            const params = {
+              cluster: process.env.CLUSTER,
+              taskDefinition: process.env.TASK,
+              launchType: 'FARGATE',
+              networkConfiguration: {
+                awsvpcConfiguration: {
+                  subnets: process.env.SUBNETS.split(' '),
+                  assignPublicIp: 'ENABLED',
+                  securityGroups: process.env.SECURITY_GROUPS.split(' ')
                 }
-            }
+              },
+              overrides: {
+                containerOverrides: [
+                  {
+                    command: [
+                      'python',
+                      './s3eventHandler.py',
+                      bucketName,
+                      key
+                    ]
+                  }
+                ],
+                executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
+                taskRoleArn: process.env.ECS_TASK_ROLE
+              };
+            };
             return ecs.runTask(params).promise();
-          };
-
+          }
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     DependsOn: AtbdJsonBucketLambda
