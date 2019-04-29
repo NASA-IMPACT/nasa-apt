@@ -567,3 +567,25 @@ Resources:
               awslogs-group: !Ref LogGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: serializetask
+Outputs:
+  AtbdJsonBucketUrl:
+    Value: !GetAtt AtbdJsonBucket.WebsiteURL
+    Export:
+      Name: !Sub '${AWS::StackName}-AtbdJsonBucket'
+
+  AtbdBucket:
+    Value: !GetAtt AtbdBucket.WebsiteURL
+    Export:
+      Name: !Sub '${AWS::StackName}-AtbdBucket'
+  PGConnection:
+    Value: !Join ['', ['postgres://', 'masteruser', ':',
+                       !Ref 'DBPassword', '@',
+                       !GetAtt [DB, Endpoint.Address],
+                       ':', !GetAtt [DB, Endpoint.Port], /,
+                       !Ref 'DBName']]
+    Export:
+      Name: !Sub '${AWS::StackName}-PGConnection'
+  PostgRESTEndpoint:
+    Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
+    Export:
+      Name: !Sub '${AWS::StackName}-PostgRESTEndpoint'
