@@ -30,7 +30,10 @@ import {
 } from '../../styles/form/group';
 import FormLabel from '../../styles/form/label';
 import FormInput from '../../styles/form/input';
-import { FormCheckbox } from '../../styles/form/checkbox';
+import {
+  FormCheckable,
+  FormCheckableGroup
+} from '../../styles/form/checkable';
 import FormSelect from '../../styles/form/select';
 import FormTextarea from '../../styles/form/textarea';
 import FormToolbar from '../../styles/form/toolbar';
@@ -162,11 +165,68 @@ class Sandbox extends Component {
                         <FormLabel>Form label</FormLabel>
                       </FormGroupHeader>
                       <FormGroupBody>
-                        <FormCheckbox
-                          textPlacement="right"
-                        >
-                          Option
-                        </FormCheckbox>
+                        <FormCheckableGroup>
+                          <FormCheckable
+                            checked={undefined}
+                            type="checkbox"
+                            name="checkbox-a"
+                          >
+                            Checkbox A
+                          </FormCheckable>
+                          <FormCheckable
+                            checked={undefined}
+                            type="checkbox"
+                            name="checkbox-b"
+                          >
+                            Checkbox B
+                          </FormCheckable>
+                        </FormCheckableGroup>
+                      </FormGroupBody>
+                    </FormGroup>
+
+                    <FormGroup>
+                      <FormGroupHeader>
+                        <FormLabel>Form label</FormLabel>
+                      </FormGroupHeader>
+                      <FormGroupBody>
+                        <FormCheckableGroup>
+                          <FormCheckable
+                            textPlacement="right"
+                            checked={undefined}
+                            type="radio"
+                            name="radio-a"
+                            id="radio-a1"
+                          >
+                            Radio A
+                          </FormCheckable>
+                          <FormCheckable
+                            textPlacement="right"
+                            checked={undefined}
+                            type="radio"
+                            name="radio-a"
+                            id="radio-a2"
+                          >
+                            Radio B
+                          </FormCheckable>
+                          <FormCheckable
+                            textPlacement="right"
+                            checked={undefined}
+                            type="radio"
+                            name="radio-a"
+                            id="radio-a3"
+                          >
+                            Radio C
+                          </FormCheckable>
+                          <FormCheckable
+                            textPlacement="right"
+                            checked={undefined}
+                            type="radio"
+                            name="radio-a"
+                            id="radio-a4"
+                          >
+                            Radio D
+                          </FormCheckable>
+                        </FormCheckableGroup>
                       </FormGroupBody>
                     </FormGroup>
 
