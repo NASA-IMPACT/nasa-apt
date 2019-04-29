@@ -27,7 +27,6 @@ Parameters:
     MaxLength: '41'
     AllowedPattern: '[a-zA-Z0-9]*'
     ConstraintDescription: must contain only alphanumeric characters.
-
   PostgrestContainerCpu:
     Type: Number
     Default: 256
@@ -398,23 +397,6 @@ Resources:
                   Ref: FiguresBucket
                 - "/*"
 
-  #AtbdJsonEvent:
-    #Type: AWS::Events::Rule
-    #Properties:
-      #Description: 'Event when atbd json is uploaded'
-      #State: ENABLED
-      #EventPattern:
-        #source:
-          #- "aws.s3"
-        #detail:
-          #eventSource:
-            #- "s3.amazonaws.com"
-          #eventName:
-            #- "PutObject"
-          #requestParameters:
-            #bucketName:
-              #- !Ref AtbdJsonBucket
-
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -579,3 +561,9 @@ Resources:
             -
               Name: ATBD_BUCKET
               Value: !Ref AtbdBucket
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: serializetask
