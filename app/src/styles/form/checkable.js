@@ -25,7 +25,6 @@ const _rgba = stylizeFunction(rgba);
  * @param {string} textPlacement Where to position the text. `left` or `right`
  *                  of the control. Default to `right`
  */
-
 const FormCheckableElement = (props) => {
   const {
     children,
@@ -57,14 +56,14 @@ const FormCheckableElement = (props) => {
 };
 
 FormCheckableElement.propTypes = {
-  name: T.string,
-  id: T.string,
+  name: T.string.isRequired,
+  id: T.string.isRequired,
   textPlacement: T.string,
   className: T.string,
   title: T.string,
   type: T.oneOf(['checkbox', 'radio']),
   checked: T.bool,
-  children: T.node,
+  children: T.node.isRequired,
   onChange: T.func
 };
 
