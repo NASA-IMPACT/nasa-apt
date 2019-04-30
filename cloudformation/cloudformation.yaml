@@ -567,6 +567,32 @@ Resources:
               awslogs-group: !Ref LogGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: serializetask
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: nasa-apt-application
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: WebsiteBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Join
+              - ''
+              -
+                - 'arn:aws:s3:::'
+                - !Ref WebsiteBucket
+                - /*
 Outputs:
   AtbdJsonBucketUrl:
     Value: !GetAtt AtbdJsonBucket.WebsiteURL
@@ -577,6 +603,10 @@ Outputs:
     Value: !GetAtt AtbdBucket.WebsiteURL
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucket'
+  WebsiteBucket:
+    Value: 's3://nasa-apt-application'
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteBucket'
   PGConnection:
     Value: !Join ['', ['postgres://', 'masteruser', ':',
                        !Ref 'DBPassword', '@',
@@ -589,3 +619,4 @@ Outputs:
     Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
     Export:
       Name: !Sub '${AWS::StackName}-PostgRESTEndpoint'
+
