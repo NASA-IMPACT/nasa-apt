@@ -39,6 +39,22 @@ export function createAtbd() {
   };
 }
 
+export function updateAtbd(atbd_id, document) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbds?atbd_id=eq.${atbd_id}`,
+      method: 'PATCH',
+      body: JSON.stringify(document),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_ATBD,
+        types.UPDATE_ATBD_SUCCESS,
+        types.UPDATE_ATBD_FAIL
+      ]
+    }
+  };
+}
+
 export function createAtbdVersion(atbd_version) {
   return {
     [RSAA]: {
