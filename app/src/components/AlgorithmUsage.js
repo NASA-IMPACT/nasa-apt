@@ -5,7 +5,10 @@ import { updateAtbdVersion } from '../actions/actions';
 
 import FreeEditor from './FreeEditor';
 import { Inpage } from './common/Inpage';
+import InfoButton from './common/InfoButton';
 import EditPage from './common/EditPage';
+import Form from '../styles/form/form';
+import FormToolbar from '../styles/form/toolbar';
 import {
   FormGroup,
   FormGroupBody,
@@ -13,7 +16,8 @@ import {
 } from '../styles/form/group';
 import {
   FormFieldset,
-  FormFieldsetHeader
+  FormFieldsetHeader,
+  FormFieldsetBody
 } from '../styles/form/fieldset';
 import FormLegend from '../styles/form/legend';
 import FormLabel from '../styles/form/label';
@@ -26,7 +30,8 @@ export function AlgorithmUsage(props) {
     uncertainties,
     errors,
     constraints,
-    updateAtbdVersion: update
+    updateAtbdVersion: update,
+    t
   } = props;
 
   const {
@@ -43,76 +48,98 @@ export function AlgorithmUsage(props) {
         numSteps={7}
       >
         <h2>Algorithm Usage</h2>
-        <FormFieldset>
-          <FormGroup>
+        <Form>
+          <FormFieldset>
             <FormFieldsetHeader>
               <FormLegend>Constraints</FormLegend>
             </FormFieldsetHeader>
-            <FormGroupHeader>
-              <FormLabel>Describe the algorithm constraints</FormLabel>
-            </FormGroupHeader>
-            <FormGroupBody>
-              <FreeEditor
-                initialValue={constraints}
-                save={(document) => {
-                  update(atbd_id, atbd_version, {
-                    algorithm_usage_constraints: document
-                  });
-                }}
-              />
-            </FormGroupBody>
-          </FormGroup>
-        </FormFieldset>
+            <FormFieldsetBody>
+              <FormGroup>
+                <FormGroupHeader>
+                  <FormLabel>Describe the algorithm constraints</FormLabel>
+                  <FormToolbar>
+                    <InfoButton text={t.constraints} />
+                  </FormToolbar>
+                </FormGroupHeader>
+                <FormGroupBody>
+                  <FreeEditor
+                    initialValue={constraints}
+                    save={(document) => {
+                      update(atbd_id, atbd_version, {
+                        algorithm_usage_constraints: document
+                      });
+                    }}
+                  />
+                </FormGroupBody>
+              </FormGroup>
+            </FormFieldsetBody>
+          </FormFieldset>
+        </Form>
 
         <h2>Performance Assessment</h2>
-        <FormFieldset>
-          <FormGroup>
+        <Form>
+          <FormFieldset>
             <FormFieldsetHeader>
               <FormLegend>Validation</FormLegend>
             </FormFieldsetHeader>
-            <FormGroupHeader>
-              <FormLabel>Validation methods</FormLabel>
-            </FormGroupHeader>
-            <FormGroupBody>
-              <FreeEditor
-                initialValue={methods}
-                save={(document) => {
-                  update(atbd_id, atbd_version, {
-                    performance_assessment_validation_methods: document
-                  });
-                }}
-              />
-            </FormGroupBody>
-
-            <FormGroupHeader>
-              <FormLabel>Uncertainties</FormLabel>
-            </FormGroupHeader>
-            <FormGroupBody>
-              <FreeEditor
-                initialValue={uncertainties}
-                save={(document) => {
-                  update(atbd_id, atbd_version, {
-                    performance_assessment_validation_uncertainties: document
-                  });
-                }}
-              />
-            </FormGroupBody>
-
-            <FormGroupHeader>
-              <FormLabel>Errors</FormLabel>
-            </FormGroupHeader>
-            <FormGroupBody>
-              <FreeEditor
-                initialValue={errors}
-                save={(document) => {
-                  update(atbd_id, atbd_version, {
-                    performance_assessment_validation_errors: document
-                  });
-                }}
-              />
-            </FormGroupBody>
-          </FormGroup>
-        </FormFieldset>
+            <FormFieldsetBody>
+              <FormGroup>
+                <FormGroupHeader>
+                  <FormLabel>Validation methods</FormLabel>
+                  <FormToolbar>
+                    <InfoButton text={t.validation_methods} />
+                  </FormToolbar>
+                </FormGroupHeader>
+                <FormGroupBody>
+                  <FreeEditor
+                    initialValue={methods}
+                    save={(document) => {
+                      update(atbd_id, atbd_version, {
+                        performance_assessment_validation_methods: document
+                      });
+                    }}
+                  />
+                </FormGroupBody>
+              </FormGroup>
+              <FormGroup>
+                <FormGroupHeader>
+                  <FormLabel>Uncertainties</FormLabel>
+                  <FormToolbar>
+                    <InfoButton text={t.validation_uncertainties} />
+                  </FormToolbar>
+                </FormGroupHeader>
+                <FormGroupBody>
+                  <FreeEditor
+                    initialValue={uncertainties}
+                    save={(document) => {
+                      update(atbd_id, atbd_version, {
+                        performance_assessment_validation_uncertainties: document
+                      });
+                    }}
+                  />
+                </FormGroupBody>
+              </FormGroup>
+              <FormGroup>
+                <FormGroupHeader>
+                  <FormLabel>Errors</FormLabel>
+                  <FormToolbar>
+                    <InfoButton text={t.validation_errors} />
+                  </FormToolbar>
+                </FormGroupHeader>
+                <FormGroupBody>
+                  <FreeEditor
+                    initialValue={errors}
+                    save={(document) => {
+                      update(atbd_id, atbd_version, {
+                        performance_assessment_validation_errors: document
+                      });
+                    }}
+                  />
+                </FormGroupBody>
+              </FormGroup>
+            </FormFieldsetBody>
+          </FormFieldset>
+        </Form>
       </EditPage>
     </Inpage>
   );
@@ -125,7 +152,8 @@ AlgorithmUsage.propTypes = {
   uncertainties: PropTypes.object,
   errors: PropTypes.object,
   constraints: PropTypes.object,
-  updateAtbdVersion: PropTypes.func.isRequired
+  updateAtbdVersion: PropTypes.func.isRequired,
+  t: PropTypes.object
 };
 
 const mapStateToProps = (state) => {
@@ -138,7 +166,8 @@ const mapStateToProps = (state) => {
     methods: atbdVersion.performance_assessment_validation_methods,
     uncertainties: atbdVersion.performance_assessment_validation_uncertainties,
     errors: atbdVersion.performance_assessment_validation_errors,
-    constraints: atbdVersion.algorithm_usage_constraints
+    constraints: atbdVersion.algorithm_usage_constraints,
+    t: app.t ? app.t.algorithm_usage : {}
   };
 };
 

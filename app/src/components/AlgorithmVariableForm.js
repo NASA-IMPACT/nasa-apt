@@ -6,8 +6,7 @@ import apiSchema from '../schemas/schema.json';
 import transformErrors from '../schemas/transformErrors';
 import Input, {
   InputFormGroup,
-  InputSubmit,
-  InputWrapper
+  InputSubmit
 } from './common/Input';
 
 const name = 'name';
@@ -24,6 +23,7 @@ export const InnerAlgorithmVariableForm = (props) => {
     handleChange,
     handleBlur,
     handleSubmit,
+    t
   } = props;
   const submitEnabled = !Object.keys(errors).length
                                   && Object.keys(touched).length;
@@ -38,6 +38,7 @@ export const InnerAlgorithmVariableForm = (props) => {
         value={values[name]}
         error={errors[name]}
         touched={touched[name]}
+        info={t.name}
       />
       <Input
         name={long_name}
@@ -48,6 +49,7 @@ export const InnerAlgorithmVariableForm = (props) => {
         value={values[long_name]}
         error={errors[long_name]}
         touched={touched[long_name]}
+        info={t.long_name}
       />
       <Input
         name={unit}
@@ -58,14 +60,13 @@ export const InnerAlgorithmVariableForm = (props) => {
         value={values[unit]}
         error={errors[unit]}
         touched={touched[unit]}
+        info={t.unit}
       />
-      <InputWrapper>
-        <InputSubmit
-          type="submit"
-          disabled={!submitEnabled}
-          value="Add Algorithm Variable"
-        />
-      </InputWrapper>
+      <InputSubmit
+        type="submit"
+        disabled={!submitEnabled}
+        value="Add Algorithm Variable"
+      />
     </InputFormGroup>
   );
 };
@@ -76,7 +77,8 @@ InnerAlgorithmVariableForm.propTypes = {
   errors: PropTypes.object.isRequired,
   handleChange: PropTypes.func.isRequired,
   handleBlur: PropTypes.func.isRequired,
-  handleSubmit: PropTypes.func.isRequired
+  handleSubmit: PropTypes.func.isRequired,
+  t: PropTypes.object
 };
 
 export const AlgorithmVariableForm = withFormik({
@@ -117,7 +119,8 @@ AlgorithmVariableForm.propTypes = {
   create: PropTypes.func.isRequired,
   schemaKey: PropTypes.string.isRequired,
   atbd_id: PropTypes.number.isRequired,
-  atbd_version: PropTypes.number.isRequired
+  atbd_version: PropTypes.number.isRequired,
+  t: PropTypes.object
 };
 
 export default AlgorithmVariableForm;
