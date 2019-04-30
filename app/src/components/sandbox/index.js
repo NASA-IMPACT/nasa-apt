@@ -237,6 +237,7 @@ class Sandbox extends Component {
                           variation="base-plain"
                           size="small"
                           hideText
+                          data-tip="This is a super helpful tooltip."
                         >
                           Remove fieldset
                         </RemoveButton>

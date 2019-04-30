@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import collecticon from '../styles/collecticons';
 import FreeEditor from './FreeEditor';
 import InfoButton from './common/InfoButton';
+import FormToolbar from '../styles/form/toolbar';
 import {
   FormGroup,
   FormGroupBody,
@@ -112,15 +113,10 @@ class AlgorithmImplementationForm extends Component {
             )}
           </FormFieldsetHeader>
           <FormGroupHeader>
-            <FormLabel htmlFor={`${id}-access`}>
-              Access URL
+            <FormLabel htmlFor={`${id}-access`}>Access URL</FormLabel>
+            <FormToolbar>
               <InfoButton text={t.access_url} />
-            </FormLabel>
-            {accessUrlInvalid && (
-              <FormHelper>
-                <FormHelperMessage>Please enter a valid URL.</FormHelperMessage>
-              </FormHelper>
-            )}
+            </FormToolbar>
           </FormGroupHeader>
           <FormGroupBody>
             <FormInput
@@ -133,18 +129,18 @@ class AlgorithmImplementationForm extends Component {
               onBlur={onAccessUrlBlur}
               invalid={accessUrlInvalid}
             />
+            {accessUrlInvalid && (
+              <FormHelper>
+                <FormHelperMessage>Please enter a valid URL.</FormHelperMessage>
+              </FormHelper>
+            )}
           </FormGroupBody>
 
           <FormGroupHeader>
-            <FormLabel>
-              Execution Description
+            <FormLabel>Execution Description</FormLabel>
+            <FormToolbar>
               <InfoButton text={t.execution_description} />
-            </FormLabel>
-            {executionDescriptionInvalid && (
-              <FormHelper>
-                <FormHelperMessage>This field is required.</FormHelperMessage>
-              </FormHelper>
-            )}
+            </FormToolbar>
           </FormGroupHeader>
           <FormGroupBody>
             <FreeEditor
@@ -152,6 +148,11 @@ class AlgorithmImplementationForm extends Component {
               save={onSave}
               invalid={executionDescriptionInvalid}
             />
+            {executionDescriptionInvalid && (
+              <FormHelper>
+                <FormHelperMessage>This field is required.</FormHelperMessage>
+              </FormHelper>
+            )}
           </FormGroupBody>
         </FormGroup>
       </FormFieldset>

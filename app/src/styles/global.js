@@ -3,6 +3,7 @@ import { normalize, rgba } from 'polished';
 
 import { themeVal, stylizeFunction } from './utils/general';
 import { collecticonsFont } from './collecticons';
+import reactTooltipStyles from './vendor/react-tooltip';
 
 const _rgba = stylizeFunction(rgba);
 
@@ -141,5 +142,6 @@ const baseStyles = css`
 export default createGlobalStyle`
   ${normalize()}
   ${collecticonsFont()}
+  ${reactTooltipStyles()}
   ${baseStyles}
 `;
