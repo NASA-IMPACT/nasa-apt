@@ -22,10 +22,15 @@ import {
 
 import {
   atbdsedit,
+  introduction,
   contacts,
   drafts,
-  algorithm_description
+  algorithm_description,
+  algorithm_usage,
+  algorithm_implementation
 } from '../../constants/routes';
+
+import Prose from '../../styles/type/prose';
 
 import Dropdown, {
   DropdownTrigger,
@@ -50,29 +55,6 @@ const StepperLabel = styled.h6`
   font-size: 0.875rem;
   color: ${_rgba('#FFFFFF', 0.64)};
   margin-right: 0.5rem;
-`;
-
-export const EditorSection = styled.div`
-  background-color: ${themeVal('color.lightgray')};
-  padding: ${multiply(themeVal('layout.space'), 2)};
-  margin-top: ${multiply(themeVal('layout.space'), 2)};
-`;
-
-export const EditorSectionTitle = styled.h4`
-  font-size: 1em;
-  font-weight: bold;
-  line-height: 2;
-  margin: 0;
-`;
-
-export const EditorLabel = styled.label`
-  color: ${themeVal('color.darkgray')};
-  display: block;
-  font-size: 0.875rem;
-  font-weight: lighter;
-  line-height: 2;
-  margin-bottom: ${multiply(themeVal('layout.space'), 2)};
-  text-transform: uppercase;
 `;
 
 export const RemovableListItem = styled.li`
@@ -105,21 +87,23 @@ const EditPage = (props) => {
   const {
     title,
     step,
-    numSteps,
     id,
     children
   } = props;
 
+  const version = 1;
+
   const items = [
     { display: 'Identifying information' },
-    { display: 'Introduction' },
+    { display: 'Introduction', link: `/${atbdsedit}/${id}/${drafts}/${version}/${introduction}` },
     { display: 'Contact information', link: `/${atbdsedit}/${id}/${contacts}` },
-    { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/1/${algorithm_description}` },
-    { display: 'Algorithm usage' },
-    { display: 'Algorithm implementation' },
+    { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_description}` },
+    { display: 'Algorithm usage', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_usage}` },
+    { display: 'Algorithm implementation', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_implementation}` },
     { display: 'References' }
   ];
 
+  const numSteps = items.length;
   const stepCount = `Step ${step} of ${numSteps}`;
 
   return (
@@ -160,7 +144,9 @@ const EditPage = (props) => {
       </InpageHeader>
       <InpageBody>
         <InpageBodyInner>
-          { children }
+          <Prose>
+            { children }
+          </Prose>
         </InpageBodyInner>
       </InpageBody>
     </Fragment>
@@ -170,7 +156,6 @@ const EditPage = (props) => {
 EditPage.propTypes = {
   title: PropTypes.string.isRequired,
   step: PropTypes.number,
-  numSteps: PropTypes.number,
   id: PropTypes.number,
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.node),

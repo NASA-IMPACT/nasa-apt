@@ -1,6 +1,6 @@
 CREATE TYPE e_contact_mechanism_type AS ENUM (
- 'Direct Line', 
- 'Email', 
+ 'Direct Line',
+ 'Email',
  'Facebook',
  'Fax',
  'Mobile',
@@ -11,6 +11,10 @@ CREATE TYPE e_contact_mechanism_type AS ENUM (
  'Twitter',
  'U.S.',
  'Other'
+);
+CREATE TYPE atbd_status AS ENUM (
+  'Draft',
+  'Published'
 );
 CREATE TABLE contacts(
  contact_id serial PRIMARY KEY,
@@ -55,8 +59,13 @@ CREATE TABLE atbd_versions(
   scientific_theory_assumptions json,
   mathematical_theory json,
   mathematical_theory_assumptions json,
-  introduction VARCHAR (1024),
-  historical_perspective VARCHAR (1024)
+  introduction json,
+  historical_perspective json,
+  performance_assessment_validation_methods json,
+  performance_assessment_validation_uncertainties json,
+  performance_assessment_validation_errors json,
+  algorithm_usage_constraints json,
+  status atbd_status default 'Draft'
 );
 CREATE TABLE algorithm_input_variables(
   algorithm_input_variable_id serial PRIMARY KEY,
@@ -83,27 +92,6 @@ CREATE TABLE algorithm_implementations(
   FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
   access_url VARCHAR (1024),
   execution_description json NOT NULL
-);
-CREATE TABLE performance_assessment_validation_methods(
-  performance_assessment_validation_method_id serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  description json
-);
-CREATE TABLE performance_assessment_validation_uncertainties(
-  performance_assessment_validation_uncertainty serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  description json
-);
-CREATE TABLE performance_assessment_validation_errors(
-  performance_assessment_validation_error serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  description json
 );
 CREATE TABLE publication_references(
   publication_reference_id serial PRIMARY KEY,
@@ -150,6 +138,17 @@ CREATE TABLE data_access_related_urls(
   url VARCHAR (1024),
   description VARCHAR (4000)
 );
+CREATE FUNCTION create_atbd_version(OUT created_atbd atbds, OUT created_version atbd_versions)
+  AS $$
+  DECLARE
+  BEGIN
+  INSERT INTO atbds(title) VALUES ('') RETURNING * INTO created_atbd;
+  INSERT INTO atbd_versions(atbd_id, atbd_version)
+  VALUES (created_atbd.atbd_id, 1) RETURNING * INTO created_version;
+  END;
+  $$ LANGUAGE plpgsql
+  VOLATILE;
+
 INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
 VALUES ('Leonardo', 'Davinci', 'ld@gmail.comn');
 INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
@@ -159,11 +158,12 @@ VALUES ('Test ATBD 1');
 INSERT INTO atbd_contacts(atbd_id, contact_id)
 VALUES (1, 1);
 INSERT INTO atbd_versions(atbd_id, atbd_version, scientific_theory, introduction, historical_perspective)
-VALUES (1, 1, 
+VALUES (1, 1,
 '{"document":{"nodes":[{"object":"block","type":"paragraph","nodes":[{"object":"text","leaves":[{"text":"A line of text in a paragraph."}]}]},
 {"object":"block","type":"equation","nodes":[{"object":"text","leaves":[{"text":"\\int_0^\\infty x^2 dx"}]}]},
 {"object":"block","type":"image","data":{"src":"http://localhost:4572/figures/fullmoon.jpg"}}]}}',
-'Introduction Lorem Ipsum Text', 'Historical Perspective Lorem Ipsum Text');
+'{"document":{"nodes":[{"object":"block","type":"paragraph","nodes":[{"object":"text","leaves":[{"text":"An introduction."}]}]}]}}',
+'{"document":{"nodes":[{"object":"block","type":"paragraph","nodes":[{"object":"text","leaves":[{"text":"A historical perspective."}]}]}]}}');
 INSERT INTO algorithm_input_variables(atbd_id, atbd_version, name, long_name)
 VALUES (1, 1, 'Input Var 1', 'Input variable 1');
 INSERT INTO algorithm_output_variables(atbd_id, atbd_version, name, long_name)

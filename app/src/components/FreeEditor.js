@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import ImmutableTypes from 'react-immutable-proptypes';
+import { Value } from 'slate';
 import { Editor } from 'slate-react';
 import SoftBreak from 'slate-soft-break';
 import PluginDeepTable from 'slate-deep-table';
 import styled from 'styled-components/macro';
+import { rgba } from 'polished';
 import EquationEditor from './EquationEditor';
 import TrailingBlock from '../slate-plugins/TrailingBlock';
 import { uploadFile } from '../actions/actions';
@@ -20,8 +21,9 @@ import EditorImage from './EditorImage';
 import EditorTable from './EditorTable';
 import EditorFigureTool from './EditorFigureTool';
 import EditorFormattableText from './EditorFormattableText';
+import { getValidOrBlankDocument } from './editorBlankDocument';
 // import schema from './editorSchema';
-import { themeVal } from '../styles/utils/general';
+import { themeVal, stylizeFunction } from '../styles/utils/general';
 import { multiply } from '../styles/utils/math';
 import Button from '../styles/button/button';
 import ButtonGroup from '../styles/button/group';
@@ -31,11 +33,22 @@ const paragraph = 'paragraph';
 const table = 'table';
 const image = 'image';
 
+const _rgba = stylizeFunction(rgba);
+
+const EditorStatus = styled.div`
+  border-color: ${props => (props.invalid ? themeVal('color.danger')
+    : _rgba(themeVal('color.base'), 0.16))};
+  border-radius: ${themeVal('shape.rounded')};
+  border-style: solid;
+  border-width: ${props => (props.invalid ? multiply(themeVal('layout.border'), 2)
+    : themeVal('layout.border'))};
+  margin-bottom: 1rem;
+`;
+
 const EditorContainer = styled.div`
   background-color: ${themeVal('color.surface')};
-  border: 1px solid ${themeVal('color.gray')};
-  border-bottom-left-radius: ${multiply(themeVal('layout.space'), 0.25)};
-  border-bottom-right-radius: ${multiply(themeVal('layout.space'), 0.25)};
+  border-bottom-left-radius: ${themeVal('shape.rounded')};
+  border-bottom-right-radius: ${themeVal('shape.rounded')};
   padding: 1rem 3rem;
 `;
 
@@ -72,9 +85,9 @@ function renderMark(props, editor, next) {
 export class FreeEditor extends React.Component {
   constructor(props) {
     super(props);
-    const { value } = props;
+    const { initialValue } = props;
     this.state = {
-      value,
+      value: Value.fromJSON(getValidOrBlankDocument(initialValue)),
       activeTool: null
     };
     this.onChange = this.onChange.bind(this);
@@ -97,14 +110,23 @@ export class FreeEditor extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { value, uploadedFile } = nextProps;
-    const { uploadedFile: previousUploadedFile } = this.props;
+    const {
+      initialValue,
+      uploadedFile
+    } = nextProps;
+    const {
+      initialValue: previousInitialValue,
+      uploadedFile: previousUploadedFile
+    } = this.props;
+
     if (uploadedFile !== previousUploadedFile) {
       this.setState({
         activeTool: image
       });
-    } else {
-      this.setState({ value });
+    } else if (initialValue !== previousInitialValue) {
+      this.setState({
+        value: Value.fromJSON(getValidOrBlankDocument(initialValue))
+      });
     }
   }
 
@@ -354,80 +376,97 @@ export class FreeEditor extends React.Component {
 
     const {
       className,
+      inlineSaveBtn,
+      invalid,
       uploadFile: upload
     } = this.props;
 
     return (
       <div className={className}>
-        <Toolbar>
-          <ToolbarLabel>Insert</ToolbarLabel>
-          <ButtonGroup orientation="horizontal">
-            <EquationBtn
-              id={equation}
-              onClick={() => { this.selectTool(equation); }}
-              active={activeTool === equation}
-              variation="base-plain"
-              size="large"
-            >
-              Equation
-            </EquationBtn>
+        <EditorStatus invalid={invalid}>
+          <Toolbar>
+            <ToolbarLabel>Insert</ToolbarLabel>
+            <ButtonGroup orientation="horizontal">
+              <EquationBtn
+                id={equation}
+                onClick={() => { this.selectTool(equation); }}
+                active={activeTool === equation}
+                variation="base-plain"
+                size="large"
+              >
+                Equation
+              </EquationBtn>
 
-            <ParagraphBtn
-              id={paragraph}
-              onClick={() => { this.selectTool(paragraph); }}
-              active={activeTool === paragraph}
-              variation="base-plain"
-              size="large"
-            >
-              Paragraph
-            </ParagraphBtn>
+              <ParagraphBtn
+                id={paragraph}
+                onClick={() => { this.selectTool(paragraph); }}
+                active={activeTool === paragraph}
+                variation="base-plain"
+                size="large"
+              >
+                Paragraph
+              </ParagraphBtn>
 
-            <TableBtn
-              id={table}
-              onClick={() => { this.selectTool(table); }}
-              active={activeTool === table}
-              variation="base-plain"
-              size="large"
-            >
-              Table
-            </TableBtn>
-            <EditorFigureTool
-              upload={upload}
-              active={activeTool === image}
-              icon={{ icon: 'picture' }}
+              <TableBtn
+                id={table}
+                onClick={() => { this.selectTool(table); }}
+                active={activeTool === table}
+                variation="base-plain"
+                size="large"
+              >
+                Table
+              </TableBtn>
+              <EditorFigureTool
+                upload={upload}
+                active={activeTool === image}
+                icon={{ icon: 'picture' }}
+              />
+              {inlineSaveBtn && (
+                <Button
+                  onClick={save}
+                  variation="base-plain"
+                  size="large"
+                >
+                  Save
+                </Button>
+              )}
+            </ButtonGroup>
+          </Toolbar>
+          <EditorContainer>
+            <Editor
+              ref={editorValue => (this.editor = editorValue)}
+              value={value}
+              onChange={onChange}
+              onMouseDown={onMouseDown}
+              onKeyDown={onKeyDown}
+              renderNode={renderNode}
+              renderMark={renderMark}
+              plugins={plugins}
             />
-            <Button
-              onClick={save}
-              variation="base-plain"
-              size="large"
-            >
-              Save
-            </Button>
-          </ButtonGroup>
-        </Toolbar>
-        <EditorContainer>
-          <Editor
-            ref={editorValue => (this.editor = editorValue)}
-            value={value}
-            onChange={onChange}
-            onMouseDown={onMouseDown}
-            onKeyDown={onKeyDown}
-            renderNode={renderNode}
-            renderMark={renderMark}
-            plugins={plugins}
-          />
-        </EditorContainer>
+          </EditorContainer>
+        </EditorStatus>
+        {!inlineSaveBtn && (
+          <Button
+            onClick={save}
+            variation="base-raised-light"
+            size="large"
+          >
+            Save
+          </Button>
+        )}
       </div>
     );
   }
 }
 
 FreeEditor.propTypes = {
-  value: ImmutableTypes.record.isRequired,
+  initialValue: PropTypes.object,
   save: PropTypes.func.isRequired,
   className: PropTypes.string,
   uploadFile: PropTypes.func.isRequired,
-  uploadedFile: PropTypes.string
+  uploadedFile: PropTypes.string,
+  inlineSaveBtn: PropTypes.bool,
+  invalid: PropTypes.bool
 };
 
 const StyledFreeEditor = styled(FreeEditor)`

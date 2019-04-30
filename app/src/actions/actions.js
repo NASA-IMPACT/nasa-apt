@@ -24,6 +24,21 @@ export function createContact(contact) {
   };
 }
 
+export function createAtbd() {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/rpc/create_atbd_version`,
+      method: 'POST',
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ATBD,
+        types.CREATE_ATBD_SUCCESS,
+        types.CREATE_ATBD_FAIL
+      ]
+    }
+  };
+}
+
 export function createAtbdVersion(atbd_version) {
   return {
     [RSAA]: {
@@ -77,7 +92,7 @@ export function fetchAtbdVersion(versionObject) {
 export function fetchAtbds() {
   return {
     [RSAA]: {
-      endpoint: `${BASE_URL}/atbds?select=*,contacts(*)`,
+      endpoint: `${BASE_URL}/atbds?select=*,contacts(*),atbd_versions(atbd_id, atbd_version, status)`,
       method: 'GET',
       types: [
         types.FETCH_ATBDS,
@@ -206,6 +221,72 @@ export function deleteAtbdContact(atbd_id, contact_id) {
         types.DELETE_ATBD_CONTACT,
         types.DELETE_ATBD_CONTACT_SUCCESS,
         types.DELETE_ATBD_CONTACT_FAIL
+      ]
+    }
+  };
+}
+
+export function fetchAlgorithmImplmentations(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}&select=atbd_version,atbd(*),algorithm_implementations(*)`,
+      method: 'GET',
+      headers: returnObjectHeaders,
+      types: [
+        types.FETCH_ALGORITHM_IMPLEMENTATION,
+        types.FETCH_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.FETCH_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
+export function createAlgorithmImplementation(implementation) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_implementations`,
+      method: 'POST',
+      body: JSON.stringify(implementation),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ALGORITHM_IMPLEMENTATION,
+        types.CREATE_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.CREATE_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
+export function updateAlgorithmImplementation(id, implementation) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_implementations`
+        + `?algorithm_implementation_id=eq.${id}`,
+      method: 'PATCH',
+      body: JSON.stringify(implementation),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_ALGORITHM_IMPLEMENTATION,
+        types.UPDATE_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.UPDATE_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
+export function deleteAlgorithmImplementation(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_implementations`
+        + `?algorithm_implementation_id=eq.${id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ALGORITHM_IMPLEMENTATION,
+        types.DELETE_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.DELETE_ALGORITHM_IMPLEMENTATION_FAIL
       ]
     }
   };

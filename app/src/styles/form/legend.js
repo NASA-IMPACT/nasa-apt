@@ -12,8 +12,6 @@ const FormLegend = styled.legend`
   align-items: center;
   width: 100%;
   color: ${_rgba(themeVal('type.base.color'), 0.64)};
-  font-size: 0.875rem;
-  line-height: 1rem;
   border: 0;
   padding: ${divide(themeVal('layout.border'), 4)} 0;
 `;

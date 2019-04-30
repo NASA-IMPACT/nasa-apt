@@ -16,17 +16,37 @@ const { AlgorithmDescription } = proxyquire(
 configure({ adapter: new Adapter() });
 
 test('AlgorithmDescription editor values', (t) => {
+  const atbdVersion = {
+    atbd: {},
+    atbd_id: 0,
+    atbd_version: 1
+  };
   const wrapper = shallow(
+    <AlgorithmDescription
+      atbdVersion={atbdVersion}
+      save={() => {}}
+      createAlgorithmInputVariable={() => {}}
+      createAlgorithmOutputVariable={() => {}}
+      deleteAlgorithmInputVariable={() => {}}
+      deleteAlgorithmOutputVariable={() => {}}
+      updateAtbdVersion={() => {}}
+    />
+  );
+  const editor = wrapper.find(FreeEditor).first();
+  t.equal(editor.props().initialValue, undefined,
+    'Initializes the FreeEditor without a defined initialValue');
+
+  const loadingWrapper = shallow(
     <AlgorithmDescription
       save={() => {}}
       createAlgorithmInputVariable={() => {}}
       createAlgorithmOutputVariable={() => {}}
       deleteAlgorithmInputVariable={() => {}}
       deleteAlgorithmOutputVariable={() => {}}
+      updateAtbdVersion={() => {}}
     />
   );
-  const editor = wrapper.find(FreeEditor).first();
-  t.equal(editor.props().value.getIn(['document', 'nodes']).size, 1,
-    'Initializes the FreeEditor with the blankDocument value with no atbd_version');
+  const div = loadingWrapper.find('div').first();
+  t.equal(div.text(), 'Loading', 'Returns Loading div when atbdVersion is loading');
   t.end();
 });
