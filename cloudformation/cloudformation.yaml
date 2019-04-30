@@ -619,4 +619,3 @@ Outputs:
     Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
     Export:
       Name: !Sub '${AWS::StackName}-PostgRESTEndpoint'
-
