@@ -13,6 +13,7 @@ const Btn = styled(Button)`
 `;
 
 export default function InfoButton({ text }) {
+  if (!text) return null;
   return (
     <React.Fragment>
       <Btn
