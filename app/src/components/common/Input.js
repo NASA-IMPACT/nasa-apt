@@ -38,11 +38,7 @@ const InlineInput = styled.input`
 export const InputSubmit = styled(InlineInput)`
   box-shadow: ${themeVal('boxShadow.input')};
   font-weight: bold;
-`;
-
-export const InputWrapper = styled.div`
   grid-row-start: 4;
-  padding: 2rem;
 `;
 
 export const SmallTextInput = styled(InlineInput)`

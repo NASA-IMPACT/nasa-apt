@@ -13,8 +13,7 @@ import validateEmail from '../schemas/validateEmail';
 import Select from './common/Select';
 import Input, {
   InputFormGroup,
-  InputSubmit,
-  InputWrapper
+  InputSubmit
 } from './common/Input';
 
 const validator = new jsonschema.Validator();
@@ -100,13 +99,11 @@ export const InnerContactForm = (props) => {
         error={errors[contact_mechanism_value]}
         touched={touched[contact_mechanism_value]}
       />
-      <InputWrapper>
-        <InputSubmit
-          type="submit"
-          disabled={!submitEnabled}
-          value="Create Contact"
-        />
-      </InputWrapper>
+      <InputSubmit
+        type="submit"
+        disabled={!submitEnabled}
+        value="Create Contact"
+      />
     </InputFormGroup>
   );
 };
