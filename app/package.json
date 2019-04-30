@@ -41,12 +41,14 @@
     "uuid": "^3.3.2"
   },
   "scripts": {
-    "start": "yarn watch_collecticons & react-scripts start",
-    "build": "yarn collecticons && react-scripts build",
+    "start": "yarn watch_collecticons & yarn watch_static & react-scripts start",
+    "build": "yarn collecticons && yarn process-static && react-scripts build",
     "test": "NODE_ENV=test ./node_modules/.bin/tape ./test/test.js",
     "eject": "react-scripts eject",
     "collecticons": "collecticons compile ./src/assets/icons/collecticons --no-preview --catalog-dest ./src/styles/collecticons --experimental-font-on-catalog --experimental-disable-styles",
     "watch_collecticons": "watch 'yarn collecticons' ../app/src/assets/icons/**",
+    "process-static": "node ./process-static.js",
+    "watch_static": "watch 'yarn process-static' ../app/static",
     "lint": "eslint 'src/**/*.js'"
   },
   "eslintConfig": {
