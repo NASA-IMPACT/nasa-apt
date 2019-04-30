@@ -21,7 +21,8 @@ const types = createTypes([
   ...async('CREATE_ALGORITHM_IMPLEMENTATION'),
   ...async('UPDATE_ALGORITHM_IMPLEMENTATION'),
   ...async('DELETE_ALGORITHM_IMPLEMENTATION'),
-  ...async('UPLOAD_FILE')
+  ...async('UPLOAD_FILE'),
+  ...async('FETCH_STATIC')
 ]);
 
 export default types;

@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import isUrl from 'is-url';
 import styled from 'styled-components';
 
 import collecticon from '../styles/collecticons';
 import FreeEditor from './FreeEditor';
+import InfoButton from './common/InfoButton';
+import Form from '../styles/form/form';
+import FormToolbar from '../styles/form/toolbar';
 import {
   FormGroup,
   FormGroupBody,
@@ -12,7 +16,8 @@ import {
 } from '../styles/form/group';
 import {
   FormFieldset,
-  FormFieldsetHeader
+  FormFieldsetHeader,
+  FormFieldsetBody
 } from '../styles/form/fieldset';
 import FormLegend from '../styles/form/legend';
 import FormLabel from '../styles/form/label';
@@ -80,7 +85,8 @@ class AlgorithmImplementationForm extends Component {
       id,
       label,
       executionDescription,
-      del
+      del,
+      t
     } = this.props;
     const {
       accessUrl,
@@ -93,8 +99,8 @@ class AlgorithmImplementationForm extends Component {
       onSave
     } = this;
     return (
-      <FormFieldset>
-        <FormGroup>
+      <Form>
+        <FormFieldset>
           <FormFieldsetHeader>
             <FormLegend>{label}</FormLegend>
             {!!del && (
@@ -108,44 +114,57 @@ class AlgorithmImplementationForm extends Component {
               </RemoveButton>
             )}
           </FormFieldsetHeader>
-          <FormGroupHeader>
-            <FormLabel htmlFor={`${id}-access`}>Access URL</FormLabel>
-            {accessUrlInvalid && (
-              <FormHelper>
-                <FormHelperMessage>Please enter a valid URL.</FormHelperMessage>
-              </FormHelper>
-            )}
-          </FormGroupHeader>
-          <FormGroupBody>
-            <FormInput
-              type="text"
-              size="large"
-              id={`${id}-access`}
-              placeholder="Enter an access URL"
-              value={accessUrl}
-              onChange={onAccessUrlChange}
-              onBlur={onAccessUrlBlur}
-              invalid={accessUrlInvalid}
-            />
-          </FormGroupBody>
 
-          <FormGroupHeader>
-            <FormLabel>Execution Description</FormLabel>
-            {executionDescriptionInvalid && (
-              <FormHelper>
-                <FormHelperMessage>This field is required.</FormHelperMessage>
-              </FormHelper>
-            )}
-          </FormGroupHeader>
-          <FormGroupBody>
-            <FreeEditor
-              initialValue={executionDescription}
-              save={onSave}
-              invalid={executionDescriptionInvalid}
-            />
-          </FormGroupBody>
-        </FormGroup>
-      </FormFieldset>
+          <FormFieldsetBody>
+            <FormGroup>
+              <FormGroupHeader>
+                <FormLabel htmlFor={`${id}-access`}>Access URL</FormLabel>
+                <FormToolbar>
+                  <InfoButton text={t.access_url} />
+                </FormToolbar>
+              </FormGroupHeader>
+              <FormGroupBody>
+                <FormInput
+                  type="text"
+                  size="large"
+                  id={`${id}-access`}
+                  placeholder="Enter an access URL"
+                  value={accessUrl}
+                  onChange={onAccessUrlChange}
+                  onBlur={onAccessUrlBlur}
+                  invalid={accessUrlInvalid}
+                />
+                {accessUrlInvalid && (
+                  <FormHelper>
+                    <FormHelperMessage>Please enter a valid URL.</FormHelperMessage>
+                  </FormHelper>
+                )}
+              </FormGroupBody>
+            </FormGroup>
+            <FormGroup>
+              <FormGroupHeader>
+                <FormLabel>Execution Description</FormLabel>
+                <FormToolbar>
+                  <InfoButton text={t.execution_description} />
+                </FormToolbar>
+              </FormGroupHeader>
+              <FormGroupBody>
+                <FreeEditor
+                  initialValue={executionDescription}
+                  save={onSave}
+                  invalid={executionDescriptionInvalid}
+                />
+                {executionDescriptionInvalid && (
+                  <FormHelper>
+                    <FormHelperMessage>This field is required.</FormHelperMessage>
+                  </FormHelper>
+                )}
+              </FormGroupBody>
+            </FormGroup>
+          </FormFieldsetBody>
+
+        </FormFieldset>
+      </Form>
     );
   }
 }
@@ -156,7 +175,12 @@ AlgorithmImplementationForm.propTypes = {
   accessUrl: PropTypes.string,
   executionDescription: PropTypes.object,
   save: PropTypes.func,
-  del: PropTypes.func
+  del: PropTypes.func,
+  t: PropTypes.object
 };
 
-export default AlgorithmImplementationForm;
+const mapStateToProps = state => ({
+  t: state.application.t ? state.application.t.algorithm_implementation : {}
+});
+
+export default connect(mapStateToProps)(AlgorithmImplementationForm);

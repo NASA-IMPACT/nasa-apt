@@ -6,13 +6,11 @@ import ContactForm from './ContactForm';
 import { Inpage } from './common/Inpage';
 import EditPage from './common/EditPage';
 import RemovableListItem from './common/RemovableListItem';
-import {
-  FormGroup,
-  FormGroupBody
-} from '../styles/form/group';
+import Form from '../styles/form/form';
 import {
   FormFieldset,
-  FormFieldsetHeader
+  FormFieldsetHeader,
+  FormFieldsetBody
 } from '../styles/form/fieldset';
 import FormLegend from '../styles/form/legend';
 import { createAtbdContact, deleteAtbdContact } from '../actions/actions';
@@ -24,7 +22,8 @@ const Contacts = (props) => {
     contacts,
     selectedAtbd,
     createAtbdContact: dispatchCreateAtbdContact,
-    deleteAtbdContact: dispatchDeleteAtbdContact
+    deleteAtbdContact: dispatchDeleteAtbdContact,
+    t
   } = props;
   let returnValue;
   if (selectedAtbd) {
@@ -67,43 +66,44 @@ const Contacts = (props) => {
           step={3}
         >
           <h2>Contacts</h2>
-          <FormFieldset>
-            <FormGroup>
+          <Form>
+            <FormFieldset>
               <FormFieldsetHeader>
                 <FormLegend>Existing contacts</FormLegend>
               </FormFieldsetHeader>
-              <Select
-                name="existing-contact"
-                label="Select contact"
-                options={contactOptions}
-                onChange={e => dispatchCreateAtbdContact({
-                  atbd_id: selectedAtbd.atbd_id,
-                  contact_id: e.target.value
-                })}
-              />
-            </FormGroup>
-          </FormFieldset>
+              <FormFieldsetBody>
+                <Select
+                  name="existing-contact"
+                  label="Select contact"
+                  options={contactOptions}
+                  onChange={e => dispatchCreateAtbdContact({
+                    atbd_id: selectedAtbd.atbd_id,
+                    contact_id: e.target.value
+                  })}
+                  info={t.contact}
+                />
+              </FormFieldsetBody>
+            </FormFieldset>
+          </Form>
 
           <FormFieldset>
-            <FormGroup>
-              <FormFieldsetHeader>
-                <FormLegend>Create new contacts</FormLegend>
-              </FormFieldsetHeader>
+            <FormFieldsetHeader>
+              <FormLegend>Create new contacts</FormLegend>
+            </FormFieldsetHeader>
+            <FormFieldsetBody>
               <ContactForm />
-            </FormGroup>
+            </FormFieldsetBody>
           </FormFieldset>
 
           <FormFieldset>
-            <FormGroup>
-              <FormFieldsetHeader>
-                <FormLegend>ATBD contacts</FormLegend>
-              </FormFieldsetHeader>
-              <FormGroupBody>
-                <ul>
-                  {atbdContactItems}
-                </ul>
-              </FormGroupBody>
-            </FormGroup>
+            <FormFieldsetHeader>
+              <FormLegend>Existing contacts</FormLegend>
+            </FormFieldsetHeader>
+            <FormFieldsetBody>
+              <ul>
+                {atbdContactItems}
+              </ul>
+            </FormFieldsetBody>
           </FormFieldset>
         </EditPage>
       </Inpage>
@@ -127,18 +127,21 @@ Contacts.propTypes = {
     contacts: PropTypes.array
   }),
   createAtbdContact: PropTypes.func.isRequired,
-  deleteAtbdContact: PropTypes.func.isRequired
+  deleteAtbdContact: PropTypes.func.isRequired,
+  t: PropTypes.object
 };
 
 const mapStateToProps = (state) => {
   const {
     contacts,
-    selectedAtbd
+    selectedAtbd,
+    t
   } = state.application;
 
   return {
     contacts,
-    selectedAtbd
+    selectedAtbd,
+    t: t ? t.contact_information : {}
   };
 };
 

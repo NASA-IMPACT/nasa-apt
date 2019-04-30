@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import ReactTooltip from 'react-tooltip';
-import collecticon from '../../styles/collecticons';
 import { themeVal } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
 
@@ -12,16 +10,17 @@ import {
   FormGroupBody
 } from '../../styles/form/group';
 import FormToolbar from '../../styles/form/toolbar';
+import InfoButton from './InfoButton';
 import FormLabel from '../../styles/form/label';
 import {
   FormHelper,
   FormHelperMessage
 } from '../../styles/form/helper';
-import Button from '../../styles/button/button';
 
 export const InputFormGroup = styled.form`
   display: grid;
   align-items: start;
+  grid-gap: 0.25rem 0.5rem;
   grid-template-columns: repeat(3, 1fr);
   justify-content: space-between;
 `;
@@ -38,20 +37,10 @@ const InlineInput = styled.input`
 export const InputSubmit = styled(InlineInput)`
   box-shadow: ${themeVal('boxShadow.input')};
   font-weight: bold;
-`;
-
-export const InputWrapper = styled.div`
   grid-row-start: 4;
-  padding: 2rem;
 `;
 
 export const SmallTextInput = styled(InlineInput)`
-`;
-
-const InfoButton = styled(Button)`
-  &::before {
-    ${collecticon('circle-information')}
-  }
 `;
 
 const Input = (props) => {
@@ -75,15 +64,7 @@ const Input = (props) => {
         <FormLabel htmlFor={id}>{label}</FormLabel>
         {info && (
         <FormToolbar>
-          <InfoButton
-            variation="base-plain"
-            size="small"
-            hideText
-            data-tip={info}
-          >
-            Learn more
-          </InfoButton>
-          <ReactTooltip effect="solid" className="type-primary" />
+          <InfoButton text={info} />
         </FormToolbar>
         )}
       </FormGroupHeader>

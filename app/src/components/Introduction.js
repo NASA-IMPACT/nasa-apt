@@ -6,6 +6,9 @@ import { updateAtbdVersion } from '../actions/actions';
 import FreeEditor from './FreeEditor';
 import { Inpage } from './common/Inpage';
 import EditPage from './common/EditPage';
+import InfoButton from './common/InfoButton';
+import Form from '../styles/form/form';
+import FormToolbar from '../styles/form/toolbar';
 import {
   FormGroup,
   FormGroupBody,
@@ -13,7 +16,8 @@ import {
 } from '../styles/form/group';
 import {
   FormFieldset,
-  FormFieldsetHeader
+  FormFieldsetHeader,
+  FormFieldsetBody
 } from '../styles/form/fieldset';
 import FormLabel from '../styles/form/label';
 import FormLegend from '../styles/form/legend';
@@ -21,7 +25,8 @@ import FormLegend from '../styles/form/legend';
 export function Introduction(props) {
   const {
     atbdVersion = {},
-    update
+    update,
+    t
   } = props;
 
   const {
@@ -43,46 +48,58 @@ export function Introduction(props) {
         numSteps={7}
       >
         <h2>Introduction</h2>
-        <FormFieldset>
-          <FormGroup>
+        <Form>
+          <FormFieldset>
             <FormFieldsetHeader>
               <FormLegend>Introduction</FormLegend>
             </FormFieldsetHeader>
-            <FormGroupHeader>
-              <FormLabel>Introduce the algorithm</FormLabel>
-            </FormGroupHeader>
-            <FormGroupBody>
-              <FreeEditor
-                initialValue={introduction}
-                save={(document) => {
-                  update(atbd_id, atbd_version, {
-                    introduction: document
-                  });
-                }}
-              />
-            </FormGroupBody>
-          </FormGroup>
-        </FormFieldset>
+            <FormFieldsetBody>
+              <FormGroup>
+                <FormGroupHeader>
+                  <FormLabel>Introduce the algorithm</FormLabel>
+                  <FormToolbar>
+                    <InfoButton text={t.introduction} />
+                  </FormToolbar>
+                </FormGroupHeader>
+                <FormGroupBody>
+                  <FreeEditor
+                    initialValue={introduction}
+                    save={(document) => {
+                      update(atbd_id, atbd_version, {
+                        introduction: document
+                      });
+                    }}
+                  />
+                </FormGroupBody>
+              </FormGroup>
+            </FormFieldsetBody>
+          </FormFieldset>
+        </Form>
 
         <FormFieldset>
-          <FormGroup>
-            <FormFieldsetHeader>
-              <FormLegend>Historical Perspective</FormLegend>
-            </FormFieldsetHeader>
-            <FormGroupHeader>
-              <FormLabel>Describe the historical perspective</FormLabel>
-            </FormGroupHeader>
-            <FormGroupBody>
-              <FreeEditor
-                initialValue={historical_perspective}
-                save={(document) => {
-                  update(atbd_id, atbd_version, {
-                    historical_perspective: document
-                  });
-                }}
-              />
-            </FormGroupBody>
-          </FormGroup>
+          <FormFieldsetHeader>
+            <FormLegend>Historical Perspective</FormLegend>
+          </FormFieldsetHeader>
+          <FormFieldsetBody>
+            <FormGroup>
+              <FormGroupHeader>
+                <FormLabel>Describe the historical perspective</FormLabel>
+                <FormToolbar>
+                  <InfoButton text={t.historical_perspective} />
+                </FormToolbar>
+              </FormGroupHeader>
+              <FormGroupBody>
+                <FreeEditor
+                  initialValue={historical_perspective}
+                  save={(document) => {
+                    update(atbd_id, atbd_version, {
+                      historical_perspective: document
+                    });
+                  }}
+                />
+              </FormGroupBody>
+            </FormGroup>
+          </FormFieldsetBody>
         </FormFieldset>
       </EditPage>
     </Inpage>
@@ -91,11 +108,13 @@ export function Introduction(props) {
 
 Introduction.propTypes = {
   atbdVersion: PropTypes.object,
-  update: PropTypes.func
+  update: PropTypes.func,
+  t: PropTypes.object
 };
 
 const mapStateToProps = state => ({
-  atbdVersion: state.application.atbdVersion
+  atbdVersion: state.application.atbdVersion,
+  t: state.application.t ? state.application.t.introduction : {}
 });
 
 const mapDispatchToProps = {
