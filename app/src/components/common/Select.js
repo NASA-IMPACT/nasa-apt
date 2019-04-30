@@ -1,9 +1,6 @@
 import React from 'react';
 import ReactSelect from 'react-select';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import ReactTooltip from 'react-tooltip';
-import collecticon from '../../styles/collecticons';
 
 import {
   FormGroup,
@@ -16,13 +13,7 @@ import {
   FormHelper,
   FormHelperMessage
 } from '../../styles/form/helper';
-import Button from '../../styles/button/button';
-
-const InfoButton = styled(Button)`
-  &::before {
-    ${collecticon('circle-information')}
-  }
-`;
+import InfoButton from './InfoButton';
 
 const Select = (props) => {
   const {
@@ -50,15 +41,7 @@ const Select = (props) => {
         <FormLabel htmlFor={id}>{label}</FormLabel>
         {info && (
           <FormToolbar>
-            <InfoButton
-              variation="base-plain"
-              size="small"
-              hideText
-              data-tip={info}
-            >
-              Learn more
-            </InfoButton>
-            <ReactTooltip effect="solid" className="type-primary" />
+            <InfoButton text={info} />
           </FormToolbar>
         )}
       </FormGroupHeader>

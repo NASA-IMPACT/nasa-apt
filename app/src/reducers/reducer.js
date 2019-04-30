@@ -6,7 +6,7 @@ const initialState = {
   uploadedFile: undefined,
   atbdVersion: undefined,
   selectedAtbd: undefined,
-  static: undefined
+  t: undefined
 };
 
 const deleteAtbdVersionChildItem = (schemaKey, state, action) => {
@@ -175,7 +175,7 @@ export default function (state = initialState, action) {
       const { payload } = action;
       return {
         ...state,
-        static: payload
+        t: payload
       };
     }
 

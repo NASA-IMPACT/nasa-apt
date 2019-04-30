@@ -13,9 +13,13 @@ import AlgorithmVariables from './AlgorithmVariables';
 import AlgorithmVariableForm from './AlgorithmVariableForm';
 import { Inpage } from './common/Inpage';
 import EditPage from './common/EditPage';
+import InfoButton from './common/InfoButton';
+import Form from '../styles/form/form';
+import FormToolbar from '../styles/form/toolbar';
 import {
   FormFieldset,
-  FormFieldsetHeader
+  FormFieldsetHeader,
+  FormFieldsetBody
 } from '../styles/form/fieldset';
 import {
   FormGroup,
@@ -32,7 +36,8 @@ export const AlgorithmDescription = (props) => {
     createAlgorithmInputVariable: createInputVariable,
     createAlgorithmOutputVariable: createOutputVariable,
     deleteAlgorithmInputVariable: deleteInputVariable,
-    deleteAlgorithmOutputVariable: deleteOutputVariable
+    deleteAlgorithmOutputVariable: deleteOutputVariable,
+    t
   } = props;
 
   let returnValue;
@@ -56,71 +61,92 @@ export const AlgorithmDescription = (props) => {
           step={4}
         >
           <h2>Algorithm Description</h2>
-          <FormFieldset>
-            <FormGroup>
+          <Form>
+            <FormFieldset>
               <FormFieldsetHeader>
                 <FormLegend>Algorithm</FormLegend>
               </FormFieldsetHeader>
-              <FormGroupHeader>
-                <FormLabel>Describe the scientific theory</FormLabel>
-              </FormGroupHeader>
-              <FormGroupBody>
-                <FreeEditor
-                  initialValue={scientific_theory}
-                  save={(document) => {
-                    update(atbd_id, atbd_version, {
-                      scientific_theory: document
-                    });
-                  }}
-                />
-              </FormGroupBody>
-            </FormGroup>
-          </FormFieldset>
+              <FormFieldsetBody>
+                <FormGroup>
+                  <FormGroupHeader>
+                    <FormLabel>Describe the scientific theory</FormLabel>
+                    <FormToolbar>
+                      <InfoButton text={t.scientific_theory} />
+                    </FormToolbar>
+                  </FormGroupHeader>
+                  <FormGroupBody>
+                    <FreeEditor
+                      initialValue={scientific_theory}
+                      save={(document) => {
+                        update(atbd_id, atbd_version, {
+                          scientific_theory: document
+                        });
+                      }}
+                    />
+                  </FormGroupBody>
+                </FormGroup>
+              </FormFieldsetBody>
+            </FormFieldset>
+          </Form>
 
           <FormFieldset>
-            <FormGroup>
-              <FormFieldsetHeader>
-                <FormLegend>Scientific Theory Assumptions</FormLegend>
-              </FormFieldsetHeader>
-              <FormGroupHeader>
-                <FormLabel>Input variables</FormLabel>
-              </FormGroupHeader>
-              <FormGroupBody>
-                <AlgorithmVariables
-                  schemaKey="algorithm_input_variable"
-                  variables={algorithm_input_variables}
-                  deleteVariable={deleteInputVariable}
-                />
-              </FormGroupBody>
-              {atbd_id && atbd_version && (
-                <AlgorithmVariableForm
-                  schemaKey="algorithm_input_variable"
-                  atbd_id={atbd_id}
-                  atbd_version={atbd_version}
-                  create={(data) => { createInputVariable(data); }}
-                />
-              )}
+            <FormFieldsetHeader>
+              <FormLegend>Scientific Theory Assumptions</FormLegend>
+            </FormFieldsetHeader>
+            <FormFieldsetBody>
+              <FormGroup>
+                <FormGroupHeader>
+                  <FormLabel>Input variables</FormLabel>
+                </FormGroupHeader>
+                <FormGroupBody>
+                  <AlgorithmVariables
+                    schemaKey="algorithm_input_variable"
+                    variables={algorithm_input_variables}
+                    deleteVariable={deleteInputVariable}
+                  />
+                </FormGroupBody>
+                {atbd_id && atbd_version && (
+                  <AlgorithmVariableForm
+                    schemaKey="algorithm_input_variable"
+                    atbd_id={atbd_id}
+                    atbd_version={atbd_version}
+                    create={(data) => { createInputVariable(data); }}
+                    t={{
+                      name: t.input_variable_name,
+                      long_name: t.input_variable_long_name,
+                      unit: t.input_variable_unit
+                    }}
+                  />
+                )}
+              </FormGroup>
 
-              <FormGroupHeader>
-                <FormLabel>Output variables</FormLabel>
-              </FormGroupHeader>
-              <FormGroupBody>
-                <AlgorithmVariables
-                  schemaKey="algorithm_output_variable"
-                  variables={algorithm_output_variables}
-                  deleteVariable={deleteOutputVariable}
-                />
-              </FormGroupBody>
-              {atbd_id && atbd_version && (
-                <AlgorithmVariableForm
-                  schemaKey="algorithm_output_variable"
-                  atbd_id={atbd_id}
-                  atbd_version={atbd_version}
-                  create={(data) => { createOutputVariable(data); }}
-                />
-              )}
+              <FormGroup>
+                <FormGroupHeader>
+                  <FormLabel>Output variables</FormLabel>
+                </FormGroupHeader>
+                <FormGroupBody>
+                  <AlgorithmVariables
+                    schemaKey="algorithm_output_variable"
+                    variables={algorithm_output_variables}
+                    deleteVariable={deleteOutputVariable}
+                  />
+                </FormGroupBody>
+                {atbd_id && atbd_version && (
+                  <AlgorithmVariableForm
+                    schemaKey="algorithm_output_variable"
+                    atbd_id={atbd_id}
+                    atbd_version={atbd_version}
+                    create={(data) => { createOutputVariable(data); }}
+                    t={{
+                      name: t.output_variable_name,
+                      long_name: t.output_variable_long_name,
+                      unit: t.output_variable_unit
+                    }}
+                  />
+                )}
 
-            </FormGroup>
+              </FormGroup>
+            </FormFieldsetBody>
           </FormFieldset>
         </EditPage>
       </Inpage>
@@ -137,12 +163,16 @@ AlgorithmDescription.propTypes = {
   createAlgorithmInputVariable: PropTypes.func.isRequired,
   createAlgorithmOutputVariable: PropTypes.func.isRequired,
   deleteAlgorithmInputVariable: PropTypes.func.isRequired,
-  deleteAlgorithmOutputVariable: PropTypes.func.isRequired
+  deleteAlgorithmOutputVariable: PropTypes.func.isRequired,
+  t: PropTypes.object
 };
 
 const mapStateToProps = (state) => {
-  const { atbdVersion } = state.application;
-  return { atbdVersion };
+  const { atbdVersion, t } = state.application;
+  return {
+    atbdVersion,
+    t: t ? t.algorithm_description : {}
+  };
 };
 
 const mapDispatchToProps = {
