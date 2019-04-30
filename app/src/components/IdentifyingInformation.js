@@ -24,6 +24,7 @@ import {
   FormHelper,
   FormHelperMessage
 } from '../styles/form/helper';
+import Button from '../styles/button/button';
 import AddBtn from '../styles/button/add';
 
 export class IdentifyingInformation extends Component {
@@ -55,6 +56,7 @@ export class IdentifyingInformation extends Component {
     };
     this.onTextFieldChange = this.onTextFieldChange.bind(this);
     this.onTextFieldBlur = this.onTextFieldBlur.bind(this);
+    this.updateAtbdTitle = this.updateAtbdTitle.bind(this);
     this.toggleCitationForm = this.toggleCitationForm.bind(this);
   }
 
@@ -80,6 +82,16 @@ export class IdentifyingInformation extends Component {
     this.setState({
       [prop]: empty
     });
+  }
+
+  updateAtbdTitle() {
+    const {
+      updateAtbd: update,
+      atbd
+    } = this.props;
+    const { atbd_id } = atbd;
+    const { title } = this.state;
+    update(atbd_id, { title });
   }
 
   toggleCitationForm() {
@@ -284,7 +296,8 @@ export class IdentifyingInformation extends Component {
       } = this.state;
       const {
         onTextFieldChange,
-        onTextFieldBlur
+        onTextFieldBlur,
+        updateAtbdTitle
       } = this;
 
       const {
@@ -325,6 +338,13 @@ export class IdentifyingInformation extends Component {
                     onBlur={e => onTextFieldBlur(e, 'titleEmpty')}
                     invalid={titleEmpty}
                   />
+                  <Button
+                    onClick={updateAtbdTitle}
+                    variation="base-raised-light"
+                    size="large"
+                  >
+                    Save
+                  </Button>
                 </FormGroupBody>
               </FormGroup>
             </FormFieldset>
