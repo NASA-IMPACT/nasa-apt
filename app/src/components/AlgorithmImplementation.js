@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import uuid from 'uuid';
-import styled from 'styled-components';
 
 import {
   createAlgorithmImplementation,
@@ -14,14 +13,8 @@ import {
 } from './common/Inpage';
 import EditPage from './common/EditPage';
 import Button from '../styles/button/button';
-import collecticon from '../styles/collecticons';
+import AddBtn from '../styles/button/add';
 import AlgorithmImplementationForm from './AlgorithmImplementationForm';
-
-const AddBtn = styled(Button)`
-  ::before {
-    ${collecticon('plus')}
-  }
-`;
 
 export class AlgorithmImplementation extends Component {
   constructor(props) {
