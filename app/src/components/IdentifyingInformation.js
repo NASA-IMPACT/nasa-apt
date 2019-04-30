@@ -1,5 +1,10 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+
+import {
+  updateAtbd,
+} from '../actions/actions';
 
 import EditPage from './common/EditPage';
 import { Inpage } from './common/Inpage';
@@ -51,6 +56,17 @@ export class IdentifyingInformation extends Component {
     this.onTextFieldChange = this.onTextFieldChange.bind(this);
     this.onTextFieldBlur = this.onTextFieldBlur.bind(this);
     this.toggleCitationForm = this.toggleCitationForm.bind(this);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { atbd } = nextProps;
+    const { atbd: prevAtbd } = this.props;
+    // New ATBD fetch
+    if (atbd && atbd !== prevAtbd) {
+      this.setState({
+        title: atbd.title
+      });
+    }
   }
 
   onTextFieldChange(e, prop) {
@@ -252,124 +268,152 @@ export class IdentifyingInformation extends Component {
 
   render() {
     const {
-      title: atbdTitle,
-      titleEmpty,
-      doiName,
-      doiNameEmpty,
-      doiAuthority,
-      showCitationForm
-    } = this.state;
-    const {
-      onTextFieldChange,
-      onTextFieldBlur
-    } = this;
+      atbd
+    } = this.props;
 
     let returnValue;
-    let title = 'New ATBD';
 
-    returnValue = (
-      <Inpage>
-        <EditPage
-          title={title || ''}
-          id={1}
-          step={1}
-        >
-          <h2>Identifying Information</h2>
+    if (atbd) {
+      const {
+        title: atbdTitle,
+        titleEmpty,
+        doiName,
+        doiNameEmpty,
+        doiAuthority,
+        showCitationForm
+      } = this.state;
+      const {
+        onTextFieldChange,
+        onTextFieldBlur
+      } = this;
 
-          <FormFieldset>
-            <FormGroup>
-              <FormFieldsetHeader>
-                <FormLegend>General</FormLegend>
-              </FormFieldsetHeader>
-              <FormGroupHeader>
-                <FormLabel htmlFor="atbd-title">Title</FormLabel>
-                {titleEmpty && (
-                  <FormHelper>
-                    <FormHelperMessage>Please enter a title.</FormHelperMessage>
-                  </FormHelper>
-                )}
-              </FormGroupHeader>
-              <FormGroupBody>
-                <FormInput
-                  type="text"
-                  size="large"
-                  id="atbd-title"
-                  placeholder="Enter a title"
-                  value={atbdTitle}
-                  onChange={e => onTextFieldChange(e, 'title')}
-                  onBlur={e => onTextFieldBlur(e, 'titleEmpty')}
-                  invalid={titleEmpty}
-                />
-              </FormGroupBody>
-            </FormGroup>
-          </FormFieldset>
+      const {
+        title,
+        atbd_id
+      } = atbd;
 
-          <FormFieldset>
-            <FormGroup>
-              <FormFieldsetHeader>
-                <FormLegend>DOI</FormLegend>
-              </FormFieldsetHeader>
-              <FormGroupHeader>
-                <FormLabel htmlFor="atbd-doi-name">DOI</FormLabel>
-                {doiNameEmpty && (
-                  <FormHelper>
-                    <FormHelperMessage>Please enter a DOI name.</FormHelperMessage>
-                  </FormHelper>
-                )}
-              </FormGroupHeader>
-              <FormGroupBody>
-                <FormInput
-                  type="text"
-                  size="large"
-                  id="atbd-doi-name"
-                  placeholder="Enter a DOI name"
-                  value={doiName}
-                  onChange={e => onTextFieldChange(e, 'doiName')}
-                  onBlur={e => onTextFieldBlur(e, 'doiNameEmpty')}
-                  invalid={doiNameEmpty}
-                />
-              </FormGroupBody>
+      returnValue = (
+        <Inpage>
+          <EditPage
+            title={title || ''}
+            id={atbd_id}
+            step={1}
+          >
+            <h2>Identifying Information</h2>
 
-              <FormGroupHeader>
-                <FormLabel htmlFor="atbd-doi-authority">Authority</FormLabel>
-              </FormGroupHeader>
-              <FormGroupBody>
-                <FormInput
-                  type="text"
-                  size="large"
-                  id="atbd-doi-authority"
-                  placeholder="Enter a DOI authority"
-                  value={doiAuthority}
-                  onChange={e => onTextFieldChange(e, 'doiAuthority')}
-                />
-              </FormGroupBody>
-            </FormGroup>
-          </FormFieldset>
-
-          <FormFieldset>
-            <FormGroup>
-              <FormFieldsetHeader>
-                <FormLegend>Citation</FormLegend>
-              </FormFieldsetHeader>
-              {showCitationForm ? this.renderCitation() : (
+            <FormFieldset>
+              <FormGroup>
+                <FormFieldsetHeader>
+                  <FormLegend>General</FormLegend>
+                </FormFieldsetHeader>
+                <FormGroupHeader>
+                  <FormLabel htmlFor="atbd-title">Title</FormLabel>
+                  {titleEmpty && (
+                    <FormHelper>
+                      <FormHelperMessage>Please enter a title.</FormHelperMessage>
+                    </FormHelper>
+                  )}
+                </FormGroupHeader>
                 <FormGroupBody>
-                  <AddBtn
-                    variation="base-raised-light"
+                  <FormInput
+                    type="text"
                     size="large"
-                    onClick={this.toggleCitationForm}
-                  >
-                    Add a citation
-                  </AddBtn>
+                    id="atbd-title"
+                    placeholder="Enter a title"
+                    value={atbdTitle}
+                    onChange={e => onTextFieldChange(e, 'title')}
+                    onBlur={e => onTextFieldBlur(e, 'titleEmpty')}
+                    invalid={titleEmpty}
+                  />
                 </FormGroupBody>
-              )}
-            </FormGroup>
-          </FormFieldset>
-        </EditPage>
-      </Inpage>
-    );
+              </FormGroup>
+            </FormFieldset>
 
+            <FormFieldset>
+              <FormGroup>
+                <FormFieldsetHeader>
+                  <FormLegend>DOI</FormLegend>
+                </FormFieldsetHeader>
+                <FormGroupHeader>
+                  <FormLabel htmlFor="atbd-doi-name">DOI</FormLabel>
+                  {doiNameEmpty && (
+                    <FormHelper>
+                      <FormHelperMessage>Please enter a DOI name.</FormHelperMessage>
+                    </FormHelper>
+                  )}
+                </FormGroupHeader>
+                <FormGroupBody>
+                  <FormInput
+                    type="text"
+                    size="large"
+                    id="atbd-doi-name"
+                    placeholder="Enter a DOI name"
+                    value={doiName}
+                    onChange={e => onTextFieldChange(e, 'doiName')}
+                    onBlur={e => onTextFieldBlur(e, 'doiNameEmpty')}
+                    invalid={doiNameEmpty}
+                  />
+                </FormGroupBody>
+
+                <FormGroupHeader>
+                  <FormLabel htmlFor="atbd-doi-authority">Authority</FormLabel>
+                </FormGroupHeader>
+                <FormGroupBody>
+                  <FormInput
+                    type="text"
+                    size="large"
+                    id="atbd-doi-authority"
+                    placeholder="Enter a DOI authority"
+                    value={doiAuthority}
+                    onChange={e => onTextFieldChange(e, 'doiAuthority')}
+                  />
+                </FormGroupBody>
+              </FormGroup>
+            </FormFieldset>
+
+            <FormFieldset>
+              <FormGroup>
+                <FormFieldsetHeader>
+                  <FormLegend>Citation</FormLegend>
+                </FormFieldsetHeader>
+                {showCitationForm ? this.renderCitation() : (
+                  <FormGroupBody>
+                    <AddBtn
+                      variation="base-raised-light"
+                      size="large"
+                      onClick={this.toggleCitationForm}
+                    >
+                      Add a citation
+                    </AddBtn>
+                  </FormGroupBody>
+                )}
+              </FormGroup>
+            </FormFieldset>
+          </EditPage>
+        </Inpage>
+      );
+    } else {
+      returnValue = <div>Loading</div>;
+    }
     return returnValue;
   }
 }
 
-export default connect()(IdentifyingInformation);
+IdentifyingInformation.propTypes = {
+  updateAtbd: PropTypes.func,
+  atbd: PropTypes.object,
+};
+
+const mapStateToProps = (state) => {
+  const { application: app } = state;
+  const atbd = app.selectedAtbd;
+  return {
+    atbd
+  };
+};
+
+const mapDispatch = {
+  updateAtbd
+};
+
+export default connect(mapStateToProps, mapDispatch)(IdentifyingInformation);
