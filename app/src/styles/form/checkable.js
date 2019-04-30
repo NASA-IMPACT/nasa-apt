@@ -13,14 +13,17 @@ const _rgba = stylizeFunction(rgba);
 /**
  * Renders a FormCheckable component.
  *
- * @param {string} name (html prop) name to be used as `name` and `id` prop
- *                      of the element.
+ * @param {string} type Determines the type of input to render. Can be one of
+ *                      `checkbox` or `radio`
+ * @param {string} name (html prop) name to be used as `name` prop of
+ *                      the element
+ * @param {string} id (html prop) id to be used as `id` prop of the element
  * @param {string} title (html prop) Label's title attribute
  * @param {boolean} checked Whether or not the FormCheckable is checked
  * @param {func} onChange Change callbalck for the FormCheckable
- * @param {node} children Content of the label
+ * @param {node} children Textual content
  * @param {string} textPlacement Where to position the text. `left` or `right`
- *                  of the control.
+ *                  of the control. Default to `right`
  */
 
 const FormCheckableElement = (props) => {
