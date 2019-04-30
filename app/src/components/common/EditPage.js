@@ -22,6 +22,7 @@ import {
 
 import {
   atbdsedit,
+  identifying_information,
   introduction,
   contacts,
   drafts,
@@ -94,7 +95,7 @@ const EditPage = (props) => {
   const version = 1;
 
   const items = [
-    { display: 'Identifying information' },
+    { display: 'Identifying information', link: `/${atbdsedit}/${id}/${drafts}/${version}/${identifying_information}` },
     { display: 'Introduction', link: `/${atbdsedit}/${id}/${drafts}/${version}/${introduction}` },
     { display: 'Contact information', link: `/${atbdsedit}/${id}/${contacts}` },
     { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_description}` },
@@ -137,8 +138,6 @@ const EditPage = (props) => {
                 </DropdownList>
               </Dropdown>
             </Stepper>
-            <a href="#" title="Save document">Save</a>
-            <a href="#" title="Cancel edit">Cancel</a>
           </InpageToolbar>
         </InpageHeaderInner>
       </InpageHeader>
