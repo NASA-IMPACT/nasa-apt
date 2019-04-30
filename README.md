@@ -22,10 +22,10 @@ The API is accessible via [http://localhost:3000](http://localhost:3000).
 If you make changes to the database table structure defined in `init.sql` you
 will need to remove and rebuild the database docker image with the following commands.
 
-`docker-compose stop`
-`docker-compose rm`
-`docker rmi nasa_apt_db`
-`./startserver.sh`
+`docker-compose stop` /n
+`docker-compose rm` /n
+`docker rmi nasa_apt_db` /n
+`./startserver.sh` /n
 
 To deploy the AWS infrastructure for the application you will need an
 installation of the [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
@@ -33,8 +33,8 @@ with credentials which allow creating all the stack resources.
 
 To deploy the AWS infrastructure from the root directory run
 
-`cd cloudformation`
-`./deploy.sh`
+`cd cloudformation` /n
+`./deploy.sh` /n
 
 After the stack has been successfully deployed you can create the database
 schema and tables.  You will need an installation of the `psql` command line
@@ -45,6 +45,6 @@ client.  To create the schema and tables in the AWS RDS run
  To deploy the front end application to AWS using the stack resources you just
  created from the root directory run
 
-`cd app`
-`./deploy.sh`
+`cd app` /n
+`./deploy.sh` /n
 
