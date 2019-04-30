@@ -12,7 +12,6 @@ import {
   Inpage
 } from './common/Inpage';
 import EditPage from './common/EditPage';
-import Button from '../styles/button/button';
 import AddBtn from '../styles/button/add';
 import AlgorithmImplementationForm from './AlgorithmImplementationForm';
 

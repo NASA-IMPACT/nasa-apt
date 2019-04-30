@@ -4,6 +4,7 @@ import types from '../constants/action_types';
 import {
   atbds,
   atbdsedit,
+  identifying_information,
   introduction,
   contacts,
   drafts,
@@ -26,6 +27,11 @@ const locationMiddleware = store => next => async (action) => {
         store.dispatch(actions.fetchAtbd(pathComponents[2]));
         store.dispatch(actions.fetchContacts());
       }
+
+      if (pathComponents[3] === identifying_information) {
+        store.dispatch(actions.fetchAtbd(pathComponents[2]));
+      }
+
       if (pathComponents[3] === drafts) {
         if (pathComponents[5] === algorithm_description || pathComponents[5] === introduction
           || pathComponents[5] === algorithm_usage) {
