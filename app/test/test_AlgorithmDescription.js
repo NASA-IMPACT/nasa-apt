@@ -30,6 +30,7 @@ test('AlgorithmDescription editor values', (t) => {
       deleteAlgorithmInputVariable={() => {}}
       deleteAlgorithmOutputVariable={() => {}}
       updateAtbdVersion={() => {}}
+      t={{}}
     />
   );
   const editor = wrapper.find(FreeEditor).first();
@@ -44,6 +45,7 @@ test('AlgorithmDescription editor values', (t) => {
       deleteAlgorithmInputVariable={() => {}}
       deleteAlgorithmOutputVariable={() => {}}
       updateAtbdVersion={() => {}}
+      t={{}}
     />
   );
   const div = loadingWrapper.find('div').first();
