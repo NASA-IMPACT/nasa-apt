@@ -30,7 +30,6 @@ BaseButton.propTypes = {
   variation: T.string
 };
 
-
 BaseButton.defaultProps = {
   element: 'button',
   type: 'button',
