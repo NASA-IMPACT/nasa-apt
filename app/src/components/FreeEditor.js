@@ -22,7 +22,7 @@ import EditorTable from './EditorTable';
 import EditorFigureTool from './EditorFigureTool';
 import EditorFormattableText from './EditorFormattableText';
 import { getValidOrBlankDocument } from './editorBlankDocument';
-// import schema from './editorSchema';
+import schema from './editorSchema';
 import { themeVal, stylizeFunction } from '../styles/utils/general';
 import { multiply } from '../styles/utils/math';
 import Button from '../styles/button/button';
@@ -435,6 +435,7 @@ export class FreeEditor extends React.Component {
           <EditorContainer>
             <Editor
               ref={editorValue => (this.editor = editorValue)}
+              schema={schema}
               value={value}
               onChange={onChange}
               onMouseDown={onMouseDown}
