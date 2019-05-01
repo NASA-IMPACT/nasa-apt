@@ -39,10 +39,6 @@ export class IdentifyingInformation extends Component {
       title: '',
       titleEmpty: false,
 
-      doiName: '',
-      doiNameEmpty: false,
-      doiAuthority: '',
-
       // Hide the citation form by default,
       // as it's not required and also very long.
       showCitationForm: false
@@ -107,9 +103,6 @@ export class IdentifyingInformation extends Component {
       const {
         title: atbdTitle,
         titleEmpty,
-        doiName,
-        doiNameEmpty,
-        doiAuthority,
         showCitationForm
       } = this.state;
       const {
@@ -174,56 +167,6 @@ export class IdentifyingInformation extends Component {
                 </FormFieldsetBody>
               </FormFieldset>
             </Form>
-
-            <FormFieldset>
-              <FormFieldsetHeader>
-                <FormLegend>DOI</FormLegend>
-              </FormFieldsetHeader>
-              <FormFieldsetBody>
-                <FormGroup>
-                  <FormGroupHeader>
-                    <FormLabel htmlFor="atbd-doi-name">DOI</FormLabel>
-                    <FormToolbar>
-                      <InfoButton text={t.doi} />
-                    </FormToolbar>
-                  </FormGroupHeader>
-                  <FormGroupBody>
-                    <FormInput
-                      type="text"
-                      size="large"
-                      id="atbd-doi-name"
-                      placeholder="Enter a DOI name"
-                      value={doiName}
-                      onChange={e => onTextFieldChange(e, 'doiName')}
-                      onBlur={e => onTextFieldBlur(e, 'doiNameEmpty')}
-                      invalid={doiNameEmpty}
-                    />
-                    {doiNameEmpty && (
-                      <FormHelper>
-                        <FormHelperMessage>Please enter a DOI name.</FormHelperMessage>
-                      </FormHelper>
-                    )}
-                  </FormGroupBody>
-
-                  <FormGroupHeader>
-                    <FormLabel htmlFor="atbd-doi-authority">Authority</FormLabel>
-                    <FormToolbar>
-                      <InfoButton text={t.doi_authority} />
-                    </FormToolbar>
-                  </FormGroupHeader>
-                  <FormGroupBody>
-                    <FormInput
-                      type="text"
-                      size="large"
-                      id="atbd-doi-authority"
-                      placeholder="Enter a DOI authority"
-                      value={doiAuthority}
-                      onChange={e => onTextFieldChange(e, 'doiAuthority')}
-                    />
-                  </FormGroupBody>
-                </FormGroup>
-              </FormFieldsetBody>
-            </FormFieldset>
 
             <FormFieldset>
               <FormFieldsetHeader>

@@ -95,7 +95,7 @@ const EditPage = (props) => {
   const version = 1;
 
   const items = [
-    { display: 'Identifying information', link: `/${atbdsedit}/${id}/${identifying_information}` },
+    { display: 'Identifying information', link: `/${atbdsedit}/${id}/${drafts}/${version}/${identifying_information}` },
     { display: 'Introduction', link: `/${atbdsedit}/${id}/${drafts}/${version}/${introduction}` },
     { display: 'Contact information', link: `/${atbdsedit}/${id}/${contacts}` },
     { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_description}` },
