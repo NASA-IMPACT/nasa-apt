@@ -2,6 +2,7 @@
 import AWS from 'aws-sdk';
 import uuid from 'uuid/v1';
 import actions from '../constants/action_types';
+
 const endpoint = process.env.REACT_APP_S3_URI;
 const figuresBucket = process.env.REACT_APP_FIGURES_BUCKET;
 const region = process.env.REACT_APP_REGION;
