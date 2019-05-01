@@ -10,6 +10,8 @@ import {
 import FormLabel from '../styles/form/label';
 import FormInput from '../styles/form/input';
 import Button from '../styles/button/button';
+import InfoButton from './common/InfoButton';
+import FormToolbar from '../styles/form/toolbar';
 
 import {
   createCitation,
@@ -107,6 +109,8 @@ export class CitationForm extends Component {
       online_resource
     } = this.state;
 
+    const { t } = this.props;
+
     const {
       onTextFieldChange,
       saveCitation
@@ -116,6 +120,9 @@ export class CitationForm extends Component {
       <Form>
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-creators">Creators</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_creators} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -130,6 +137,9 @@ export class CitationForm extends Component {
 
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-editors">Editors</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_editors} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -144,6 +154,9 @@ export class CitationForm extends Component {
 
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-title">Title</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_title} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -158,6 +171,9 @@ export class CitationForm extends Component {
 
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-series">Series Name</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_series} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -172,6 +188,9 @@ export class CitationForm extends Component {
 
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-release-date">Release Date</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_release_date} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -186,6 +205,9 @@ export class CitationForm extends Component {
 
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-release-place">Release Place</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_release_place} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -200,6 +222,9 @@ export class CitationForm extends Component {
 
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-publisher">Publisher</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_publisher} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -214,6 +239,9 @@ export class CitationForm extends Component {
 
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-version">Version</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_version} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -228,6 +256,9 @@ export class CitationForm extends Component {
 
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-issue">Issue</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_issue} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -242,6 +273,9 @@ export class CitationForm extends Component {
 
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-details">Additional Details</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_additional_details} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -256,6 +290,9 @@ export class CitationForm extends Component {
 
         <FormGroupHeader>
           <FormLabel htmlFor="atbd-citation-url">Online Resource</FormLabel>
+          <FormToolbar>
+            <InfoButton text={t.citation_online_resource} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormInput
@@ -282,6 +319,7 @@ export class CitationForm extends Component {
 
 CitationForm.propTypes = {
   citation: PropTypes.object,
+  t: PropTypes.object,
   createCitation: PropTypes.func,
   updateCitation: PropTypes.func,
   atbd_id: PropTypes.number,
@@ -290,13 +328,14 @@ CitationForm.propTypes = {
 
 const mapStateToProps = (state) => {
   const { application: app } = state;
-  const { atbdVersion, atbdCitation: citation } = app;
+  const { atbdVersion, t, atbdCitation: citation } = app;
   const atbd_version = atbdVersion ? atbdVersion.atbd_version : null;
   const atbd_id = atbdVersion ? atbdVersion.atbd_id : null;
   return {
     atbd_id,
     atbd_version,
-    citation
+    citation,
+    t: t ? t.identifying_information : {}
   };
 };
 

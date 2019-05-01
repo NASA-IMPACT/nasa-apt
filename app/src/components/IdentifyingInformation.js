@@ -97,7 +97,8 @@ export class IdentifyingInformation extends Component {
   render() {
     const {
       atbd,
-      hasCitation
+      hasCitation,
+      t
     } = this.props;
 
     let returnValue;
@@ -140,6 +141,9 @@ export class IdentifyingInformation extends Component {
                   <FormGroup>
                     <FormGroupHeader>
                       <FormLabel htmlFor="atbd-title">Title</FormLabel>
+                      <FormToolbar>
+                        <InfoButton text={t.title} />
+                      </FormToolbar>
                       {titleEmpty && (
                         <FormHelper>
                           <FormHelperMessage>Please enter a title.</FormHelperMessage>
@@ -179,11 +183,9 @@ export class IdentifyingInformation extends Component {
                 <FormGroup>
                   <FormGroupHeader>
                     <FormLabel htmlFor="atbd-doi-name">DOI</FormLabel>
-                    {doiNameEmpty && (
-                      <FormHelper>
-                        <FormHelperMessage>Please enter a DOI name.</FormHelperMessage>
-                      </FormHelper>
-                    )}
+                    <FormToolbar>
+                      <InfoButton text={t.doi} />
+                    </FormToolbar>
                   </FormGroupHeader>
                   <FormGroupBody>
                     <FormInput
@@ -196,10 +198,18 @@ export class IdentifyingInformation extends Component {
                       onBlur={e => onTextFieldBlur(e, 'doiNameEmpty')}
                       invalid={doiNameEmpty}
                     />
+                    {doiNameEmpty && (
+                      <FormHelper>
+                        <FormHelperMessage>Please enter a DOI name.</FormHelperMessage>
+                      </FormHelper>
+                    )}
                   </FormGroupBody>
 
                   <FormGroupHeader>
                     <FormLabel htmlFor="atbd-doi-authority">Authority</FormLabel>
+                    <FormToolbar>
+                      <InfoButton text={t.doi_authority} />
+                    </FormToolbar>
                   </FormGroupHeader>
                   <FormGroupBody>
                     <FormInput
@@ -258,16 +268,18 @@ export class IdentifyingInformation extends Component {
 IdentifyingInformation.propTypes = {
   updateAtbd: PropTypes.func,
   atbd: PropTypes.object,
+  t: PropTypes.object,
   hasCitation: PropTypes.bool
 };
 
 const mapStateToProps = (state) => {
   const { application: app } = state;
-  const { atbdVersion, atbdCitation } = app;
+  const { atbdVersion, atbdCitation, t } = app;
   const atbd = atbdVersion ? atbdVersion.atbd : null;
   return {
     atbd,
-    hasCitation: Boolean(atbdCitation)
+    hasCitation: Boolean(atbdCitation),
+    t: t ? t.identifying_information : {}
   };
 };
 
