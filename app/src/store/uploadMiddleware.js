@@ -2,11 +2,13 @@
 import AWS from 'aws-sdk';
 import uuid from 'uuid/v1';
 import actions from '../constants/action_types';
-
+const endpoint = process.env.REACT_APP_S3_URI;
+const figuresBucket = process.env.REACT_APP_FIGURES_BUCKET;
+const region = process.env.REACT_APP_REGION;
 const s3 = new AWS.S3({
-  endpoint: 'http://localhost:4572',
+  endpoint,
   s3ForcePathStyle: true,
-  region: 'us-east-1',
+  region,
   accessKeyId: 'key',
   secretAccessKey: 'key'
 });
@@ -30,7 +32,7 @@ const uploadMiddleware = store => next => async (action) => {
       const response = await s3.upload({
         Key: key,
         Body: keyedFile,
-        Bucket: 'figures',
+        Bucket: figuresBucket,
         ContentType: keyedFile.type
       }).promise();
       const { Location } = response;
