@@ -55,6 +55,55 @@ export function updateAtbd(atbd_id, document) {
   };
 }
 
+export function fetchCitation(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/citations?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}&select=*`,
+      method: 'GET',
+      headers: returnObjectHeaders,
+      types: [
+        types.FETCH_CITATIONS,
+        types.FETCH_CITATIONS_SUCCESS,
+        types.FETCH_CITATIONS_FAIL
+      ]
+    }
+  };
+}
+
+export function createCitation(document) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/citations`,
+      method: 'POST',
+      body: JSON.stringify(document),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_CITATION,
+        types.CREATE_CITATION_SUCCESS,
+        types.CREATE_CITATION_FAIL
+      ]
+    }
+  };
+}
+
+export function updateCitation(citation_id, document) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/citations?citation_id=eq.${citation_id}`,
+      method: 'PATCH',
+      body: JSON.stringify(document),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_CITATION,
+        types.UPDATE_CITATION_SUCCESS,
+        types.UPDATE_CITATION_FAIL
+      ]
+    }
+  };
+}
+
 export function createAtbdVersion(atbd_version) {
   return {
     [RSAA]: {
