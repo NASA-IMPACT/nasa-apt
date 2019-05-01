@@ -386,6 +386,17 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref 'FiguresBucketName'
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods:
+              - GET
+              - HEAD
+              - PUT
+              - POST
+            AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
 
   # Figures bucket policy
   FiguresBucketPolicy:
@@ -398,8 +409,12 @@ Resources:
           Action:
             - 's3:List*'
             - 's3:Get*'
+            - 's3:PutObject'
+            - 's3:PutObjectAcl'
           Effect: Allow
-          Principal: '*'
+          Principal:
+            AWS:
+              - '*'
           Resource:
             Fn::Join:
               - ''
