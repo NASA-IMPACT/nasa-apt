@@ -1,0 +1,89 @@
+\newcommand{\ScientificTheory}{A line of text in a paragraph. \begin{equation} \int_0^\infty x^2 dx \end{equation}  \begin{center}
+        \includegraphics[width=\linewidth]{imgs/fullmoon.jpg}
+        \end{center}
+    }
+\newcommand{\ScientificTheoryAssumptions}{Lorem Ipsum Filler text}
+\newcommand{\MathematicalTheory}{Lorem Ipsum Filler text}
+\newcommand{\MathematicalTheoryAssumptions}{Lorem Ipsum Filler text}
+\newcommand{\Introduction}{Introduction Lorem Ipsum Text}
+\newcommand{\HistoricalPerspective}{Historical Perspective Lorem Ipsum Text}
+\newcommand{\AlgorithmInputVariables}{\begin{tabular}{p{9cm} p{3cm}}
+\toprule
+  \textbf{{Name}} & \textbf{{Unit}} \\
+\midrule
+ Input variable 1 &            None \\
+\bottomrule
+\end{tabular}
+}
+\newcommand{\AlgorithmOutputVariables}{\begin{tabular}{p{9cm} p{3cm}}
+\toprule
+   \textbf{{Name}} & \textbf{{Unit}} \\
+\midrule
+ Output variable 1 &            None \\
+\bottomrule
+\end{tabular}
+}
+\newcommand{\ATBDTitle}{Test ATBD 1} 
+\newcommand{\AlgDesc}{
+Some other text 
+\begin{equation} \int_0^\infty x^2 dx 
+\end{equation} Plus some more text
+}
+
+\newcommand{\AlgorithmUsageConstraints}{Alg Usage Lorem Ipsum Text}
+
+\title{\ATBDTitle}
+\date{\today}
+
+\documentclass[12pt]{article}
+
+\usepackage{color}   %May be necessary if you want to color links
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\hypersetup{
+    colorlinks=true, %set true if you want colored links
+    linktoc=all,     %set to all if you want both sections and subsections linked
+    linkcolor=blue,  %choose some color if you want links to stand out
+}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+\Introduction
+
+\section{Historical Perspective}
+\HistoricalPerspective
+
+\section{Algorithm Description}
+\AlgDesc
+
+\subsection{Scientific Theory}
+\ScientificTheory
+
+\subsubsection{Assumptions}
+\ScientificTheoryAssumptions
+
+\subsection{Mathematical Theory}
+\MathematicalTheory
+
+\subsubsection{Assumptions}
+\MathematicalTheoryAssumptions
+
+\subsection{Algorithm Input Variables}
+\AlgorithmInputVariables
+
+\subsection{Algorithm Output Variables}
+\AlgorithmOutputVariables
+
+\section{Algorithm Usage Constraints}
+\AlgorithmUsageConstraints
+
+\bibliographystyle{abbrv}
+\bibliography{main}
+
+\end{document}
+  
