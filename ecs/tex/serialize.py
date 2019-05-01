@@ -113,9 +113,6 @@ class ATBD:
         self.imgs = []
 
     def texVariables (self):
-        # url = f'http://localhost:3000/atbd_versions?atbd_id=eq.{self.identifier}&atbd_version=eq.{self.version}&select=*,algorithm_input_variables(*),algorithm_output_variables(*),publication_references(*),atbd(*),data_access_input_data(*)'
-        # res = requests.get(url)
-        # myJson = json.loads(res.text)
         myJson = json.loads(open(self.filepath).read())
         if debug:
             for item, value in myJson[0].items():
