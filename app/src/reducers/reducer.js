@@ -5,6 +5,7 @@ const initialState = {
   contacts: [],
   uploadedFile: undefined,
   atbdVersion: undefined,
+  atbdCitation: undefined,
   selectedAtbd: undefined,
   t: undefined
 };
@@ -168,6 +169,14 @@ export default function (state = initialState, action) {
           ...state.atbdVersion,
           algorithm_implementations: next
         }
+      };
+    }
+
+    case actions.FETCH_CITATIONS_SUCCESS: {
+      const { payload } = action;
+      return {
+        ...state,
+        atbdCitation: payload
       };
     }
 
