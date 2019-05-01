@@ -22,10 +22,6 @@ const locationMiddleware = store => next => async (action) => {
       store.dispatch(actions.fetchAtbds());
     }
     if (pathComponents[1] === atbdsedit) {
-      if (pathComponents[3] === contacts) {
-        store.dispatch(actions.fetchAtbd(pathComponents[2]));
-        store.dispatch(actions.fetchContacts());
-      }
       if (pathComponents[3] === drafts) {
         if (pathComponents[5] === algorithm_description || pathComponents[5] === introduction
           || pathComponents[5] === algorithm_usage) {
@@ -33,6 +29,11 @@ const locationMiddleware = store => next => async (action) => {
             atbd_id: pathComponents[2],
             atbd_version: pathComponents[4]
           }));
+        }
+
+        if (pathComponents[5] === contacts) {
+          store.dispatch(actions.fetchAtbd(pathComponents[2]));
+          store.dispatch(actions.fetchContacts());
         }
 
         if (pathComponents[5] === algorithm_implementation) {

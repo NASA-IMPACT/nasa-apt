@@ -6,6 +6,7 @@ import { push } from 'connected-react-router';
 import { createAtbd } from '../actions/actions';
 import {
   atbdsedit,
+  drafts,
   contacts
 } from '../constants/routes';
 import { themeVal } from '../styles/utils/general';
@@ -109,7 +110,7 @@ const AtbdList = (props) => {
         </AtbdCell>
         <AtbdCell>2 hours ago</AtbdCell>
         <AtbdCell>Author Name</AtbdCell>
-        <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${contacts}`)}><EditIcon /></AtbdCell>
+        <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${contacts}`)}><EditIcon /></AtbdCell>
       </AtbdRow>
     );
   });
