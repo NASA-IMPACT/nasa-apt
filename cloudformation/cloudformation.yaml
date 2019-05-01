@@ -47,6 +47,18 @@ Parameters:
     Description: The priority for the routing rule added to the load balancer.
                  This only applies if your have multiple services which are
                  assigned to different paths on the load balancer.
+  AtbdJsonBucketName:
+    Type: String
+    Default: nasa-apt-json
+    Description: Bucket for sending ATBD json.
+  AtbdBucketName:
+    Type: String
+    Default: nasa-apt-atbd
+    Description: Bucket for output ATBDs.
+  FiguresBucketName:
+    Type: String
+    Default: nasa-apt-figures
+    Description: Bucket for storing ATBD figures.
 
 Mappings:
   # Hard values for the subnet masks. These masks define
@@ -373,7 +385,7 @@ Resources:
   FiguresBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: nasa-apt-figures
+      BucketName: !Ref 'FiguresBucketName'
 
   # Figures bucket policy
   FiguresBucketPolicy:
@@ -507,7 +519,7 @@ Resources:
       - AtbdJsonBucketLambda
       - LambdaInvokePermission
     Properties:
-      BucketName: nasa-apt-json
+      BucketName: !Ref 'AtbdJsonBucketName'
       NotificationConfiguration:
         LambdaConfigurations:
           -
@@ -535,7 +547,7 @@ Resources:
   AtbdBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: nasa-apt-atbd
+      BucketName: !Ref 'AtbdBucketName'
 
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -594,19 +606,30 @@ Resources:
                 - !Ref WebsiteBucket
                 - /*
 Outputs:
-  AtbdJsonBucketUrl:
-    Value: !GetAtt AtbdJsonBucket.WebsiteURL
+  S3Endpoint:
+    Value: 's3.amazonaws.com'
+    Export:
+      Name: !Sub '${AWS::StackName}-S3Endpoint'
+  AtbdJsonBucket:
+    Value: !Ref 'AtbdJsonBucketName'
     Export:
       Name: !Sub '${AWS::StackName}-AtbdJsonBucket'
-
   AtbdBucket:
-    Value: !GetAtt AtbdBucket.WebsiteURL
+    Value: !Ref 'AtbdBucketName'
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucket'
+  FiguresBucket:
+    Value: !Ref 'FiguresBucket'
+    Export:
+      Name: !Sub '${AWS::StackName}-FiguresBucket'
   WebsiteBucket:
     Value: 's3://nasa-apt-application'
     Export:
       Name: !Sub '${AWS::StackName}-WebsiteBucket'
+  WebsiteURL:
+    Value: !GetAtt WebsiteBucket.WebsiteURL
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteURL'
   PGConnection:
     Value: !Join ['', ['postgres://', 'masteruser', ':',
                        !Ref 'DBPassword', '@',
