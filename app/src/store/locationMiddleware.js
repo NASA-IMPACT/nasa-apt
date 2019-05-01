@@ -64,6 +64,13 @@ const locationMiddleware = store => next => async (action) => {
   if (type === types.FETCH_ATBD_FAIL) {
     store.dispatch(push(`/${error}`));
   }
+
+  if (type === types.CREATE_ATBD_SUCCESS) {
+    const { created_version } = payload;
+    const { atbd_id, atbd_version } = created_version;
+    store.dispatch(push(`/${atbdsedit}/${atbd_id}/${drafts}/${atbd_version}/`
+      + `${identifying_information}`));
+  }
   return next(action);
 };
 
