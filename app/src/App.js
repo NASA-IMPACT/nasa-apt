@@ -57,7 +57,7 @@ const App = () => (
               <Switch>
                 <Route path={`/${atbds}`} component={AtbdList} />
                 <Route
-                  path={`/${atbdsedit}/:atbd_id/${identifying_information}`}
+                  path={`/${atbdsedit}/:atbd_id/${drafts}/:atbd_version/${identifying_information}`}
                   component={IdentifyingInformation}
                 />
                 <Route
