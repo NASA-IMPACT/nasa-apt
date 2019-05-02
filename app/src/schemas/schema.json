@@ -727,6 +727,27 @@
                         "$ref": "#/parameters/rowFilter.atbd_versions.mathematical_theory_assumptions"
                     },
                     {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.introduction"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.historical_perspective"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.performance_assessment_validation_methods"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.performance_assessment_validation_uncertainties"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.performance_assessment_validation_errors"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.algorithm_usage_constraints"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.status"
+                    },
+                    {
                         "$ref": "#/parameters/select"
                     },
                     {
@@ -805,6 +826,27 @@
                         "$ref": "#/parameters/rowFilter.atbd_versions.mathematical_theory_assumptions"
                     },
                     {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.introduction"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.historical_perspective"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.performance_assessment_validation_methods"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.performance_assessment_validation_uncertainties"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.performance_assessment_validation_errors"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.algorithm_usage_constraints"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.status"
+                    },
+                    {
                         "$ref": "#/parameters/preferReturn"
                     }
                 ],
@@ -836,6 +878,27 @@
                     },
                     {
                         "$ref": "#/parameters/rowFilter.atbd_versions.mathematical_theory_assumptions"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.introduction"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.historical_perspective"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.performance_assessment_validation_methods"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.performance_assessment_validation_uncertainties"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.performance_assessment_validation_errors"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.algorithm_usage_constraints"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.atbd_versions.status"
                     },
                     {
                         "$ref": "#/parameters/body.atbd_versions"
@@ -980,6 +1043,9 @@
                         "$ref": "#/parameters/rowFilter.contact_groups.uuid"
                     },
                     {
+                        "$ref": "#/parameters/rowFilter.contact_groups.url"
+                    },
+                    {
                         "$ref": "#/parameters/rowFilter.contact_groups.contact_mechanism_type"
                     },
                     {
@@ -1055,6 +1121,9 @@
                         "$ref": "#/parameters/rowFilter.contact_groups.uuid"
                     },
                     {
+                        "$ref": "#/parameters/rowFilter.contact_groups.url"
+                    },
+                    {
                         "$ref": "#/parameters/rowFilter.contact_groups.contact_mechanism_type"
                     },
                     {
@@ -1083,6 +1152,9 @@
                     },
                     {
                         "$ref": "#/parameters/rowFilter.contact_groups.uuid"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contact_groups.url"
                     },
                     {
                         "$ref": "#/parameters/rowFilter.contact_groups.contact_mechanism_type"
@@ -1126,10 +1198,13 @@
                         "$ref": "#/parameters/rowFilter.contacts.uuid"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_type"
+                        "$ref": "#/parameters/rowFilter.contacts.url"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_value"
+                        "$ref": "#/parameters/rowFilter.contacts.mechanisms"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.roles"
                     },
                     {
                         "$ref": "#/parameters/select"
@@ -1207,10 +1282,13 @@
                         "$ref": "#/parameters/rowFilter.contacts.uuid"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_type"
+                        "$ref": "#/parameters/rowFilter.contacts.url"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_value"
+                        "$ref": "#/parameters/rowFilter.contacts.mechanisms"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.roles"
                     },
                     {
                         "$ref": "#/parameters/preferReturn"
@@ -1243,10 +1321,13 @@
                         "$ref": "#/parameters/rowFilter.contacts.uuid"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_type"
+                        "$ref": "#/parameters/rowFilter.contacts.url"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contacts.contact_mechanism_value"
+                        "$ref": "#/parameters/rowFilter.contacts.mechanisms"
+                    },
+                    {
+                        "$ref": "#/parameters/rowFilter.contacts.roles"
                     },
                     {
                         "$ref": "#/parameters/body.contacts"
@@ -1682,399 +1763,6 @@
                 }
             }
         },
-        "/performance_assessment_validation_errors": {
-            "get": {
-                "tags": [
-                    "performance_assessment_validation_errors"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.performance_assessment_validation_error"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.atbd_version"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.atbd_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.description"
-                    },
-                    {
-                        "$ref": "#/parameters/select"
-                    },
-                    {
-                        "$ref": "#/parameters/order"
-                    },
-                    {
-                        "$ref": "#/parameters/range"
-                    },
-                    {
-                        "$ref": "#/parameters/rangeUnit"
-                    },
-                    {
-                        "$ref": "#/parameters/offset"
-                    },
-                    {
-                        "$ref": "#/parameters/limit"
-                    },
-                    {
-                        "$ref": "#/parameters/preferCount"
-                    }
-                ],
-                "responses": {
-                    "206": {
-                        "description": "Partial Content"
-                    },
-                    "200": {
-                        "schema": {
-                            "items": {
-                                "$ref": "#/definitions/performance_assessment_validation_errors"
-                            },
-                            "type": "array"
-                        },
-                        "description": "OK"
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "performance_assessment_validation_errors"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/body.performance_assessment_validation_errors"
-                    },
-                    {
-                        "$ref": "#/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "performance_assessment_validation_errors"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.performance_assessment_validation_error"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.atbd_version"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.atbd_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.description"
-                    },
-                    {
-                        "$ref": "#/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            },
-            "patch": {
-                "tags": [
-                    "performance_assessment_validation_errors"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.performance_assessment_validation_error"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.atbd_version"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.atbd_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_errors.description"
-                    },
-                    {
-                        "$ref": "#/parameters/body.performance_assessment_validation_errors"
-                    },
-                    {
-                        "$ref": "#/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            }
-        },
-        "/performance_assessment_validation_methods": {
-            "get": {
-                "tags": [
-                    "performance_assessment_validation_methods"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.performance_assessment_validation_method_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.atbd_version"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.atbd_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.description"
-                    },
-                    {
-                        "$ref": "#/parameters/select"
-                    },
-                    {
-                        "$ref": "#/parameters/order"
-                    },
-                    {
-                        "$ref": "#/parameters/range"
-                    },
-                    {
-                        "$ref": "#/parameters/rangeUnit"
-                    },
-                    {
-                        "$ref": "#/parameters/offset"
-                    },
-                    {
-                        "$ref": "#/parameters/limit"
-                    },
-                    {
-                        "$ref": "#/parameters/preferCount"
-                    }
-                ],
-                "responses": {
-                    "206": {
-                        "description": "Partial Content"
-                    },
-                    "200": {
-                        "schema": {
-                            "items": {
-                                "$ref": "#/definitions/performance_assessment_validation_methods"
-                            },
-                            "type": "array"
-                        },
-                        "description": "OK"
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "performance_assessment_validation_methods"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/body.performance_assessment_validation_methods"
-                    },
-                    {
-                        "$ref": "#/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "performance_assessment_validation_methods"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.performance_assessment_validation_method_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.atbd_version"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.atbd_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.description"
-                    },
-                    {
-                        "$ref": "#/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            },
-            "patch": {
-                "tags": [
-                    "performance_assessment_validation_methods"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.performance_assessment_validation_method_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.atbd_version"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.atbd_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_methods.description"
-                    },
-                    {
-                        "$ref": "#/parameters/body.performance_assessment_validation_methods"
-                    },
-                    {
-                        "$ref": "#/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            }
-        },
-        "/performance_assessment_validation_uncertainties": {
-            "get": {
-                "tags": [
-                    "performance_assessment_validation_uncertainties"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.performance_assessment_validation_uncertainty"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.atbd_version"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.atbd_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.description"
-                    },
-                    {
-                        "$ref": "#/parameters/select"
-                    },
-                    {
-                        "$ref": "#/parameters/order"
-                    },
-                    {
-                        "$ref": "#/parameters/range"
-                    },
-                    {
-                        "$ref": "#/parameters/rangeUnit"
-                    },
-                    {
-                        "$ref": "#/parameters/offset"
-                    },
-                    {
-                        "$ref": "#/parameters/limit"
-                    },
-                    {
-                        "$ref": "#/parameters/preferCount"
-                    }
-                ],
-                "responses": {
-                    "206": {
-                        "description": "Partial Content"
-                    },
-                    "200": {
-                        "schema": {
-                            "items": {
-                                "$ref": "#/definitions/performance_assessment_validation_uncertainties"
-                            },
-                            "type": "array"
-                        },
-                        "description": "OK"
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "performance_assessment_validation_uncertainties"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/body.performance_assessment_validation_uncertainties"
-                    },
-                    {
-                        "$ref": "#/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "performance_assessment_validation_uncertainties"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.performance_assessment_validation_uncertainty"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.atbd_version"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.atbd_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.description"
-                    },
-                    {
-                        "$ref": "#/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            },
-            "patch": {
-                "tags": [
-                    "performance_assessment_validation_uncertainties"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.performance_assessment_validation_uncertainty"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.atbd_version"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.atbd_id"
-                    },
-                    {
-                        "$ref": "#/parameters/rowFilter.performance_assessment_validation_uncertainties.description"
-                    },
-                    {
-                        "$ref": "#/parameters/body.performance_assessment_validation_uncertainties"
-                    },
-                    {
-                        "$ref": "#/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            }
-        },
         "/publication_references": {
             "get": {
                 "tags": [
@@ -2331,6 +2019,35 @@
                     }
                 }
             }
+        },
+        "/rpc/create_atbd_version": {
+            "post": {
+                "tags": [
+                    "(rpc) create_atbd_version"
+                ],
+                "produces": [
+                    "application/json",
+                    "application/vnd.pgrst.object+json"
+                ],
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        },
+                        "in": "body",
+                        "name": "args"
+                    },
+                    {
+                        "$ref": "#/parameters/preferParams"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -2518,6 +2235,38 @@
                 "mathematical_theory_assumptions": {
                     "format": "json",
                     "type": "string"
+                },
+                "introduction": {
+                    "format": "json",
+                    "type": "string"
+                },
+                "historical_perspective": {
+                    "format": "json",
+                    "type": "string"
+                },
+                "performance_assessment_validation_methods": {
+                    "format": "json",
+                    "type": "string"
+                },
+                "performance_assessment_validation_uncertainties": {
+                    "format": "json",
+                    "type": "string"
+                },
+                "performance_assessment_validation_errors": {
+                    "format": "json",
+                    "type": "string"
+                },
+                "algorithm_usage_constraints": {
+                    "format": "json",
+                    "type": "string"
+                },
+                "status": {
+                    "format": "public.atbd_status",
+                    "type": "string",
+                    "enum": [
+                        "Draft",
+                        "Published"
+                    ]
                 }
             },
             "type": "object"
@@ -2562,18 +2311,23 @@
                     "format": "character varying",
                     "type": "string"
                 },
+                "url": {
+                    "maxLength": 1024,
+                    "format": "character varying",
+                    "type": "string"
+                },
                 "contact_mechanism_type": {
                     "format": "public.e_contact_mechanism_type",
                     "type": "string",
                     "enum": [
-                        "Direct Line",
+                        "Direct line",
                         "Email",
                         "Facebook",
                         "Fax",
                         "Mobile",
                         "Modem",
                         "Primary",
-                        "TDD/TTY Phone",
+                        "TDD/TTY phone",
                         "Telephone",
                         "Twitter",
                         "U.S.",
@@ -2592,8 +2346,7 @@
             "required": [
                 "contact_id",
                 "first_name",
-                "last_name",
-                "contact_mechanism_value"
+                "last_name"
             ],
             "properties": {
                 "contact_id": {
@@ -2621,27 +2374,17 @@
                     "format": "character varying",
                     "type": "string"
                 },
-                "contact_mechanism_type": {
-                    "format": "public.e_contact_mechanism_type",
-                    "type": "string",
-                    "enum": [
-                        "Direct Line",
-                        "Email",
-                        "Facebook",
-                        "Fax",
-                        "Mobile",
-                        "Modem",
-                        "Primary",
-                        "TDD/TTY Phone",
-                        "Telephone",
-                        "Twitter",
-                        "U.S.",
-                        "Other"
-                    ]
-                },
-                "contact_mechanism_value": {
+                "url": {
                     "maxLength": 1024,
                     "format": "character varying",
+                    "type": "string"
+                },
+                "mechanisms": {
+                    "format": "ARRAY",
+                    "type": "string"
+                },
+                "roles": {
+                    "format": "ARRAY",
                     "type": "string"
                 }
             },
@@ -2747,93 +2490,6 @@
                 "description": {
                     "maxLength": 4000,
                     "format": "character varying",
-                    "type": "string"
-                }
-            },
-            "type": "object"
-        },
-        "performance_assessment_validation_errors": {
-            "required": [
-                "performance_assessment_validation_error",
-                "atbd_version",
-                "atbd_id"
-            ],
-            "properties": {
-                "performance_assessment_validation_error": {
-                    "format": "integer",
-                    "type": "integer",
-                    "description": "Note:\nThis is a Primary Key.<pk/>"
-                },
-                "atbd_version": {
-                    "format": "integer",
-                    "type": "integer",
-                    "description": "Note:\nThis is a Foreign Key to `atbd_versions.atbd_version`.<fk table='atbd_versions' column='atbd_version'/>"
-                },
-                "atbd_id": {
-                    "format": "integer",
-                    "type": "integer",
-                    "description": "Note:\nThis is a Foreign Key to `atbd_versions.atbd_id`.<fk table='atbd_versions' column='atbd_id'/>"
-                },
-                "description": {
-                    "format": "json",
-                    "type": "string"
-                }
-            },
-            "type": "object"
-        },
-        "performance_assessment_validation_methods": {
-            "required": [
-                "performance_assessment_validation_method_id",
-                "atbd_version",
-                "atbd_id"
-            ],
-            "properties": {
-                "performance_assessment_validation_method_id": {
-                    "format": "integer",
-                    "type": "integer",
-                    "description": "Note:\nThis is a Primary Key.<pk/>"
-                },
-                "atbd_version": {
-                    "format": "integer",
-                    "type": "integer",
-                    "description": "Note:\nThis is a Foreign Key to `atbd_versions.atbd_version`.<fk table='atbd_versions' column='atbd_version'/>"
-                },
-                "atbd_id": {
-                    "format": "integer",
-                    "type": "integer",
-                    "description": "Note:\nThis is a Foreign Key to `atbd_versions.atbd_id`.<fk table='atbd_versions' column='atbd_id'/>"
-                },
-                "description": {
-                    "format": "json",
-                    "type": "string"
-                }
-            },
-            "type": "object"
-        },
-        "performance_assessment_validation_uncertainties": {
-            "required": [
-                "performance_assessment_validation_uncertainty",
-                "atbd_version",
-                "atbd_id"
-            ],
-            "properties": {
-                "performance_assessment_validation_uncertainty": {
-                    "format": "integer",
-                    "type": "integer",
-                    "description": "Note:\nThis is a Primary Key.<pk/>"
-                },
-                "atbd_version": {
-                    "format": "integer",
-                    "type": "integer",
-                    "description": "Note:\nThis is a Foreign Key to `atbd_versions.atbd_version`.<fk table='atbd_versions' column='atbd_version'/>"
-                },
-                "atbd_id": {
-                    "format": "integer",
-                    "type": "integer",
-                    "description": "Note:\nThis is a Foreign Key to `atbd_versions.atbd_id`.<fk table='atbd_versions' column='atbd_id'/>"
-                },
-                "description": {
-                    "format": "json",
                     "type": "string"
                 }
             },
@@ -3258,6 +2914,55 @@
             "in": "query",
             "type": "string"
         },
+        "rowFilter.atbd_versions.introduction": {
+            "name": "introduction",
+            "required": false,
+            "format": "json",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.atbd_versions.historical_perspective": {
+            "name": "historical_perspective",
+            "required": false,
+            "format": "json",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.atbd_versions.performance_assessment_validation_methods": {
+            "name": "performance_assessment_validation_methods",
+            "required": false,
+            "format": "json",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.atbd_versions.performance_assessment_validation_uncertainties": {
+            "name": "performance_assessment_validation_uncertainties",
+            "required": false,
+            "format": "json",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.atbd_versions.performance_assessment_validation_errors": {
+            "name": "performance_assessment_validation_errors",
+            "required": false,
+            "format": "json",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.atbd_versions.algorithm_usage_constraints": {
+            "name": "algorithm_usage_constraints",
+            "required": false,
+            "format": "json",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.atbd_versions.status": {
+            "name": "status",
+            "required": false,
+            "format": "public.atbd_status",
+            "in": "query",
+            "type": "string"
+        },
         "body.atbds": {
             "name": "atbds",
             "description": "atbds",
@@ -3306,6 +3011,13 @@
         },
         "rowFilter.contact_groups.uuid": {
             "name": "uuid",
+            "required": false,
+            "format": "character varying",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.contact_groups.url": {
+            "name": "url",
             "required": false,
             "format": "character varying",
             "in": "query",
@@ -3369,17 +3081,24 @@
             "in": "query",
             "type": "string"
         },
-        "rowFilter.contacts.contact_mechanism_type": {
-            "name": "contact_mechanism_type",
+        "rowFilter.contacts.url": {
+            "name": "url",
             "required": false,
-            "format": "public.e_contact_mechanism_type",
+            "format": "character varying",
             "in": "query",
             "type": "string"
         },
-        "rowFilter.contacts.contact_mechanism_value": {
-            "name": "contact_mechanism_value",
+        "rowFilter.contacts.mechanisms": {
+            "name": "mechanisms",
             "required": false,
-            "format": "character varying",
+            "format": "ARRAY",
+            "in": "query",
+            "type": "string"
+        },
+        "rowFilter.contacts.roles": {
+            "name": "roles",
+            "required": false,
+            "format": "ARRAY",
             "in": "query",
             "type": "string"
         },
@@ -3512,117 +3231,6 @@
             "name": "description",
             "required": false,
             "format": "character varying",
-            "in": "query",
-            "type": "string"
-        },
-        "body.performance_assessment_validation_errors": {
-            "name": "performance_assessment_validation_errors",
-            "description": "performance_assessment_validation_errors",
-            "required": false,
-            "schema": {
-                "$ref": "#/definitions/performance_assessment_validation_errors"
-            },
-            "in": "body"
-        },
-        "rowFilter.performance_assessment_validation_errors.performance_assessment_validation_error": {
-            "name": "performance_assessment_validation_error",
-            "required": false,
-            "format": "integer",
-            "in": "query",
-            "type": "string"
-        },
-        "rowFilter.performance_assessment_validation_errors.atbd_version": {
-            "name": "atbd_version",
-            "required": false,
-            "format": "integer",
-            "in": "query",
-            "type": "string"
-        },
-        "rowFilter.performance_assessment_validation_errors.atbd_id": {
-            "name": "atbd_id",
-            "required": false,
-            "format": "integer",
-            "in": "query",
-            "type": "string"
-        },
-        "rowFilter.performance_assessment_validation_errors.description": {
-            "name": "description",
-            "required": false,
-            "format": "json",
-            "in": "query",
-            "type": "string"
-        },
-        "body.performance_assessment_validation_methods": {
-            "name": "performance_assessment_validation_methods",
-            "description": "performance_assessment_validation_methods",
-            "required": false,
-            "schema": {
-                "$ref": "#/definitions/performance_assessment_validation_methods"
-            },
-            "in": "body"
-        },
-        "rowFilter.performance_assessment_validation_methods.performance_assessment_validation_method_id": {
-            "name": "performance_assessment_validation_method_id",
-            "required": false,
-            "format": "integer",
-            "in": "query",
-            "type": "string"
-        },
-        "rowFilter.performance_assessment_validation_methods.atbd_version": {
-            "name": "atbd_version",
-            "required": false,
-            "format": "integer",
-            "in": "query",
-            "type": "string"
-        },
-        "rowFilter.performance_assessment_validation_methods.atbd_id": {
-            "name": "atbd_id",
-            "required": false,
-            "format": "integer",
-            "in": "query",
-            "type": "string"
-        },
-        "rowFilter.performance_assessment_validation_methods.description": {
-            "name": "description",
-            "required": false,
-            "format": "json",
-            "in": "query",
-            "type": "string"
-        },
-        "body.performance_assessment_validation_uncertainties": {
-            "name": "performance_assessment_validation_uncertainties",
-            "description": "performance_assessment_validation_uncertainties",
-            "required": false,
-            "schema": {
-                "$ref": "#/definitions/performance_assessment_validation_uncertainties"
-            },
-            "in": "body"
-        },
-        "rowFilter.performance_assessment_validation_uncertainties.performance_assessment_validation_uncertainty": {
-            "name": "performance_assessment_validation_uncertainty",
-            "required": false,
-            "format": "integer",
-            "in": "query",
-            "type": "string"
-        },
-        "rowFilter.performance_assessment_validation_uncertainties.atbd_version": {
-            "name": "atbd_version",
-            "required": false,
-            "format": "integer",
-            "in": "query",
-            "type": "string"
-        },
-        "rowFilter.performance_assessment_validation_uncertainties.atbd_id": {
-            "name": "atbd_id",
-            "required": false,
-            "format": "integer",
-            "in": "query",
-            "type": "string"
-        },
-        "rowFilter.performance_assessment_validation_uncertainties.description": {
-            "name": "description",
-            "required": false,
-            "format": "json",
             "in": "query",
             "type": "string"
         },
