@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import isUrl from 'is-url';
-import styled from 'styled-components';
 
-import collecticon from '../styles/collecticons';
 import FreeEditor from './FreeEditor';
 import InfoButton from './common/InfoButton';
 import Form from '../styles/form/form';
@@ -26,14 +24,8 @@ import {
   FormHelper,
   FormHelperMessage
 } from '../styles/form/helper';
-import Button from '../styles/button/button';
+import RemoveButton from '../styles/button/remove';
 import { isBlankDocument } from './editorBlankDocument';
-
-const RemoveButton = styled(Button)`
-  ::before {
-    ${collecticon('trash-bin')}
-  }
-`;
 
 class AlgorithmImplementationForm extends Component {
   constructor(props) {
