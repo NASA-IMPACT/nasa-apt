@@ -34,7 +34,7 @@ def processTable(nodeRows):
     return latexTable
 
 def saveImage(imgUrl):
-    imgs.append(imgUrl)
+    imgs.append(r'\immediate\write18{wget "' + imgUrl +'"} \n')
 
 def wrapImage(img):
     wrapper = f''' \\begin{{center}}
@@ -110,7 +110,6 @@ class ATBD:
     def __init__(self, path):
         #TODO: Handle paths locally and pulling from s3
         self.filepath = path
-        self.imgs = []
 
     def texVariables (self):
         myJson = json.loads(open(self.filepath).read())
@@ -132,6 +131,7 @@ class ATBD:
         with open(os.path.join('ATBD.tex'),  'r') as original:
             data = original.read()
         with open(os.path.join(self.nameFile('tex')), 'w') as modified:
+            modified.write('\n'.join(imgs))
             modified.write('\n'.join(self.texVars) + ' \n' + data)
             fileName = modified.name
         if debug:
