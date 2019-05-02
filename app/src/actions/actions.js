@@ -297,7 +297,7 @@ export function deleteAlgorithmImplementation(id) {
   };
 }
 
-export function uploadFigure(file) {
+export function uploadFile(file) {
   const id = uuid();
   const extension = file.name.split('.').pop();
   const keyedFileName = `${id}.${extension}`;
@@ -333,9 +333,9 @@ export function uploadFigure(file) {
       },
       body: data,
       types: [
-        types.UPLOAD_FIGURE,
-        types.UPLOAD_FIGURE_SUCCESS,
-        types.UPDATE_FIGURE_FAIL
+        types.UPLOAD_FILE,
+        types.UPLOAD_FILE_SUCCESS,
+        types.UPLOAD_FILE_FAIL
       ],
     },
   };
