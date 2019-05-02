@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { themeVal } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
 
+import Input from '../../styles/form/input';
 import {
   FormGroup,
   FormGroupHeader,
@@ -17,12 +18,13 @@ import {
   FormHelperMessage
 } from '../../styles/form/helper';
 
-export const InputFormGroup = styled.form`
+export const InputFormGroup = styled.div`
   display: grid;
   align-items: start;
-  grid-gap: 0.25rem 0.5rem;
+  grid-gap: 1rem;
   grid-template-columns: repeat(3, 1fr);
   justify-content: space-between;
+  margin-bottom: 1rem;
 `;
 
 const InlineInput = styled.input`
@@ -37,13 +39,11 @@ const InlineInput = styled.input`
 export const InputSubmit = styled(InlineInput)`
   box-shadow: ${themeVal('boxShadow.input')};
   font-weight: bold;
-  grid-row-start: 4;
+  margin-top: 1rem;
+  grid-column-start: 1;
 `;
 
-export const SmallTextInput = styled(InlineInput)`
-`;
-
-const Input = (props) => {
+const InputForm = (props) => {
   const {
     error,
     touched,
@@ -51,6 +51,7 @@ const Input = (props) => {
     name,
     info,
     id,
+    optional,
     ...inputProps
   } = props;
 
@@ -61,7 +62,7 @@ const Input = (props) => {
   return (
     <FormGroup>
       <FormGroupHeader>
-        <FormLabel htmlFor={id}>{label}</FormLabel>
+        <FormLabel htmlFor={id} optional={optional}>{label}</FormLabel>
         {info && (
         <FormToolbar>
           <InfoButton text={info} />
@@ -69,9 +70,10 @@ const Input = (props) => {
         )}
       </FormGroupHeader>
       <FormGroupBody>
-        <SmallTextInput
+        <Input
           id={id}
           name={name}
+          size="large"
           {...inputProps}
         />
         {feedback && (
@@ -86,13 +88,14 @@ const Input = (props) => {
   );
 };
 
-Input.propTypes = {
+InputForm.propTypes = {
   label: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   error: PropTypes.string,
   touched: PropTypes.bool,
   info: PropTypes.string,
-  id: PropTypes.string
+  id: PropTypes.string,
+  optional: PropTypes.bool
 };
 
-export default Input;
+export default InputForm;
