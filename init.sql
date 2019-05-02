@@ -22,6 +22,7 @@ CREATE TABLE contacts(
  middle_name VARCHAR (1024),
  last_name VARCHAR (1024) NOT NULL,
  uuid VARCHAR (1024),
+ url VARCHAR (1024),
  contact_mechanism_type e_contact_mechanism_type default 'Email',
  contact_mechanism_value VARCHAR (1024) NOT NULL
 );
@@ -29,6 +30,7 @@ CREATE TABLE contact_groups(
  contact_group_id serial PRIMARY KEY,
  group_name VARCHAR (1024) NOT NULL,
  uuid VARCHAR (1024),
+ url VARCHAR (1024),
  contact_mechanism_type e_contact_mechanism_type default 'Email',
  contact_mechanism_value VARCHAR (1024) NOT NULL
 );
