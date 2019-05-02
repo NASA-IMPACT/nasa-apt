@@ -26,7 +26,9 @@ const Select = (props) => {
     onChange,
     onBlur,
     info,
-    id
+    id,
+    readonly,
+    optional
   } = props;
 
   let feedback = null;
@@ -38,7 +40,7 @@ const Select = (props) => {
   return (
     <FormGroup>
       <FormGroupHeader>
-        <FormLabel htmlFor={id}>{label}</FormLabel>
+        <FormLabel htmlFor={id} optional={optional}>{label}</FormLabel>
         {info && (
           <FormToolbar>
             <InfoButton text={info} />
@@ -50,9 +52,10 @@ const Select = (props) => {
           options={options}
           name={name}
           value={activeValue}
-          onChange={e => onChange && onChange({ target: { name, value: e.value } })}
+          onChange={onChange}
           onBlur={() => onBlur && onBlur(({ target: { name } }))}
           id={id}
+          isDisabled={readonly}
         />
         {feedback && (
           <FormHelper>
@@ -70,12 +73,17 @@ Select.propTypes = {
   label: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   options: PropTypes.array.isRequired,
+  onChange: PropTypes.func.isRequired,
   error: PropTypes.string,
   touched: PropTypes.bool,
-  value: PropTypes.string,
-  onChange: PropTypes.func,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number
+  ]),
   onBlur: PropTypes.func,
   info: PropTypes.string,
-  id: PropTypes.string
+  id: PropTypes.string,
+  readonly: PropTypes.bool,
+  optional: PropTypes.bool
 };
 export default Select;
