@@ -1,7 +1,12 @@
+/* global File, FormData, fetch, DOMParser, Response */
 import { RSAA } from 'redux-api-middleware';
+import uuid from 'uuid/v1';
 import types from '../constants/action_types';
 
 const BASE_URL = process.env.REACT_APP_API_URL;
+const s3Uri = process.env.REACT_APP_S3_URI;
+const figuresBucket = process.env.REACT_APP_FIGURES_BUCKET;
+
 const returnObjectHeaders = {
   'Content-Type': 'application/json',
   Accept: 'application/vnd.pgrst.object+json',
@@ -292,13 +297,49 @@ export function deleteAlgorithmImplementation(id) {
   };
 }
 
-export function uploadFile(file) {
+export function uploadFigure(file) {
+  const id = uuid();
+  const extension = file.name.split('.').pop();
+  const keyedFileName = `${id}.${extension}`;
+  const keyedFile = new File([file], keyedFileName, { type: file.type });
+  const data = new FormData();
+  data.append('success_action_status', '201');
+  data.append('Content-Type', keyedFile.type);
+  data.append('key', keyedFile.name);
+  data.append('file', keyedFile);
   return {
-    type: types.UPLOAD_FILE,
-    payload: file
+    [RSAA]: {
+      endpoint: `http://${s3Uri}/${figuresBucket}`,
+      method: 'POST',
+      fetch: async (...args) => {
+        const res = await fetch(...args);
+        const text = await res.text();
+        const xml = new DOMParser().parseFromString(text, 'application/xml');
+        const location = xml.getElementsByTagName('Location')[0].textContent;
+        return new Response(
+          JSON.stringify({
+            location
+          }),
+          {
+            status: res.status,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      },
+      headers: {
+        'Content-Length': keyedFile.size
+      },
+      body: data,
+      types: [
+        types.UPLOAD_FIGURE,
+        types.UPLOAD_FIGURE_SUCCESS,
+        types.UPDATE_FIGURE_FAIL
+      ],
+    },
   };
 }
-
 
 export function fetchStatic() {
   return {
