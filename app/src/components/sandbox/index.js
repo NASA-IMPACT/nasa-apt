@@ -15,6 +15,7 @@ import {
   InpageBodyInner
 } from '../common/Inpage';
 import Prose from '../../styles/type/prose';
+import { showGlobalLoading, hideGlobalLoading } from '../common/OverlayLoader';
 import Button from '../../styles/button/button';
 import Form from '../../styles/form/form';
 import {
@@ -103,6 +104,11 @@ const lightVariations = ['achromic-plain', 'achromic-glass'];
 
 const sizes = ['small', 'default', 'large', 'xlarge'];
 
+const showLoading = () => {
+  showGlobalLoading();
+  setTimeout(() => hideGlobalLoading(), 1024);
+};
+
 class Sandbox extends Component {
   render() {
     return (
@@ -117,6 +123,9 @@ class Sandbox extends Component {
         <InpageBody>
           <InpageBodyInner>
             <Prose>
+              <h2>Loader</h2>
+              <Button variation="base-raised-light" onClick={showLoading}>Show loader</Button>
+
               <h2>Form elements</h2>
               <Form>
                 <FormFieldset>
