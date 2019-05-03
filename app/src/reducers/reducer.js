@@ -44,6 +44,30 @@ const deleteAtbdChildItem = (schemaKey, state, action) => {
   };
 };
 
+// Add common metadata to contacts and contact groups,
+// to make working with them in combination easier.
+const normalizeContact = (contactOrGroup) => {
+  const isGroup = contactOrGroup.contact_id ? false : true;
+  const displayName = isGroup ? contactOrGroup.group_name
+    : `${contactOrGroup.last_name}, ${contactOrGroup.first_name}`;
+  const id = isGroup ? `g${contactOrGroup.contact_group_id}`
+    : `c${contactOrGroup.contact_id}`;
+  return {
+    ...contactOrGroup,
+    isGroup,
+    displayName,
+    id
+  };
+};
+
+// Normalize contact, contact groups
+const normalizeSelectedAtbd = (atbd) => {
+  atbd.contacts = Array.isArray(atbd.contacts) ? atbd.contacts.map(normalizeContact) : [];
+  atbd.contact_groups = Array.isArray(atbd.contact_groups) ? atbd.contact_groups.map(normalizeContact)
+    : [];
+  return atbd;
+}
+
 export default function (state = initialState, action) {
   switch (action.type) {
     case actions.FETCH_ALGORITHM_IMPLEMENTATION_SUCCESS:
@@ -59,22 +83,22 @@ export default function (state = initialState, action) {
 
     case actions.FETCH_CONTACTS_SUCCESS: {
       const { payload } = action;
-      return { ...state, contacts: [...payload] };
+      return { ...state, contacts: [...payload.map(normalizeContact)] };
     }
 
     case actions.FETCH_CONTACT_GROUPS_SUCCESS: {
       const { payload } = action;
-      return { ...state, contact_groups: [...payload] };
+      return { ...state, contact_groups: [...payload.map(normalizeContact)] };
     }
 
     case actions.FETCH_ATBD_SUCCESS: {
       const { payload } = action;
-      return { ...state, selectedAtbd: { ...payload } };
+      return { ...state, selectedAtbd: normalizeSelectedAtbd(payload) }
     }
 
     case actions.CREATE_CONTACT_SUCCESS: {
       const { payload } = action;
-      return { ...state, contacts: [...state.contacts, payload] };
+      return { ...state, contacts: [...state.contacts, normalizeContact(payload)] };
     }
 
     case actions.CREATE_ATBD_CONTACT_SUCCESS: {

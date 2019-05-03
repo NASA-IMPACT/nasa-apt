@@ -24,6 +24,22 @@ export function createContact(contact) {
   };
 }
 
+export function createContactGroup(contactGroup) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/contact_groups`,
+      method: 'POST',
+      body: JSON.stringify(contactGroup),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_CONTACT_GROUP,
+        types.CREATE_CONTACT_GROUP_SUCCESS,
+        types.CREATE_CONTACT_GROUP_FAIL
+      ]
+    }
+  };
+}
+
 export function createAtbd() {
   return {
     [RSAA]: {
@@ -148,6 +164,22 @@ export function createAtbdContact(atbd_contact) {
   };
 }
 
+export function deleteAtbdContact(atbd_id, contact_id) {
+  return {
+    [RSAA]: {
+      endpoint:
+        `${BASE_URL}/atbd_contacts?atbd_id=eq.${atbd_id}&contact_id=eq.${contact_id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ATBD_CONTACT,
+        types.DELETE_ATBD_CONTACT_SUCCESS,
+        types.DELETE_ATBD_CONTACT_FAIL
+      ]
+    }
+  };
+}
+
 export function fetchContactGroups() {
   return {
     [RSAA]: {
@@ -157,6 +189,38 @@ export function fetchContactGroups() {
         types.FETCH_CONTACT_GROUPS,
         types.FETCH_CONTACT_GROUPS_SUCCESS,
         types.FETCH_CONTACT_GROUPS_FAIL
+      ]
+    }
+  };
+}
+
+export function createAtbdContactGroup(atbd_contact_group) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbd_contact_groups`,
+      method: 'POST',
+      body: JSON.stringify(atbd_contact_group),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ATBD_CONTACT_GROUP,
+        types.CREATE_ATBD_CONTACT_GROUP_SUCCESS,
+        types.CREATE_ATBD_CONTACT_GROUP_FAIL
+      ]
+    }
+  };
+}
+
+export function deleteAtbdContactGroup(atbd_id, contact_group_id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbd_contact_groups?atbd_id=eq.${atbd_id}&` +
+      `contact_group_id=eq.${contact_group_id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ATBD_CONTACT_GROUP,
+        types.DELETE_ATBD_CONTACT_GROUP_SUCCESS,
+        types.DELETE_ATBD_CONTACT_GROUP_FAIL
       ]
     }
   };
@@ -219,22 +283,6 @@ export function deleteAlgorithmOutputVariable(id) {
         types.DELETE_ALGORITHM_OUTPUT_VARIABLE,
         types.DELETE_ALGORITHM_OUTPUT_VARIABLE_SUCCESS,
         types.DELETE_ALGORITHM_OUTPUT_VARIABLE_FAIL
-      ]
-    }
-  };
-}
-
-export function deleteAtbdContact(atbd_id, contact_id) {
-  return {
-    [RSAA]: {
-      endpoint:
-        `${BASE_URL}/atbd_contacts?atbd_id=eq.${atbd_id}&contact_id=eq.${contact_id}`,
-      method: 'DELETE',
-      headers: returnObjectHeaders,
-      types: [
-        types.DELETE_ATBD_CONTACT,
-        types.DELETE_ATBD_CONTACT_SUCCESS,
-        types.DELETE_ATBD_CONTACT_FAIL
       ]
     }
   };
