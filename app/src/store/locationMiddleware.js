@@ -34,6 +34,7 @@ const locationMiddleware = store => next => async (action) => {
         if (pathComponents[5] === contacts) {
           store.dispatch(actions.fetchAtbd(pathComponents[2]));
           store.dispatch(actions.fetchContacts());
+          store.dispatch(actions.fetchContactGroups());
         }
 
         if (pathComponents[5] === algorithm_implementation) {

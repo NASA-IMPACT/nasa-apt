@@ -106,7 +106,7 @@ export function fetchAtbds() {
 export function fetchAtbd(atbd_id) {
   return {
     [RSAA]: {
-      endpoint: `${BASE_URL}/atbds?atbd_id=eq.${atbd_id}&select=*,contacts(*)`,
+      endpoint: `${BASE_URL}/atbds?atbd_id=eq.${atbd_id}&select=*,contacts(*),contact_groups(*)`,
       method: 'GET',
       headers: { Accept: 'application/vnd.pgrst.object+json' },
       types: [
@@ -143,6 +143,20 @@ export function createAtbdContact(atbd_contact) {
         types.CREATE_ATBD_CONTACT,
         types.CREATE_ATBD_CONTACT_SUCCESS,
         types.CREATE_ATBD_CONTACT_FAIL
+      ]
+    }
+  };
+}
+
+export function fetchContactGroups() {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/contact_groups`,
+      method: 'GET',
+      types: [
+        types.FETCH_CONTACT_GROUPS,
+        types.FETCH_CONTACT_GROUPS_SUCCESS,
+        types.FETCH_CONTACT_GROUPS_FAIL
       ]
     }
   };

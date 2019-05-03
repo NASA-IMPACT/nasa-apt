@@ -3,6 +3,7 @@ import actions from '../constants/action_types';
 const initialState = {
   atbds: [],
   contacts: [],
+  contact_groups: [],
   uploadedFile: undefined,
   atbdVersion: undefined,
   selectedAtbd: undefined,
@@ -59,6 +60,11 @@ export default function (state = initialState, action) {
     case actions.FETCH_CONTACTS_SUCCESS: {
       const { payload } = action;
       return { ...state, contacts: [...payload] };
+    }
+
+    case actions.FETCH_CONTACT_GROUPS_SUCCESS: {
+      const { payload } = action;
+      return { ...state, contact_groups: [...payload] };
     }
 
     case actions.FETCH_ATBD_SUCCESS: {
@@ -139,6 +145,7 @@ export default function (state = initialState, action) {
       const newAtbd = {
         ...created_atbd,
         contacts: [],
+        contact_groups: [],
         atbd_versions: [{ ...created_version }]
       };
       return { ...state, atbds: [...state.atbds, newAtbd] };
