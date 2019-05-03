@@ -44,8 +44,8 @@ CREATE TABLE contact_groups(
  group_name VARCHAR (1024) NOT NULL,
  uuid VARCHAR (1024),
  url VARCHAR (1024),
- contact_mechanism_type e_contact_mechanism_type default 'Email',
- contact_mechanism_value VARCHAR (1024) NOT NULL
+ mechanisms contact_mechanism[],
+ roles e_contact_role_type[]
 );
 CREATE TABLE atbds(
   atbd_id serial PRIMARY KEY,

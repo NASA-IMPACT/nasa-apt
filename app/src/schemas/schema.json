@@ -1046,10 +1046,10 @@
                         "$ref": "#/parameters/rowFilter.contact_groups.url"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contact_groups.contact_mechanism_type"
+                        "$ref": "#/parameters/rowFilter.contact_groups.mechanisms"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contact_groups.contact_mechanism_value"
+                        "$ref": "#/parameters/rowFilter.contact_groups.roles"
                     },
                     {
                         "$ref": "#/parameters/select"
@@ -1124,10 +1124,10 @@
                         "$ref": "#/parameters/rowFilter.contact_groups.url"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contact_groups.contact_mechanism_type"
+                        "$ref": "#/parameters/rowFilter.contact_groups.mechanisms"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contact_groups.contact_mechanism_value"
+                        "$ref": "#/parameters/rowFilter.contact_groups.roles"
                     },
                     {
                         "$ref": "#/parameters/preferReturn"
@@ -1157,10 +1157,10 @@
                         "$ref": "#/parameters/rowFilter.contact_groups.url"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contact_groups.contact_mechanism_type"
+                        "$ref": "#/parameters/rowFilter.contact_groups.mechanisms"
                     },
                     {
-                        "$ref": "#/parameters/rowFilter.contact_groups.contact_mechanism_value"
+                        "$ref": "#/parameters/rowFilter.contact_groups.roles"
                     },
                     {
                         "$ref": "#/parameters/body.contact_groups"
@@ -2292,8 +2292,7 @@
         "contact_groups": {
             "required": [
                 "contact_group_id",
-                "group_name",
-                "contact_mechanism_value"
+                "group_name"
             ],
             "properties": {
                 "contact_group_id": {
@@ -2316,27 +2315,12 @@
                     "format": "character varying",
                     "type": "string"
                 },
-                "contact_mechanism_type": {
-                    "format": "public.e_contact_mechanism_type",
-                    "type": "string",
-                    "enum": [
-                        "Direct line",
-                        "Email",
-                        "Facebook",
-                        "Fax",
-                        "Mobile",
-                        "Modem",
-                        "Primary",
-                        "TDD/TTY phone",
-                        "Telephone",
-                        "Twitter",
-                        "U.S.",
-                        "Other"
-                    ]
+                "mechanisms": {
+                    "format": "ARRAY",
+                    "type": "string"
                 },
-                "contact_mechanism_value": {
-                    "maxLength": 1024,
-                    "format": "character varying",
+                "roles": {
+                    "format": "ARRAY",
                     "type": "string"
                 }
             },
@@ -3023,17 +3007,17 @@
             "in": "query",
             "type": "string"
         },
-        "rowFilter.contact_groups.contact_mechanism_type": {
-            "name": "contact_mechanism_type",
+        "rowFilter.contact_groups.mechanisms": {
+            "name": "mechanisms",
             "required": false,
-            "format": "public.e_contact_mechanism_type",
+            "format": "ARRAY",
             "in": "query",
             "type": "string"
         },
-        "rowFilter.contact_groups.contact_mechanism_value": {
-            "name": "contact_mechanism_value",
+        "rowFilter.contact_groups.roles": {
+            "name": "roles",
             "required": false,
-            "format": "character varying",
+            "format": "ARRAY",
             "in": "query",
             "type": "string"
         },
