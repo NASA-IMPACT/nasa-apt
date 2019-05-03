@@ -21,6 +21,7 @@ import {
 } from './constants/routes';
 import PageHeader from './components/common/PageHeader';
 import PageFooter from './components/common/PageFooter';
+import { GlobalLoading } from './components/common/OverlayLoader';
 import AtbdList from './components/AtbdList';
 import Introduction from './components/Introduction';
 import Contacts from './components/Contacts';
@@ -86,6 +87,7 @@ const App = () => (
             </PageBody>
             <PageFooter />
           </Page>
+          <GlobalLoading />
         </React.Fragment>
       </ThemeProvider>
     </ConnectedRouter>
