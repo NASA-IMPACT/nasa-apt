@@ -5,9 +5,11 @@ import os
 import pandas as pd
 import subprocess
 from latex import build_pdf
+from num2words import num2words
 
 debug = False
-imgs = []
+pdfImgs = []
+htmlImgs = []
 
 # from https://stackoverflow.com/questions/19053707/converting-snake-case-to-lower-camel-case-lowercamelcase
 def toCamelCase(snake_str):
@@ -33,12 +35,15 @@ def processTable(nodeRows):
         df.to_latex(index=False, column_format=col_format) + '\\\\ \\\\'
     return latexTable
 
-def saveImage(imgUrl):
-    imgs.append(r'\immediate\write18{wget "' + imgUrl +'"} \n')
+def saveImage(imgUrl, img):
+    imgLink = num2words(len(pdfImgs))
+    pdfImgs.append(r'\immediate\write18{wget "' + imgUrl + f'"}} \n \\newcommand{{\\{imgLink}}}{{{img}}}')
+    htmlImgs.append(f'\\newcommand{{\\{imgLink}}}{{{imgUrl}}}')
+    return imgLink
 
 def wrapImage(img):
     wrapper = f''' \\begin{{center}}
-        \\includegraphics[width=\\linewidth]{{{img}}}
+        \\includegraphics[width=\\linewidth]{{\\{img}}}
         \\end{{center}}
     '''
     return wrapper
@@ -55,9 +60,9 @@ def processWYSIWYGElement(node):
         return text
     elif node['type'] == 'image':
         imgUrl = node['data']['src']
-        saveImage(imgUrl)
         filename = imgUrl.rsplit('/', 1)[1]
-        return wrapImage(filename)
+        imgCommand = saveImage(imgUrl, filename)
+        return wrapImage(imgCommand)
 
 def processWYSIWYG(element):
     if debug:
@@ -131,7 +136,11 @@ class ATBD:
         with open(os.path.join('ATBD.tex'),  'r') as original:
             data = original.read()
         with open(os.path.join(self.nameFile('tex')), 'w') as modified:
-            modified.write('\n'.join(imgs))
+            modified.write('\\ifx \\convertType \\undefined \n')
+            modified.write('\n'.join(pdfImgs))
+            modified.write('\n \\else \n')
+            modified.write('\n'.join(htmlImgs))
+            modified.write('\n \\fi \n')
             modified.write('\n'.join(self.texVars) + ' \n' + data)
             fileName = modified.name
         if debug:
