@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { withFormik } from 'formik';
 import jsonschema from 'jsonschema';
 import styled from 'styled-components';
+import { get, set } from 'object-path';
 
 import apiSchema from '../schemas/schema.json';
 import addMinLength from '../schemas/addMinLength';
@@ -20,8 +21,19 @@ import {
   FormFieldsetHeader,
   FormFieldsetBody
 } from '../styles/form/fieldset';
+import {
+  FormGroup,
+  FormGroupBody,
+  FormGroupHeader
+} from '../styles/form/group';
+import {
+  FormCheckable,
+  FormCheckableGroup
+} from '../styles/form/checkable';
 import Form from '../styles/form/form';
 import FormLegend from '../styles/form/legend';
+import FormLabel from '../styles/form/label';
+import AddBtn from '../styles/button/add';
 
 const validator = new jsonschema.Validator();
 const contactsSchema = addMinLength(apiSchema.definitions.contacts);
@@ -33,11 +45,35 @@ const middle_name = 'middle_name';
 const last_name = 'last_name';
 const uuid = 'uuid';
 const url = 'url';
-const contact_mechanism_type = 'contact_mechanism_type';
-const contact_mechanism_types = contactsSchema
-  .properties[contact_mechanism_type].enum;
-const contact_mechanism_value = 'contact_mechanism_value';
-const email = 'Email';
+const mechanism_type = 'mechanism_type';
+const mechanism_value = 'mechanism_value';
+const mechanisms = 'mechanisms';
+const roles = 'roles';
+
+const mechanismTypes = [
+  'Direct line',
+  'Email',
+  'Facebook',
+  'Fax',
+  'Mobile',
+  'Modem',
+  'Primary',
+  'TDD/TTY phone',
+  'Telephone',
+  'Twitter',
+  'U.S.',
+  'Other'
+];
+
+const roleTypes = [
+  'Data center contact',
+  'Technical contact',
+  'Science contact',
+  'Investigator',
+  'Metadata author',
+  'User services',
+  'Science software development'
+];
 
 const SpanTwo = styled.div`
   grid-column-start: span 2;
@@ -51,8 +87,11 @@ export const InnerContactForm = (props) => {
     handleChange,
     handleBlur,
     handleSubmit,
+
+
     id,
     contact,
+    addMechanism,
     t
   } = props;
   const submitEnabled = !Object.keys(errors).length
@@ -61,7 +100,6 @@ export const InnerContactForm = (props) => {
   const submitValue = contact ? 'Update contact' : 'Create contact';
   return (
     <Form onSubmit={handleSubmit}>
-
       <InputFormGroup>
         <Input
           id={`${id}-first-name`}
@@ -129,41 +167,82 @@ export const InnerContactForm = (props) => {
         </SpanTwo>
       </InputFormGroup>
 
-      <FormFieldset>
-        <FormFieldsetHeader>
-          <FormLegend>Contact Mechanism</FormLegend>
-        </FormFieldsetHeader>
-        <FormFieldsetBody>
-          <InputFormGroup>
-            <Select
-              id={`${id}-contact-type`}
-              name={contact_mechanism_type}
-              label="Type"
-              onChange={handleChange}
-              onBlur={handleBlur}
-              value={values[contact_mechanism_type]}
-              error={errors[contact_mechanism_type]}
-              touched={touched[contact_mechanism_type]}
-              options={contact_mechanism_types.map(d => ({ value: d, label: d }))}
-              info={t.person_mechanism_type}
-            />
-            <SpanTwo>
-              <Input
-                id={`${id}-contact-mechanism-value`}
-                name={contact_mechanism_value}
-                label="Value"
-                type="text"
-                onChange={handleChange}
+      {values[mechanisms].map((d, i) => (
+        /* eslint-disable react/no-array-index-key */
+        <FormFieldset key={`mechanism-${i}`}>
+          <FormFieldsetHeader>
+            <FormLegend>Contact Mechanism #{i + 1}</FormLegend>
+          </FormFieldsetHeader>
+          <FormFieldsetBody>
+            <InputFormGroup>
+              <Select
+                id={`${id}-${i}-contact-type`}
+                name={`mechanisms[${i}].${mechanism_type}`}
+                label="Type"
+                onChange={e => handleChange({
+                  target: {
+                    value: e.value,
+                    name: `mechanisms[${i}].${mechanism_type}`
+                  }
+                })}
                 onBlur={handleBlur}
-                value={values[contact_mechanism_value]}
-                error={errors[contact_mechanism_value]}
-                touched={touched[contact_mechanism_value]}
-                info={t.person_mechanism_value}
+                value={get(values, [mechanisms, i, mechanism_type])}
+                options={mechanismTypes.map(m => ({ value: m, label: m }))}
+                info={t.person_mechanism_type}
               />
-            </SpanTwo>
-          </InputFormGroup>
-        </FormFieldsetBody>
-      </FormFieldset>
+              <SpanTwo>
+                <Input
+                  id={`${id}-${i}-contact-mechanism-value`}
+                  name={`mechanisms[${i}].${mechanism_value}`}
+                  label="Value"
+                  type="text"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={get(values, [mechanisms, i, mechanism_value])}
+                  touched={get(touched, [mechanisms, i, mechanism_value])}
+                  error={get(errors, [mechanisms, i, mechanism_value])}
+                  info={t.person_mechanism_value}
+                />
+              </SpanTwo>
+            </InputFormGroup>
+          </FormFieldsetBody>
+        </FormFieldset>
+      ))}
+
+      <AddBtn
+        variation="base-plain"
+        onClick={addMechanism}
+      >
+        Add another mechanism
+      </AddBtn>
+
+      <FormGroup>
+        <FormGroupHeader>
+          <FormLabel>Role related to this document</FormLabel>
+        </FormGroupHeader>
+        <FormGroupBody>
+          <FormCheckableGroup>
+            <InputFormGroup>
+              {roleTypes.map((roleType, i) => (
+                <FormCheckable
+                  key={`${id}-${i}-role-type`}
+                  id={`${id}-${i}-role-type`}
+                  type="checkbox"
+                  name={`roles[${i}]`}
+                  onChange={(e) => {
+                    const name = `roles[${i}]`;
+                    handleChange({ target: { name, value: e.target.checked } });
+                    handleBlur({ target: { name } });
+                  }}
+                  checked={values[roles][i]}
+                >
+                  {roleType}
+                </FormCheckable>
+              ))}
+            </InputFormGroup>
+          </FormCheckableGroup>
+        </FormGroupBody>
+      </FormGroup>
 
       <InputSubmit
         type="submit"
@@ -187,7 +266,15 @@ InnerContactForm.propTypes = {
     PropTypes.number,
     PropTypes.string
   ]).isRequired,
-  t: PropTypes.object
+
+  t: PropTypes.object,
+  addMechanism: PropTypes.func,
+  removeMechanism: PropTypes.func,
+  type: PropTypes.string,
+
+  /* eslint-disable react/no-unused-prop-types */
+  mechanisms: PropTypes.array,
+  roles: PropTypes.array
 };
 
 export const ContactForm = withFormik({
@@ -199,8 +286,8 @@ export const ContactForm = withFormik({
       [last_name]: contact.last_name || '',
       [uuid]: contact.uuid || '',
       [url]: contact.url || '',
-      [contact_mechanism_type]: email,
-      [contact_mechanism_value]: ''
+      [mechanisms]: props.mechanisms,
+      [roles]: roleTypes.map(r => props.roles.indexOf(r) >= 0)
     };
     return initialValues;
   },
@@ -210,20 +297,24 @@ export const ContactForm = withFormik({
     errors = transformErrors(
       validator.validate(values, contactsSchema).errors
     );
-    if (values[contact_mechanism_type] === email) {
-      const isValidEmail = validateEmail(values[contact_mechanism_value]);
-      if (!isValidEmail) {
-        errors[contact_mechanism_value] = 'Must be a valid email';
+    values[mechanisms].forEach((mechanism, i) => {
+      if (mechanism[mechanism_type] === 'Email') {
+        const isValidEmail = validateEmail(mechanism[mechanism_value]);
+        if (!isValidEmail) {
+          set(errors, [mechanisms, i, mechanism_value], 'Must be valid email');
+        }
       }
-    }
+    });
     return errors;
   },
 
   handleSubmit: (values, { props, setSubmitting, resetForm }) => {
-    console.log(props);
     setSubmitting(false);
     resetForm();
-  }
+  },
+
+  // re-render when props change
+  enableReinitialize: true
 })(InnerContactForm);
 
 const mapStateToProps = state => ({
