@@ -25,6 +25,7 @@ export const InputFormGroup = styled.div`
   grid-template-columns: repeat(3, 1fr);
   justify-content: space-between;
   margin-bottom: 1rem;
+  width: 100%;
 `;
 
 const InlineInput = styled.input`
