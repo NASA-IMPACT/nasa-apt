@@ -312,10 +312,16 @@ export function uploadFile(file) {
       endpoint: `http://${s3Uri}/${figuresBucket}`,
       method: 'POST',
       fetch: async (...args) => {
+        let location;
         const res = await fetch(...args);
-        const text = await res.text();
-        const xml = new DOMParser().parseFromString(text, 'application/xml');
-        const location = xml.getElementsByTagName('Location')[0].textContent;
+        // Localstack doesn't support key return yet.
+        if (res.status === 200) {
+          location = `http://${s3Uri}/${figuresBucket}/${keyedFile.name}`;
+        } else {
+          const text = await res.text();
+          const xml = new DOMParser().parseFromString(text, 'application/xml');
+          location = xml.getElementsByTagName('Location')[0].textContent;
+        }
         return new Response(
           JSON.stringify({
             location
