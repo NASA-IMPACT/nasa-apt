@@ -1,4 +1,3 @@
-# FROM base_atbd
 FROM ubuntu
 
 RUN apt-get update
