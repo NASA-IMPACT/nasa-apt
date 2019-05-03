@@ -59,7 +59,6 @@ Parameters:
     Type: String
     Default: nasa-apt-figures
     Description: Bucket for storing ATBD figures.
-
 Mappings:
   # Hard values for the subnet masks. These masks define
   # the range of internal IP addresses that can be assigned.
@@ -473,6 +472,7 @@ Resources:
           SECURITY_GROUP: !Ref FargateContainerSecurityGroup
           ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
           ECS_TASK_ROLE: !GetAtt SerializeTaskRole.Arn
+          ATBD_BUCKET_NAME: !Ref AtbdBucketName
       Handler: index.handler
       Runtime: nodejs8.10
       Code:
@@ -503,10 +503,9 @@ Resources:
                 containerOverrides: [
                   {
                     command: [
-                      'python',
-                      './s3eventHandler.py',
                       bucketName,
-                      key
+                      key,
+                      process.env.ATBD_BUCKET_NAME
                     ],
                     name: 'serialize'
                   }
@@ -584,10 +583,6 @@ Resources:
           Cpu: 1024
           Memory: 2048
           Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt:latest'
-          Environment:
-            -
-              Name: ATBD_BUCKET
-              Value: !Ref AtbdBucket
           LogConfiguration:
             LogDriver: awslogs
             Options:
