@@ -188,14 +188,14 @@ Resources:
     Properties:
       Description: Ingress from the public ALB
       GroupId: !Ref 'FargateContainerSecurityGroup'
-      IpProtocol: -1
+      IpProtocol: '-1'
       SourceSecurityGroupId: !Ref 'PublicLoadBalancerSG'
   EcsSecurityGroupIngressFromSelf:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       Description: Ingress from other containers in the same security group
       GroupId: !Ref 'FargateContainerSecurityGroup'
-      IpProtocol: -1
+      IpProtocol: '-1'
       SourceSecurityGroupId: !Ref 'FargateContainerSecurityGroup'
 
   # Load balancers for getting traffic to containers.
@@ -215,7 +215,7 @@ Resources:
       SecurityGroupIngress:
         # Allow access to ALB from anywhere on the internet
         - CidrIp: 0.0.0.0/0
-          IpProtocol: -1
+          IpProtocol: '-1'
   PublicLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -247,8 +247,6 @@ Resources:
       VpcId: !Ref 'VPC'
   PublicLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - PublicLoadBalancer
     Properties:
       DefaultActions:
         - TargetGroupArn: !Ref 'DummyTargetGroupPublic'
@@ -471,7 +469,7 @@ Resources:
           SUBNET2: !Ref 'PublicSubnetTwo'
           SECURITY_GROUP: !Ref FargateContainerSecurityGroup
           ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
-          ECS_TASK_ROLE: !GetAtt SerializeTaskRole.Arn
+          ECS_TASK_ROLE: !GetAtt TaskRole.Arn
           ATBD_BUCKET_NAME: !Ref AtbdBucketName
       Handler: index.handler
       Runtime: nodejs8.10
@@ -519,19 +517,15 @@ Resources:
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn: AtbdJsonBucketLambda
     Properties:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref AtbdJsonBucketLambda
       Principal: 's3.amazonaws.com'
-      SourceArn: 'arn:aws:s3:::nasa-apt-json'
+      SourceArn: !Sub 'arn:aws:s3:::${AtbdJsonBucketName}'
 
   # ATBD json bucket
   AtbdJsonBucket:
     Type: AWS::S3::Bucket
-    DependsOn:
-      - AtbdJsonBucketLambda
-      - LambdaInvokePermission
     Properties:
       BucketName: !Ref 'AtbdJsonBucketName'
       NotificationConfiguration:
@@ -540,7 +534,89 @@ Resources:
             Event: 's3:ObjectCreated:*'
             Function: !GetAtt AtbdJsonBucketLambda.Arn
 
-  SerializeTaskRole:
+  AtbdBucketLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          CLUSTER: !GetAtt ECSCluster.Arn
+          PDF_TASK: !Ref PdfTaskDefinition
+          SUBNET1: !Ref 'PublicSubnetOne'
+          SUBNET2: !Ref 'PublicSubnetTwo'
+          SECURITY_GROUP: !Ref FargateContainerSecurityGroup
+          ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
+          ECS_TASK_ROLE: !GetAtt TaskRole.Arn
+          ATBD_BUCKET_NAME: !Ref AtbdBucketName
+      Handler: index.handler
+      Runtime: nodejs8.10
+      Code:
+        ZipFile: >
+          const AWS = require('aws-sdk');
+          exports.handler = async function handler(event) {
+            const record = event.Records[0];
+            const bucketName = record.s3.bucket.name;
+            const key = record.s3.object.key;
+            const ecs = new AWS.ECS();
+            const params = {
+              cluster: process.env.CLUSTER,
+              taskDefinition: process.env.PDF_TASK,
+              launchType: 'FARGATE',
+              networkConfiguration: {
+                awsvpcConfiguration: {
+                  subnets: [
+                    process.env.SUBNET1,
+                    process.env.SUBNET2
+                  ],
+                  assignPublicIp: 'ENABLED',
+                  securityGroups: [
+                    process.env.SECURITY_GROUP
+                  ]
+                }
+              },
+              overrides: {
+                containerOverrides: [
+                  {
+                    command: [
+                      bucketName,
+                      key,
+                      process.env.ATBD_BUCKET_NAME
+                    ],
+                    name: 'serialize'
+                  }
+                ],
+                executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
+                taskRoleArn: process.env.ECS_TASK_ROLE
+              }
+            };
+            return ecs.runTask(params).promise();
+          }
+
+  AtbdBucketLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref AtbdJsonBucketLambda
+      Principal: 's3.amazonaws.com'
+      SourceArn: !Sub 'arn:aws:s3:::${AtbdBucketName}'
+
+  AtbdBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref 'AtbdBucketName'
+      NotificationConfiguration:
+        LambdaConfigurations:
+          -
+            Event: 's3:ObjectCreated:*'
+            Function: !GetAtt AtbdBucketLambda.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  -
+                    Name: 'suffix'
+                    Value: 'tex'
+
+  TaskRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -557,11 +633,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: 's3:PutObject*'
-                Resource: !Sub 'arn:aws:s3:::${AtbdBucket}*'
-  AtbdBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref 'AtbdBucketName'
+                Resource: !Sub 'arn:aws:s3:::${AtbdBucketName}*'
 
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -572,8 +644,8 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: 'serialize'
-      Cpu: 1024
-      Memory: 2048
+      Cpu: '1024'
+      Memory: '2048'
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
@@ -589,6 +661,29 @@ Resources:
               awslogs-group: !Ref LogGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: serializetask
+
+  PdfTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'pdf'
+      Cpu: '1024'
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: 'pdf'
+          Cpu: 1024
+          Memory: 2048
+          Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt-pdf'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: pdftask
+
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
