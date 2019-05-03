@@ -137,9 +137,9 @@ class ATBD:
             data = original.read()
         with open(os.path.join(self.nameFile('tex')), 'w') as modified:
             modified.write('\\ifx \\convertType \\undefined \n')
-            modified.write('\n'.join(pdfImgs))
-            modified.write('\n \\else \n')
             modified.write('\n'.join(htmlImgs))
+            modified.write('\n \\else \n')
+            modified.write('\n'.join(pdfImgs))
             modified.write('\n \\fi \n')
             modified.write('\n'.join(self.texVars) + ' \n' + data)
             fileName = modified.name
