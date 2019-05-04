@@ -1,4 +1,4 @@
-/* global File, FormData, fetch, DOMParser, Response */
+/* global File, FormData, fetch, DOMParser, Response, Blob */
 import { RSAA } from 'redux-api-middleware';
 import uuid from 'uuid/v1';
 import types from '../constants/action_types';
@@ -6,6 +6,8 @@ import types from '../constants/action_types';
 const BASE_URL = process.env.REACT_APP_API_URL;
 const s3Uri = process.env.REACT_APP_S3_URI;
 const figuresBucket = process.env.REACT_APP_FIGURES_BUCKET;
+const jsonBucket = process.env.REACT_APP_ATBD_JSON_BUCKET;
+const atbdBucket = process.env.REACT_APP_ATBD_BUCKET;
 
 const returnObjectHeaders = {
   'Content-Type': 'application/json',
@@ -80,10 +82,12 @@ export function fetchAtbdVersion(versionObject) {
   const { atbd_id, atbd_version } = versionObject;
   return {
     [RSAA]: {
-      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
-        + `atbd_version=eq.${atbd_version}&select=*,atbd(*),algorithm_input_variables(*),`
-        + `algorithm_output_variables(*)`,
       method: 'GET',
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}&select=*,atbd(*),`
+        + `algorithm_input_variables(*),algorithm_output_variables(*),`
+        + `algorithm_implementations(*),publication_references(*),`
+        + `data_access_input_data(*),data_access_related_urls(*)`,
       headers: returnObjectHeaders,
       types: [
         types.FETCH_ATBD_VERSION,
@@ -356,6 +360,79 @@ export function fetchStatic() {
         types.FETCH_STATIC,
         types.FETCH_STATIC_SUCCESS,
         types.FETCH_STATIC_FAIL
+      ]
+    }
+  };
+}
+
+export function uploadJson(json) {
+  const id = uuid();
+  const extension = 'json';
+  const keyedFileName = `${id}.${extension}`;
+  const jsonString = JSON.stringify(json);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const keyedFile = new File([blob], keyedFileName, { type: blob.type });
+  const data = new FormData();
+  data.append('success_action_status', '201');
+  data.append('Content-Type', keyedFile.type);
+  data.append('key', keyedFile.name);
+  data.append('file', keyedFile);
+  return {
+    [RSAA]: {
+      endpoint: `http://${s3Uri}/${jsonBucket}`,
+      method: 'POST',
+      fetch: async (...args) => {
+        let location;
+        const res = await fetch(...args);
+        // Localstack doesn't support key return yet.
+        if (res.status === 200) {
+          location = `http://${s3Uri}/${jsonBucket}/${keyedFile.name}`;
+        } else {
+          const text = await res.text();
+          const xml = new DOMParser().parseFromString(text, 'application/xml');
+          location = xml.getElementsByTagName('Location')[0].textContent;
+        }
+        return new Response(
+          JSON.stringify({
+            location
+          }),
+          {
+            status: res.status,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      },
+      headers: {
+        'Content-Length': keyedFile.size
+      },
+      body: data,
+      types: [
+        types.UPLOAD_JSON,
+        types.UPLOAD_JSON_SUCCESS,
+        types.UPLOAD_JSON_FAIL
+      ],
+    },
+  };
+}
+
+export function serializeDocument(versionObject) {
+  return {
+    type: types.SERIALIZE_DOCUMENT,
+    payload: versionObject
+  };
+}
+
+export function checkPdf(key) {
+  return {
+    [RSAA]: {
+      endpoint: `${atbdBucket}/${key}`,
+      method: 'HEAD',
+      types: [
+        types.CHECK_PDF,
+        types.CHECK_PDF_SUCCESS,
+        types.CHECK_PDF_FAIL
       ]
     }
   };

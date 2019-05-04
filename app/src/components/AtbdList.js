@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { push } from 'connected-react-router';
-import { createAtbd } from '../actions/actions';
+import { createAtbd, serializeDocument } from '../actions/actions';
 import {
   atbdsedit,
   contacts
@@ -94,7 +94,7 @@ const EditIcon = styled.span`
 `;
 
 const AtbdList = (props) => {
-  const { atbds, createAtbd: create } = props;
+  const { atbds, createAtbd: create, serializeDocument: serialize } = props;
   const atbdElements = atbds.map((atbd) => {
     const { atbd_id, title, atbd_versions } = atbd;
     // We are using a default single version for the prototype.
@@ -110,6 +110,7 @@ const AtbdList = (props) => {
         <AtbdCell>2 hours ago</AtbdCell>
         <AtbdCell>Author Name</AtbdCell>
         <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${contacts}`)}><EditIcon /></AtbdCell>
+        <AtbdCell onClick={() => serialize({ atbd_id, atbd_version: 1 })}><EditIcon /></AtbdCell>
       </AtbdRow>
     );
   });
@@ -205,7 +206,8 @@ AtbdList.propTypes = {
     title: PropTypes.string.isRequired
   })),
   push: PropTypes.func,
-  createAtbd: PropTypes.func.isRequired
+  createAtbd: PropTypes.func.isRequired,
+  serializeDocument: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -213,6 +215,6 @@ const mapStateToProps = (state) => {
   return { atbds };
 };
 
-const mapDispatch = { push, createAtbd };
+const mapDispatch = { push, createAtbd, serializeDocument };
 
 export default connect(mapStateToProps, mapDispatch)(AtbdList);
