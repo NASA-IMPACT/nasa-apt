@@ -7,6 +7,7 @@ import types from '../constants/action_types';
 
 const serializeMiddleware = store => next => async (action) => {
   const { type, payload: versionObject } = action;
+  console.log(type);
   let returnAction;
   if (type === types.SERIALIZE_DOCUMENT) {
     const fetchAtbdVersionResp = await store.dispatch(fetchAtbdVersion(versionObject));
@@ -25,6 +26,10 @@ const serializeMiddleware = store => next => async (action) => {
           }
           if (tries > maxTries) {
             clearInterval(interval);
+            store.dispatch({
+              type: types.SERIALIZE_DOCUMENT_FAIL,
+              payload: 'Timeout'
+            });
           }
         }, 2000);
       } else {
