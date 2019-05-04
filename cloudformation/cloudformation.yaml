@@ -526,6 +526,9 @@ Resources:
   # ATBD json bucket
   AtbdJsonBucket:
     Type: AWS::S3::Bucket
+    DependsOn:
+      - AtbdJsonBucketLambda
+      - LambdaInvokePermission
     Properties:
       BucketName: !Ref 'AtbdJsonBucketName'
       NotificationConfiguration:
@@ -594,14 +597,18 @@ Resources:
 
   AtbdBucketLambdaInvokePermission:
     Type: AWS::Lambda::Permission
+    DependsOn: AtbdBucketLambda
     Properties:
       Action: 'lambda:InvokeFunction'
-      FunctionName: !Ref AtbdJsonBucketLambda
+      FunctionName: !Ref AtbdBucketLambda
       Principal: 's3.amazonaws.com'
       SourceArn: !Sub 'arn:aws:s3:::${AtbdBucketName}'
 
   AtbdBucket:
     Type: AWS::S3::Bucket
+    #DependsOn:
+      #- AtbdBucketLambda
+      #- AtbdBucketLambdaInvokePermission
     Properties:
       BucketName: !Ref 'AtbdBucketName'
       NotificationConfiguration:
@@ -615,6 +622,42 @@ Resources:
                   -
                     Name: 'suffix'
                     Value: 'tex'
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods:
+              - GET
+              - HEAD
+              - PUT
+              - POST
+            AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
+
+  AtbdBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: AtbdBucketName
+      PolicyDocument:
+        Statement:
+          Action:
+            - 's3:List*'
+            - 's3:Get*'
+            - 's3:PutObject'
+            - 's3:PutObjectAcl'
+          Effect: Allow
+          Principal:
+            AWS:
+              - '*'
+          Resource:
+            Fn::Join:
+              - ''
+              -
+                - 'arn:aws:s3:::'
+                -
+                  Ref: AtbdBucketName
+                - "/*"
 
   TaskRole:
     Type: AWS::IAM::Role
