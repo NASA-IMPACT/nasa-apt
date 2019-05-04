@@ -1,7 +1,12 @@
+/* global File, FormData, fetch, DOMParser, Response */
 import { RSAA } from 'redux-api-middleware';
+import uuid from 'uuid/v1';
 import types from '../constants/action_types';
 
 const BASE_URL = process.env.REACT_APP_API_URL;
+const s3Uri = process.env.REACT_APP_S3_URI;
+const figuresBucket = process.env.REACT_APP_FIGURES_BUCKET;
+
 const returnObjectHeaders = {
   'Content-Type': 'application/json',
   Accept: 'application/vnd.pgrst.object+json',
@@ -293,12 +298,54 @@ export function deleteAlgorithmImplementation(id) {
 }
 
 export function uploadFile(file) {
+  const id = uuid();
+  const extension = file.name.split('.').pop();
+  const keyedFileName = `${id}.${extension}`;
+  const keyedFile = new File([file], keyedFileName, { type: file.type });
+  const data = new FormData();
+  data.append('success_action_status', '201');
+  data.append('Content-Type', keyedFile.type);
+  data.append('key', keyedFile.name);
+  data.append('file', keyedFile);
   return {
-    type: types.UPLOAD_FILE,
-    payload: file
+    [RSAA]: {
+      endpoint: `http://${s3Uri}/${figuresBucket}`,
+      method: 'POST',
+      fetch: async (...args) => {
+        let location;
+        const res = await fetch(...args);
+        // Localstack doesn't support key return yet.
+        if (res.status === 200) {
+          location = `http://${s3Uri}/${figuresBucket}/${keyedFile.name}`;
+        } else {
+          const text = await res.text();
+          const xml = new DOMParser().parseFromString(text, 'application/xml');
+          location = xml.getElementsByTagName('Location')[0].textContent;
+        }
+        return new Response(
+          JSON.stringify({
+            location
+          }),
+          {
+            status: res.status,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      },
+      headers: {
+        'Content-Length': keyedFile.size
+      },
+      body: data,
+      types: [
+        types.UPLOAD_FILE,
+        types.UPLOAD_FILE_SUCCESS,
+        types.UPLOAD_FILE_FAIL
+      ],
+    },
   };
 }
-
 
 export function fetchStatic() {
   return {

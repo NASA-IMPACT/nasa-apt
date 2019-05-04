@@ -126,10 +126,10 @@ export default function (state = initialState, action) {
     }
 
     case actions.UPLOAD_FILE_SUCCESS: {
-      const { payload } = action;
+      const { payload: { location } } = action;
       return {
         ...state,
-        uploadedFile: payload
+        uploadedFile: location
       };
     }
 
