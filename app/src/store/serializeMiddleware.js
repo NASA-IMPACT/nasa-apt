@@ -14,10 +14,16 @@ const serializeMiddleware = store => next => async (action) => {
       const { payload: json } = fetchAtbdVersionResp;
       const uploadJsonResp = await store.dispatch(uploadJson(json));
       if (uploadJsonResp.type === types.UPLOAD_JSON_SUCCESS) {
+        const maxTries = 10;
+        let tries = 0;
         const interval = setInterval(async () => {
           const checkPdfResp = await store.dispatch(checkPdf('somekey'));
+          tries += 1;
           console.log(checkPdfResp);
           if (checkPdfResp === types.CHECK_PDF_SUCCESS) {
+            clearInterval(interval);
+          }
+          if (tries > maxTries) {
             clearInterval(interval);
           }
         }, 2000);
@@ -27,7 +33,9 @@ const serializeMiddleware = store => next => async (action) => {
     } else {
       returnAction = fetchAtbdVersionResp;
     }
+  } else {
+    returnAction = next(action);
   }
-  return next(action);
+  return returnAction;
 };
 export default serializeMiddleware;
