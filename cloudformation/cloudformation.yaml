@@ -585,7 +585,7 @@ Resources:
                       key,
                       process.env.ATBD_BUCKET_NAME
                     ],
-                    name: 'serialize'
+                    name: 'pdf'
                   }
                 ],
                 executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
@@ -681,7 +681,7 @@ Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: /ecs/nasa-apt-serializetask
+      LogGroupName: /ecs/nasa-apt-tasks
 
   SerializeTaskDefinition:
     Type: AWS::ECS::TaskDefinition
