@@ -5,6 +5,7 @@ import {
 } from '../actions/actions';
 import types from '../constants/action_types';
 
+const pdfRetries = process.env.REACT_APP_PDF_RETRIES;
 const serializeMiddleware = store => next => async (action) => {
   const { type, payload: versionObject } = action;
   let returnAction;
@@ -14,10 +15,12 @@ const serializeMiddleware = store => next => async (action) => {
       const { payload: json } = fetchAtbdVersionResp;
       const uploadJsonResp = await store.dispatch(uploadJson(json));
       if (uploadJsonResp.type === types.UPLOAD_JSON_SUCCESS) {
-        const maxTries = 10;
+        const { payload: { location } } = uploadJsonResp;
+        const maxTries = pdfRetries;
         let tries = 0;
+        const pdfkey = location.split('/').pop().split('.')[0];
         const interval = setInterval(async () => {
-          const checkPdfResp = await store.dispatch(checkPdf('somekey'));
+          const checkPdfResp = await store.dispatch(checkPdf(pdfkey));
           tries += 1;
           if (checkPdfResp === types.CHECK_PDF_SUCCESS) {
             clearInterval(interval);

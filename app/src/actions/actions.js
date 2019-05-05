@@ -367,8 +367,8 @@ export function fetchStatic() {
 
 export function uploadJson(json) {
   const id = uuid();
-  const extension = 'json';
-  const keyedFileName = `${id}.${extension}`;
+  const { atbd_id, atbd_version } = json;
+  const keyedFileName = `ATBD_${atbd_id}v${atbd_version}_${id}.json`;
   const jsonString = JSON.stringify(json);
   const blob = new Blob([jsonString], { type: 'application/json' });
   const keyedFile = new File([blob], keyedFileName, { type: blob.type });
@@ -427,7 +427,7 @@ export function serializeDocument(versionObject) {
 export function checkPdf(key) {
   return {
     [RSAA]: {
-      endpoint: `${atbdBucket}/${key}`,
+      endpoint: `${atbdBucket}/${key}.pdf`,
       method: 'HEAD',
       types: [
         types.CHECK_PDF,
