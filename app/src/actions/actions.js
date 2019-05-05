@@ -1,7 +1,12 @@
+/* global File, FormData, fetch, DOMParser, Response */
 import { RSAA } from 'redux-api-middleware';
+import uuid from 'uuid/v1';
 import types from '../constants/action_types';
 
 const BASE_URL = process.env.REACT_APP_API_URL;
+const s3Uri = process.env.REACT_APP_S3_URI;
+const figuresBucket = process.env.REACT_APP_FIGURES_BUCKET;
+
 const returnObjectHeaders = {
   'Content-Type': 'application/json',
   Accept: 'application/vnd.pgrst.object+json',
@@ -19,6 +24,21 @@ export function createContact(contact) {
         types.CREATE_CONTACT,
         types.CREATE_CONTACT_SUCCESS,
         types.CREATE_CONTACT_FAIL
+      ]
+    }
+  };
+}
+
+export function createAtbd() {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/rpc/create_atbd_version`,
+      method: 'POST',
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ATBD,
+        types.CREATE_ATBD_SUCCESS,
+        types.CREATE_ATBD_FAIL
       ]
     }
   };
@@ -77,7 +97,7 @@ export function fetchAtbdVersion(versionObject) {
 export function fetchAtbds() {
   return {
     [RSAA]: {
-      endpoint: `${BASE_URL}/atbds?select=*,contacts(*)`,
+      endpoint: `${BASE_URL}/atbds?select=*,contacts(*),atbd_versions(atbd_id, atbd_version, status)`,
       method: 'GET',
       types: [
         types.FETCH_ATBDS,
@@ -211,9 +231,132 @@ export function deleteAtbdContact(atbd_id, contact_id) {
   };
 }
 
-export function uploadFile(file) {
+export function fetchAlgorithmImplmentations(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
   return {
-    type: types.UPLOAD_FILE,
-    payload: file
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}&select=atbd_version,atbd(*),algorithm_implementations(*)`,
+      method: 'GET',
+      headers: returnObjectHeaders,
+      types: [
+        types.FETCH_ALGORITHM_IMPLEMENTATION,
+        types.FETCH_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.FETCH_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
+export function createAlgorithmImplementation(implementation) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_implementations`,
+      method: 'POST',
+      body: JSON.stringify(implementation),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ALGORITHM_IMPLEMENTATION,
+        types.CREATE_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.CREATE_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
+export function updateAlgorithmImplementation(id, implementation) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_implementations`
+        + `?algorithm_implementation_id=eq.${id}`,
+      method: 'PATCH',
+      body: JSON.stringify(implementation),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_ALGORITHM_IMPLEMENTATION,
+        types.UPDATE_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.UPDATE_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
+export function deleteAlgorithmImplementation(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/algorithm_implementations`
+        + `?algorithm_implementation_id=eq.${id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ALGORITHM_IMPLEMENTATION,
+        types.DELETE_ALGORITHM_IMPLEMENTATION_SUCCESS,
+        types.DELETE_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
+export function uploadFile(file) {
+  const id = uuid();
+  const extension = file.name.split('.').pop();
+  const keyedFileName = `${id}.${extension}`;
+  const keyedFile = new File([file], keyedFileName, { type: file.type });
+  const data = new FormData();
+  data.append('success_action_status', '201');
+  data.append('Content-Type', keyedFile.type);
+  data.append('key', keyedFile.name);
+  data.append('file', keyedFile);
+  return {
+    [RSAA]: {
+      endpoint: `http://${s3Uri}/${figuresBucket}`,
+      method: 'POST',
+      fetch: async (...args) => {
+        let location;
+        const res = await fetch(...args);
+        // Localstack doesn't support key return yet.
+        if (res.status === 200) {
+          location = `http://${s3Uri}/${figuresBucket}/${keyedFile.name}`;
+        } else {
+          const text = await res.text();
+          const xml = new DOMParser().parseFromString(text, 'application/xml');
+          location = xml.getElementsByTagName('Location')[0].textContent;
+        }
+        return new Response(
+          JSON.stringify({
+            location
+          }),
+          {
+            status: res.status,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      },
+      headers: {
+        'Content-Length': keyedFile.size
+      },
+      body: data,
+      types: [
+        types.UPLOAD_FILE,
+        types.UPLOAD_FILE_SUCCESS,
+        types.UPLOAD_FILE_FAIL
+      ],
+    },
+  };
+}
+
+export function fetchStatic() {
+  return {
+    [RSAA]: {
+      endpoint: `${process.env.PUBLIC_URL}/static.json`,
+      method: 'GET',
+      types: [
+        types.FETCH_STATIC,
+        types.FETCH_STATIC_SUCCESS,
+        types.FETCH_STATIC_FAIL
+      ]
+    }
   };
 }

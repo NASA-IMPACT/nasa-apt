@@ -5,7 +5,7 @@ export default {
     paragraph: {
       nodes: [
         {
-          match: { object: 'text' },
+          match: [{ object: 'text' }, { type: 'link' }]
         },
       ],
     },

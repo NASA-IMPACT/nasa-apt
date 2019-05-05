@@ -3,7 +3,10 @@ import actions from '../constants/action_types';
 const initialState = {
   atbds: [],
   contacts: [],
-  uploadedFile: null
+  uploadedFile: undefined,
+  atbdVersion: undefined,
+  selectedAtbd: undefined,
+  t: undefined
 };
 
 const deleteAtbdVersionChildItem = (schemaKey, state, action) => {
@@ -42,6 +45,7 @@ const deleteAtbdChildItem = (schemaKey, state, action) => {
 
 export default function (state = initialState, action) {
   switch (action.type) {
+    case actions.FETCH_ALGORITHM_IMPLEMENTATION_SUCCESS:
     case actions.FETCH_ATBD_VERSION_SUCCESS: {
       const { payload } = action;
       return { ...state, atbdVersion: { ...payload } };
@@ -122,10 +126,56 @@ export default function (state = initialState, action) {
     }
 
     case actions.UPLOAD_FILE_SUCCESS: {
+      const { payload: { location } } = action;
+      return {
+        ...state,
+        uploadedFile: location
+      };
+    }
+
+    case actions.CREATE_ATBD_SUCCESS: {
+      const { payload } = action;
+      const { created_atbd, created_version } = payload;
+      const newAtbd = {
+        ...created_atbd,
+        contacts: [],
+        atbd_versions: [{ ...created_version }]
+      };
+      return { ...state, atbds: [...state.atbds, newAtbd] };
+    }
+
+    case actions.CREATE_ALGORITHM_IMPLEMENTATION_SUCCESS: {
+      const { payload } = action;
+      const next = (state.atbdVersion.algorithm_implementations || [])
+        .concat([payload]);
+      return {
+        ...state,
+        atbdVersion: {
+          ...state.atbdVersion,
+          algorithm_implementations: next
+        }
+      };
+    }
+
+    case actions.DELETE_ALGORITHM_IMPLEMENTATION_SUCCESS: {
+      const { payload } = action;
+      const id = payload.algorithm_implementation_id;
+      const next = state.atbdVersion.algorithm_implementations
+        .filter(d => id !== d.algorithm_implementation_id);
+      return {
+        ...state,
+        atbdVersion: {
+          ...state.atbdVersion,
+          algorithm_implementations: next
+        }
+      };
+    }
+
+    case actions.FETCH_STATIC_SUCCESS: {
       const { payload } = action;
       return {
         ...state,
-        uploadedFile: payload
+        t: payload
       };
     }
 

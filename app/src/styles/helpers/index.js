@@ -34,3 +34,11 @@ export const disabled = () => css`
   pointer-events: none;
   cursor: not-allowed;
 `;
+
+export const unscrollableY = () => css`
+  overflow-y: hidden;
+`;
+
+export const unscrollableX = () => css`
+  overflow-x: hidden;
+`;

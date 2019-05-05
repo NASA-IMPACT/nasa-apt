@@ -4,13 +4,17 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withFormik } from 'formik';
 import jsonschema from 'jsonschema';
+
 import { createContact } from '../actions/actions';
 import apiSchema from '../schemas/schema.json';
 import addMinLength from '../schemas/addMinLength';
 import transformErrors from '../schemas/transformErrors';
 import validateEmail from '../schemas/validateEmail';
 import Select from './common/Select';
-import Input, { InputFormGroup, InputSubmit } from './common/Input';
+import Input, {
+  InputFormGroup,
+  InputSubmit
+} from './common/Input';
 
 const validator = new jsonschema.Validator();
 const contactsSchema = addMinLength(apiSchema.definitions.contacts);

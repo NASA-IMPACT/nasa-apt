@@ -3,6 +3,8 @@ import { normalize, rgba } from 'polished';
 
 import { themeVal, stylizeFunction } from './utils/general';
 import { collecticonsFont } from './collecticons';
+import { unscrollableY, unscrollableX } from './helpers';
+import reactTooltipStyles from './vendor/react-tooltip';
 
 const _rgba = stylizeFunction(rgba);
 
@@ -136,10 +138,19 @@ const baseStyles = css`
   .tether-element {
     z-index: 1000;
   }
+
+  .unscrollable-y {
+    ${unscrollableY()}
+  }
+
+  .unscrollable-x {
+    ${unscrollableX()}
+  }
 `;
 
 export default createGlobalStyle`
   ${normalize()}
   ${collecticonsFont()}
+  ${reactTooltipStyles()}
   ${baseStyles}
 `;

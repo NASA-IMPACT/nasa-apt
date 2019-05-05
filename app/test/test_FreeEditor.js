@@ -10,9 +10,9 @@ configure({ adapter: new Adapter() });
 
 const proxyquire = require('proxyquire').noCallThru();
 
-test('FreeEditor tool selection', (t) => {
-  const save = sinon.spy();
-  const value = Value.fromJSON({});
+test('FreeEditor initial value', (t) => {
+  const save = () => true;
+  const initialValue = null;
   const { FreeEditor } = proxyquire(
     '../src/components/FreeEditor',
     {
@@ -22,7 +22,46 @@ test('FreeEditor tool selection', (t) => {
   const wrapper = shallow(
     <FreeEditor
       save={save}
-      value={value}
+      initialValue={initialValue}
+    />
+  );
+  t.equal(wrapper.state().value.getIn(['document', 'nodes']).size, 1,
+    'Initializes the editor with a blank document without an initialValue');
+
+  wrapper.setProps({
+    initialValue: {
+      document: {
+        nodes: [{
+          object: 'block',
+          type: 'paragraph',
+          nodes: []
+        }, {
+          object: 'block',
+          type: 'paragraph',
+          nodes: []
+        }]
+      }
+    }
+  });
+  t.equal(wrapper.state().value.getIn(['document', 'nodes']).size, 2,
+    'Updates the internal state value when a new inittialValue prop is detected');
+
+  t.end();
+});
+
+test('FreeEditor tool selection', (t) => {
+  const save = sinon.spy();
+  const initialValue = Value.fromJSON({});
+  const { FreeEditor } = proxyquire(
+    '../src/components/FreeEditor',
+    {
+      './EquationEditor': () => (<div />)
+    }
+  );
+  const wrapper = shallow(
+    <FreeEditor
+      save={save}
+      initialValue={initialValue}
       className=""
     />
   );
