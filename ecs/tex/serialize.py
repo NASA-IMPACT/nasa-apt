@@ -53,16 +53,16 @@ def processWYSIWYGElement(node):
         processTable(node['nodes'])
     elif node['type'] == 'table_cell':
         return processWYSIWYGElement(node['nodes'])
-    elif node['type'] != 'image' and node['type'] != 'table':
-        text = node['nodes'][0]['leaves'][0]['text']
-        if node['type'] == 'equation':
-            text = ' \\begin{equation} ' + text + ' \\end{equation} '
-        return text
     elif node['type'] == 'image':
         imgUrl = node['data']['src']
         filename = imgUrl.rsplit('/', 1)[1]
         imgCommand = saveImage(imgUrl, filename)
         return wrapImage(imgCommand)
+    elif node['type'] != 'image' and node['type'] != 'table':
+        text = node['nodes'][0]['leaves'][0]['text']
+        if node['type'] == 'equation':
+            text = ' \\begin{equation} ' + text + ' \\end{equation} '
+        return text
 
 def processWYSIWYG(element):
     if debug:
@@ -81,9 +81,6 @@ def processVarList(element):
 def processATBD(element):
     return element['title']
 
-def processText(element):
-    return element
-
 mapVars = {
     'scientific_theory': processWYSIWYG,
     'scientific_theory_assumptions': processWYSIWYG,
@@ -92,8 +89,8 @@ mapVars = {
     'algorithm_input_variables': processVarList,
     'algorithm_output_variables': processVarList,
     'atbd': processATBD,
-    'introduction': processText,
-    'historical_perspective': processText
+    'introduction': processWYSIWYG,
+    'historical_perspective': processWYSIWYG
 }
 
 def macroWrap(name, value):
