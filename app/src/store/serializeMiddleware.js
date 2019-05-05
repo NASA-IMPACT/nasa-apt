@@ -7,7 +7,6 @@ import types from '../constants/action_types';
 
 const serializeMiddleware = store => next => async (action) => {
   const { type, payload: versionObject } = action;
-  console.log(type);
   let returnAction;
   if (type === types.SERIALIZE_DOCUMENT) {
     const fetchAtbdVersionResp = await store.dispatch(fetchAtbdVersion(versionObject));
@@ -20,7 +19,6 @@ const serializeMiddleware = store => next => async (action) => {
         const interval = setInterval(async () => {
           const checkPdfResp = await store.dispatch(checkPdf('somekey'));
           tries += 1;
-          console.log(checkPdfResp);
           if (checkPdfResp === types.CHECK_PDF_SUCCESS) {
             clearInterval(interval);
           }
@@ -32,11 +30,7 @@ const serializeMiddleware = store => next => async (action) => {
             });
           }
         }, 2000);
-      } else {
-        returnAction = uploadJsonResp;
       }
-    } else {
-      returnAction = fetchAtbdVersionResp;
     }
   } else {
     returnAction = next(action);
