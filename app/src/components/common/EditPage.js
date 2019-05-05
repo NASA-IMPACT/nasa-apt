@@ -137,8 +137,6 @@ const EditPage = (props) => {
                 </DropdownList>
               </Dropdown>
             </Stepper>
-            <a href="#" title="Save document">Save</a>
-            <a href="#" title="Cancel edit">Cancel</a>
           </InpageToolbar>
         </InpageHeaderInner>
       </InpageHeader>
