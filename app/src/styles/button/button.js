@@ -14,7 +14,7 @@ const BaseButton = React.forwardRef(
     const elType = El === 'button' ? type || 'button' : '';
     return (
       <El ref={ref} {...rest} type={elType}>
-        <span>{children}</span>
+        {!!children && <span>{children}</span>}
       </El>
     );
   }

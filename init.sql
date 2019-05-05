@@ -67,6 +67,23 @@ CREATE TABLE atbd_versions(
   algorithm_usage_constraints json,
   status atbd_status default 'Draft'
 );
+CREATE TABLE citations(
+  citation_id serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  creators VARCHAR (1024),
+  editors VARCHAR (1024),
+  title VARCHAR (1024),
+  series_name VARCHAR (1024),
+  release_date VARCHAR (1024),
+  release_place VARCHAR (1024),
+  publisher VARCHAR (1024),
+  version VARCHAR (1024),
+  issue VARCHAR (1024),
+  additional_details VARCHAR (1024),
+  online_resource VARCHAR (1024)
+);
 CREATE TABLE algorithm_input_variables(
   algorithm_input_variable_id serial PRIMARY KEY,
   atbd_version INTEGER NOT NULL,
