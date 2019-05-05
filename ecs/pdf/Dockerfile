@@ -1,6 +1,7 @@
-FROM pdfbase
+FROM ubuntu
 
 COPY entrypoint.sh /
 ENTRYPOINT [ "/entrypoint.sh" ]
 
-RUN apt-get --assume-yes install wget
+COPY base_commands.sh /
+RUN ./base_commands.sh
