@@ -1,3 +1,7 @@
 .tern-port
 *.swp
 .DS_Store
+<<<<<<< Updated upstream
+=======
+ecs/tex/Misc Test Files
+>>>>>>> Stashed changes
