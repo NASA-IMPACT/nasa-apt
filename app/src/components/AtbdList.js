@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { push } from 'connected-react-router';
-import { createAtbd, serializeDocument } from '../actions/actions';
+import { createAtbd } from '../actions/actions';
 import {
   atbdsedit,
   contacts
@@ -31,6 +31,8 @@ import Dropdown, {
   DropdownList,
   DropdownItem
 } from './Dropdown';
+
+import AtbdPreview from './AtbdPreview';
 
 const VerticalDivider = styled.hr`
   display: inline-flex;
@@ -94,11 +96,13 @@ const EditIcon = styled.span`
 `;
 
 const AtbdList = (props) => {
-  const { atbds, createAtbd: create, serializeDocument: serialize } = props;
+  const {
+    atbds,
+    createAtbd: create,
+  } = props;
+
   const atbdElements = atbds.map((atbd) => {
     const { atbd_id, title, atbd_versions } = atbd;
-    // We are using a default single version for the prototype.
-    // This should be updated in the future.
     const { status } = atbd_versions[0];
     return (
       <AtbdRow scope="row" key={atbd_id}>
@@ -110,7 +114,12 @@ const AtbdList = (props) => {
         <AtbdCell>2 hours ago</AtbdCell>
         <AtbdCell>Author Name</AtbdCell>
         <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${contacts}`)}><EditIcon /></AtbdCell>
-        <AtbdCell onClick={() => serialize({ atbd_id, atbd_version: 1 })}><EditIcon /></AtbdCell>
+        <AtbdCell>
+          <AtbdPreview
+            atbd_id={atbd_id}
+            atbd_version={1}
+          />
+        </AtbdCell>
       </AtbdRow>
     );
   });
@@ -206,8 +215,7 @@ AtbdList.propTypes = {
     title: PropTypes.string.isRequired
   })),
   push: PropTypes.func,
-  createAtbd: PropTypes.func.isRequired,
-  serializeDocument: PropTypes.func.isRequired
+  createAtbd: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -215,6 +223,6 @@ const mapStateToProps = (state) => {
   return { atbds };
 };
 
-const mapDispatch = { push, createAtbd, serializeDocument };
+const mapDispatch = { push, createAtbd };
 
 export default connect(mapStateToProps, mapDispatch)(AtbdList);

@@ -10,6 +10,7 @@ const serializeMiddleware = store => next => async (action) => {
   const { type, payload: versionObject } = action;
   let returnAction;
   if (type === types.SERIALIZE_DOCUMENT) {
+    returnAction = next(action);
     const fetchAtbdVersionResp = await store.dispatch(fetchAtbdVersion(versionObject));
     if (fetchAtbdVersionResp.type === types.FETCH_ATBD_VERSION_SUCCESS) {
       const { payload: json } = fetchAtbdVersionResp;

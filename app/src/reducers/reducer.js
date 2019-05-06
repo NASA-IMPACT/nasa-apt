@@ -179,6 +179,16 @@ export default function (state = initialState, action) {
       };
     }
 
+    case actions.SERIALIZE_DOCUMENT: {
+      const { payload } = action;
+      return {
+        ...state,
+        serializingAtbdVersion: {
+          ...payload
+        }
+      };
+    }
+
     default: return state;
   }
 }
