@@ -147,7 +147,7 @@ class ATBD:
         if debug:
             for item, value in myJson[0].items():
                 print('item: {}, value: {}'.format(item, value))
-        commands = [texify(x, y) for x,y in myJson[0].items() if x in mapVars.keys()]
+        commands = [texify(x, y) for x,y in myJson.items() if x in mapVars.keys()]
         if debug:
             print(commands)
         self.texVars = commands
