@@ -183,11 +183,13 @@ class ContactFormWrapper extends Component {
     } = this;
 
     let data = contact;
+    let isExistingContact = false;
 
     // This scenario means someone has chosen an existing contact
     // to add to this ATBD (and possibly to edit the existing contact).
     if (!data && selectedContact !== NEW) {
       data = contacts.find(d => selectedContact === d.id);
+      isExistingContact = true;
     }
 
     return (
@@ -196,6 +198,7 @@ class ContactFormWrapper extends Component {
         id={id}
         isGroup={type === GROUP}
         save={save}
+        forceAllowSubmit={isExistingContact}
       />
     );
   }

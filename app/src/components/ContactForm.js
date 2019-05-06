@@ -103,14 +103,16 @@ export const InnerContactForm = (props) => {
     setValues,
 
     id,
+    forceAllowSubmit,
     contact,
     isGroup,
     t
   } = props;
   const submitEnabled = !Object.keys(errors).length
-                                  && Object.keys(touched).length;
+    && (Object.keys(touched).length || forceAllowSubmit);
 
-  let submitValue = contact ? 'Update contact' : 'Create contact';
+  let submitValue = forceAllowSubmit ? 'Attach contact'
+    : contact ? 'Update contact' : 'Create contact';
   if (isGroup) {
     submitValue += ' group';
   }
@@ -333,8 +335,8 @@ InnerContactForm.propTypes = {
   ]).isRequired,
 
   t: PropTypes.object,
-
   isGroup: PropTypes.bool,
+  forceAllowSubmit: PropTypes.bool,
 
   /* eslint-disable react/no-unused-prop-types */
   save: PropTypes.func
