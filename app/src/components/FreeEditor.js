@@ -454,7 +454,7 @@ export class FreeEditor extends React.Component {
               />
 
               <EditorReferenceTool
-                onSubmit={() => { this.selectTool(reference); }}
+                onSaveSuccess={() => { this.selectTool(reference); }}
                 active={activeTool === reference}
               />
 

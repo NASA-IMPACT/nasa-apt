@@ -7,6 +7,7 @@ const initialState = {
   atbdVersion: undefined,
   atbdCitation: undefined,
   selectedAtbd: undefined,
+  lastCreatedReference: undefined,
   t: undefined
 };
 
@@ -169,6 +170,14 @@ export default function (state = initialState, action) {
           ...state.atbdVersion,
           algorithm_implementations: next
         }
+      };
+    }
+
+    case actions.CREATE_REFERENCE_SUCCESS: {
+      const { payload } = action;
+      return {
+        ...state,
+        lastCreatedReference: payload
       };
     }
 

@@ -1,10 +1,12 @@
 import React, { Component, Fragment } from 'react';
+import { connect } from 'react-redux';
 import { PropTypes as T } from 'prop-types';
 import styled from 'styled-components';
 
 import { themeVal } from '../styles/utils/general';
 import Button from '../styles/button/button';
 import collecticon from '../styles/collecticons';
+import { createReference } from '../actions/actions';
 
 import {
   FormGroup,
@@ -65,14 +67,19 @@ export class EditorReferenceTool extends Component {
 
   onSubmit(e) {
     e.preventDefault();
-    const { onSubmit } = this.props;
+    const { createReference, atbdVersion } = this.props;
+    const { atbd_id, atbd_version } = atbdVersion;
     const { referenceName } = this.state;
     const nextState = {
       referenceEmpty: !referenceName.length
     };
     if (!nextState.referenceEmpty) {
-      onSubmit(referenceName);
       nextState.activeModal = false;
+      const payload = {
+        atbd_id,
+        atbd_version,
+        title: referenceName
+      };
     }
     this.setState(nextState);
   }
@@ -163,7 +170,18 @@ export class EditorReferenceTool extends Component {
 }
 
 EditorReferenceTool.propTypes = {
-  onSubmit: T.func
+  onSaveSuccess: T.func,
+  createReference: T.func,
+  lastCreatedReference: T.object,
 };
 
-export default EditorReferenceTool;
+const mapStateToProps = state => ({
+  lastCreatedReference: state.application.lastCreatedReference,
+  atbdVersion: state.application.atbdVersion
+});
+
+const mapDispatch = {
+  createReference
+};
+
+export default connect(mapStateToProps, mapDispatch)(EditorReferenceTool);
