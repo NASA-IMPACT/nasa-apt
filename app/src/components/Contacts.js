@@ -9,7 +9,8 @@ import EditPage from './common/EditPage';
 import AddBtn from '../styles/button/add';
 
 import {
-  deleteAtbdContact
+  deleteAtbdContact,
+  deleteAtbdContactGroup
 } from '../actions/actions';
 
 class Contacts extends React.Component {
@@ -20,6 +21,7 @@ class Contacts extends React.Component {
     };
     this.addContact = this.addContact.bind(this);
     this.removeContact = this.removeContact.bind(this);
+    this.deleteContactOrGroup = this.deleteContactOrGroup.bind(this);
   }
 
   addContact() {
@@ -34,11 +36,24 @@ class Contacts extends React.Component {
     this.setState({ contacts: next });
   }
 
+  deleteContactOrGroup(contactOrGroup) {
+    const {
+      deleteAtbdContact: deleteContact,
+      deleteAtbdContactGroup: deleteContactGroup,
+      selectedAtbd
+    } = this.props;
+    const { atbd_id } = selectedAtbd;
+    const deleteFn = contactOrGroup.isGroup ? deleteContactGroup : deleteContact;
+    const id = contactOrGroup.isGroup ? contactOrGroup.contact_group_id
+      : contactOrGroup.contact_id;
+    deleteFn(atbd_id, id);
+  }
+
   render() {
     const {
       allContacts,
-      selectedAtbd,
-      deleteAtbdContact: deleteContact
+      allContactGroups,
+      selectedAtbd
     } = this.props;
 
     let returnValue;
@@ -50,20 +65,24 @@ class Contacts extends React.Component {
 
       const {
         addContact,
-        removeContact
+        removeContact,
+        deleteContactOrGroup
       } = this;
 
       const {
         contacts: newContacts
       } = this.state;
 
-      const atbdContacts = selectedAtbd.contacts || [];
+      // Combine contacts and contact groups
+      const atbdContacts = selectedAtbd.contacts.concat(selectedAtbd.contact_groups);
+      const contactsAndGroups = allContacts.concat(allContactGroups)
+        .sort((a, b) => a.displayName < b.displayName ? -1 : 1);
 
       // Remove any contacts that are already attached
-      let availableContacts = allContacts;
+      let availableContacts = [...contactsAndGroups];
       if (atbdContacts.length) {
-        const existingContacts = atbdContacts.map(d => d.contact_id);
-        availableContacts = allContacts.filter(d => existingContacts.indexOf(d.contact_id) === -1);
+        const existingContacts = atbdContacts.map(d => d.id);
+        availableContacts = contactsAndGroups.filter(d => existingContacts.indexOf(d.id) === -1);
       }
 
       returnValue = (
@@ -76,12 +95,12 @@ class Contacts extends React.Component {
             <h2>Contacts</h2>
             {atbdContacts.map((d, i) => (
               <ContactFormWrapper
-                key={d.contact_id}
-                id={d.contact_id}
+                key={d.id}
+                id={d.id}
                 title={`Contact #${i + 1}`}
                 contact={d}
-                contacts={allContacts}
-                onRemove={() => deleteContact(atbd_id, d.contact_id)}
+                contacts={contactsAndGroups}
+                onRemove={() => deleteContactOrGroup(d)}
               />
             ))}
 
@@ -119,19 +138,23 @@ const contactShape = PropTypes.shape({
 
 Contacts.propTypes = {
   allContacts: PropTypes.arrayOf(contactShape),
+  allContactGroups: PropTypes.array,
   selectedAtbd: PropTypes.shape({
     atbd_id: PropTypes.number.isRequired
   }),
-  deleteAtbdContact: PropTypes.func
+  deleteAtbdContact: PropTypes.func,
+  deleteAtbdContactGroup: PropTypes.func
 };
 
 const mapStateToProps = state => ({
   allContacts: state.application.contacts || [],
+  allContactGroups: state.application.contact_groups || [],
   selectedAtbd: state.application.selectedAtbd
 });
 
 const mapDispatch = {
-  deleteAtbdContact
+  deleteAtbdContact,
+  deleteAtbdContactGroup
 };
 
 export default connect(mapStateToProps, mapDispatch)(Contacts);
