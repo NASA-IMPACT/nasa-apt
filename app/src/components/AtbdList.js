@@ -33,6 +33,18 @@ import Dropdown, {
   DropdownItem
 } from './Dropdown';
 
+const SearchButton = styled(Button)`
+  &::before {
+    ${collecticon('magnifier-right')}
+  }
+`;
+
+const CreateButton = styled(Button)`
+  &::before {
+    ${collecticon('plus')}
+  }
+`;
+
 const AtbdTable = styled.table`
   border-collapse: collapse;
   padding: ${themeVal('layout.space')};
@@ -163,14 +175,8 @@ const AtbdList = (props) => {
           </InpageFilters>
 
           <InpageToolbar>
-            <a href="#" title="Search documents">Search</a>
-            <a
-              href="#"
-              title="Create new document"
-              onClick={create}
-            >
-              Create
-            </a>
+            <SearchButton variation="achromic-plain" title="Search documents" disabled>Search</SearchButton>
+            <CreateButton variation="achromic-plain" title="Create new document" onClick={create}>Create</CreateButton>
           </InpageToolbar>
 
         </InpageHeaderInner>
