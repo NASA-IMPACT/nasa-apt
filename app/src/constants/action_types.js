@@ -2,7 +2,9 @@ import { createTypes, async } from 'redux-action-creator';
 
 const types = createTypes([
   ...async('CREATE_CONTACT'),
+  ...async('UPDATE_CONTACT'),
   ...async('CREATE_CONTACT_GROUP'),
+  ...async('UPDATE_CONTACT_GROUP'),
   ...async('CREATE_ATBD'),
   ...async('CREATE_ATBD_VERSION'),
   ...async('UPDATE_ATBD_VERSION'),
