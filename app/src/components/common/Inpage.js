@@ -1,9 +1,9 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { rgba } from 'polished';
 
 import { truncated, antialiased } from '../../styles/helpers';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
-import { multiply } from '../../styles/utils/math';
+import { multiply, divide } from '../../styles/utils/math';
 import { headingAlt } from '../../styles/type/heading';
 import Constrainer from '../../styles/constrainer';
 
@@ -19,6 +19,15 @@ export const InpageHeader = styled.header`
   ${antialiased()}
   background-color: ${themeVal('color.primary')};
   color: #FFF;
+  transition: opacity 0.32s ease 0s;
+  box-shadow: 0 0 0 0 ${_rgba(themeVal('color.base'), 0.16)};
+  z-index: 10;
+
+  /* isSticky */
+  ${({ isSticky }) => isSticky
+    && css`
+      box-shadow: 0 4px 16px 2px ${_rgba(themeVal('color.base'), 0.16)};
+    `}
 `;
 
 export const InpageHeaderInner = styled(Constrainer)`
@@ -58,7 +67,7 @@ export const FilterItem = styled.div`
   display: flex;
   flex-flow: row nowrap;
   line-height: 2rem;
-  margin: 0 ${multiply(themeVal('layout.space'), 2)} 0 0;
+  margin: 0 ${divide(themeVal('layout.space'), 2)} 0 0;
 
   > * {
     display: inline-flex;
@@ -79,13 +88,21 @@ export const InpageToolbar = styled.div`
   line-height: 2rem;
 
   > * {
-    margin: 0 0 0 ${multiply(themeVal('layout.space'), 2)};
+    margin: 0 0 0 ${divide(themeVal('layout.space'), 2)};
   }
 
   a {
     display: inline-flex;
     font-weight: ${themeVal('type.base.bold')};
     color: inherit;
+  }
+
+  > button:last-child {
+    margin-right: -1rem;
+  }
+
+  button + button {
+    margin-left: 0;
   }
 `;
 

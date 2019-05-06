@@ -3,6 +3,7 @@ import { createTypes, async } from 'redux-action-creator';
 const types = createTypes([
   ...async('CREATE_CONTACT'),
   ...async('CREATE_ATBD'),
+  ...async('UPDATE_ATBD'),
   ...async('CREATE_ATBD_VERSION'),
   ...async('UPDATE_ATBD_VERSION'),
   ...async('FETCH_ATBD_VERSION'),
@@ -10,6 +11,9 @@ const types = createTypes([
   ...async('CREATE_PERFORMANCE_ASSESSMENT'),
   ...async('FETCH_ATBDS'),
   ...async('FETCH_ATBD'),
+  ...async('FETCH_CITATIONS'),
+  ...async('CREATE_CITATION'),
+  ...async('UPDATE_CITATION'),
   ...async('FETCH_CONTACTS'),
   ...async('CREATE_ATBD_CONTACT'),
   ...async('DELETE_ATBD_CONTACT'),
