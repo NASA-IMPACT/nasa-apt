@@ -142,7 +142,7 @@ export default class Dropdown extends React.Component {
   }
 
   toggle() {
-    this.setState({ open: !this.state.open });  // eslint-disable-line
+    this.setState(state => ({ open: !state.open }));
   }
 
   open() {
