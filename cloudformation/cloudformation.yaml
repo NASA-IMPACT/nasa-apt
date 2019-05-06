@@ -545,6 +545,7 @@ Resources:
         Variables:
           CLUSTER: !GetAtt ECSCluster.Arn
           PDF_TASK: !Ref PdfTaskDefinition
+          HTML_TASK: !Ref HtmlTaskDefinition
           SUBNET1: !Ref 'PublicSubnetOne'
           SUBNET2: !Ref 'PublicSubnetTwo'
           SECURITY_GROUP: !Ref FargateContainerSecurityGroup
@@ -592,7 +593,40 @@ Resources:
                 taskRoleArn: process.env.ECS_TASK_ROLE
               }
             };
-            return ecs.runTask(params).promise();
+            const htmlParams = {
+              cluster: process.env.CLUSTER,
+              taskDefinition: process.env.HTML_TASK,
+              launchType: 'FARGATE',
+              networkConfiguration: {
+                awsvpcConfiguration: {
+                  subnets: [
+                    process.env.SUBNET1,
+                    process.env.SUBNET2
+                  ],
+                  assignPublicIp: 'ENABLED',
+                  securityGroups: [
+                    process.env.SECURITY_GROUP
+                  ]
+                }
+              },
+              overrides: {
+                containerOverrides: [
+                  {
+                    command: [
+                      bucketName,
+                      key,
+                      process.env.ATBD_BUCKET_NAME
+                    ],
+                    name: 'html'
+                  }
+                ],
+                executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
+                taskRoleArn: process.env.ECS_TASK_ROLE
+              }
+            }
+            const pdfPromise = ecs.runTask(params).promise();
+            const htmlPromise = ecs.runTask(htmlParams).promise();
+            return pdfPromise;
           }
 
   AtbdBucketLambdaInvokePermission:
@@ -726,6 +760,28 @@ Resources:
               awslogs-group: !Ref LogGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: pdftask
+
+  HtmlTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'html'
+      Cpu: '1024'
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: 'html'
+          Cpu: 1024
+          Memory: 2048
+          Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt-html'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: htmltask
 
   WebsiteBucket:
     Type: AWS::S3::Bucket
