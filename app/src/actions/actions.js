@@ -40,6 +40,38 @@ export function createContactGroup(contactGroup) {
   };
 }
 
+export function updateContact(contact_id, document) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/contacts?contact_id=eq.${contact_id}`,
+      method: 'PATCH',
+      body: JSON.stringify(document),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_CONTACT,
+        types.UPDATE_CONTACT_SUCCESS,
+        types.UPDATE_CONTACT_FAIL
+      ]
+    }
+  };
+}
+
+export function updateContactGroup(contact_group_id, document) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/contact_groups?contact_group_id=eq.${contact_group_id}`,
+      method: 'PATCH',
+      body: JSON.stringify(document),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_CONTACT_GROUP,
+        types.UPDATE_CONTACT_GROUP_SUCCESS,
+        types.UPDATE_CONTACT_GROUP_FAIL
+      ]
+    }
+  };
+}
+
 export function createAtbd() {
   return {
     [RSAA]: {
@@ -213,8 +245,8 @@ export function createAtbdContactGroup(atbd_contact_group) {
 export function deleteAtbdContactGroup(atbd_id, contact_group_id) {
   return {
     [RSAA]: {
-      endpoint: `${BASE_URL}/atbd_contact_groups?atbd_id=eq.${atbd_id}&` +
-      `contact_group_id=eq.${contact_group_id}`,
+      endpoint: `${BASE_URL}/atbd_contact_groups?atbd_id=eq.${atbd_id}&`
+        + `contact_group_id=eq.${contact_group_id}`,
       method: 'DELETE',
       headers: returnObjectHeaders,
       types: [

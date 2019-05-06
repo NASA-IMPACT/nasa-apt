@@ -33,16 +33,25 @@ import {
 import Form from '../styles/form/form';
 import FormLegend from '../styles/form/legend';
 import FormLabel from '../styles/form/label';
+import FormToolbar from '../styles/form/toolbar';
+import InfoButton from './common/InfoButton';
 import AddBtn from '../styles/button/add';
+import RemoveButton from '../styles/button/remove';
 
 const validator = new jsonschema.Validator();
+
 const contactsSchema = addMinLength(apiSchema.definitions.contacts);
 contactsSchema.required = contactsSchema
   .required.filter(property => (property !== 'contact_id'));
 
+const contactGroupsSchema = addMinLength(apiSchema.definitions.contact_groups);
+contactGroupsSchema.required = contactGroupsSchema
+  .required.filter(property => (property !== 'contact_group_id'));
+
 const first_name = 'first_name';
 const middle_name = 'middle_name';
 const last_name = 'last_name';
+const group_name = 'group_name';
 const uuid = 'uuid';
 const url = 'url';
 const mechanism_type = 'mechanism_type';
@@ -79,6 +88,10 @@ const SpanTwo = styled.div`
   grid-column-start: span 2;
 `;
 
+const SpanThree = styled.div`
+  grid-column-start: span 3;
+`;
+
 export const InnerContactForm = (props) => {
   const {
     values,
@@ -87,56 +100,80 @@ export const InnerContactForm = (props) => {
     handleChange,
     handleBlur,
     handleSubmit,
-
+    setValues,
 
     id,
     contact,
-    addMechanism,
+    isGroup,
     t
   } = props;
   const submitEnabled = !Object.keys(errors).length
                                   && Object.keys(touched).length;
 
-  const submitValue = contact ? 'Update contact' : 'Create contact';
+  let submitValue = contact ? 'Update contact' : 'Create contact';
+  if (isGroup) {
+    submitValue += ' group';
+  }
+
   return (
     <Form onSubmit={handleSubmit}>
       <InputFormGroup>
-        <Input
-          id={`${id}-first-name`}
-          name={first_name}
-          label="First Name"
-          type="text"
-          onChange={handleChange}
-          onBlur={handleBlur}
-          value={values[first_name]}
-          error={errors[first_name]}
-          touched={touched[first_name]}
-          info={t.person_first_name}
-        />
-        <Input
-          id={`${id}-middle-name`}
-          name={middle_name}
-          label="Middle Name"
-          type="text"
-          onChange={handleChange}
-          onBlur={handleBlur}
-          value={values[middle_name]}
-          error={errors[middle_name]}
-          touched={touched[middle_name]}
-          info={t.person_middle_name}
-        />
-        <Input
-          id={`${id}-last-name`}
-          name={last_name}
-          label="Last Name"
-          type="text"
-          onChange={handleChange}
-          onBlur={handleBlur}
-          value={values[last_name]}
-          error={errors[last_name]}
-          touched={touched[last_name]}
-          info={t.person_last_name}
-        />
+        {isGroup ? (
+          <SpanThree>
+            <Input
+              id={`${id}-group-name`}
+              name={group_name}
+              label="Group Name"
+              type="text"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values[group_name]}
+              error={errors[group_name]}
+              touched={touched[group_name]}
+              info={t.group_name}
+            />
+          </SpanThree>
+        ) : (
+          <React.Fragment>
+            <Input
+              id={`${id}-first-name`}
+              name={first_name}
+              label="First Name"
+              type="text"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values[first_name]}
+              error={errors[first_name]}
+              touched={touched[first_name]}
+              info={t.person_first_name}
+            />
+            <Input
+              id={`${id}-middle-name`}
+              name={middle_name}
+              label="Middle Name"
+              type="text"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values[middle_name]}
+              error={errors[middle_name]}
+              touched={touched[middle_name]}
+              info={t.person_middle_name}
+            />
+            <Input
+              id={`${id}-last-name`}
+              name={last_name}
+              label="Last Name"
+              type="text"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values[last_name]}
+              error={errors[last_name]}
+              touched={touched[last_name]}
+              info={t.person_last_name}
+            />
+          </React.Fragment>
+        )}
+
         <Input
           id={`${id}-last-uuid`}
           name={uuid}
@@ -147,7 +184,7 @@ export const InnerContactForm = (props) => {
           value={values[uuid]}
           error={errors[uuid]}
           touched={touched[uuid]}
-          info={t.person_uuid}
+          info={isGroup ? t.group_uuid : t.person_uuid}
           optional
         />
         <SpanTwo>
@@ -161,7 +198,7 @@ export const InnerContactForm = (props) => {
             value={values[url]}
             error={errors[url]}
             touched={touched[url]}
-            info={t.person_related_url}
+            info={isGroup ? t.group_related_url : t.person_related_url}
             optional
           />
         </SpanTwo>
@@ -172,6 +209,22 @@ export const InnerContactForm = (props) => {
         <FormFieldset key={`mechanism-${i}`}>
           <FormFieldsetHeader>
             <FormLegend>Contact Mechanism #{i + 1}</FormLegend>
+            <RemoveButton
+              variation="base-plain"
+              size="small"
+              hideText
+              onClick={() => {
+                setValues({
+                  ...values,
+                  [mechanisms]: values[mechanisms].filter((_, idx) => i !== idx)
+                });
+                // Slightly hacky, but necessary to register a touch event
+                // and remove the disabled state on the submit button.
+                handleBlur({ target: { name: 'REMOVE' } });
+              }}
+            >
+              Remove
+            </RemoveButton>
           </FormFieldsetHeader>
           <FormFieldsetBody>
             <InputFormGroup>
@@ -187,8 +240,10 @@ export const InnerContactForm = (props) => {
                 })}
                 onBlur={handleBlur}
                 value={get(values, [mechanisms, i, mechanism_type])}
+                touched={get(touched, [mechanisms, i, mechanism_type])}
+                error={get(errors, [mechanisms, i, mechanism_type])}
                 options={mechanismTypes.map(m => ({ value: m, label: m }))}
-                info={t.person_mechanism_type}
+                info={isGroup ? t.group_mechanism_type : t.person_mechanism_type}
               />
               <SpanTwo>
                 <Input
@@ -201,7 +256,7 @@ export const InnerContactForm = (props) => {
                   value={get(values, [mechanisms, i, mechanism_value])}
                   touched={get(touched, [mechanisms, i, mechanism_value])}
                   error={get(errors, [mechanisms, i, mechanism_value])}
-                  info={t.person_mechanism_value}
+                  info={isGroup ? t.group_mechanism_value : t.person_mechanism_value}
                 />
               </SpanTwo>
             </InputFormGroup>
@@ -211,14 +266,23 @@ export const InnerContactForm = (props) => {
 
       <AddBtn
         variation="base-plain"
-        onClick={addMechanism}
+        onClick={() => setValues({
+          ...values,
+          [mechanisms]: values[mechanisms].concat([{
+            [mechanism_type]: null,
+            [mechanism_value]: ''
+          }])
+        })}
       >
-        Add another mechanism
+        Add a contact mechanism
       </AddBtn>
 
       <FormGroup>
         <FormGroupHeader>
           <FormLabel>Role related to this document</FormLabel>
+          <FormToolbar>
+            <InfoButton text={isGroup ? t.group_role : t.person_role} />
+          </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
           <FormCheckableGroup>
@@ -260,6 +324,7 @@ InnerContactForm.propTypes = {
   handleChange: PropTypes.func.isRequired,
   handleBlur: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
+  setValues: PropTypes.func.isRequired,
 
   contact: PropTypes.object,
   id: PropTypes.oneOfType([
@@ -268,36 +333,57 @@ InnerContactForm.propTypes = {
   ]).isRequired,
 
   t: PropTypes.object,
-  addMechanism: PropTypes.func,
-  removeMechanism: PropTypes.func,
-  type: PropTypes.string,
+
+  isGroup: PropTypes.bool,
 
   /* eslint-disable react/no-unused-prop-types */
-  mechanisms: PropTypes.array,
-  roles: PropTypes.array
+  save: PropTypes.func
 };
 
 export const ContactForm = withFormik({
   mapPropsToValues: (props) => {
+    const { isGroup } = props;
     const contact = props.contact || {};
+    const contactRoles = contact.roles || [];
+    const nameField = isGroup ? { [group_name]: contact[group_name] || '' }
+      : {
+        [first_name]: contact.first_name || '',
+        [middle_name]: contact.middle_name || '',
+        [last_name]: contact.last_name || '',
+      };
     const initialValues = {
-      [first_name]: contact.first_name || '',
-      [middle_name]: contact.middle_name || '',
-      [last_name]: contact.last_name || '',
       [uuid]: contact.uuid || '',
       [url]: contact.url || '',
-      [mechanisms]: props.mechanisms,
-      [roles]: roleTypes.map(r => props.roles.indexOf(r) >= 0)
+      [mechanisms]: contact.mechanisms || [],
+      [roles]: roleTypes.map(r => contactRoles.indexOf(r) >= 0),
+      ...nameField
     };
+    if (!initialValues[mechanisms].length) {
+      initialValues[mechanisms].push({
+        mechanism_type: null,
+        mechanism_value: ''
+      });
+    }
     return initialValues;
   },
 
-  validate: (values) => {
+  validate: (values, { isGroup }) => {
+    const schema = isGroup ? contactGroupsSchema : contactsSchema;
     let errors = {};
     errors = transformErrors(
-      validator.validate(values, contactsSchema).errors
+      validator.validate(values, schema).errors
     );
+
+    // Validate existing mechanism types and values are not null.
+    // Also validate email addresses.
+    // TODO: validate other mechanisms such as phone numbers.
     values[mechanisms].forEach((mechanism, i) => {
+      if (!mechanism[mechanism_type]) {
+        set(errors, [mechanisms, i, mechanism_type], 'Must select a contact mechanism');
+      }
+      if (!mechanism[mechanism_value]) {
+        set(errors, [mechanisms, i, mechanism_value], 'Must enter a contact');
+      }
       if (mechanism[mechanism_type] === 'Email') {
         const isValidEmail = validateEmail(mechanism[mechanism_value]);
         if (!isValidEmail) {
@@ -309,6 +395,15 @@ export const ContactForm = withFormik({
   },
 
   handleSubmit: (values, { props, setSubmitting, resetForm }) => {
+    const { save } = props;
+    const payload = {
+      ...values,
+      mechanisms: formatPostgresArray(values.mechanisms.map(formatMechanism)),
+      roles: formatPostgresArray(values.roles.map((active, idx) => (
+        active && roleTypes[idx]
+      )).filter(Boolean))
+    };
+    save(payload);
     setSubmitting(false);
     resetForm();
   },
@@ -316,6 +411,16 @@ export const ContactForm = withFormik({
   // re-render when props change
   enableReinitialize: true
 })(InnerContactForm);
+
+function formatMechanism(mechanism) {
+  return `(\\"${mechanism[mechanism_type]}\\",\\"${mechanism[mechanism_value]}\\")`;
+}
+
+// ['foo', 'bar'] => '{ "foo", "bar" }'
+function formatPostgresArray(array) {
+  if (!Array.isArray(array) || !array.length) return '{ }';
+  return `{ ${array.map(d => `"${d}"`).join(', ')} }`;
+}
 
 const mapStateToProps = state => ({
   t: state.application.t ? state.application.t.contact_information : {}
