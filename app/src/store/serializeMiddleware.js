@@ -23,7 +23,7 @@ const serializeMiddleware = store => next => async (action) => {
         const interval = setInterval(async () => {
           const checkPdfResp = await store.dispatch(checkPdf(pdfkey));
           tries += 1;
-          if (checkPdfResp === types.CHECK_PDF_SUCCESS) {
+          if (checkPdfResp.type === types.CHECK_PDF_SUCCESS) {
             clearInterval(interval);
           }
           if (tries > maxTries) {

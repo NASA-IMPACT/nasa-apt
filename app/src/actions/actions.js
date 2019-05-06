@@ -427,8 +427,28 @@ export function serializeDocument(versionObject) {
 export function checkPdf(key) {
   return {
     [RSAA]: {
-      endpoint: `${atbdBucket}/${key}.pdf`,
+      //endpoint: `http://${s3Uri}/${atbdBucket}/${key}.pdf`,
+      endpoint: 'http://localhost:4572/nasa-apt-atbd/ATBD_1v1_63d76c70-7014-11e9-8eb3-7bf392fcf9a5.pdf',
       method: 'HEAD',
+      fetch: async (...args) => {
+        let response;
+        const res = await fetch(...args);
+        if (res.status === 200) {
+          const location = `http://${s3Uri}/${atbdBucket}/${key}.pdf`;
+          response = new Response(
+            JSON.stringify({ location }),
+            {
+              status: res.status,
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+        } else {
+          response = res;
+        }
+        return response;
+      },
       types: [
         types.CHECK_PDF,
         types.CHECK_PDF_SUCCESS,

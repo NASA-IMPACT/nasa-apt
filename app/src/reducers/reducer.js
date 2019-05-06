@@ -189,6 +189,23 @@ export default function (state = initialState, action) {
       };
     }
 
+    case actions.CHECK_PDF_SUCCESS: {
+      const { payload: { location: pdfLocation } } = action;
+      return {
+        ...state,
+        serializingAtbdVersion: {
+          ...state.serializingAtbdVersion,
+          pdf: pdfLocation
+        }
+      };
+    }
+
+    case actions.SERIALIZE_DOCUMENT_FAIL: {
+      // Removes the serializingAtbdVersion state property.
+      const { serializingAtbdVersion, ...removedSerializingAtbdVersion } = state;
+      return removedSerializingAtbdVersion;
+    }
+
     default: return state;
   }
 }
