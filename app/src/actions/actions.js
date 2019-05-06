@@ -362,6 +362,38 @@ export function deleteAlgorithmImplementation(id) {
   };
 }
 
+export function createReference(reference) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/publication_references`,
+      method: 'POST',
+      body: JSON.stringify(reference),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_REFERENCE,
+        types.CREATE_REFERENCE_SUCCESS,
+        types.CREATE_REFERENCE_FAIL
+      ]
+    }
+  };
+}
+
+export function deleteReference(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/publication_references`
+        + `?publication_reference_id=eq.${id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_REFERENCE,
+        types.DELETE_REFERENCE_SUCCESS,
+        types.DELETE_REFERENCE_FAIL
+      ]
+    }
+  };
+}
+
 export function uploadFile(file) {
   const id = uuid();
   const extension = file.name.split('.').pop();

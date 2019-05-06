@@ -25,6 +25,8 @@ const types = createTypes([
   ...async('CREATE_ALGORITHM_IMPLEMENTATION'),
   ...async('UPDATE_ALGORITHM_IMPLEMENTATION'),
   ...async('DELETE_ALGORITHM_IMPLEMENTATION'),
+  ...async('CREATE_REFERENCE'),
+  ...async('DELETE_REFERENCE'),
   ...async('UPLOAD_FILE'),
   ...async('FETCH_STATIC')
 ]);
