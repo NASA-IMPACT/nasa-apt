@@ -73,9 +73,6 @@ function renderMark(props, editor, next) {
     case 'underline': {
       return <u {...props}>{children}</u>;
     }
-    case 'strikethrough': {
-      return <s {...props}>{children}</s>;
-    }
     default: {
       return next();
     }
