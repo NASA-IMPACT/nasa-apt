@@ -633,6 +633,10 @@ Outputs:
     Value: !Ref 'AtbdBucketName'
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucket'
+  AtbdBucketWebsite:
+    Value: !GetAtt WebsiteBucket.WebsiteURL
+    Export:
+      Name: !Sub '${AWS::StackName}-AtbdBucketWebsite'
   FiguresBucket:
     Value: !Ref 'FiguresBucket'
     Export:
