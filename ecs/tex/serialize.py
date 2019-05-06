@@ -44,28 +44,26 @@ def addMarkup(text, marks):
             text= f'\\textbf{{{text}}}'
         elif markupType == 'underline':
             text= f'\\underline{{{text}}}'
+        elif markupType == 'strikethrough':
+            text = f'\\underline{{{text}}}'
     return text
 
 def preserveStyle(text):
     return text.encode("unicode_escape").decode("utf-8").replace('\\n', '\\\\')
 
 def processText(nodes):
-    print('nodes are ', nodes)
     to_return = ''
     for node in nodes:
-        print('node is ', node)
         if node['object'] == 'text':
-            print('leaves are ', node['leaves'])
             for leaf in node['leaves']:
                 if 'marks' in leaf and leaf['marks']:
-                    print('leaf is ', leaf)
                     to_return += addMarkup(preserveStyle(leaf['text']), leaf['marks'])
                 else:
                     to_return += preserveStyle(leaf['text'])
-                print(to_return)
         elif node['object'] == 'inline':
-            print('item is ', node['nodes'])
-            to_return += processText(node['nodes'])
+            url = node['data']['url']
+            url_nodes = node['nodes']
+            to_return += f'\\href{{{url}}}{{{processText(url_nodes)}}}'
     return to_return
 
 def saveImage(imgUrl, img):
@@ -96,7 +94,6 @@ def processWYSIWYGElement(node):
             node['nodes'][0]['leaves'][0]['text'] + ' \\end{equation} '
     elif node['type'] == 'paragraph':
         return processText(node['nodes'])
-        # return node['nodes'][0]['leaves'][0]['text']
 
 def processWYSIWYG(element):
     if debug:
@@ -189,12 +186,10 @@ class ATBD:
         # os.chdir(curDir)
 
 def createLatex(args):
-    # print(args)
     atbd_path = args
     newTex = ATBD(atbd_path)
     newTex.texVariables()
     texFile = newTex.filewrite()
     print(texFile)
-    # newTex.writeLatex(texFile)
 
 createLatex(sys.argv[1])
