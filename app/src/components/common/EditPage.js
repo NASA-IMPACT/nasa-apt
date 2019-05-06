@@ -164,7 +164,7 @@ const EditPage = (props) => {
             </Stepper>
             <VerticalDivider />
             <PrevButton variation="achromic-plain" title="View previous step">Prev</PrevButton>
-            <NextButton variation="achromic-plain" title="View next step">Next</NextButton>
+            <NextButton variation="achromic-plain" title="View next step" disabled>Next</NextButton>
           </InpageToolbar>
         </InpageHeaderInner>
       </InpageHeader>

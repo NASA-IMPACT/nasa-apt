@@ -3,7 +3,7 @@ import T from 'prop-types';
 import styled, { css } from 'styled-components';
 import { rgba, shade, tint } from 'polished';
 
-import { antialiased, visuallyHidden } from '../helpers';
+import { antialiased, visuallyHidden, disabled } from '../helpers';
 import { themeVal } from '../utils/general';
 
 const BaseButton = React.forwardRef(
@@ -146,6 +146,12 @@ const Button = styled(BaseButton)`
       > * {
         ${visuallyHidden()}
       }
+    `}
+
+  /* Disabled */
+  ${({ disabled: dis }) => dis
+    && css`
+      ${disabled()}
     `}
 `;
 
