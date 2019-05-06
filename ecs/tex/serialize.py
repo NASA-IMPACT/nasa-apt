@@ -35,6 +35,35 @@ def processTable(nodeRows):
         df.to_latex(index=False, column_format=col_format) + '\\\\ \\\\'
     return latexTable
 
+def addMarkup(text, marks):
+    for mark in marks:
+        markupType = mark['type']
+        if markupType == 'italic':
+            text= f'\\textit{{{text}}}'
+        elif markupType == 'bold':
+            text= f'\\textbf{{{text}}}'
+        elif markupType == 'underline':
+            text= f'\\underline{{{text}}}'
+    return text
+
+def preserveStyle(text):
+    return text.encode("unicode_escape").decode("utf-8").replace('\\n', '\\\\')
+
+def processText(nodes):
+    to_return = ''
+    for node in nodes:
+        if node['object'] == 'text':
+            for leaf in node['leaves']:
+                if 'marks' in leaf and leaf['marks']:
+                    to_return += addMarkup(preserveStyle(leaf['text']), leaf['marks'])
+                else:
+                    to_return += preserveStyle(leaf['text'])
+        elif node['object'] == 'inline':
+            url = node['data']['url']
+            url_nodes = node['nodes']
+            to_return += f'\\href{{{url}}}{{{processText(url_nodes)}}}'
+    return to_return
+
 def saveImage(imgUrl, img):
     imgLink = num2words(len(pdfImgs))
     pdfImgs.append(r'\immediate\write18{wget "' + imgUrl + f'"}} \n \\newcommand{{\\{imgLink}}}{{{img}}}')
@@ -53,16 +82,16 @@ def processWYSIWYGElement(node):
         processTable(node['nodes'])
     elif node['type'] == 'table_cell':
         return processWYSIWYGElement(node['nodes'])
-    elif node['type'] != 'image' and node['type'] != 'table':
-        text = node['nodes'][0]['leaves'][0]['text']
-        if node['type'] == 'equation':
-            text = ' \\begin{equation} ' + text + ' \\end{equation} '
-        return text
     elif node['type'] == 'image':
         imgUrl = node['data']['src']
         filename = imgUrl.rsplit('/', 1)[1]
         imgCommand = saveImage(imgUrl, filename)
         return wrapImage(imgCommand)
+    elif node['type'] == 'equation':
+        return ' \\begin{equation} ' + \
+            node['nodes'][0]['leaves'][0]['text'] + ' \\end{equation} '
+    elif node['type'] == 'paragraph':
+        return processText(node['nodes'])
 
 def processWYSIWYG(element):
     if debug:
@@ -81,9 +110,6 @@ def processVarList(element):
 def processATBD(element):
     return element['title']
 
-def processText(element):
-    return element
-
 mapVars = {
     'scientific_theory': processWYSIWYG,
     'scientific_theory_assumptions': processWYSIWYG,
@@ -92,8 +118,8 @@ mapVars = {
     'algorithm_input_variables': processVarList,
     'algorithm_output_variables': processVarList,
     'atbd': processATBD,
-    'introduction': processText,
-    'historical_perspective': processText
+    'introduction': processWYSIWYG,
+    'historical_perspective': processWYSIWYG
 }
 
 def macroWrap(name, value):
@@ -121,7 +147,7 @@ class ATBD:
         if debug:
             for item, value in myJson[0].items():
                 print('item: {}, value: {}'.format(item, value))
-        commands = [texify(x, y) for x,y in myJson[0].items() if x in mapVars.keys()]
+        commands = [texify(x, y) for x,y in myJson.items() if x in mapVars.keys()]
         if debug:
             print(commands)
         self.texVars = commands
@@ -158,12 +184,10 @@ class ATBD:
         # os.chdir(curDir)
 
 def createLatex(args):
-    # print(args)
     atbd_path = args
     newTex = ATBD(atbd_path)
     newTex.texVariables()
     texFile = newTex.filewrite()
     print(texFile)
-    # newTex.writeLatex(texFile)
 
 createLatex(sys.argv[1])
