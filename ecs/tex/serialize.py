@@ -44,8 +44,6 @@ def addMarkup(text, marks):
             text= f'\\textbf{{{text}}}'
         elif markupType == 'underline':
             text= f'\\underline{{{text}}}'
-        elif markupType == 'strikethrough':
-            text = f'\\underline{{{text}}}'
     return text
 
 def preserveStyle(text):
