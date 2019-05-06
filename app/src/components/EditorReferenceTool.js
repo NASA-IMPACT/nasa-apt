@@ -7,6 +7,10 @@ import { themeVal } from '../styles/utils/general';
 import Button from '../styles/button/button';
 import collecticon from '../styles/collecticons';
 import { createReference } from '../actions/actions';
+import {
+  showGlobalLoading,
+  hideGlobalLoading
+} from './common/OverlayLoader';
 
 import {
   FormGroup,
@@ -59,6 +63,16 @@ export class EditorReferenceTool extends Component {
     this.validate = this.validate.bind(this);
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { lastCreatedReference, onSaveSuccess } = nextProps;
+    const { lastCreatedReference: prev } = this.props;
+    if (lastCreatedReference !== prev) {
+      onSaveSuccess();
+      this.resetForm();
+      hideGlobalLoading();
+    }
+  }
+
   onReferenceNameChange(e) {
     this.setState({
       referenceName: e.currentTarget.value
@@ -67,26 +81,38 @@ export class EditorReferenceTool extends Component {
 
   onSubmit(e) {
     e.preventDefault();
-    const { createReference, atbdVersion } = this.props;
-    const { atbd_id, atbd_version } = atbdVersion;
     const { referenceName } = this.state;
-    const nextState = {
-      referenceEmpty: !referenceName.length
-    };
-    if (!nextState.referenceEmpty) {
-      nextState.activeModal = false;
-      const payload = {
-        atbd_id,
-        atbd_version,
-        title: referenceName
-      };
+    if (!referenceName.length) {
+      return this.validate();
     }
-    this.setState(nextState);
+
+    const { createReference: create, atbdVersion } = this.props;
+    const { atbd_id, atbd_version } = atbdVersion;
+    const payload = {
+      atbd_id,
+      atbd_version,
+      title: referenceName
+    };
+    showGlobalLoading();
+    create(payload);
   }
 
+  resetForm() {
+    this.setState({
+      activeModal: false,
+      referenceName: '',
+      referenceEmpty: false
+    });
+  }
+
+  // For convenience, reset the form value whenever
+  // we toggle the modal open, as this is more in line
+  // with expected behavior.
   setModalState(nextState) {
     this.setState({
-      activeModal: !!nextState
+      activeModal: !!nextState,
+      referenceName: '',
+      referenceEmpty: false
     });
   }
 
@@ -173,6 +199,7 @@ EditorReferenceTool.propTypes = {
   onSaveSuccess: T.func,
   createReference: T.func,
   lastCreatedReference: T.object,
+  atbdVersion: T.object
 };
 
 const mapStateToProps = state => ({

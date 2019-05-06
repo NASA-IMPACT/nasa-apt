@@ -251,11 +251,11 @@ export class FreeEditor extends React.Component {
   }
 
   insertReference() {
-    // TODO: use the ID from the API query for the reference ID.
-    const referenceId = 1;
+    const { lastCreatedReference } = this.props;
+    const { publication_reference_id: id } = lastCreatedReference;
     this.editor.insertInline({
       type: reference,
-      data: { id: referenceId },
+      data: { id },
       nodes: [{
         object: 'text',
         leaves: [{
@@ -503,6 +503,7 @@ FreeEditor.propTypes = {
   className: PropTypes.string,
   uploadFile: PropTypes.func.isRequired,
   uploadedFile: PropTypes.string,
+  lastCreatedReference: PropTypes.object,
   inlineSaveBtn: PropTypes.bool,
   invalid: PropTypes.bool
 };
@@ -538,8 +539,8 @@ const StyledFreeEditor = styled(FreeEditor)`
 const mapDispatchToProps = { uploadFile };
 
 const mapStateToProps = (state) => {
-  const { uploadedFile } = state.application;
-  return { uploadedFile };
+  const { uploadedFile, lastCreatedReference } = state.application;
+  return { uploadedFile, lastCreatedReference };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(StyledFreeEditor);
