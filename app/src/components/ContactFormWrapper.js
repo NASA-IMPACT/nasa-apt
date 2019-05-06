@@ -107,13 +107,15 @@ class ContactFormWrapper extends Component {
       updateContactGroup, // eslint-disable-line no-shadow
       updateContact, // eslint-disable-line no-shadow
       createAtbdContact: attachContact,
-      createAtbdContactGroup: attachContactGroup
+      createAtbdContactGroup: attachContactGroup,
+      onRemove
     } = this.props;
 
     if (selectedContact === NEW) {
       // Create a wholly new contact or contact group
       const saveFn = type === GROUP ? createContactGroup : createContact;
       saveFn(payload);
+      onRemove();
     } else {
       // Patch the existing contact or contact group,
       // and if necessary, link it to this ATBD.
@@ -129,6 +131,7 @@ class ContactFormWrapper extends Component {
           [type === GROUP ? 'contact_group_id' : 'contact_id']: id,
           atbd_id
         });
+        onRemove();
       }
     }
   }
