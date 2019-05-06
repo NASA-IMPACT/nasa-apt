@@ -42,6 +42,19 @@ export const DropdownItem = styled.li`
 // Not reassigned but contents are modified.
 let activeDropdowns = []; // eslint-disable-line
 
+const getClosestInstance = (el) => {
+  do {
+    // If the click is released outside the view port, the el will be
+    // HTMLDocument and won't have hasAttribute method.
+    if (el && el.hasAttribute && el.hasAttribute('data-drop-instance')) {
+      return el;
+    }
+    el = el.parentNode;  // eslint-disable-line
+  } while (el && el.tagName !== 'BODY' && el.tagName !== 'HTML');
+
+  return null;
+};
+
 /*
 <Dropdown
   className='browse-menu'
@@ -98,19 +111,6 @@ export default class Dropdown extends React.Component {
       this.close();
       return;
     }
-
-    const getClosestInstance = (el) => {
-      do {
-        // If the click is released outside the view port, the el will be
-        // HTMLDocument and won't have hasAttribute method.
-        if (el && el.hasAttribute && el.hasAttribute('data-drop-instance')) {
-          return el;
-        }
-        el = el.parentNode;  // eslint-disable-line
-      } while (el && el.tagName !== 'BODY' && el.tagName !== 'HTML');
-
-      return null;
-    };
 
     // The closest instance is the closest parent element with a
     // data-drop-instance. It also has a data-drop-el which can be trigger
