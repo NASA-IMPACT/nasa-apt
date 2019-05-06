@@ -59,6 +59,23 @@ Parameters:
     Type: String
     Default: nasa-apt-figures
     Description: Bucket for storing ATBD figures.
+  DesiredCapacity:
+    Type: Number
+    Default: '2'
+    Description: Number of EC2 instances to launch in your ECS cluster.
+  MaxSize:
+    Type: Number
+    Default: '6'
+    Description: Maximum number of EC2 instances that can be launched.
+  ECSAMI:
+    Description: AMI ID
+    Type: AWS::EC2::Image::Id
+    Default: ami-0bc08634af113cccb
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.medium
+    ConstraintDescription: Please choose a valid instance type.
 Mappings:
   # Hard values for the subnet masks. These masks define
   # the range of internal IP addresses that can be assigned.
@@ -484,19 +501,7 @@ Resources:
             const params = {
               cluster: process.env.CLUSTER,
               taskDefinition: process.env.TASK,
-              launchType: 'FARGATE',
-              networkConfiguration: {
-                awsvpcConfiguration: {
-                  subnets: [
-                    process.env.SUBNET1,
-                    process.env.SUBNET2
-                  ],
-                  assignPublicIp: 'ENABLED',
-                  securityGroups: [
-                    process.env.SECURITY_GROUP
-                  ]
-                }
-              },
+              launchType: 'EC2',
               overrides: {
                 containerOverrides: [
                   {
@@ -565,19 +570,7 @@ Resources:
             const params = {
               cluster: process.env.CLUSTER,
               taskDefinition: process.env.PDF_TASK,
-              launchType: 'FARGATE',
-              networkConfiguration: {
-                awsvpcConfiguration: {
-                  subnets: [
-                    process.env.SUBNET1,
-                    process.env.SUBNET2
-                  ],
-                  assignPublicIp: 'ENABLED',
-                  securityGroups: [
-                    process.env.SECURITY_GROUP
-                  ]
-                }
-              },
+              launchType: 'EC2',
               overrides: {
                 containerOverrides: [
                   {
@@ -596,19 +589,7 @@ Resources:
             const htmlParams = {
               cluster: process.env.CLUSTER,
               taskDefinition: process.env.HTML_TASK,
-              launchType: 'FARGATE',
-              networkConfiguration: {
-                awsvpcConfiguration: {
-                  subnets: [
-                    process.env.SUBNET1,
-                    process.env.SUBNET2
-                  ],
-                  assignPublicIp: 'ENABLED',
-                  securityGroups: [
-                    process.env.SECURITY_GROUP
-                  ]
-                }
-              },
+              launchType: 'EC2',
               overrides: {
                 containerOverrides: [
                   {
@@ -723,9 +704,9 @@ Resources:
       Family: 'serialize'
       Cpu: '1024'
       Memory: '2048'
-      NetworkMode: awsvpc
+      #NetworkMode: awsvpc
       RequiresCompatibilities:
-        - FARGATE
+        - EC2
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: 'serialize'
@@ -745,9 +726,9 @@ Resources:
       Family: 'pdf'
       Cpu: '1024'
       Memory: '2048'
-      NetworkMode: awsvpc
+      #NetworkMode: awsvpc
       RequiresCompatibilities:
-        - FARGATE
+        - EC2
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: 'pdf'
@@ -767,9 +748,9 @@ Resources:
       Family: 'html'
       Cpu: '1024'
       Memory: '2048'
-      NetworkMode: awsvpc
+      #NetworkMode: awsvpc
       RequiresCompatibilities:
-        - FARGATE
+        - EC2
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: 'html'
@@ -809,6 +790,98 @@ Resources:
                 - 'arn:aws:s3:::'
                 - !Ref WebsiteBucket
                 - /*
+  # Autoscaling group. This launches the actual EC2 instances that will register
+  # themselves as members of the cluster, and run the docker containers.
+  ECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref PublicSubnetOne
+        - !Ref PublicSubnetTwo
+      LaunchConfigurationName: !Ref 'ContainerInstances'
+      MinSize: '1'
+      MaxSize: !Ref 'MaxSize'
+      DesiredCapacity: !Ref 'DesiredCapacity'
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+    UpdatePolicy:
+      AutoScalingReplacingUpdate:
+        WillReplace: true
+  ContainerInstances:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref 'ECSAMI'
+      SecurityGroups: [!Ref 'FargateContainerSecurityGroup']
+      InstanceType: !Ref 'InstanceType'
+      IamInstanceProfile: !Ref 'EC2InstanceProfile'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} \
+            --resource ECSAutoScalingGroup --region ${AWS::Region}
+  AutoscalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [application-autoscaling.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: service-autoscaling
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'application-autoscaling:*'
+                  - 'cloudwatch:DescribeAlarms'
+                  - 'cloudwatch:PutMetricAlarm'
+                  - 'ecs:DescribeServices'
+                  - 'ecs:UpdateService'
+                Resource: '*'
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles: [!Ref 'EC2Role']
+
+  # Role for the EC2 hosts. This allows the ECS agent on the EC2 hosts
+  # to communciate with the ECS control plane, as well as download the docker
+  # images from ECR to run on your host.
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ec2.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: ecs-service
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ecs:CreateCluster'
+                  - 'ecs:DeregisterContainerInstance'
+                  - 'ecs:DiscoverPollEndpoint'
+                  - 'ecs:Poll'
+                  - 'ecs:RegisterContainerInstance'
+                  - 'ecs:StartTelemetrySession'
+                  - 'ecs:Submit*'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:BatchGetImage'
+                  - 'ecr:GetDownloadUrlForLayer'
+                Resource: '*'
 Outputs:
   S3Endpoint:
     Value: 's3.amazonaws.com'
