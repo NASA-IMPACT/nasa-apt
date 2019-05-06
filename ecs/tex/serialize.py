@@ -1,13 +1,15 @@
-import requests
 import json
+import sys
 from shutil import copyfile
 import os
 import pandas as pd
 import subprocess
 from latex import build_pdf
-from urllib.parse import urlparse
+from num2words import num2words
 
-debug = True
+debug = False
+pdfImgs = []
+htmlImgs = []
 
 # from https://stackoverflow.com/questions/19053707/converting-snake-case-to-lower-camel-case-lowercamelcase
 def toCamelCase(snake_str):
@@ -33,16 +35,15 @@ def processTable(nodeRows):
         df.to_latex(index=False, column_format=col_format) + '\\\\ \\\\'
     return latexTable
 
-def saveImage(imgUrl):
-    r = requests.get(imgUrl, allow_redirects=True)
-    filename = os.path.join(os.getcwd(), 'template/ATBD/imgs', imgUrl.rsplit('/', 1)[1])
-    open(filename, 'wb').write(r.content)
-    print('IMAGE: ', filename)
-    return filename
+def saveImage(imgUrl, img):
+    imgLink = num2words(len(pdfImgs))
+    pdfImgs.append(r'\immediate\write18{wget "' + imgUrl + f'"}} \n \\newcommand{{\\{imgLink}}}{{{img}}}')
+    htmlImgs.append(f'\\newcommand{{\\{imgLink}}}{{{imgUrl}}}')
+    return imgLink
 
 def wrapImage(img):
     wrapper = f''' \\begin{{center}}
-        \\includegraphics[width=\\linewidth]{{{img}}}
+        \\includegraphics[width=\\linewidth]{{\\{img}}}
         \\end{{center}}
     '''
     return wrapper
@@ -59,8 +60,9 @@ def processWYSIWYGElement(node):
         return text
     elif node['type'] == 'image':
         imgUrl = node['data']['src']
-        filename = saveImage(imgUrl)
-        return wrapImage(filename)
+        filename = imgUrl.rsplit('/', 1)[1]
+        imgCommand = saveImage(imgUrl, filename)
+        return wrapImage(imgCommand)
 
 def processWYSIWYG(element):
     if debug:
@@ -110,14 +112,12 @@ def texify (name, element):
         return name
 
 class ATBD:
-    def __init__(self, atbd_id, atbd_version):
-        self.ID = atbd_id
-        self.version = atbd_version
+    def __init__(self, path):
+        #TODO: Handle paths locally and pulling from s3
+        self.filepath = path
 
     def texVariables (self):
-        url = f'http://localhost:3000/atbd_versions?atbd_id=eq.{self.ID}&atbd_version=eq.{self.version}&select=*,algorithm_input_variables(*),algorithm_output_variables(*),publication_references(*),atbd(*),data_access_input_data(*)'
-        res = requests.get(url)
-        myJson = json.loads(res.text)
+        myJson = json.loads(open(self.filepath).read())
         if debug:
             for item, value in myJson[0].items():
                 print('item: {}, value: {}'.format(item, value))
@@ -127,30 +127,43 @@ class ATBD:
         self.texVars = commands
 
     def nameFile(self, ext):
-        return f'ATBD_{self.ID}v{self.version}.{ext}'
+        atbd_name = self.filepath.rsplit('.json', 1)[0]
+        if debug:
+            print(atbd_name)
+        return f'{atbd_name}.{ext}'
 
     def filewrite(self):
-        with open(os.path.join(os.getcwd(), 'template', 'ATBD', 'ATBD.tex'),  'r') as original:
+        with open(os.path.join('ATBD.tex'),  'r') as original:
             data = original.read()
-        with open(os.path.join(os.getcwd(), 'template', 'ATBD', self.nameFile('tex')), 'w') as modified:
+        with open(os.path.join(self.nameFile('tex')), 'w') as modified:
+            modified.write('\\ifx \\convertType \\undefined \n')
+            modified.write('\n'.join(htmlImgs))
+            modified.write('\n \\else \n')
+            modified.write('\n'.join(pdfImgs))
+            modified.write('\n \\fi \n')
             modified.write('\n'.join(self.texVars) + ' \n' + data)
             fileName = modified.name
+        if debug:
+            print(fileName)
         return fileName
 
     def writeLatex(self, srcFile):
         # temporary: change directory to create pdf in template/ATBD
-        curDir = os.getcwd()
-        outputDir = os.path.join(os.getcwd(), 'template', 'ATBD')
-        os.chdir(outputDir)
+        # curDir = os.getcwd()
+        # outputDir = os.path.join(os.getcwd(), 'template', 'ATBD')
+        # os.chdir(outputDir)
         subprocess.check_call(['pdflatex', srcFile])
         # run a second time for table of contents
         subprocess.check_call(['pdflatex', srcFile])
-        os.chdir(curDir)
+        # os.chdir(curDir)
 
-def createLatex(atbd_id, atbd_version):
-    newTex = ATBD(atbd_id, atbd_version)
+def createLatex(args):
+    # print(args)
+    atbd_path = args
+    newTex = ATBD(atbd_path)
     newTex.texVariables()
     texFile = newTex.filewrite()
-    newTex.writeLatex(texFile)
+    print(texFile)
+    # newTex.writeLatex(texFile)
 
-createLatex(1, 1)
+createLatex(sys.argv[1])
