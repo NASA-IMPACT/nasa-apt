@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { StickyContainer, Sticky } from 'react-sticky';
 import styled from 'styled-components';
 import { push } from 'connected-react-router';
 import { createAtbd } from '../actions/actions';
@@ -124,80 +125,86 @@ const AtbdList = (props) => {
   });
   return (
     <Inpage>
-      <InpageHeader>
-        <InpageHeaderInner>
-          <InpageHeadline>
-            <InpageTitle>Documents</InpageTitle>
-          </InpageHeadline>
-          <VerticalDivider />
+      <StickyContainer>
+        <Sticky>
+          {stickyProps => (
+            <InpageHeader style={stickyProps.style} isSticky={stickyProps.isSticky}>
+              <InpageHeaderInner>
+                <InpageHeadline>
+                  <InpageTitle>Documents</InpageTitle>
+                </InpageHeadline>
+                <VerticalDivider />
 
-          <InpageFilters>
-            <FilterItem>
-              <FilterLabel>Status</FilterLabel>
-              <Dropdown
-                triggerElement={
-                  <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
-                }
-              >
-                <DropdownList role="menu">
-                  <DropdownItem>All</DropdownItem>
-                  <DropdownItem>Published</DropdownItem>
-                  <DropdownItem>Draft</DropdownItem>
-                </DropdownList>
-              </Dropdown>
-            </FilterItem>
+                <InpageFilters>
+                  <FilterItem>
+                    <FilterLabel>Status</FilterLabel>
+                    <Dropdown
+                      triggerElement={
+                        <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
+                      }
+                    >
+                      <DropdownList role="menu">
+                        <DropdownItem>All</DropdownItem>
+                        <DropdownItem>Published</DropdownItem>
+                        <DropdownItem>Draft</DropdownItem>
+                      </DropdownList>
+                    </Dropdown>
+                  </FilterItem>
 
-            <FilterItem>
-              <FilterLabel>Authors</FilterLabel>
-              <Dropdown
-                triggerElement={
-                  <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
-                }
-              >
-                <DropdownList role="menu">
-                  <DropdownItem>All</DropdownItem>
-                </DropdownList>
-              </Dropdown>
-            </FilterItem>
+                  <FilterItem>
+                    <FilterLabel>Authors</FilterLabel>
+                    <Dropdown
+                      triggerElement={
+                        <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
+                      }
+                    >
+                      <DropdownList role="menu">
+                        <DropdownItem>All</DropdownItem>
+                      </DropdownList>
+                    </Dropdown>
+                  </FilterItem>
 
-            <FilterItem>
-              <FilterLabel>Sort</FilterLabel>
-              <Dropdown
-                triggerElement={
-                  <FilterTrigger variation="achromic-plain" title="Toggle menu options">Newest</FilterTrigger>
-                }
-              >
-                <DropdownList role="menu">
-                  <DropdownItem>Newest</DropdownItem>
-                </DropdownList>
-              </Dropdown>
-            </FilterItem>
-          </InpageFilters>
+                  <FilterItem>
+                    <FilterLabel>Sort</FilterLabel>
+                    <Dropdown
+                      triggerElement={
+                        <FilterTrigger variation="achromic-plain" title="Toggle menu options">Newest</FilterTrigger>
+                      }
+                    >
+                      <DropdownList role="menu">
+                        <DropdownItem>Newest</DropdownItem>
+                      </DropdownList>
+                    </Dropdown>
+                  </FilterItem>
+                </InpageFilters>
 
-          <InpageToolbar>
-            <SearchButton variation="achromic-plain" title="Search documents" disabled>Search</SearchButton>
-            <CreateButton variation="achromic-plain" title="Create new document" onClick={create}>Create</CreateButton>
-          </InpageToolbar>
+                <InpageToolbar>
+                  <SearchButton variation="achromic-plain" title="Search documents" disabled>Search</SearchButton>
+                  <CreateButton variation="achromic-plain" title="Create new document" onClick={create}>Create</CreateButton>
+                </InpageToolbar>
 
-        </InpageHeaderInner>
-      </InpageHeader>
-      <InpageBody>
-        <InpageBodyInner>
-          <AtbdTable>
-            <thead>
-              <tr>
-                <AtbdHeaderCell scope="col" />
-                <AtbdHeaderCell scope="col" />
-                <AtbdHeaderCell scope="col">Last Edit</AtbdHeaderCell>
-                <AtbdHeaderCell scope="col">Authors</AtbdHeaderCell>
-              </tr>
-            </thead>
-            <tbody>
-              {atbdElements}
-            </tbody>
-          </AtbdTable>
-        </InpageBodyInner>
-      </InpageBody>
+              </InpageHeaderInner>
+            </InpageHeader>
+          )}
+        </Sticky>
+        <InpageBody>
+          <InpageBodyInner>
+            <AtbdTable>
+              <thead>
+                <tr>
+                  <AtbdHeaderCell scope="col" />
+                  <AtbdHeaderCell scope="col" />
+                  <AtbdHeaderCell scope="col">Last Edit</AtbdHeaderCell>
+                  <AtbdHeaderCell scope="col">Authors</AtbdHeaderCell>
+                </tr>
+              </thead>
+              <tbody>
+                {atbdElements}
+              </tbody>
+            </AtbdTable>
+          </InpageBodyInner>
+        </InpageBody>
+      </StickyContainer>
     </Inpage>
   );
 };
