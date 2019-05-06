@@ -40,7 +40,7 @@ const EditorFigureTool = (props) => {
         onChange={
           (event) => {
             if (event.currentTarget.files.length) {
-              upload({ file: event.currentTarget.files[0] });
+              upload(event.currentTarget.files[0]);
             }
           }
         }
