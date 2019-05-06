@@ -27,6 +27,10 @@ import {
   FormGroupHeader
 } from '../styles/form/group';
 import {
+  FormHelper,
+  FormHelperMessage
+} from '../styles/form/helper';
+import {
   FormCheckable,
   FormCheckableGroup
 } from '../styles/form/checkable';
@@ -160,6 +164,7 @@ export const InnerContactForm = (props) => {
               error={errors[middle_name]}
               touched={touched[middle_name]}
               info={t.person_middle_name}
+              optional
             />
             <Input
               id={`${id}-last-name`}
@@ -205,6 +210,16 @@ export const InnerContactForm = (props) => {
           />
         </SpanTwo>
       </InputFormGroup>
+
+      {!!errors.NO_MECHANISMS && (
+        <FormFieldset>
+          <FormFieldsetBody>
+            <FormHelper>
+              <FormHelperMessage>At least one contact mechanism is required.</FormHelperMessage>
+            </FormHelper>
+          </FormFieldsetBody>
+        </FormFieldset>
+      )}
 
       {(values[mechanisms] || []).map((d, i) => (
         /* eslint-disable react/no-array-index-key */
@@ -393,6 +408,11 @@ export const ContactForm = withFormik({
         }
       }
     });
+    // Also slightly hacky, this is a flag for the UI to show that at least 1
+    // mechanism is required.
+    if (!values[mechanisms].length) {
+      set(errors, 'NO_MECHANISMS', true);
+    }
     return errors;
   },
 
