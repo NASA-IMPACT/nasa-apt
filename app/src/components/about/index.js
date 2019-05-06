@@ -25,7 +25,9 @@ class About extends Component {
         <InpageBody>
           <InpageBodyInner>
             <Prose>
-              <p>About content will appear here.</p>
+              <p>This is the Algorithm Publication Tool prototype. 
+                We have endeavored to make it as easy as possible to create new ATBDs, and welcome all feedback. 
+                Please feel free to <a href="mailto:alyssa@developmentseed.org?Subject=APT Prototype Feedback" target="_top">send us an e-mail</a>.</p>
             </Prose>
           </InpageBodyInner>
         </InpageBody>
