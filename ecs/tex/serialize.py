@@ -3,7 +3,6 @@ import sys
 from shutil import copyfile
 import os
 import pandas as pd
-import subprocess
 from latex import build_pdf
 from num2words import num2words
 
@@ -172,16 +171,6 @@ class ATBD:
         if debug:
             print(fileName)
         return fileName
-
-    def writeLatex(self, srcFile):
-        # temporary: change directory to create pdf in template/ATBD
-        # curDir = os.getcwd()
-        # outputDir = os.path.join(os.getcwd(), 'template', 'ATBD')
-        # os.chdir(outputDir)
-        subprocess.check_call(['pdflatex', srcFile])
-        # run a second time for table of contents
-        subprocess.check_call(['pdflatex', srcFile])
-        # os.chdir(curDir)
 
 def createLatex(args):
     atbd_path = args
