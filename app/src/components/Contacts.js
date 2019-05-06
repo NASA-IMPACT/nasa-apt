@@ -1,150 +1,160 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import uuid from 'uuid';
 
-import ContactForm from './ContactForm';
+import ContactFormWrapper from './ContactFormWrapper';
 import { Inpage } from './common/Inpage';
 import EditPage from './common/EditPage';
-import RemovableListItem from './common/RemovableListItem';
-import Form from '../styles/form/form';
+import AddBtn from '../styles/button/add';
+
 import {
-  FormFieldset,
-  FormFieldsetHeader,
-  FormFieldsetBody
-} from '../styles/form/fieldset';
-import FormLegend from '../styles/form/legend';
-import { createAtbdContact, deleteAtbdContact } from '../actions/actions';
+  deleteAtbdContact,
+  deleteAtbdContactGroup
+} from '../actions/actions';
 
-import Select from './common/Select';
-
-const Contacts = (props) => {
-  const {
-    contacts,
-    selectedAtbd,
-    createAtbdContact: dispatchCreateAtbdContact,
-    deleteAtbdContact: dispatchDeleteAtbdContact,
-    t
-  } = props;
-  let returnValue;
-  if (selectedAtbd) {
-    const {
-      atbd_id,
-      title
-    } = selectedAtbd;
-
-    const atbdContacts = selectedAtbd.contacts || [];
-
-    const contactOptions = contacts.map((contact) => {
-      const {
-        first_name,
-        last_name,
-        contact_id
-      } = contact;
-      return { label: `${first_name} ${last_name}`, value: contact_id };
-    });
-
-    const atbdContactItems = atbdContacts.map((atbdContact) => {
-      const {
-        first_name,
-        last_name,
-        contact_id
-      } = atbdContact;
-      return (
-        <RemovableListItem
-          key={contact_id}
-          label={`${first_name} ${last_name}`}
-          deleteAction={() => { dispatchDeleteAtbdContact(atbd_id, contact_id); }}
-        />
-      );
-    });
-
-    returnValue = (
-      <Inpage>
-        <EditPage
-          title={title || ''}
-          id={atbd_id}
-          step={3}
-        >
-          <h2>Contacts</h2>
-          <Form>
-            <FormFieldset>
-              <FormFieldsetHeader>
-                <FormLegend>Existing contacts</FormLegend>
-              </FormFieldsetHeader>
-              <FormFieldsetBody>
-                <Select
-                  name="existing-contact"
-                  label="Select contact"
-                  options={contactOptions}
-                  onChange={e => dispatchCreateAtbdContact({
-                    atbd_id: selectedAtbd.atbd_id,
-                    contact_id: e.target.value
-                  })}
-                  info={t.contact}
-                />
-              </FormFieldsetBody>
-            </FormFieldset>
-          </Form>
-
-          <FormFieldset>
-            <FormFieldsetHeader>
-              <FormLegend>Create new contacts</FormLegend>
-            </FormFieldsetHeader>
-            <FormFieldsetBody>
-              <ContactForm />
-            </FormFieldsetBody>
-          </FormFieldset>
-
-          <FormFieldset>
-            <FormFieldsetHeader>
-              <FormLegend>Existing contacts</FormLegend>
-            </FormFieldsetHeader>
-            <FormFieldsetBody>
-              <ul>
-                {atbdContactItems}
-              </ul>
-            </FormFieldsetBody>
-          </FormFieldset>
-        </EditPage>
-      </Inpage>
-    );
-  } else {
-    returnValue = <div>Loading</div>;
+class Contacts extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      contacts: []
+    };
+    this.addContact = this.addContact.bind(this);
+    this.removeContact = this.removeContact.bind(this);
+    this.deleteContactOrGroup = this.deleteContactOrGroup.bind(this);
   }
-  return returnValue;
-};
+
+  addContact() {
+    const { contacts } = this.state;
+    const next = contacts.concat([uuid()]);
+    this.setState({ contacts: next });
+  }
+
+  removeContact(id) {
+    const { contacts } = this.state;
+    const next = contacts.filter(d => d !== id);
+    this.setState({ contacts: next });
+  }
+
+  deleteContactOrGroup(contactOrGroup) {
+    const {
+      deleteAtbdContact: deleteContact,
+      deleteAtbdContactGroup: deleteContactGroup,
+      selectedAtbd
+    } = this.props;
+    const { atbd_id } = selectedAtbd;
+    const deleteFn = contactOrGroup.isGroup ? deleteContactGroup : deleteContact;
+    const id = contactOrGroup.isGroup ? contactOrGroup.contact_group_id
+      : contactOrGroup.contact_id;
+    deleteFn(atbd_id, id);
+  }
+
+  render() {
+    const {
+      allContacts,
+      allContactGroups,
+      selectedAtbd
+    } = this.props;
+
+    let returnValue;
+    if (selectedAtbd) {
+      const {
+        atbd_id,
+        title
+      } = selectedAtbd;
+
+      const {
+        addContact,
+        removeContact,
+        deleteContactOrGroup
+      } = this;
+
+      const {
+        contacts: newContacts
+      } = this.state;
+
+      // Combine contacts and contact groups
+      const atbdContacts = selectedAtbd.contacts.concat(selectedAtbd.contact_groups);
+      const contactsAndGroups = allContacts.concat(allContactGroups)
+        .sort((a, b) => a.displayName < b.displayName ? -1 : 1);
+
+      // Remove any contacts that are already attached
+      let availableContacts = [...contactsAndGroups];
+      if (atbdContacts.length) {
+        const existingContacts = atbdContacts.map(d => d.id);
+        availableContacts = contactsAndGroups.filter(d => existingContacts.indexOf(d.id) === -1);
+      }
+
+      returnValue = (
+        <Inpage>
+          <EditPage
+            title={title || ''}
+            id={atbd_id}
+            step={3}
+          >
+            <h2>Contacts</h2>
+            {atbdContacts.map((d, i) => (
+              <ContactFormWrapper
+                key={d.id}
+                id={d.id}
+                title={`Contact #${i + 1}`}
+                contact={d}
+                contacts={contactsAndGroups}
+                onRemove={() => deleteContactOrGroup(d)}
+              />
+            ))}
+
+            {newContacts.map(d => (
+              <ContactFormWrapper
+                key={d}
+                id={d}
+                title="New contact"
+                contacts={availableContacts}
+                onRemove={() => removeContact(d)}
+              />
+            ))}
+
+            <AddBtn
+              variation="base-plain"
+              onClick={addContact}
+            >
+              Add a contact
+            </AddBtn>
+          </EditPage>
+        </Inpage>
+      );
+    } else {
+      returnValue = <div>Loading</div>;
+    }
+    return returnValue;
+  }
+}
 
 const contactShape = PropTypes.shape({
   contact_id: PropTypes.number.isRequired,
   first_name: PropTypes.string.isRequired,
-  last_name: PropTypes.string.isRequired
+  last_name: PropTypes.string.isRequired,
 });
 
 Contacts.propTypes = {
-  contacts: PropTypes.arrayOf(contactShape),
+  allContacts: PropTypes.arrayOf(contactShape),
+  allContactGroups: PropTypes.array,
   selectedAtbd: PropTypes.shape({
-    atbd_id: PropTypes.number.isRequired,
-    contacts: PropTypes.array
+    atbd_id: PropTypes.number.isRequired
   }),
-  createAtbdContact: PropTypes.func.isRequired,
-  deleteAtbdContact: PropTypes.func.isRequired,
-  t: PropTypes.object
+  deleteAtbdContact: PropTypes.func,
+  deleteAtbdContactGroup: PropTypes.func
 };
 
-const mapStateToProps = (state) => {
-  const {
-    contacts,
-    selectedAtbd,
-    t
-  } = state.application;
+const mapStateToProps = state => ({
+  allContacts: state.application.contacts || [],
+  allContactGroups: state.application.contact_groups || [],
+  selectedAtbd: state.application.selectedAtbd
+});
 
-  return {
-    contacts,
-    selectedAtbd,
-    t: t ? t.contact_information : {}
-  };
+const mapDispatch = {
+  deleteAtbdContact,
+  deleteAtbdContactGroup
 };
 
-const mapDispatchToProps = { createAtbdContact, deleteAtbdContact };
-
-export default connect(mapStateToProps, mapDispatchToProps)(Contacts);
+export default connect(mapStateToProps, mapDispatch)(Contacts);

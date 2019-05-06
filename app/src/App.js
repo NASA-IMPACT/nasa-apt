@@ -66,7 +66,7 @@ const App = () => (
                   component={Introduction}
                 />
                 <Route
-                  path={`/${atbdsedit}/:atbd_id/${contacts}`}
+                  path={`/${atbdsedit}/:atbd_id/${drafts}/:atbd_version/${contacts}`}
                   component={Contacts}
                 />
                 <Route

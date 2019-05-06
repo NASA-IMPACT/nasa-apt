@@ -1,8 +1,11 @@
+import findIndex from 'lodash.findindex';
 import actions from '../constants/action_types';
 
 const initialState = {
   atbds: [],
   contacts: [],
+  contact_groups: [],
+  lastCreatedContact: undefined,
   uploadedFile: undefined,
   atbdVersion: undefined,
   atbdCitation: undefined,
@@ -28,21 +31,42 @@ const deleteAtbdVersionChildItem = (schemaKey, state, action) => {
   };
 };
 
-const deleteAtbdChildItem = (schemaKey, state, action) => {
-  const idKey = `${schemaKey}_id`;
-  const keyPlural = `${schemaKey}s`;
-
-  const { payload } = action;
-  const { [idKey]: id } = payload;
-  const variables = state.selectedAtbd[keyPlural]
-    .filter(variable => (variable[idKey] !== id));
+// Add common metadata to contacts and contact groups,
+// to make working with them in combination easier.
+const normalizeContact = (contactOrGroup) => {
+  const isGroup = !contactOrGroup.contact_id;
+  const displayName = isGroup ? contactOrGroup.group_name
+    : `${contactOrGroup.last_name}, ${contactOrGroup.first_name}`;
+  const id = isGroup ? `g${contactOrGroup.contact_group_id}`
+    : `c${contactOrGroup.contact_id}`;
   return {
-    ...state,
-    selectedAtbd: {
-      ...state.selectedAtbd,
-      [keyPlural]: variables
-    }
+    ...contactOrGroup,
+    isGroup,
+    displayName,
+    id
   };
+};
+
+// Normalize contact, contact groups
+const normalizeSelectedAtbd = (atbd) => {
+  const next = { ...atbd };
+  next.contacts = Array.isArray(atbd.contacts) ? atbd.contacts.map(normalizeContact) : [];
+  next.contact_groups = Array.isArray(atbd.contact_groups) ? atbd.contact_groups.map(normalizeContact)
+    : [];
+  return next;
+};
+
+const replaceAtIndex = (arr, idProperty, next) => {
+  if (!arr || !Array.isArray(arr)) {
+    return arr;
+  }
+  const idx = findIndex(arr, c => c[idProperty] === next[idProperty]);
+  if (idx >= 0) {
+    const result = arr.slice();
+    result[idx] = Object.assign({}, next);
+    return result;
+  }
+  return arr;
 };
 
 export default function (state = initialState, action) {
@@ -60,32 +84,75 @@ export default function (state = initialState, action) {
 
     case actions.FETCH_CONTACTS_SUCCESS: {
       const { payload } = action;
-      return { ...state, contacts: [...payload] };
+      return { ...state, contacts: [...payload.map(normalizeContact)] };
+    }
+
+    case actions.FETCH_CONTACT_GROUPS_SUCCESS: {
+      const { payload } = action;
+      return { ...state, contact_groups: [...payload.map(normalizeContact)] };
     }
 
     case actions.FETCH_ATBD_SUCCESS: {
       const { payload } = action;
-      return { ...state, selectedAtbd: { ...payload } };
+      return { ...state, selectedAtbd: normalizeSelectedAtbd(payload) };
     }
 
+    case actions.CREATE_CONTACT_GROUP_SUCCESS:
     case actions.CREATE_CONTACT_SUCCESS: {
-      const { payload } = action;
-      return { ...state, contacts: [...state.contacts, payload] };
+      const next = normalizeContact(action.payload);
+      const group = next.isGroup ? 'contact_groups' : 'contacts';
+      return {
+        ...state,
+        [group]: [...state[group], next],
+        lastCreatedContact: next
+      };
     }
 
+    case actions.CREATE_ATBD_CONTACT_GROUP_SUCCESS:
     case actions.CREATE_ATBD_CONTACT_SUCCESS: {
       const { payload } = action;
-      const addedContact = state.contacts.find(contact => (
-        contact.contact_id === payload.contact_id
+      const idProperty = payload.contact_id ? 'contact_id' : 'contact_group_id';
+      const group = payload.contact_id ? 'contacts' : 'contact_groups';
+      const addedContact = state[group].find(d => (
+        d[idProperty] === payload[idProperty]
       ));
       const newState = {
         ...state,
         selectedAtbd: {
           ...state.selectedAtbd,
-          contacts: [...state.selectedAtbd.contacts, { ...addedContact }]
+          [group]: [...state.selectedAtbd[group], { ...addedContact }]
         }
       };
       return newState;
+    }
+
+    case actions.DELETE_ATBD_CONTACT_GROUP_SUCCESS:
+    case actions.DELETE_ATBD_CONTACT_SUCCESS: {
+      const { payload } = action;
+      const idProperty = payload.contact_id ? 'contact_id' : 'contact_group_id';
+      const group = payload.contact_id ? 'contacts' : 'contact_groups';
+      return {
+        ...state,
+        selectedAtbd: {
+          ...state.selectedAtbd,
+          [group]: state.selectedAtbd[group].filter(d => d[idProperty] !== payload[idProperty])
+        }
+      };
+    }
+
+    case actions.UPDATE_CONTACT_GROUP_SUCCESS:
+    case actions.UPDATE_CONTACT_SUCCESS: {
+      const next = normalizeContact(action.payload);
+      const group = next.isGroup ? 'contact_groups' : 'contacts';
+      const idProperty = next.isGroup ? 'contact_group_id' : 'contact_id';
+      return {
+        ...state,
+        [group]: replaceAtIndex(state[group], idProperty, next),
+        selectedAtbd: {
+          ...state.selectedAtbd,
+          [group]: replaceAtIndex(state.selectedAtbd[group], idProperty, next)
+        }
+      };
     }
 
     case actions.CREATE_ALGORITHM_INPUT_VARIABLE_SUCCESS: {
@@ -122,11 +189,6 @@ export default function (state = initialState, action) {
       return deleteAtbdVersionChildItem(schemaKey, state, action);
     }
 
-    case actions.DELETE_ATBD_CONTACT_SUCCESS: {
-      const schemaKey = 'contact';
-      return deleteAtbdChildItem(schemaKey, state, action);
-    }
-
     case actions.UPLOAD_FILE_SUCCESS: {
       const { payload: { location } } = action;
       return {
@@ -141,6 +203,7 @@ export default function (state = initialState, action) {
       const newAtbd = {
         ...created_atbd,
         contacts: [],
+        contact_groups: [],
         atbd_versions: [{ ...created_version }]
       };
       return { ...state, atbds: [...state.atbds, newAtbd] };

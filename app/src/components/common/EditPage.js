@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
+import { StickyContainer, Sticky } from 'react-sticky';
 import styled from 'styled-components';
 import { rgba } from 'polished';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
@@ -121,7 +122,7 @@ const EditPage = (props) => {
   const items = [
     { display: 'Identifying information', link: `/${atbdsedit}/${id}/${drafts}/${version}/${identifying_information}` },
     { display: 'Introduction', link: `/${atbdsedit}/${id}/${drafts}/${version}/${introduction}` },
-    { display: 'Contact information', link: `/${atbdsedit}/${id}/${contacts}` },
+    { display: 'Contact information', link: `/${atbdsedit}/${id}/${drafts}/${version}/${contacts}` },
     { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_description}` },
     { display: 'Algorithm usage', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_usage}` },
     { display: 'Algorithm implementation', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_implementation}` },
@@ -133,48 +134,54 @@ const EditPage = (props) => {
 
   return (
     <Fragment>
-      <InpageHeader>
-        <InpageHeaderInner>
-          <InpageHeadline>
-            <InpageTitle>{ title }</InpageTitle>
-            <InpageTagline>Editing document</InpageTagline>
-          </InpageHeadline>
-          <InpageToolbar>
-            <Stepper>
-              <StepperLabel>
-                { stepCount }
-              </StepperLabel>
-              <Dropdown
-                triggerElement={
-                  <StepDropTrigger variation="achromic-plain" title="Toggle menu options">{items[step - 1].display}</StepDropTrigger>
-                }
-              >
-                <DropdownList>
-                  {items.map((d, i) => (
-                    <Item
-                      key={d.display}
-                      onClick={() => d.link && props.push(d.link)}
+      <StickyContainer>
+        <Sticky>
+          {stickyProps => (
+            <InpageHeader style={stickyProps.style} isSticky={stickyProps.isSticky}>
+              <InpageHeaderInner>
+                <InpageHeadline>
+                  <InpageTitle>{ title }</InpageTitle>
+                  <InpageTagline>Editing document</InpageTagline>
+                </InpageHeadline>
+                <InpageToolbar>
+                  <Stepper>
+                    <StepperLabel>
+                      { stepCount }
+                    </StepperLabel>
+                    <Dropdown
+                      triggerElement={
+                        <StepDropTrigger variation="achromic-plain" title="Toggle menu options">{items[step - 1].display}</StepDropTrigger>
+                      }
                     >
-                      <ItemCount>{i + 1}</ItemCount>
-                      {d.display}
-                    </Item>
-                  ))}
-                </DropdownList>
-              </Dropdown>
-            </Stepper>
-            <VerticalDivider />
-            <PrevButton variation="achromic-plain" title="View previous step">Prev</PrevButton>
-            <NextButton variation="achromic-plain" title="View next step" disabled>Next</NextButton>
-          </InpageToolbar>
-        </InpageHeaderInner>
-      </InpageHeader>
-      <InpageBody>
-        <InpageBodyInner>
-          <Prose>
-            { children }
-          </Prose>
-        </InpageBodyInner>
-      </InpageBody>
+                      <DropdownList>
+                        {items.map((d, i) => (
+                          <Item
+                            key={d.display}
+                            onClick={() => d.link && props.push(d.link)}
+                          >
+                            <ItemCount>{i + 1}</ItemCount>
+                            {d.display}
+                          </Item>
+                        ))}
+                      </DropdownList>
+                    </Dropdown>
+                  </Stepper>
+                  <VerticalDivider />
+                  <PrevButton variation="achromic-plain" title="View previous step">Prev</PrevButton>
+                  <NextButton variation="achromic-plain" title="View next step" disabled>Next</NextButton>
+                </InpageToolbar>
+              </InpageHeaderInner>
+            </InpageHeader>
+          )}
+        </Sticky>
+        <InpageBody>
+          <InpageBodyInner>
+            <Prose>
+              { children }
+            </Prose>
+          </InpageBodyInner>
+        </InpageBody>
+      </StickyContainer>
     </Fragment>
   );
 };
