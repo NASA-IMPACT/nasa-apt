@@ -39,7 +39,7 @@ const serializeMiddleware = store => next => async (action) => {
           const checkHtmlResp = await store.dispatch(checkHtml(key));
           htmlTries += 1;
           if (checkHtmlResp.type === types.CHECK_HTML_SUCCESS) {
-            clearInterval(pdfInterval);
+            clearInterval(htmlInterval);
           }
           if (htmlTries > retries) {
             clearInterval(htmlInterval);
