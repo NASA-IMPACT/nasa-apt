@@ -194,14 +194,31 @@ export function fetchAtbdVersion(versionObject) {
   return {
     [RSAA]: {
       endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
-        + `atbd_version=eq.${atbd_version}&select=*,atbd(*),algorithm_input_variables(*),`
-        + `algorithm_output_variables(*)`,
+        + `atbd_version=eq.${atbd_version}&select=*,atbd(*)`,
       method: 'GET',
       headers: returnObjectHeaders,
       types: [
         types.FETCH_ATBD_VERSION,
         types.FETCH_ATBD_VERSION_SUCCESS,
         types.FETCH_ATBD_VERSION_FAIL
+      ]
+    }
+  };
+}
+
+export function fetchAtbdVersionVariables(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}&select=*,atbd(*),algorithm_input_variables(*),`
+        + `algorithm_output_variables(*)`,
+      method: 'GET',
+      headers: returnObjectHeaders,
+      types: [
+        types.FETCH_ALGORITHM_VARIABLES,
+        types.FETCH_ALGORITHM_VARIABLES_SUCCESS,
+        types.FETCH_ALGORITHM_VARIABLES_FAIL
       ]
     }
   };

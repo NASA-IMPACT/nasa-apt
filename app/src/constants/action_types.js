@@ -23,6 +23,7 @@ const types = createTypes([
   ...async('FETCH_CONTACT_GROUPS'),
   ...async('CREATE_ATBD_CONTACT_GROUP'),
   ...async('DELETE_ATBD_CONTACT_GROUP'),
+  ...async('FETCH_ALGORITHM_VARIABLES'),
   ...async('CREATE_ALGORITHM_INPUT_VARIABLE'),
   ...async('DELETE_ALGORITHM_INPUT_VARIABLE'),
   ...async('CREATE_ALGORITHM_OUTPUT_VARIABLE'),

@@ -5,11 +5,9 @@ import {
   atbds,
   atbdsedit,
   identifying_information,
-  introduction,
   contacts,
   drafts,
   algorithm_description,
-  algorithm_usage,
   algorithm_implementation,
   error
 } from '../constants/routes';
@@ -24,25 +22,25 @@ const locationMiddleware = store => next => async (action) => {
     }
     if (pathComponents[1] === atbdsedit) {
       if (pathComponents[3] === drafts) {
-        if (pathComponents[5] === algorithm_description || pathComponents[5] === introduction
-          || pathComponents[5] === algorithm_usage || pathComponents[5] === identifying_information) {
-          store.dispatch(actions.fetchAtbdVersion({
-            atbd_id: pathComponents[2],
-            atbd_version: pathComponents[4]
-          }));
+        const versionObject = {
+          atbd_id: pathComponents[2],
+          atbd_version: pathComponents[4]
+        };
+
+        // Version variables and algorithm implementations
+        // queries both include the atbd version in their query.
+        if (pathComponents[5] === algorithm_description) {
+          store.dispatch(actions.fetchAtbdVersionVariables(versionObject));
+        } else if (pathComponents[5] === algorithm_implementation) {
+          store.dispatch(actions.fetchAlgorithmImplmentations(versionObject));
+        } else {
+          store.dispatch(actions.fetchAtbdVersion(versionObject));
         }
 
         if (pathComponents[5] === contacts) {
           store.dispatch(actions.fetchAtbd(pathComponents[2]));
           store.dispatch(actions.fetchContacts());
           store.dispatch(actions.fetchContactGroups());
-        }
-
-        if (pathComponents[5] === algorithm_implementation) {
-          store.dispatch(actions.fetchAlgorithmImplmentations({
-            atbd_id: pathComponents[2],
-            atbd_version: pathComponents[4]
-          }));
         }
 
         if (pathComponents[5] === identifying_information) {
