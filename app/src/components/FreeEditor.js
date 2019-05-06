@@ -20,6 +20,8 @@ import {
 import EditorImage from './EditorImage';
 import EditorTable from './EditorTable';
 import EditorFigureTool from './EditorFigureTool';
+import EditorReference from './EditorReference';
+import EditorReferenceTool from './EditorReferenceTool';
 import EditorFormattableText from './EditorFormattableText';
 import { getValidOrBlankDocument } from './editorBlankDocument';
 import schema from './editorSchema';
@@ -32,6 +34,7 @@ const equation = 'equation';
 const paragraph = 'paragraph';
 const table = 'table';
 const image = 'image';
+const reference = 'reference';
 
 const _rgba = stylizeFunction(rgba);
 
@@ -104,6 +107,7 @@ export class FreeEditor extends React.Component {
     this.removeTable = this.removeTable.bind(this);
     this.insertImage = this.insertImage.bind(this);
     this.insertLink = this.insertLink.bind(this);
+    this.insertReference = this.insertReference.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -142,6 +146,9 @@ export class FreeEditor extends React.Component {
         }
         if (activeTool === image) {
           this.insertImage();
+        }
+        if (activeTool === reference) {
+          this.insertReference();
         }
       }, 0);
     }
@@ -238,6 +245,23 @@ export class FreeEditor extends React.Component {
         object: 'text',
         leaves: [{
           text
+        }]
+      }]
+    });
+  }
+
+  insertReference() {
+    // TODO: use the ID from the API query for the reference ID.
+    const referenceId = 1;
+    this.editor.insertInline({
+      type: reference,
+      data: { id: referenceId },
+      nodes: [{
+        object: 'text',
+        leaves: [{
+          // TODO: decide if we want to render something
+          // more meaningful than this stand-in.
+          text: 'ref'
         }]
       }]
     });
@@ -353,6 +377,16 @@ export class FreeEditor extends React.Component {
           <a href={url} rel="noopener noreferrer" target="_blank" {...attributes}>{children}</a>
         );
       }
+      case reference: {
+        return (
+          <EditorReference
+            data-reference-id={node.data.get('id')}
+            {...attributes}
+          >
+            {children}
+          </EditorReference>
+        );
+      }
       default:
         return next();
     }
@@ -418,6 +452,12 @@ export class FreeEditor extends React.Component {
                 active={activeTool === image}
                 icon={{ icon: 'picture' }}
               />
+
+              <EditorReferenceTool
+                onSubmit={() => { this.selectTool(reference); }}
+                active={activeTool === reference}
+              />
+
               {inlineSaveBtn && (
                 <Button
                   onClick={save}
