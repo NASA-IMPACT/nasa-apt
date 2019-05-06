@@ -5,7 +5,11 @@ import { connect } from 'react-redux';
 
 import {
   createAtbdContact,
-  createContact
+  createContact,
+  updateContact,
+  createAtbdContactGroup,
+  createContactGroup,
+  updateContactGroup
 } from '../actions/actions';
 
 import Select from './common/Select';
@@ -37,29 +41,96 @@ class ContactFormWrapper extends Component {
   constructor(props) {
     super(props);
     const { contact } = props;
+    let selectedContact = null;
     let type = null;
     if (contact) {
-      // group contacts will have `contact_group_id`.
-      type = contact.contact_id ? PERSON : GROUP;
+      selectedContact = contact.id;
+      type = contact.isGroup ? GROUP : PERSON;
     }
     this.state = {
-      selectValue: contact && contact.contact_id,
+      selectedContact,
       type
     };
     this.onSelectChange = this.onSelectChange.bind(this);
     this.onTypeChange = this.onTypeChange.bind(this);
+    this.save = this.save.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    const {
+      lastCreatedContact,
+      selectedAtbd,
+      createAtbdContact: attachContact,
+      createAtbdContactGroup: attachContactGroup
+    } = this.props;
+
+    const { lastCreatedContact: prev } = prevProps;
+    if (lastCreatedContact !== prev) {
+      const { atbd_id } = selectedAtbd;
+      // Attach this contact to the current atbd.
+      const idProperty = lastCreatedContact.isGroup
+        ? 'contact_group_id' : 'contact_id';
+      const attachFn = lastCreatedContact.isGroup
+        ? attachContactGroup : attachContact;
+      const payload = {
+        atbd_id,
+        [idProperty]: lastCreatedContact[idProperty]
+      };
+      attachFn(payload);
+    }
   }
 
   onSelectChange({ value, type }) {
-    const next = { selectValue: value };
+    const next = { selectedContact: value };
     if (value !== NEW && type) {
       next.type = type;
+    } else if (value === NEW) {
+      next.type = null;
     }
     this.setState(next);
   }
 
   onTypeChange(type) {
     this.setState({ type });
+  }
+
+  save(payload) {
+    const {
+      selectedContact,
+      type
+    } = this.state;
+    const {
+      selectedAtbd,
+      contact,
+      createContactGroup, // eslint-disable-line no-shadow
+      createContact, // eslint-disable-line no-shadow
+      updateContactGroup, // eslint-disable-line no-shadow
+      updateContact, // eslint-disable-line no-shadow
+      createAtbdContact: attachContact,
+      createAtbdContactGroup: attachContactGroup
+    } = this.props;
+
+    if (selectedContact === NEW) {
+      // Create a wholly new contact or contact group
+      const saveFn = type === GROUP ? createContactGroup : createContact;
+      saveFn(payload);
+    } else {
+      // Patch the existing contact or contact group,
+      // and if necessary, link it to this ATBD.
+      const updateFn = type === GROUP ? updateContactGroup : updateContact;
+      const id = selectedContact.slice(1, selectedContact.length);
+      updateFn(id, payload);
+
+      if (!contact) {
+        const attachFn = type === GROUP
+          ? attachContactGroup : attachContact;
+        const { atbd_id } = selectedAtbd;
+        attachFn({
+          [type === GROUP ? 'contact_group_id' : 'contact_id']: id,
+          atbd_id
+        });
+      }
+    }
   }
 
   renderTypePicker() {
@@ -99,26 +170,33 @@ class ContactFormWrapper extends Component {
 
   renderForm() {
     const {
-      selectValue,
+      selectedContact,
       type
     } = this.state;
     const {
-      contact: existingContact,
+      contact,
       contacts,
       id
     } = this.props;
+    const {
+      save
+    } = this;
 
-    let contact = existingContact;
-    // Prefill the contact form from all available contacts
-    if (!existingContact && selectValue !== NEW) {
-      contact = contacts.find((d) => {
-        const { contact_id, contact_group_id } = d;
-        return selectValue === contact_id || selectValue === contact_group_id;
-      });
+    let data = contact;
+
+    // This scenario means someone has chosen an existing contact
+    // to add to this ATBD (and possibly to edit the existing contact).
+    if (!data && selectedContact !== NEW) {
+      data = contacts.find(d => selectedContact === d.id);
     }
 
     return (
-      <ContactForm contact={contact} id={id} type={type} />
+      <ContactForm
+        contact={data}
+        id={id}
+        isGroup={type === GROUP}
+        save={save}
+      />
     );
   }
 
@@ -136,18 +214,16 @@ class ContactFormWrapper extends Component {
     } = this.props;
 
     const {
-      selectValue,
+      selectedContact,
       type
     } = this.state;
 
     const readonly = !!contact;
     const label = readonly ? 'Edit existing' : 'New or existing';
-
-    // TODO better display labeling
     const selectOptions = contacts.map(d => ({
-      value: d.contact_id || d.contact_group_id,
-      label: d.first_name,
-      type: d.contact_id ? PERSON : GROUP
+      value: d.id,
+      label: d.displayName,
+      type: d.isGroup ? GROUP : PERSON
     }));
 
     selectOptions.unshift({
@@ -174,11 +250,11 @@ class ContactFormWrapper extends Component {
             id={`${id}-select`}
             label={label}
             options={selectOptions}
-            value={selectValue}
+            value={selectedContact}
             onChange={onSelectChange}
             readonly={readonly}
           />
-          {!!selectValue && this.renderTypePicker()}
+          {selectedContact === NEW && this.renderTypePicker()}
           {!!type && this.renderForm()}
         </FormFieldsetBody>
       </FormFieldset>
@@ -194,12 +270,30 @@ ContactFormWrapper.propTypes = {
   ]).isRequired,
   contact: PropTypes.object,
   contacts: PropTypes.array,
-  onRemove: PropTypes.func.isRequired
+  onRemove: PropTypes.func.isRequired,
+
+  selectedAtbd: PropTypes.object,
+  lastCreatedContact: PropTypes.object,
+  createAtbdContact: PropTypes.func,
+  createContact: PropTypes.func,
+  updateContact: PropTypes.func,
+  createAtbdContactGroup: PropTypes.func,
+  createContactGroup: PropTypes.func,
+  updateContactGroup: PropTypes.func
 };
+
+const mapStateToProps = state => ({
+  selectedAtbd: state.application.selectedAtbd,
+  lastCreatedContact: state.application.lastCreatedContact
+});
 
 const mapDispatch = {
   createAtbdContact,
-  createContact
+  createContact,
+  updateContact,
+  createAtbdContactGroup,
+  createContactGroup,
+  updateContactGroup
 };
 
-export default connect(null, mapDispatch)(ContactFormWrapper);
+export default connect(mapStateToProps, mapDispatch)(ContactFormWrapper);
