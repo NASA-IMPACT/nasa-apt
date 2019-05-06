@@ -3,7 +3,7 @@ import T from 'prop-types';
 import styled, { css } from 'styled-components';
 import { rgba, shade, tint } from 'polished';
 
-import { antialiased, visuallyHidden } from '../helpers';
+import { antialiased, visuallyHidden, disabled } from '../helpers';
 import { themeVal } from '../utils/general';
 
 const BaseButton = React.forwardRef(
@@ -146,6 +146,12 @@ const Button = styled(BaseButton)`
       > * {
         ${visuallyHidden()}
       }
+    `}
+
+  /* Disabled */
+  ${({ disabled: dis }) => dis
+    && css`
+      ${disabled()}
     `}
 `;
 
@@ -435,21 +441,21 @@ function renderButtonSize(props) {
       return css`
         line-height: 1.25rem;
         font-size: 0.875rem;
-        padding: 0.125rem 0.5rem;
+        padding: 0.125rem 0.25rem;
         min-width: 1.5rem;
       `;
     case 'large':
       return css`
         line-height: 1.5rem;
         font-size: 1rem;
-        padding: 0.5rem 1.5rem;
+        padding: 0.5rem 1.25rem;
         min-width: 2.5rem;
       `;
     case 'xlarge':
       return css`
         line-height: 2rem;
         font-size: 1rem;
-        padding: 0.5rem 2rem;
+        padding: 0.5rem 1.5rem;
         min-width: 3rem;
       `;
     // Medium (32px)
@@ -457,7 +463,7 @@ function renderButtonSize(props) {
       return css`
         line-height: 1.5rem;
         font-size: 1rem;
-        padding: 0.25rem 1rem;
+        padding: 0.25rem 0.75rem;
         min-width: 2rem;
       `;
   }
