@@ -199,7 +199,16 @@ export default function (state = initialState, action) {
         }
       };
     }
-
+    case actions.CHECK_HTML_SUCCESS: {
+      const { payload: { location: html } } = action;
+      return {
+        ...state,
+        serializingAtbdVersion: {
+          ...state.serializingAtbdVersion,
+          html
+        }
+      };
+    }
     case actions.SERIALIZE_DOCUMENT_FAIL: {
       // Removes the serializingAtbdVersion state property.
       const { serializingAtbdVersion, ...removedSerializingAtbdVersion } = state;

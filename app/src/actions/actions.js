@@ -8,6 +8,7 @@ const s3Uri = process.env.REACT_APP_S3_URI;
 const figuresBucket = process.env.REACT_APP_FIGURES_BUCKET;
 const jsonBucket = process.env.REACT_APP_ATBD_JSON_BUCKET;
 const atbdBucket = process.env.REACT_APP_ATBD_BUCKET;
+const atbdBucketWebsite = process.env.REACT_APP_ATBD_BUCKET_WEBSITE;
 
 const returnObjectHeaders = {
   'Content-Type': 'application/json',
@@ -309,6 +310,7 @@ export function uploadFile(file) {
   const data = new FormData();
   data.append('success_action_status', '201');
   data.append('Content-Type', keyedFile.type);
+  data.append('acl', 'public-read');
   data.append('key', keyedFile.name);
   data.append('file', keyedFile);
   return {
@@ -375,6 +377,7 @@ export function uploadJson(json) {
   const data = new FormData();
   data.append('success_action_status', '201');
   data.append('Content-Type', keyedFile.type);
+  data.append('acl', 'public-read');
   data.append('key', keyedFile.name);
   data.append('file', keyedFile);
   return {
@@ -427,8 +430,7 @@ export function serializeDocument(versionObject) {
 export function checkPdf(key) {
   return {
     [RSAA]: {
-      //endpoint: `http://${s3Uri}/${atbdBucket}/${key}.pdf`,
-      endpoint: 'http://localhost:4572/nasa-apt-atbd/ATBD_1v1_63d76c70-7014-11e9-8eb3-7bf392fcf9a5.pdf',
+      endpoint: `http://${s3Uri}/${atbdBucket}/${key}.pdf`,
       method: 'HEAD',
       fetch: async (...args) => {
         let response;
@@ -453,6 +455,39 @@ export function checkPdf(key) {
         types.CHECK_PDF,
         types.CHECK_PDF_SUCCESS,
         types.CHECK_PDF_FAIL
+      ]
+    }
+  };
+}
+
+export function checkHtml(key) {
+  return {
+    [RSAA]: {
+      endpoint: `http://${s3Uri}/${atbdBucket}/${key}/index.html`,
+      method: 'HEAD',
+      fetch: async (...args) => {
+        let response;
+        const res = await fetch(...args);
+        if (res.status === 200) {
+          const location = `${atbdBucketWebsite}/${key}/`;
+          response = new Response(
+            JSON.stringify({ location }),
+            {
+              status: res.status,
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+        } else {
+          response = res;
+        }
+        return response;
+      },
+      types: [
+        types.CHECK_HTML,
+        types.CHECK_HTML_SUCCESS,
+        types.CHECK_HTML_FAIL
       ]
     }
   };

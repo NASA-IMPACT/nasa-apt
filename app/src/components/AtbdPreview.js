@@ -25,10 +25,14 @@ const AtbdPreview = (props) => {
 
   let label = 'Preview';
   let pdfLink = <span />;
+  let htmlLink = <span />;
   if (atbd_id === serializing_id && pdf) {
-    pdfLink = <Link href={pdf}>PDF</Link>;
+    pdfLink = <Link target="_blank" href={pdf}>PDF</Link>;
   }
-  if (atbd_id === serializing_id && !pdf) {
+  if (atbd_id === serializing_id && html) {
+    htmlLink = <Link target="_blank" href={html}>HTML</Link>;
+  }
+  if (atbd_id === serializing_id && !(pdf && html)) {
     label = 'Creating';
   }
   return (
@@ -45,6 +49,7 @@ const AtbdPreview = (props) => {
         {label}
       </Button>
       {pdfLink}
+      {htmlLink}
     </Fragment>
   );
 };

@@ -1,11 +1,12 @@
 import {
   fetchAtbdVersion,
   uploadJson,
-  checkPdf
+  checkPdf,
+  checkHtml
 } from '../actions/actions';
 import types from '../constants/action_types';
 
-const pdfRetries = process.env.REACT_APP_PDF_RETRIES;
+const retries = process.env.REACT_APP_PDF_RETRIES;
 const serializeMiddleware = store => next => async (action) => {
   const { type, payload: versionObject } = action;
   let returnAction;
@@ -17,23 +18,37 @@ const serializeMiddleware = store => next => async (action) => {
       const uploadJsonResp = await store.dispatch(uploadJson(json));
       if (uploadJsonResp.type === types.UPLOAD_JSON_SUCCESS) {
         const { payload: { location } } = uploadJsonResp;
-        const maxTries = pdfRetries;
-        let tries = 0;
-        const pdfkey = location.split('/').pop().split('.')[0];
-        const interval = setInterval(async () => {
-          const checkPdfResp = await store.dispatch(checkPdf(pdfkey));
-          tries += 1;
+        let pdfTries = 0;
+        const key = location.split('/').pop().split('.')[0];
+        const pdfInterval = setInterval(async () => {
+          const checkPdfResp = await store.dispatch(checkPdf(key));
+          pdfTries += 1;
           if (checkPdfResp.type === types.CHECK_PDF_SUCCESS) {
-            clearInterval(interval);
+            clearInterval(pdfInterval);
           }
-          if (tries > maxTries) {
-            clearInterval(interval);
+          if (pdfTries > retries) {
+            clearInterval(pdfInterval);
             store.dispatch({
               type: types.SERIALIZE_DOCUMENT_FAIL,
               payload: 'Timeout'
             });
           }
-        }, 2000);
+        }, 5000);
+        let htmlTries = 0;
+        const htmlInterval = setInterval(async () => {
+          const checkHtmlResp = await store.dispatch(checkHtml(key));
+          htmlTries += 1;
+          if (checkHtmlResp.type === types.CHECK_HTML_SUCCESS) {
+            clearInterval(pdfInterval);
+          }
+          if (htmlTries > retries) {
+            clearInterval(htmlInterval);
+            store.dispatch({
+              type: types.SERIALIZE_DOCUMENT_FAIL,
+              payload: 'Timeout'
+            });
+          }
+        }, 10000);
       }
     }
   } else {
