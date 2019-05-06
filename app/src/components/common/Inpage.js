@@ -3,7 +3,7 @@ import { rgba } from 'polished';
 
 import { truncated, antialiased } from '../../styles/helpers';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
-import { multiply } from '../../styles/utils/math';
+import { multiply, divide } from '../../styles/utils/math';
 import { headingAlt } from '../../styles/type/heading';
 import Constrainer from '../../styles/constrainer';
 
@@ -79,13 +79,21 @@ export const InpageToolbar = styled.div`
   line-height: 2rem;
 
   > * {
-    margin: 0 0 0 ${multiply(themeVal('layout.space'), 2)};
+    margin: 0 0 0 ${divide(themeVal('layout.space'), 2)};
   }
 
   a {
     display: inline-flex;
     font-weight: ${themeVal('type.base.bold')};
     color: inherit;
+  }
+
+  > button:last-child {
+    margin-right: -1rem;
+  }
+
+  button + button {
+    margin-left: 0;
   }
 `;
 

@@ -7,6 +7,8 @@ import { rgba } from 'polished';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';
 import { headingAlt } from '../../styles/type/heading';
+import Button from '../../styles/button/button';
+import { VerticalDivider } from '../../styles/divider';
 import collecticon from '../../styles/collecticons';
 
 import {
@@ -107,6 +109,18 @@ const EditPage = (props) => {
   const numSteps = items.length;
   const stepCount = `Step ${step} of ${numSteps}`;
 
+  const PrevButton = styled(Button)`
+    ::before {
+      ${collecticon('chevron-left--small')}
+    }
+  `;
+
+  const NextButton = styled(Button)`
+    ::after {
+      ${collecticon('chevron-right--small')}
+    }
+  `;
+
   return (
     <Fragment>
       <InpageHeader>
@@ -138,6 +152,9 @@ const EditPage = (props) => {
                 </DropdownList>
               </Dropdown>
             </Stepper>
+            <VerticalDivider />
+            <PrevButton variation="achromic-plain" title="View previous step">Prev</PrevButton>
+            <NextButton variation="achromic-plain" title="View next step">Next</NextButton>
           </InpageToolbar>
         </InpageHeaderInner>
       </InpageHeader>

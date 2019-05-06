@@ -435,21 +435,21 @@ function renderButtonSize(props) {
       return css`
         line-height: 1.25rem;
         font-size: 0.875rem;
-        padding: 0.125rem 0.5rem;
+        padding: 0.125rem 0.25rem;
         min-width: 1.5rem;
       `;
     case 'large':
       return css`
         line-height: 1.5rem;
         font-size: 1rem;
-        padding: 0.5rem 1.5rem;
+        padding: 0.5rem 1.25rem;
         min-width: 2.5rem;
       `;
     case 'xlarge':
       return css`
         line-height: 2rem;
         font-size: 1rem;
-        padding: 0.5rem 2rem;
+        padding: 0.5rem 1.5rem;
         min-width: 3rem;
       `;
     // Medium (32px)
@@ -457,7 +457,7 @@ function renderButtonSize(props) {
       return css`
         line-height: 1.5rem;
         font-size: 1rem;
-        padding: 0.25rem 1rem;
+        padding: 0.25rem 0.75rem;
         min-width: 2rem;
       `;
   }
