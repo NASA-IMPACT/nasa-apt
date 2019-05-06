@@ -206,7 +206,7 @@ export const InnerContactForm = (props) => {
         </SpanTwo>
       </InputFormGroup>
 
-      {values[mechanisms].map((d, i) => (
+      {(values[mechanisms] || []).map((d, i) => (
         /* eslint-disable react/no-array-index-key */
         <FormFieldset key={`mechanism-${i}`}>
           <FormFieldsetHeader>
@@ -300,7 +300,7 @@ export const InnerContactForm = (props) => {
                     handleChange({ target: { name, value: e.target.checked } });
                     handleBlur({ target: { name } });
                   }}
-                  checked={values[roles][i]}
+                  checked={get(values, [roles, i])}
                 >
                   {roleType}
                 </FormCheckable>
