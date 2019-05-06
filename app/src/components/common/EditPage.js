@@ -36,12 +36,29 @@ import {
 import Prose from '../../styles/type/prose';
 
 import Dropdown, {
-  DropdownTrigger,
   DropdownList,
   DropdownItem
 } from '../Dropdown';
 
 const _rgba = stylizeFunction(rgba);
+
+const PrevButton = styled(Button)`
+  &::before {
+    ${collecticon('chevron-left--small')}
+  }
+`;
+
+const NextButton = styled(Button)`
+  &::after {
+    ${collecticon('chevron-right--small')}
+  }
+`;
+
+const StepDropTrigger = styled(Button)`
+  &::after {
+    ${collecticon('chevron-down--small')}
+  }
+`;
 
 const Stepper = styled.div`
   display: flex;
@@ -72,6 +89,10 @@ const Item = styled(DropdownItem)`
   font-weight: bold;
   padding: ${multiply(themeVal('layout.space'), 0.5)} ${themeVal('layout.space')};
   text-align: left;
+
+  &:first-child {
+    border-top: none;
+  }
 `;
 
 const ItemCount = styled.span`
@@ -84,6 +105,7 @@ const ItemCount = styled.span`
   height: ${multiply(themeVal('layout.space'), 2)};
   margin-right: ${multiply(themeVal('layout.space'), 0.5)};
   width: ${multiply(themeVal('layout.space'), 2)};
+  flex: none;
 `;
 
 const EditPage = (props) => {
@@ -109,18 +131,6 @@ const EditPage = (props) => {
   const numSteps = items.length;
   const stepCount = `Step ${step} of ${numSteps}`;
 
-  const PrevButton = styled(Button)`
-    ::before {
-      ${collecticon('chevron-left--small')}
-    }
-  `;
-
-  const NextButton = styled(Button)`
-    ::after {
-      ${collecticon('chevron-right--small')}
-    }
-  `;
-
   return (
     <Fragment>
       <InpageHeader>
@@ -135,9 +145,9 @@ const EditPage = (props) => {
                 { stepCount }
               </StepperLabel>
               <Dropdown
-                triggerText={items[step - 1].display}
-                triggerTitle="Toggle menu options"
-                triggerElement={DropdownTrigger}
+                triggerElement={
+                  <StepDropTrigger variation="achromic-plain" title="Toggle menu options">{items[step - 1].display}</StepDropTrigger>
+                }
               >
                 <DropdownList>
                   {items.map((d, i) => (

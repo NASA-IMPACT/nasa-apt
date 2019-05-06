@@ -11,6 +11,7 @@ import {
 import { themeVal } from '../styles/utils/general';
 import { multiply, divide } from '../styles/utils/math';
 import { VerticalDivider } from '../styles/divider';
+import Button from '../styles/button/button';
 import collecticon from '../styles/collecticons';
 
 import {
@@ -28,7 +29,6 @@ import {
 } from './common/Inpage';
 
 import Dropdown, {
-  DropdownTrigger,
   DropdownList,
   DropdownItem
 } from './Dropdown';
@@ -84,6 +84,12 @@ const EditIcon = styled.span`
   }
 `;
 
+const FilterTrigger = styled(Button)`
+  &::after {
+    ${collecticon('chevron-down--small')}
+  }
+`;
+
 const AtbdList = (props) => {
   const { atbds, createAtbd: create } = props;
   const atbdElements = atbds.map((atbd) => {
@@ -117,9 +123,9 @@ const AtbdList = (props) => {
             <FilterItem>
               <FilterLabel>Status</FilterLabel>
               <Dropdown
-                triggerText="All"
-                triggerTitle="Toggle menu options"
-                triggerElement={DropdownTrigger}
+                triggerElement={
+                  <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
+                }
               >
                 <DropdownList role="menu">
                   <DropdownItem>All</DropdownItem>
@@ -132,9 +138,9 @@ const AtbdList = (props) => {
             <FilterItem>
               <FilterLabel>Authors</FilterLabel>
               <Dropdown
-                triggerText="All"
-                triggerTitle="Toggle menu options"
-                triggerElement={DropdownTrigger}
+                triggerElement={
+                  <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
+                }
               >
                 <DropdownList role="menu">
                   <DropdownItem>All</DropdownItem>
@@ -145,9 +151,9 @@ const AtbdList = (props) => {
             <FilterItem>
               <FilterLabel>Sort</FilterLabel>
               <Dropdown
-                triggerText="Newest"
-                triggerTitle="Toggle menu options"
-                triggerElement={DropdownTrigger}
+                triggerElement={
+                  <FilterTrigger variation="achromic-plain" title="Toggle menu options">Newest</FilterTrigger>
+                }
               >
                 <DropdownList role="menu">
                   <DropdownItem>Newest</DropdownItem>

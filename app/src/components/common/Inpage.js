@@ -58,7 +58,7 @@ export const FilterItem = styled.div`
   display: flex;
   flex-flow: row nowrap;
   line-height: 2rem;
-  margin: 0 ${multiply(themeVal('layout.space'), 2)} 0 0;
+  margin: 0 ${divide(themeVal('layout.space'), 2)} 0 0;
 
   > * {
     display: inline-flex;
