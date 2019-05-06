@@ -88,12 +88,13 @@ export default class Dropdown extends React.Component {
   }
 
   _bodyListener(e) {
-    const attrHook = el => el.getAttribute ? el.getAttribute('data-hook') : null;
     // Get the dropdown that is a parent of the clicked element. If any.
     const theSelf = e.target;
+    const dataHookVal = theSelf.getAttribute ? theSelf.getAttribute('data-hook') : null;
+
     if (theSelf.tagName === 'BODY'
       || theSelf.tagName === 'HTML'
-      || attrHook(theSelf) === 'dropdown:close') {
+      || dataHookVal === 'dropdown:close') {
       this.close();
       return;
     }
