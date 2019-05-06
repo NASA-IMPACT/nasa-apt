@@ -44,7 +44,7 @@ test('FETCH_CONTACTS_SUCCESS', (t) => {
   });
   t.notOk(state.contacts === payload,
     'Does not reference payload object for immutability');
-  t.deepEqual(state.contacts, payload);
+  t.ok(state.contacts.every(t => !!t.id));
   t.end();
 });
 

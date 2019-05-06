@@ -13,6 +13,7 @@
     "is-url": "^1.2.4",
     "jsonschema": "^1.2.4",
     "katex": "^0.10.1",
+    "lodash.findindex": "^4.6.0",
     "object-path": "^0.11.4",
     "polished": "^2.3.3",
     "prop-types": "^15.7.2",

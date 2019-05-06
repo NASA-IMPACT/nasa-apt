@@ -122,7 +122,7 @@ const EditPage = (props) => {
   const items = [
     { display: 'Identifying information', link: `/${atbdsedit}/${id}/${drafts}/${version}/${identifying_information}` },
     { display: 'Introduction', link: `/${atbdsedit}/${id}/${drafts}/${version}/${introduction}` },
-    { display: 'Contact information', link: `/${atbdsedit}/${id}/${contacts}` },
+    { display: 'Contact information', link: `/${atbdsedit}/${id}/${drafts}/${version}/${contacts}` },
     { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_description}` },
     { display: 'Algorithm usage', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_usage}` },
     { display: 'Algorithm implementation', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_implementation}` },
