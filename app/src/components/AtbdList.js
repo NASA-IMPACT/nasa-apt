@@ -35,6 +35,8 @@ import Dropdown, {
   DropdownItem
 } from './Dropdown';
 
+import AtbdPreview from './AtbdPreview';
+
 const SearchButton = styled(Button)`
   &::before {
     ${collecticon('magnifier-right')}
@@ -105,11 +107,13 @@ const FilterTrigger = styled(Button)`
 `;
 
 const AtbdList = (props) => {
-  const { atbds, createAtbd: create } = props;
+  const {
+    atbds,
+    createAtbd: create,
+  } = props;
+
   const atbdElements = atbds.map((atbd) => {
     const { atbd_id, title, atbd_versions } = atbd;
-    // We are using a default single version for the prototype.
-    // This should be updated in the future.
     const { status } = atbd_versions[0];
     return (
       <AtbdRow scope="row" key={atbd_id}>
@@ -121,6 +125,12 @@ const AtbdList = (props) => {
         <AtbdCell>2 hours ago</AtbdCell>
         <AtbdCell>Author Name</AtbdCell>
         <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${contacts}`)}><EditIcon /></AtbdCell>
+        <AtbdCell>
+          <AtbdPreview
+            atbd_id={atbd_id}
+            atbd_version={1}
+          />
+        </AtbdCell>
       </AtbdRow>
     );
   });

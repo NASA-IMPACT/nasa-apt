@@ -251,6 +251,42 @@ export default function (state = initialState, action) {
       };
     }
 
+    case actions.SERIALIZE_DOCUMENT: {
+      const { payload } = action;
+      return {
+        ...state,
+        serializingAtbdVersion: {
+          ...payload
+        }
+      };
+    }
+
+    case actions.CHECK_PDF_SUCCESS: {
+      const { payload: { location: pdfLocation } } = action;
+      return {
+        ...state,
+        serializingAtbdVersion: {
+          ...state.serializingAtbdVersion,
+          pdf: pdfLocation
+        }
+      };
+    }
+    case actions.CHECK_HTML_SUCCESS: {
+      const { payload: { location: html } } = action;
+      return {
+        ...state,
+        serializingAtbdVersion: {
+          ...state.serializingAtbdVersion,
+          html
+        }
+      };
+    }
+    case actions.SERIALIZE_DOCUMENT_FAIL: {
+      // Removes the serializingAtbdVersion state property.
+      const { serializingAtbdVersion, ...removedSerializingAtbdVersion } = state;
+      return removedSerializingAtbdVersion;
+    }
+
     default: return state;
   }
 }
