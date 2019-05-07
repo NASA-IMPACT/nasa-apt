@@ -473,6 +473,22 @@ export function deleteAlgorithmImplementation(id) {
   };
 }
 
+export function fetchAtbdVersionReferences(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/publication_references?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}`,
+      method: 'GET',
+      types: [
+        types.FETCH_ATBD_VERSION_REFERENCES,
+        types.FETCH_ATBD_VERSION_REFERENCES_SUCCESS,
+        types.FETCH_ATBD_VERSION_REFERENCES_FAIL
+      ]
+    }
+  };
+}
+
 export function createReference(reference) {
   return {
     [RSAA]: {

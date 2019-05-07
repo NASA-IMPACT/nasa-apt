@@ -5,6 +5,7 @@ const initialState = {
   atbds: [],
   contacts: [],
   contact_groups: [],
+  references: [],
   lastCreatedContact: undefined,
   uploadedFile: undefined,
   atbdVersion: undefined,
@@ -234,6 +235,14 @@ export default function (state = initialState, action) {
           ...state.atbdVersion,
           algorithm_implementations: next
         }
+      };
+    }
+
+    case actions.FETCH_ATBD_VERSION_REFERENCES_SUCCESS: {
+      const { payload } = action;
+      return {
+        ...state,
+        references: payload
       };
     }
 
