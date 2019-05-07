@@ -31,8 +31,9 @@ import {
 } from './common/Inpage';
 
 import Dropdown, {
-  DropdownList,
-  DropdownItem
+  DropTitle,
+  DropMenu,
+  DropMenuItem
 } from './Dropdown';
 
 const SearchButton = styled(Button)`
@@ -140,41 +141,61 @@ const AtbdList = (props) => {
                   <FilterItem>
                     <FilterLabel>Status</FilterLabel>
                     <Dropdown
+                      alignment="left"
                       triggerElement={
                         <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
                       }
                     >
-                      <DropdownList role="menu">
-                        <DropdownItem>All</DropdownItem>
-                        <DropdownItem>Published</DropdownItem>
-                        <DropdownItem>Draft</DropdownItem>
-                      </DropdownList>
+                      <DropTitle>Select status</DropTitle>
+                      <DropMenu role="menu" selectable>
+                        <li>
+                          <DropMenuItem active>All</DropMenuItem>
+                        </li>
+                        <li>
+                          <DropMenuItem>Published</DropMenuItem>
+                        </li>
+                        <li>
+                          <DropMenuItem>Draft</DropMenuItem>
+                        </li>
+                      </DropMenu>
                     </Dropdown>
                   </FilterItem>
 
                   <FilterItem>
                     <FilterLabel>Authors</FilterLabel>
                     <Dropdown
+                      alignment="left"
                       triggerElement={
                         <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
                       }
                     >
-                      <DropdownList role="menu">
-                        <DropdownItem>All</DropdownItem>
-                      </DropdownList>
+                      <DropTitle>Select author</DropTitle>
+                      <DropMenu role="menu" selectable>
+                        <li>
+                          <DropMenuItem active>All</DropMenuItem>
+                        </li>
+                        <li>
+                          <DropMenuItem>Lorem ipsum</DropMenuItem>
+                        </li>
+                      </DropMenu>
                     </Dropdown>
                   </FilterItem>
 
                   <FilterItem>
                     <FilterLabel>Sort</FilterLabel>
                     <Dropdown
+                      alignment="left"
                       triggerElement={
                         <FilterTrigger variation="achromic-plain" title="Toggle menu options">Newest</FilterTrigger>
                       }
                     >
-                      <DropdownList role="menu">
-                        <DropdownItem>Newest</DropdownItem>
-                      </DropdownList>
+                      <DropTitle>Sort by</DropTitle>
+                      <DropMenu role="menu" selectable>
+                        <li>
+                          <DropMenuItem active>Newest</DropMenuItem>
+                          <DropMenuItem>Other</DropMenuItem>
+                        </li>
+                      </DropMenu>
                     </Dropdown>
                   </FilterItem>
                 </InpageFilters>
