@@ -171,13 +171,14 @@ const EditPage = (props) => {
                     variation="achromic-plain"
                     title="View previous step"
                     onClick={() => items[step - 2].link && props.push(items[step - 2].link)}
-                  // { step == 1 ? disabled : '' }
+                    disabled={(step === 1)}
                   > Prev
                   </PrevButton>
                   <NextButton
                     variation="achromic-plain"
                     title="View next step"
                     onClick={() => items[step].link && props.push(items[step].link)}
+                    disabled={(step === 7)}
                   > Next
                   </NextButton>
                 </InpageToolbar>
