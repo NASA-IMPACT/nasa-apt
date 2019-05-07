@@ -607,7 +607,7 @@ Resources:
             }
             const pdfPromise = ecs.runTask(params).promise();
             const htmlPromise = ecs.runTask(htmlParams).promise();
-            return pdfPromise;
+            return Promise.all([pdfPromise, htmlPromise]);
           }
 
   AtbdBucketLambdaInvokePermission:
@@ -702,16 +702,16 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: 'serialize'
-      Cpu: '1024'
-      Memory: '2048'
+      Cpu: '512'
+      Memory: '512'
       #NetworkMode: awsvpc
       RequiresCompatibilities:
         - EC2
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: 'serialize'
-          Cpu: 1024
-          Memory: 2048
+          #Cpu: 1024
+          #Memory: 2048
           Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt:latest'
           LogConfiguration:
             LogDriver: awslogs
@@ -724,16 +724,16 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: 'pdf'
-      Cpu: '1024'
-      Memory: '2048'
+      Cpu: '512'
+      Memory: '512'
       #NetworkMode: awsvpc
       RequiresCompatibilities:
         - EC2
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: 'pdf'
-          Cpu: 1024
-          Memory: 2048
+          #Cpu: 1024
+          #Memory: 2048
           Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt-pdf'
           LogConfiguration:
             LogDriver: awslogs
@@ -746,16 +746,16 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: 'html'
-      Cpu: '1024'
-      Memory: '2048'
+      Cpu: '512'
+      Memory: '512'
       #NetworkMode: awsvpc
       RequiresCompatibilities:
         - EC2
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: 'html'
-          Cpu: 1024
-          Memory: 2048
+          #Cpu: 1024
+          #Memory: 2048
           Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt-html'
           LogConfiguration:
             LogDriver: awslogs
