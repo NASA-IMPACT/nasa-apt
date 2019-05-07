@@ -18,6 +18,12 @@ const locationMiddleware = store => next => async (action) => {
   const { type, payload } = action;
   if (type === LOCATION_CHANGE) {
     const { location: { pathname } } = payload;
+
+    // Redirect '/' to '/atbds'
+    if (pathname === '/') {
+      return store.dispatch(push(`/${atbds}`));
+    }
+
     const pathComponents = pathname.split('/');
     if (pathComponents[1] === atbds) {
       store.dispatch(actions.fetchAtbds());

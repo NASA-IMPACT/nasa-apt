@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { rgba } from 'polished';
 import { themeVal, stylizeFunction } from '../utils/general';
 import { divide } from '../utils/math';
@@ -13,7 +13,15 @@ const FormLegend = styled.legend`
   width: 100%;
   color: ${_rgba(themeVal('type.base.color'), 0.64)};
   border: 0;
-  padding: ${divide(themeVal('layout.border'), 4)} 0;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  padding: 0;
+
+  fieldset fieldset & {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    padding: ${divide(themeVal('layout.border'), 8)} 0;
+  }
 `;
 
 export default FormLegend;

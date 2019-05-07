@@ -1,4 +1,4 @@
-import { createGlobalStyle, css } from 'styled-components';
+import { createGlobalStyle, css } from 'styled-components/macro';
 import { normalize, rgba } from 'polished';
 
 import { themeVal, stylizeFunction } from './utils/general';

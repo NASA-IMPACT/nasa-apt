@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { multiply } from '../../styles/utils/math';
 import collecticon from '../../styles/collecticons';
 import { themeVal } from '../../styles/utils/general';

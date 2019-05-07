@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { themeVal } from '../styles/utils/general';
 import Button from '../styles/button/button';
 import collecticon from '../styles/collecticons';
