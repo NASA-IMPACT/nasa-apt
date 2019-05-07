@@ -12,10 +12,7 @@ import addMinLength from '../schemas/addMinLength';
 import transformErrors from '../schemas/transformErrors';
 import validateEmail from '../schemas/validateEmail';
 import Select from './common/Select';
-import Input, {
-  InputFormGroup,
-  InputSubmit
-} from './common/Input';
+import Input, { InputFormGroup } from './common/Input';
 import {
   FormFieldset,
   FormFieldsetHeader,
@@ -36,6 +33,7 @@ import FormLegend from '../styles/form/legend';
 import FormLabel from '../styles/form/label';
 import FormToolbar from '../styles/form/toolbar';
 import InfoButton from './common/InfoButton';
+import Button from '../styles/button/button';
 import AddBtn from '../styles/button/add';
 import RemoveButton from '../styles/button/remove';
 
@@ -320,11 +318,14 @@ export const InnerContactForm = (props) => {
         </FormGroupBody>
       </FormGroup>
 
-      <InputSubmit
+      <Button
         type="submit"
+        variation="base-raised-light"
+        size="large"
         disabled={!submitEnabled}
-        value={submitValue}
-      />
+      >
+        {submitValue}
+      </Button>
     </Form>
   );
 };

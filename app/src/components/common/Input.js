@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components/macro';
-import { themeVal } from '../../styles/utils/general';
-import { multiply } from '../../styles/utils/math';
 
 import Input from '../../styles/form/input';
 import {
@@ -26,22 +24,6 @@ export const InputFormGroup = styled.div`
   justify-content: space-between;
   margin-bottom: 1rem;
   width: 100%;
-`;
-
-const InlineInput = styled.input`
-  background: #FFF;
-  border: 1px solid ${themeVal('color.gray')};
-  border-radius: 4px;
-  font-family: inherit;
-  height: ${multiply(themeVal('layout.space'), 2.4)}
-  width: 100%;
-`;
-
-export const InputSubmit = styled(InlineInput)`
-  box-shadow: ${themeVal('boxShadow.input')};
-  font-weight: bold;
-  margin-top: 1rem;
-  grid-column-start: 1;
 `;
 
 const InputForm = (props) => {
