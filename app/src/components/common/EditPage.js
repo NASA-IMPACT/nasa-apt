@@ -160,7 +160,7 @@ const EditPage = (props) => {
                             <DropMenuItem
                               key={d.display}
                               onClick={() => d.link && props.push(d.link)}
-                              active
+                              active={i === step - 1}
                             >
                               <ItemCount>{i + 1}</ItemCount>
                               <span>{d.display}</span>
