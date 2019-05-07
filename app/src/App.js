@@ -11,6 +11,7 @@ import store, { history } from './store/store';
 import {
   atbds,
   atbdsedit,
+  identifying_information,
   introduction,
   contacts,
   drafts,
@@ -23,6 +24,7 @@ import PageHeader from './components/common/PageHeader';
 import PageFooter from './components/common/PageFooter';
 import { GlobalLoading } from './components/common/OverlayLoader';
 import AtbdList from './components/AtbdList';
+import IdentifyingInformation from './components/IdentifyingInformation';
 import Introduction from './components/Introduction';
 import Contacts from './components/Contacts';
 import AlgorithmDescription from './components/AlgorithmDescription';
@@ -56,11 +58,15 @@ const App = () => (
               <Switch>
                 <Route path={`/${atbds}`} component={AtbdList} />
                 <Route
+                  path={`/${atbdsedit}/:atbd_id/${drafts}/:atbd_version/${identifying_information}`}
+                  component={IdentifyingInformation}
+                />
+                <Route
                   path={`/${atbdsedit}/:atbd_id/${drafts}/:atbd_version/${introduction}`}
                   component={Introduction}
                 />
                 <Route
-                  path={`/${atbdsedit}/:atbd_id/${contacts}`}
+                  path={`/${atbdsedit}/:atbd_id/${drafts}/:atbd_version/${contacts}`}
                   component={Contacts}
                 />
                 <Route

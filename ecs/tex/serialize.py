@@ -1,13 +1,15 @@
-import requests
 import json
+import sys
 from shutil import copyfile
 import os
 import pandas as pd
 import subprocess
 from latex import build_pdf
-from urllib.parse import urlparse
+from num2words import num2words
 
-debug = True
+debug = False
+pdfImgs = []
+htmlImgs = []
 
 # from https://stackoverflow.com/questions/19053707/converting-snake-case-to-lower-camel-case-lowercamelcase
 def toCamelCase(snake_str):
@@ -33,16 +35,44 @@ def processTable(nodeRows):
         df.to_latex(index=False, column_format=col_format) + '\\\\ \\\\'
     return latexTable
 
-def saveImage(imgUrl):
-    r = requests.get(imgUrl, allow_redirects=True)
-    filename = os.path.join(os.getcwd(), 'template/ATBD/imgs', imgUrl.rsplit('/', 1)[1])
-    open(filename, 'wb').write(r.content)
-    print('IMAGE: ', filename)
-    return filename
+def addMarkup(text, marks):
+    for mark in marks:
+        markupType = mark['type']
+        if markupType == 'italic':
+            text= f'\\textit{{{text}}}'
+        elif markupType == 'bold':
+            text= f'\\textbf{{{text}}}'
+        elif markupType == 'underline':
+            text= f'\\underline{{{text}}}'
+    return text
+
+def preserveStyle(text):
+    return text.encode("unicode_escape").decode("utf-8").replace('\\n', '\\\\')
+
+def processText(nodes):
+    to_return = ''
+    for node in nodes:
+        if node['object'] == 'text':
+            for leaf in node['leaves']:
+                if 'marks' in leaf and leaf['marks']:
+                    to_return += addMarkup(preserveStyle(leaf['text']), leaf['marks'])
+                else:
+                    to_return += preserveStyle(leaf['text'])
+        elif node['object'] == 'inline':
+            url = node['data']['url']
+            url_nodes = node['nodes']
+            to_return += f'\\href{{{url}}}{{{processText(url_nodes)}}}'
+    return to_return
+
+def saveImage(imgUrl, img):
+    imgLink = num2words(len(pdfImgs))
+    pdfImgs.append(r'\immediate\write18{wget "' + imgUrl + f'"}} \n \\newcommand{{\\{imgLink}}}{{{img}}}')
+    htmlImgs.append(f'\\newcommand{{\\{imgLink}}}{{{imgUrl}}}')
+    return imgLink
 
 def wrapImage(img):
     wrapper = f''' \\begin{{center}}
-        \\includegraphics[width=\\linewidth]{{{img}}}
+        \\includegraphics[width=\\linewidth]{{\\{img}}}
         \\end{{center}}
     '''
     return wrapper
@@ -52,15 +82,16 @@ def processWYSIWYGElement(node):
         processTable(node['nodes'])
     elif node['type'] == 'table_cell':
         return processWYSIWYGElement(node['nodes'])
-    elif node['type'] != 'image' and node['type'] != 'table':
-        text = node['nodes'][0]['leaves'][0]['text']
-        if node['type'] == 'equation':
-            text = ' \\begin{equation} ' + text + ' \\end{equation} '
-        return text
     elif node['type'] == 'image':
         imgUrl = node['data']['src']
-        filename = saveImage(imgUrl)
-        return wrapImage(filename)
+        filename = imgUrl.rsplit('/', 1)[1]
+        imgCommand = saveImage(imgUrl, filename)
+        return wrapImage(imgCommand)
+    elif node['type'] == 'equation':
+        return ' \\begin{equation} ' + \
+            node['nodes'][0]['leaves'][0]['text'] + ' \\end{equation} '
+    elif node['type'] == 'paragraph':
+        return processText(node['nodes'])
 
 def processWYSIWYG(element):
     if debug:
@@ -79,9 +110,6 @@ def processVarList(element):
 def processATBD(element):
     return element['title']
 
-def processText(element):
-    return element
-
 mapVars = {
     'scientific_theory': processWYSIWYG,
     'scientific_theory_assumptions': processWYSIWYG,
@@ -90,8 +118,8 @@ mapVars = {
     'algorithm_input_variables': processVarList,
     'algorithm_output_variables': processVarList,
     'atbd': processATBD,
-    'introduction': processText,
-    'historical_perspective': processText
+    'introduction': processWYSIWYG,
+    'historical_perspective': processWYSIWYG
 }
 
 def macroWrap(name, value):
@@ -110,47 +138,56 @@ def texify (name, element):
         return name
 
 class ATBD:
-    def __init__(self, atbd_id, atbd_version):
-        self.ID = atbd_id
-        self.version = atbd_version
+    def __init__(self, path):
+        #TODO: Handle paths locally and pulling from s3
+        self.filepath = path
 
     def texVariables (self):
-        url = f'http://localhost:3000/atbd_versions?atbd_id=eq.{self.ID}&atbd_version=eq.{self.version}&select=*,algorithm_input_variables(*),algorithm_output_variables(*),publication_references(*),atbd(*),data_access_input_data(*)'
-        res = requests.get(url)
-        myJson = json.loads(res.text)
+        myJson = json.loads(open(self.filepath).read())
         if debug:
             for item, value in myJson[0].items():
                 print('item: {}, value: {}'.format(item, value))
-        commands = [texify(x, y) for x,y in myJson[0].items() if x in mapVars.keys()]
+        commands = [texify(x, y) for x,y in myJson.items() if x in mapVars.keys()]
         if debug:
             print(commands)
         self.texVars = commands
 
     def nameFile(self, ext):
-        return f'ATBD_{self.ID}v{self.version}.{ext}'
+        atbd_name = self.filepath.rsplit('.json', 1)[0]
+        if debug:
+            print(atbd_name)
+        return f'{atbd_name}.{ext}'
 
     def filewrite(self):
-        with open(os.path.join(os.getcwd(), 'template', 'ATBD', 'ATBD.tex'),  'r') as original:
+        with open(os.path.join('ATBD.tex'),  'r') as original:
             data = original.read()
-        with open(os.path.join(os.getcwd(), 'template', 'ATBD', self.nameFile('tex')), 'w') as modified:
+        with open(os.path.join(self.nameFile('tex')), 'w') as modified:
+            modified.write('\\ifx \\convertType \\undefined \n')
+            modified.write('\n'.join(htmlImgs))
+            modified.write('\n \\else \n')
+            modified.write('\n'.join(pdfImgs))
+            modified.write('\n \\fi \n')
             modified.write('\n'.join(self.texVars) + ' \n' + data)
             fileName = modified.name
+        if debug:
+            print(fileName)
         return fileName
 
     def writeLatex(self, srcFile):
         # temporary: change directory to create pdf in template/ATBD
-        curDir = os.getcwd()
-        outputDir = os.path.join(os.getcwd(), 'template', 'ATBD')
-        os.chdir(outputDir)
+        # curDir = os.getcwd()
+        # outputDir = os.path.join(os.getcwd(), 'template', 'ATBD')
+        # os.chdir(outputDir)
         subprocess.check_call(['pdflatex', srcFile])
         # run a second time for table of contents
         subprocess.check_call(['pdflatex', srcFile])
-        os.chdir(curDir)
+        # os.chdir(curDir)
 
-def createLatex(atbd_id, atbd_version):
-    newTex = ATBD(atbd_id, atbd_version)
+def createLatex(args):
+    atbd_path = args
+    newTex = ATBD(atbd_path)
     newTex.texVariables()
     texFile = newTex.filewrite()
-    newTex.writeLatex(texFile)
+    print(texFile)
 
-createLatex(1, 1)
+createLatex(sys.argv[1])

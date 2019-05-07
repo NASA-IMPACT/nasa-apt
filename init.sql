@@ -1,20 +1,33 @@
 CREATE TYPE e_contact_mechanism_type AS ENUM (
- 'Direct Line',
+ 'Direct line',
  'Email',
  'Facebook',
  'Fax',
  'Mobile',
  'Modem',
  'Primary',
- 'TDD/TTY Phone',
+ 'TDD/TTY phone',
  'Telephone',
  'Twitter',
  'U.S.',
  'Other'
 );
+CREATE TYPE contact_mechanism AS (
+ mechanism_type e_contact_mechanism_type,
+ mechanism_value VARCHAR (1024)
+);
 CREATE TYPE atbd_status AS ENUM (
   'Draft',
   'Published'
+);
+CREATE TYPE e_contact_role_type AS ENUM (
+ 'Data center contact',
+ 'Technical contact',
+ 'Science contact',
+ 'Investigator',
+ 'Metadata author',
+ 'User services',
+ 'Science software development'
 );
 CREATE TABLE contacts(
  contact_id serial PRIMARY KEY,
@@ -22,15 +35,17 @@ CREATE TABLE contacts(
  middle_name VARCHAR (1024),
  last_name VARCHAR (1024) NOT NULL,
  uuid VARCHAR (1024),
- contact_mechanism_type e_contact_mechanism_type default 'Email',
- contact_mechanism_value VARCHAR (1024) NOT NULL
+ url VARCHAR (1024),
+ mechanisms contact_mechanism[],
+ roles e_contact_role_type[]
 );
 CREATE TABLE contact_groups(
  contact_group_id serial PRIMARY KEY,
  group_name VARCHAR (1024) NOT NULL,
  uuid VARCHAR (1024),
- contact_mechanism_type e_contact_mechanism_type default 'Email',
- contact_mechanism_value VARCHAR (1024) NOT NULL
+ url VARCHAR (1024),
+ mechanisms contact_mechanism[],
+ roles e_contact_role_type[]
 );
 CREATE TABLE atbds(
   atbd_id serial PRIMARY KEY,
@@ -66,6 +81,23 @@ CREATE TABLE atbd_versions(
   performance_assessment_validation_errors json,
   algorithm_usage_constraints json,
   status atbd_status default 'Draft'
+);
+CREATE TABLE citations(
+  citation_id serial PRIMARY KEY,
+  atbd_version INTEGER NOT NULL,
+  atbd_id INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
+  creators VARCHAR (1024),
+  editors VARCHAR (1024),
+  title VARCHAR (1024),
+  series_name VARCHAR (1024),
+  release_date VARCHAR (1024),
+  release_place VARCHAR (1024),
+  publisher VARCHAR (1024),
+  version VARCHAR (1024),
+  issue VARCHAR (1024),
+  additional_details VARCHAR (1024),
+  online_resource VARCHAR (1024)
 );
 CREATE TABLE algorithm_input_variables(
   algorithm_input_variable_id serial PRIMARY KEY,
@@ -149,10 +181,10 @@ CREATE FUNCTION create_atbd_version(OUT created_atbd atbds, OUT created_version 
   $$ LANGUAGE plpgsql
   VOLATILE;
 
-INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
-VALUES ('Leonardo', 'Davinci', 'ld@gmail.comn');
-INSERT INTO contacts(first_name, last_name, contact_mechanism_value)
-VALUES ('Gregor', 'Mendel', 'genes@gmail.comn');
+INSERT INTO contacts(first_name, last_name, mechanisms, roles)
+VALUES ('Leonardo', 'Davinci', '{ "(\"Email\",\"test@email.com\")" }', '{ "Science contact", "Metadata author" }');
+INSERT INTO contacts(first_name, last_name)
+VALUES ('Gregor', 'Mendel');
 INSERT INTO atbds(title)
 VALUES ('Test ATBD 1');
 INSERT INTO atbd_contacts(atbd_id, contact_id)

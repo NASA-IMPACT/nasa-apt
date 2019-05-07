@@ -45,9 +45,6 @@ const buttonConfig = [{
 }, {
   display: <u>u</u>,
   mark: 'underline'
-}, {
-  display: <s>S</s>,
-  mark: 'strikethrough'
 }];
 
 const baseVariation = 'base-raised-light';

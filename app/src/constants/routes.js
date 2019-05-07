@@ -1,5 +1,6 @@
 export const atbds = 'atbds';
 export const atbdsedit = 'atbdsedit';
+export const identifying_information = 'identifying_information';
 export const introduction = 'introduction';
 export const contacts = 'contacts';
 export const drafts = 'drafts';

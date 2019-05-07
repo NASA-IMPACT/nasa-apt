@@ -4,9 +4,14 @@ export default function addMinLength(schema) {
   newSchema.properties = Object.keys(properties)
     .reduce((accumulator, key) => {
       const newProperty = Object.assign({}, properties[key]);
-      const { type } = newProperty;
+      const { type, format } = newProperty;
       if (type === 'string' && required.includes(key)) {
         newProperty.minLength = 1;
+      }
+
+      // Make array types compatible with validator
+      if (type === 'string' && format === 'ARRAY') {
+        newProperty.type = 'array';
       }
       accumulator[key] = newProperty;
       return accumulator;

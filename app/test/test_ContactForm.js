@@ -21,7 +21,10 @@ test('InnerContactForm submit disabled', (t) => {
     },
     handleChange: () => {},
     handleBlur: () => {},
-    handleSubmit: () => {}
+    handleSubmit: () => {},
+    setValues: () => {},
+    id: 'x',
+    t: {}
   };
   let wrapper = shallow((<InnerContactForm {...props} />));
   let submit = wrapper.find(InputSubmit);
@@ -51,7 +54,7 @@ test('ContactForm validation', (t) => {
 
   const wrapper = shallow((<ContactForm />));
   const instance = wrapper.instance();
-  const errors = instance.validate({ contact_mechanism_type: email });
-  t.ok(errors.contact_mechanism_value, 'Adds error when email is invalid');
+  const errors = instance.validate({ mechanisms: [{mechanism_type: email}] });
+  t.ok(errors.mechanisms[0].mechanism_value, 'Adds error when email is invalid');
   t.end();
 });

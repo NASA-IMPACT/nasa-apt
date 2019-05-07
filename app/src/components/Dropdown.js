@@ -1,11 +1,16 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { PropTypes as T } from 'prop-types';
 import TetherComponent from 'react-tether';
 import { CSSTransition } from 'react-transition-group';
-import styled from 'styled-components';
-import { themeVal } from '../styles/utils/general';
-import { divide } from '../styles/utils/math';
+import styled, { css } from 'styled-components';
+import { rgba, tint } from 'polished';
+
+import { themeVal, stylizeFunction } from '../styles/utils/general';
+import { divide, multiply } from '../styles/utils/math';
 import collecticon from '../styles/collecticons';
+
+const _rgba = stylizeFunction(rgba);
+const _tint = stylizeFunction(tint);
 
 export const DropdownTrigger = styled.a`
   color: #FFF;
@@ -17,47 +22,54 @@ export const DropdownTrigger = styled.a`
 `;
 
 export const DropdownList = styled.ul`
-  background-color: ${themeVal('color.background')};
-  border-radius: ${divide(themeVal('layout.space'), 4)};
-  box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 4px 16px 2px rgba(0,0,0,.08);
-
-  padding: ${divide(themeVal('layout.space'), 2)} 0;
-  text-align: center;
+  margin-left: -${themeVal('layout.space')};
+  margin-right: -${themeVal('layout.space')};
 `;
 
 export const DropdownItem = styled.li`
+  display: flex;
+  align-items: center;
   background-color: ${themeVal('color.background')};
   cursor: pointer;
   padding: ${divide(themeVal('layout.space'), 4)} ${themeVal('layout.space')};
   transition: background-color .16s ease;
+
   &:hover {
     background-color: ${themeVal('color.shadow')};
   }
 `;
 
-const TransitionWrap = styled.div`
-  transition: opacity 0.16s ease;
-  &.drop-trans-enter {
-    opacity: 0;
-  }
-  &.drop-trans-enter-active {
-    opacity: 1;
-  }
-  &.drop-trans-exit {
-    opacity: 1;
-  }
-  &.drop-trans-exit-active {
-    opacity: 0;
-  }
-`;
+// Not reassigned but contents are modified.
+let activeDropdowns = []; // eslint-disable-line
 
-/* Dropdown component from UI Seed
- * https://github.com/developmentseed/ui-seed/blob/develop/assets/scripts/dropdown.js
- */
+const getClosestInstance = (el) => {
+  do {
+    // If the click is released outside the view port, the el will be
+    // HTMLDocument and won't have hasAttribute method.
+    if (el && el.hasAttribute && el.hasAttribute('data-drop-instance')) {
+      return el;
+    }
+    el = el.parentNode;  // eslint-disable-line
+  } while (el && el.tagName !== 'BODY' && el.tagName !== 'HTML');
 
-const activeDropdowns = [];
+  return null;
+};
 
-class Dropdown extends React.Component {
+/*
+<Dropdown
+  className='browse-menu'
+  triggerElement={<button>Hello</button>}
+  direction='down'
+  alignment='center' >
+
+  <h6 className='drop__title'>Browse</h6>
+  <ul className='drop__menu drop__menu--select'>
+    <li><Link to='' className='drop__menu-item' activeClassName='drop__menu-item--active'>Label</Link></li>
+  </ul>
+
+</Dropdown>
+*/
+export default class Dropdown extends React.Component {
   static closeAll() {
     activeDropdowns.forEach(d => d.close());
   }
@@ -65,74 +77,67 @@ class Dropdown extends React.Component {
   constructor(props) {
     super(props);
 
+    this.uuid = Math.random().toString(36).substr(2, 5);
+
     this.state = {
       open: false
     };
 
-    this.bodyListener = this.bodyListener.bind(this);
-    this.toggleDropdown = this.toggleDropdown.bind(this);
+    this._bodyListener = this._bodyListener.bind(this);
+    this._toggleDropdown = this._toggleDropdown.bind(this);
   }
 
   // Lifecycle method.
   // Called once as soon as the component has a DOM representation.
   componentDidMount() {
     activeDropdowns.push(this);
-    // eslint-disable-next-line
-    window.addEventListener('click', this.bodyListener);
+    window.addEventListener('click', this._bodyListener); // eslint-disable-line
   }
 
   // Lifecycle method.
   componentWillUnmount() {
     activeDropdowns.splice(activeDropdowns.indexOf(this), 1);
-    // eslint-disable-next-line
-    window.removeEventListener('click', this.bodyListener);
+    window.removeEventListener('click', this._bodyListener); // eslint-disable-line
   }
 
-  bodyListener(e) {
+  _bodyListener(e) {
     // Get the dropdown that is a parent of the clicked element. If any.
-    let theSelf = e.target;
+    const theSelf = e.target;
+    const dataHookVal = theSelf.getAttribute ? theSelf.getAttribute('data-hook') : null;
+
     if (theSelf.tagName === 'BODY'
-        || theSelf.tagName === 'HTML'
-        || e.target.getAttribute('data-hook') === 'dropdown:close') {
+      || theSelf.tagName === 'HTML'
+      || dataHookVal === 'dropdown:close') {
       this.close();
       return;
     }
 
-    // If the trigger element is an "a" the target is the "span", but it is a
-    // button, the target is the "button" itself.
-    // This code handles this case. No idea why this is happening.
-    // TODO: Unveil whatever black magic is at work here.
-    if (theSelf.tagName === 'SPAN'
-        && theSelf.parentNode === this.triggerRef
-        && theSelf.parentNode.getAttribute('data-hook') === 'dropdown:btn') {
-      return;
-    }
-    if (theSelf.tagName === 'SPAN'
-        && theSelf.parentNode.getAttribute('data-hook') === 'dropdown:close') {
-      this.close();
-      return;
-    }
+    // The closest instance is the closest parent element with a
+    // data-drop-instance. It also has a data-drop-el which can be trigger
+    // or content. Depending on this we know if we're handling a trigger click
+    // or a click somewhere else.
+    const closestInstance = getClosestInstance(theSelf);
+    if (!closestInstance) return this.close();
 
-    if (theSelf && theSelf.getAttribute('data-hook') === 'dropdown:btn') {
-      if (theSelf !== this.triggerRef) {
-        this.close();
-      }
+    const uuid = closestInstance.getAttribute('data-drop-instance');
+    if (closestInstance.getAttribute('data-drop-el') === 'trigger' && uuid === this.uuid) {
+      // If we're dealing with the trigger for this instance don't do anything.
+      // There are other listeners in place.
       return;
     }
 
-    do {
-      if (theSelf && theSelf.getAttribute('data-hook') === 'dropdown:content') {
-        break;
-      }
-      theSelf = theSelf.parentNode;
-    } while (theSelf && theSelf.tagName !== 'BODY' && theSelf.tagName !== 'HTML');
-
-    if (theSelf !== this.dropdownRef) {
-      this.close();
+    if (closestInstance.getAttribute('data-drop-el') === 'content' && uuid === this.uuid) {
+      // If we're dealing with the content for this instance don't do anything.
+      // The content elements can use data-hook='dropdown:close' if they need to
+      // close the dropdown, otherwise a trigger click is needed.
+      return;
     }
+
+    // In all other cases close the dropdown.
+    this.close();
   }
 
-  toggleDropdown(e) {
+  _toggleDropdown(e) {
     e.preventDefault();
     this.toggle();
   }
@@ -142,54 +147,53 @@ class Dropdown extends React.Component {
   }
 
   open() {
-    const { open } = this.state;
-    if (!open) {
-      this.setState({ open: true });
-    }
+    !this.state.open && this.setState({ open: true });  // eslint-disable-line
   }
 
   close() {
-    const { open } = this.state;
-    if (open) {
-      this.setState({ open: false });
-    }
+    this.state.open && this.setState({ open: false });  // eslint-disable-line
   }
 
   renderTriggerElement() {
     const {
-      triggerTitle,
-      triggerText,
-      triggerElement: TriggerElement
+      triggerElement
     } = this.props;
 
-    const triggerProps = {
-      onClick: this.toggleDropdown,
-      'data-hook': 'dropdown:btn',
-      ref: (el) => { this.triggerRef = el; }
-    };
+    const { open } = this.state;
 
-    if (triggerTitle) {
-      triggerProps.title = triggerTitle;
-    }
-
-    return (
-      <TriggerElement {...triggerProps}>
-        <span>{ triggerText }</span>
-      </TriggerElement>
-    );
+    const className = triggerElement.props.className || '';
+    return React.cloneElement(triggerElement, {
+      onClick: this._toggleDropdown,
+      active: open,
+      className: className + (open ? ' active' : ''),
+      'data-drop-el': 'trigger',
+      'data-drop-instance': this.uuid
+    });
   }
 
   renderContent() {
-    const {
-      onChange,
-      children
-    } = this.props;
-    const { open } = this.state;
+    const { id, direction, className } = this.props;
 
-    const dropdownContentProps = {
-      ref: (el) => { this.dropdownRef = el; },
-      'data-hook': 'dropdown:content'
+    // Base and additional classes for the trigger and the content.
+    let klasses = ['drop__content', 'drop-trans', `drop-trans--${direction}`]; // eslint-disable-line
+    let dropdownContentProps = { // eslint-disable-line
+      'data-drop-instance': this.uuid,
+      'data-drop-el': 'content'
     };
+
+    if (className) {
+      klasses.push(className);
+    }
+
+    dropdownContentProps.direction = direction;
+    dropdownContentProps.className = klasses.join(' ');
+
+    if (id) {
+      dropdownContentProps.id = id;
+    }
+
+    const { open } = this.state;
+    const { onChange, children } = this.props;
 
     return (
       <CSSTransition
@@ -197,17 +201,15 @@ class Dropdown extends React.Component {
         appear
         unmountOnExit
         classNames="drop-trans"
-        timeout={160}
+        timeout={{ enter: 300, exit: 300 }}
       >
 
-        <TransitionWrap>
-          <TransitionItem
-            props={dropdownContentProps}
-            onChange={onChange}
-          >
-            { children }
-          </TransitionItem>
-        </TransitionWrap>
+        <TransitionItem
+          props={dropdownContentProps}
+          onChange={onChange}
+        >
+          { children }
+        </TransitionItem>
 
       </CSSTransition>
     );
@@ -231,7 +233,6 @@ class Dropdown extends React.Component {
 
     let tetherAttachment;
     let tetherTargetAttachment;
-    // eslint-disable-next-line
     switch (direction) {
       case 'up':
         tetherAttachment = `bottom ${alignment}`;
@@ -260,7 +261,7 @@ class Dropdown extends React.Component {
         // targetAttachment is the trigger
         targetAttachment={tetherTargetAttachment}
         constraints={[{
-          to: 'scrollParent',
+          to: 'window',
           attachment: 'together'
         }]}
       >
@@ -277,43 +278,271 @@ Dropdown.defaultProps = {
   alignment: 'center'
 };
 
-Dropdown.propTypes = {
-  onChange: PropTypes.func,
+if (process.env.NODE_ENV !== 'production') {
+  Dropdown.propTypes = {
+    id: T.string,
+    onChange: T.func,
 
-  triggerElement: PropTypes.elementType,
-  triggerTitle: PropTypes.string,
-  triggerText: PropTypes.string.isRequired,
+    triggerElement: T.node,
 
-  direction: PropTypes.oneOf(['up', 'down', 'left', 'right']),
-  alignment: PropTypes.oneOf(['left', 'center', 'right', 'top', 'middle', 'bottom']),
-  children: PropTypes.node
+    direction: T.oneOf(['up', 'down', 'left', 'right']),
+    alignment: T.oneOf(['left', 'center', 'right', 'top', 'middle', 'bottom']),
+
+    className: T.string,
+    children: T.node
+  };
+}
+
+const transitions = {
+  up: {
+    start: () => css`
+      opacity: 0;
+      transform: translate(0, ${themeVal('layout.space')});
+    `,
+    end: () => css`
+      opacity: 1;
+      transform: translate(0, -${themeVal('layout.space')});
+    `
+  },
+  down: {
+    start: () => css`
+      opacity: 0;
+      transform: translate(0, -${themeVal('layout.space')});
+    `,
+    end: () => css`
+      opacity: 1;
+      transform: translate(0, ${themeVal('layout.space')});
+    `
+  },
+  left: {
+    start: () => css`
+      opacity: 0;
+      transform: translate(${themeVal('layout.space')}, 0);
+    `,
+    end: () => css`
+      opacity: 1;
+      transform: translate(-${themeVal('layout.space')}, 0);
+    `
+  },
+  right: {
+    start: () => css`
+      opacity: 0;
+      transform: translate(-${themeVal('layout.space')}, 0);
+    `,
+    end: () => css`
+      opacity: 1;
+      transform: translate(${themeVal('layout.space')}, 0);
+    `
+  }
 };
+
+const DropContent = styled.div`
+  background: #fff;
+  border-radius: ${themeVal('shape.rounded')};
+  box-shadow: 0 0 32px 2px ${_rgba(themeVal('color.base'), 0.08)}, 0 16px 48px -16px ${_rgba(themeVal('color.base'), 0.16)};
+  position: relative;
+  z-index: 1000;
+  width: 100%;
+  max-width: 14rem;
+  margin: 0;
+  padding: ${themeVal('layout.space')};
+  overflow: hidden;
+  text-align: left;
+  color: ${themeVal('type.base.color')};
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+
+  .tether-target-attached-top.tether-element-attached-bottom & {
+    ${transitions.up.end}
+
+    &.drop-trans-exit {
+      ${transitions.up.end}
+    }
+
+    &.drop-trans-exit-active {
+      ${transitions.up.start}
+    }
+  }
+
+  .tether-target-attached-bottom.tether-element-attached-top & {
+    ${transitions.down.end}
+
+    &.drop-trans-exit {
+      ${transitions.down.end}
+    }
+
+    &.drop-trans-exit-active {
+      ${transitions.down.start}
+    }
+  }
+
+  .tether-target-attached-right.tether-element-attached-left & {
+    ${transitions.right.end}
+
+    &.drop-trans-exit {
+      ${transitions.right.end}
+    }
+
+    &.drop-trans-exit-active {
+      ${transitions.right.start}
+    }
+  }
+
+  .tether-target-attached-left.tether-element-attached-right & {
+    ${transitions.left.end}
+
+    &.drop-trans-exit {
+      ${transitions.left.end}
+    }
+
+    &.drop-trans-exit-active {
+      ${transitions.left.start}
+    }
+  }
+
+  /* ${({ direction }) => transitions[direction].end}
+
+  &.drop-trans-appear,
+  &.drop-trans-enter {
+    ${({ direction }) => transitions[direction].start}
+  }
+
+  &&.drop-trans-enter-active,
+  &&.drop-trans-appear-active {
+    ${({ direction }) => transitions[direction].end}
+  }
+
+  &.drop-trans-exit {
+    ${({ direction }) => transitions[direction].end}
+  }
+
+  &&.drop-trans-exit-active {
+    ${({ direction }) => transitions[direction].start}
+  } */
+`;
 
 class TransitionItem extends React.Component {
   componentDidMount() {
     const { onChange } = this.props;
-    if (onChange) {
-      onChange(true);
-    }
+    onChange && onChange(true); // eslint-disable-line
   }
 
   componentWillUnmount() {
     const { onChange } = this.props;
-    if (onChange) {
-      onChange(false);
-    }
+    onChange && onChange(false); // eslint-disable-line
   }
 
   render() {
     const { props, children } = this.props;
-    return <div {...props}>{ children }</div>;
+    return <DropContent {...props}>{ children }</DropContent>;
   }
 }
 
-TransitionItem.propTypes = {
-  onChange: PropTypes.func,
-  props: PropTypes.object,
-  children: PropTypes.node
-};
+if (process.env.NODE_ENV !== 'production') {
+  TransitionItem.propTypes = {
+    onChange: T.func,
+    props: T.object,
+    children: T.node
+  };
+}
 
-export default Dropdown;
+const glbS = themeVal('layout.space');
+
+// Drop content elements.
+export const DropMenu = styled.ul`
+  list-style: none;
+  margin: -${glbS} -${glbS} ${glbS} -${glbS};
+  box-shadow: 0 ${themeVal('layout.border')} 0 0 ${themeVal('color.shadow')};
+  padding: ${divide(glbS, 2)} 0;
+  min-width: 12rem;
+
+  /* Styles when the ul items have icons */
+  ${({ iconified }) => iconified && css`
+    ${DropMenuItem} {
+      padding-left: ${multiply(glbS, 2.75)};
+
+      &::before {
+        position: absolute;
+        z-index: 1;
+        top: ${divide(glbS, 4)};
+        left: ${glbS};
+        font-size: 1rem;
+        line-height: 1.5rem;
+        width: 1.5rem;
+        text-align: center;
+      }
+    }
+  `}
+
+  &:last-child {
+    margin-bottom: -${glbS};
+    box-shadow: none;
+  }
+`;
+
+export const DropMenuItem = styled.span`
+  position: relative;
+  display: block;
+  padding: 0.25rem 1rem;
+  color: ${themeVal('type.base.color')};
+  transition: all 0.16s ease 0s;
+
+  &:hover,
+  &:focus {
+    background-color: ${_rgba(themeVal('color.base'), 0.04)};
+    opacity: 1;
+  }
+
+  &:visited {
+    color: inherit;
+  }
+
+  ${({ active }) => active && css`
+    color: inherit;
+
+    &::after {
+      ${collecticon('tick--small')}
+      position: absolute;
+      z-index: 1;
+      top: ${divide(themeVal('layout.space'), 4)};
+      right: ${divide(themeVal('layout.space'), 2)};
+      font-size: 1rem;
+      line-height: 1.5rem;
+      opacity: 0.48;
+      width: 1.5rem;
+      text-align: center;
+    }
+  `}
+`;
+
+export const DropInset = styled.div`
+  background: ${_tint(0.96, themeVal('color.base'))};
+  color: ${_tint(0.32, themeVal('type.base.color'))};
+  box-shadow:
+    inset 0 ${themeVal('layout.border')} 0 0 ${themeVal('color.shadow')},
+    inset 0 -${themeVal('layout.border')} 0 0 ${themeVal('color.shadow')};
+  margin: -${glbS} -${glbS} ${glbS} -${glbS};
+  padding: ${glbS};
+
+  &:first-child {
+    box-shadow: inset 0 -${themeVal('layout.border')} 0 0 ${themeVal('color.shadow')};
+  }
+
+  &:last-child {
+    margin-bottom: -${glbS};
+    box-shadow: inset 0 ${themeVal('layout.border')} 0 0 ${themeVal('color.shadow')};
+  }
+
+  &:only-child {
+    box-shadow: none;
+  }
+
+  > *:first-child {
+    margin-top: 0;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+`;
