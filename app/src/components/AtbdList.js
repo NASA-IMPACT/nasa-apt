@@ -8,7 +8,7 @@ import { createAtbd } from '../actions/actions';
 import {
   atbdsedit,
   drafts,
-  contacts
+  identifying_information
 } from '../constants/routes';
 import { themeVal } from '../styles/utils/general';
 import { multiply, divide } from '../styles/utils/math';
@@ -121,7 +121,7 @@ const AtbdList = (props) => {
         </AtbdCell>
         <AtbdCell>2 hours ago</AtbdCell>
         <AtbdCell>Author Name</AtbdCell>
-        <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${contacts}`)}><EditIcon /></AtbdCell>
+        <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${identifying_information}`)}><EditIcon /></AtbdCell>
       </AtbdRow>
     );
   });
