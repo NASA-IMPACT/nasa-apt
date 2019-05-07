@@ -2,12 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withFormik } from 'formik';
 import jsonschema from 'jsonschema';
+
 import apiSchema from '../schemas/schema.json';
 import transformErrors from '../schemas/transformErrors';
 import Input, {
-  InputFormGroup,
-  InputSubmit
+  InputFormGroup
 } from './common/Input';
+import Button from '../styles/button/button';
+import Form from '../styles/form/form';
 
 const name = 'name';
 const long_name = 'long_name';
@@ -28,46 +30,51 @@ export const InnerAlgorithmVariableForm = (props) => {
   const submitEnabled = !Object.keys(errors).length
                                   && Object.keys(touched).length;
   return (
-    <InputFormGroup onSubmit={handleSubmit}>
-      <Input
-        name={name}
-        label="Name"
-        type="text"
-        onChange={handleChange}
-        onBlur={handleBlur}
-        value={values[name]}
-        error={errors[name]}
-        touched={touched[name]}
-        info={t.name}
-      />
-      <Input
-        name={long_name}
-        label="Long Name"
-        type="text"
-        onChange={handleChange}
-        onBlur={handleBlur}
-        value={values[long_name]}
-        error={errors[long_name]}
-        touched={touched[long_name]}
-        info={t.long_name}
-      />
-      <Input
-        name={unit}
-        label="Unit"
-        type="text"
-        onChange={handleChange}
-        onBlur={handleBlur}
-        value={values[unit]}
-        error={errors[unit]}
-        touched={touched[unit]}
-        info={t.unit}
-      />
-      <InputSubmit
-        type="submit"
-        disabled={!submitEnabled}
-        value="Add Algorithm Variable"
-      />
-    </InputFormGroup>
+    <Form onSubmit={handleSubmit}>
+      <InputFormGroup>
+        <Input
+          name={name}
+          label="Name"
+          type="text"
+          onChange={handleChange}
+          onBlur={handleBlur}
+          value={values[name]}
+          error={errors[name]}
+          touched={touched[name]}
+          info={t.name}
+        />
+        <Input
+          name={long_name}
+          label="Long Name"
+          type="text"
+          onChange={handleChange}
+          onBlur={handleBlur}
+          value={values[long_name]}
+          error={errors[long_name]}
+          touched={touched[long_name]}
+          info={t.long_name}
+        />
+        <Input
+          name={unit}
+          label="Unit"
+          type="text"
+          onChange={handleChange}
+          onBlur={handleBlur}
+          value={values[unit]}
+          error={errors[unit]}
+          touched={touched[unit]}
+          info={t.unit}
+        />
+        <Button
+          type="submit"
+          variation="base-raised-light"
+          size="large"
+          disabled={!submitEnabled}
+        >
+          Add Algorithm Variable
+        </Button>
+      </InputFormGroup>
+    </Form>
   );
 };
 
