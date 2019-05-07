@@ -50,7 +50,12 @@ export const AlgorithmDescription = (props) => {
       algorithm_output_variables = []
     } = atbdVersion;
 
-    const { scientific_theory } = atbdVersion;
+    const {
+      scientific_theory,
+      scientific_theory_assumptions,
+      mathematical_theory,
+      mathematical_theory_assumptions
+    } = atbdVersion;
     const title = atbd && atbd.title;
 
     returnValue = (
@@ -64,7 +69,7 @@ export const AlgorithmDescription = (props) => {
           <Form>
             <FormFieldset>
               <FormFieldsetHeader>
-                <FormLegend>Algorithm</FormLegend>
+                <FormLegend>Scientific theory</FormLegend>
               </FormFieldsetHeader>
               <FormFieldsetBody>
                 <FormGroup>
@@ -80,6 +85,70 @@ export const AlgorithmDescription = (props) => {
                       save={(document) => {
                         update(atbd_id, atbd_version, {
                           scientific_theory: document
+                        });
+                      }}
+                    />
+                  </FormGroupBody>
+                </FormGroup>
+
+                <FormGroup>
+                  <FormGroupHeader>
+                    <FormLabel>Scientific theory assumptions</FormLabel>
+                    <FormToolbar>
+                      <InfoButton text={t.scientific_theory_assumptions} />
+                    </FormToolbar>
+                  </FormGroupHeader>
+                  <FormGroupBody>
+                    <FreeEditor
+                      initialValue={scientific_theory_assumptions}
+                      save={(document) => {
+                        update(atbd_id, atbd_version, {
+                          scientific_theory_assumptions: document
+                        });
+                      }}
+                    />
+                  </FormGroupBody>
+                </FormGroup>
+              </FormFieldsetBody>
+            </FormFieldset>
+
+            <FormFieldset>
+              <FormFieldsetHeader>
+                <FormLegend>Mathematical theory</FormLegend>
+              </FormFieldsetHeader>
+              <FormFieldsetBody>
+                <FormGroup>
+                  <FormGroupHeader>
+                    <FormLabel>Describe the mathematical theory</FormLabel>
+                    <FormToolbar>
+                      <InfoButton text={t.mathematical_theory} />
+                    </FormToolbar>
+                  </FormGroupHeader>
+                  <FormGroupBody>
+                    <FreeEditor
+                      initialValue={mathematical_theory}
+                      save={(document) => {
+                        update(atbd_id, atbd_version, {
+                          mathematical_theory: document
+                        });
+                      }}
+                    />
+                  </FormGroupBody>
+                </FormGroup>
+
+                <FormGroup>
+                  <FormGroupHeader>
+                    <FormLabel>Mathematical theory assumptions</FormLabel>
+                    <FormToolbar>
+                      <InfoButton text={t.mathematical_theory_assumptions} />
+                    </FormToolbar>
+                  </FormGroupHeader>
+                  <FormGroupBody>
+                    <FreeEditor
+                      initialValue={mathematical_theory_assumptions}
+                      save={(document) => {
+                        update(atbd_id, atbd_version, {
+                          mathematical_theory_assumptions: document
                         });
                       }}
                     />
