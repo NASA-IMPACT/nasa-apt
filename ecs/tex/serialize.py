@@ -3,7 +3,6 @@ import sys
 from shutil import copyfile
 import os
 import pandas as pd
-import subprocess
 from latex import build_pdf
 from num2words import num2words
 
@@ -72,7 +71,7 @@ def saveImage(imgUrl, img):
 
 def wrapImage(img):
     wrapper = f''' \\begin{{center}}
-        \\includegraphics[width=\\linewidth]{{\\{img}}}
+        \\includegraphics[width=\\maxwidth{{\\linewidth}}]{{\\{img}}}
         \\end{{center}}
     '''
     return wrapper
@@ -137,6 +136,21 @@ def texify (name, element):
     else:
         return name
 
+def filetypeSpecific(filetype):
+    functionList = []
+    if filetype == 'HTML':
+        functionList.append('\\def\\maxwidth#1{#1}')
+        functionList += htmlImgs
+    elif filetype == 'PDF':
+        functionList.append(
+        '''
+        \\makeatletter
+        \\def\\maxwidth#1{\\ifdim\\Gin@nat@width>#1 #1\\else\\Gin@nat@width\\fi}
+        \\makeatother
+        ''')
+        functionList += pdfImgs
+    return functionList
+
 class ATBD:
     def __init__(self, path):
         #TODO: Handle paths locally and pulling from s3
@@ -163,25 +177,15 @@ class ATBD:
             data = original.read()
         with open(os.path.join(self.nameFile('tex')), 'w') as modified:
             modified.write('\\ifx \\convertType \\undefined \n')
-            modified.write('\n'.join(htmlImgs))
+            modified.write('\n'.join(filetypeSpecific('HTML')))
             modified.write('\n \\else \n')
-            modified.write('\n'.join(pdfImgs))
+            modified.write('\n'.join(filetypeSpecific('PDF')))
             modified.write('\n \\fi \n')
             modified.write('\n'.join(self.texVars) + ' \n' + data)
             fileName = modified.name
         if debug:
             print(fileName)
         return fileName
-
-    def writeLatex(self, srcFile):
-        # temporary: change directory to create pdf in template/ATBD
-        # curDir = os.getcwd()
-        # outputDir = os.path.join(os.getcwd(), 'template', 'ATBD')
-        # os.chdir(outputDir)
-        subprocess.check_call(['pdflatex', srcFile])
-        # run a second time for table of contents
-        subprocess.check_call(['pdflatex', srcFile])
-        # os.chdir(curDir)
 
 def createLatex(args):
     atbd_path = args
