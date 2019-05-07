@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import styled, { css } from 'styled-components/macro';
 import { rgba } from 'polished';
 
 import { truncated, antialiased } from '../../styles/helpers';

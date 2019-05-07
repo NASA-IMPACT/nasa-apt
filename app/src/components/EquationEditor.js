@@ -1,6 +1,6 @@
 import React from 'react';
 import propTypes from 'prop-types';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
 

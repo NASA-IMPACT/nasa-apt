@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withFormik } from 'formik';
 import jsonschema from 'jsonschema';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { get, set } from 'object-path';
 
 import apiSchema from '../schemas/schema.json';

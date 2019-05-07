@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import { StickyContainer, Sticky } from 'react-sticky';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { rgba } from 'polished';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
 import { multiply } from '../../styles/utils/math';

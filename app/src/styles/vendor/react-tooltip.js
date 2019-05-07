@@ -1,4 +1,4 @@
-import { css } from 'styled-components';
+import { css } from 'styled-components/macro';
 import { themeVal } from '../utils/general';
 import { divide } from '../utils/math';
 import { antialiased } from '../helpers';

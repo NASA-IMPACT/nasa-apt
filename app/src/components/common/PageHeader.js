@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { Link, withRouter, NavLink } from 'react-router-dom';
 import { antialiased } from '../../styles/helpers';
 import { themeVal } from '../../styles/utils/general';

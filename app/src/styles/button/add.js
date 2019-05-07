@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import Button from './button';
 import collecticon from '../collecticons';
 
