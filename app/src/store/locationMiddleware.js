@@ -9,6 +9,7 @@ import {
   drafts,
   algorithm_description,
   algorithm_implementation,
+  references,
   error
 } from '../constants/routes';
 
@@ -44,10 +45,11 @@ const locationMiddleware = store => next => async (action) => {
         }
 
         if (pathComponents[5] === identifying_information) {
-          store.dispatch(actions.fetchCitation({
-            atbd_id: pathComponents[2],
-            atbd_version: pathComponents[4]
-          }));
+          store.dispatch(actions.fetchCitation(versionObject));
+        }
+
+        if (pathComponents[5] === references) {
+          store.dispatch(actions.fetchAtbdVersionReferences(versionObject));
         }
       }
     }
