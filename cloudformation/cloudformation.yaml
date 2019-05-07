@@ -626,6 +626,10 @@ Resources:
       #- AtbdBucketLambdaInvokePermission
     Properties:
       BucketName: !Ref 'AtbdBucketName'
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
       NotificationConfiguration:
         LambdaConfigurations:
           -
