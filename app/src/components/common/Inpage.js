@@ -19,9 +19,10 @@ export const InpageHeader = styled.header`
   ${antialiased()}
   background-color: ${themeVal('color.primary')};
   color: #FFF;
-  transition: opacity 0.32s ease 0s;
   box-shadow: 0 0 0 0 ${_rgba(themeVal('color.base'), 0.16)};
   z-index: 10;
+  transition: box-shadow 0.32s ease 0s;
+  clip-path: inset(0 0 -100vh 0);
 
   /* isSticky */
   ${({ isSticky }) => isSticky
