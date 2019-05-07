@@ -436,6 +436,8 @@ export const DropMenu = styled.ul`
   box-shadow: 0 ${themeVal('layout.border')} 0 0 ${themeVal('color.shadow')};
   padding: ${divide(glbS, 2)} 0;
   min-width: 12rem;
+  font-family: ${themeVal('type.base.family')};
+  font-weight: ${themeVal('type.base.bold')};
 
   /* Styles when the ul items have icons */
   ${({ iconified }) => iconified && css`
@@ -445,7 +447,7 @@ export const DropMenu = styled.ul`
       &::before {
         position: absolute;
         z-index: 1;
-        top: ${divide(glbS, 4)};
+        top: ${divide(glbS, 2)};
         left: ${glbS};
         font-size: 1rem;
         line-height: 1.5rem;
@@ -455,22 +457,31 @@ export const DropMenu = styled.ul`
     }
   `}
 
+  /* Styles when the ul items are selectable */
+  ${({ selectable }) => selectable && css`
+    ${DropMenuItem} {
+      padding-right: ${multiply(glbS, 2.5)};
+    }
+  `}
+
   &:last-child {
     margin-bottom: -${glbS};
     box-shadow: none;
   }
 `;
 
-export const DropMenuItem = styled.span`
+export const DropMenuItem = styled.a`
   position: relative;
-  display: block;
-  padding: 0.25rem 1rem;
+  display: flex;
+  align-items: center;
+  padding: ${divide(themeVal('layout.space'), 2)} ${themeVal('layout.space')};
   color: ${themeVal('type.base.color')};
   transition: all 0.16s ease 0s;
 
   &:hover,
   &:focus {
-    background-color: ${_rgba(themeVal('color.base'), 0.04)};
+    color: ${themeVal('color.link')};
+    background-color: ${_rgba(themeVal('color.link'), 0.12)};
     opacity: 1;
   }
 
@@ -485,7 +496,7 @@ export const DropMenuItem = styled.span`
       ${collecticon('tick--small')}
       position: absolute;
       z-index: 1;
-      top: ${divide(themeVal('layout.space'), 4)};
+      top: ${divide(themeVal('layout.space'), 2)};
       right: ${divide(themeVal('layout.space'), 2)};
       font-size: 1rem;
       line-height: 1.5rem;
@@ -524,23 +535,5 @@ export const DropInset = styled.div`
 
   > *:last-child {
     margin-bottom: 0;
-  }
-`;
-
-export const DropdownList = styled.ul`
-  margin-left: -${themeVal('layout.space')};
-  margin-right: -${themeVal('layout.space')};
-`;
-
-export const DropdownItem = styled.li`
-  display: flex;
-  align-items: center;
-  background-color: ${themeVal('color.background')};
-  cursor: pointer;
-  padding: ${divide(themeVal('layout.space'), 4)} ${themeVal('layout.space')};
-  transition: background-color .16s ease;
-
-  &:hover {
-    background-color: ${themeVal('color.shadow')};
   }
 `;
