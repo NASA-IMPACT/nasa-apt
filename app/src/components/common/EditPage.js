@@ -167,8 +167,27 @@ const EditPage = (props) => {
                     </Dropdown>
                   </Stepper>
                   <VerticalDivider />
-                  <PrevButton variation="achromic-plain" title="View previous step">Prev</PrevButton>
-                  <NextButton variation="achromic-plain" title="View next step" disabled>Next</NextButton>
+                  <PrevButton
+                    variation="achromic-plain"
+                    title="View previous step"
+                    onClick={
+                      () => {
+                        items[step - 2].link && props.push(items[step - 2].link)
+                      }
+                    }
+                  // { step == 1 ? disabled : '' }
+                  > Prev
+                  </PrevButton>
+                  <NextButton
+                  variation="achromic-plain"
+                  title="View next step"
+                  onClick={
+                      () => {
+                        items[step].link && props.push(items[step].link)
+                      }
+                    }
+                  > Next
+                  </NextButton>
                 </InpageToolbar>
               </InpageHeaderInner>
             </InpageHeader>
