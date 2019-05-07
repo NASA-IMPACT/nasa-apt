@@ -7,6 +7,7 @@ import { rgba, tint } from 'polished';
 
 import { themeVal, stylizeFunction } from '../styles/utils/general';
 import { divide, multiply } from '../styles/utils/math';
+import { headingAlt } from '../styles/type/heading';
 import collecticon from '../styles/collecticons';
 
 const _rgba = stylizeFunction(rgba);
@@ -450,6 +451,14 @@ if (process.env.NODE_ENV !== 'production') {
 const glbS = themeVal('layout.space');
 
 // Drop content elements.
+export const DropTitle = styled.h6`
+  ${headingAlt};
+  color: ${_rgba(themeVal('color.base'), 0.64)};
+  font-size: 0.875rem;
+  line-height: 1rem;
+  margin: 0 0 ${themeVal('layout.space')} 0;
+`;
+
 export const DropMenu = styled.ul`
   list-style: none;
   margin: -${glbS} -${glbS} ${glbS} -${glbS};
