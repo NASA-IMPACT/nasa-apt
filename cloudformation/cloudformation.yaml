@@ -897,7 +897,7 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucket'
   AtbdBucketWebsite:
-    Value: !GetAtt WebsiteBucket.WebsiteURL
+    Value: !GetAtt AtbdBucket.WebsiteURL
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucketWebsite'
   FiguresBucket:
