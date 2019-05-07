@@ -33,7 +33,7 @@ import FormLegend from '../styles/form/legend';
 import FormLabel from '../styles/form/label';
 import FormToolbar from '../styles/form/toolbar';
 import InfoButton from './common/InfoButton';
-import Button from '../styles/button/button';
+import SubmitBtn from '../styles/button/submit';
 import AddBtn from '../styles/button/add';
 import RemoveButton from '../styles/button/remove';
 
@@ -318,14 +318,14 @@ export const InnerContactForm = (props) => {
         </FormGroupBody>
       </FormGroup>
 
-      <Button
+      <SubmitBtn
         type="submit"
         variation="base-raised-light"
         size="large"
         disabled={!submitEnabled}
       >
         {submitValue}
-      </Button>
+      </SubmitBtn>
     </Form>
   );
 };
