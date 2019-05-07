@@ -33,7 +33,7 @@ const serializeMiddleware = store => next => async (action) => {
               payload: 'Timeout'
             });
           }
-        }, 5000);
+        }, 3000);
         let htmlTries = 0;
         const htmlInterval = setInterval(async () => {
           const checkHtmlResp = await store.dispatch(checkHtml(key));
@@ -48,7 +48,7 @@ const serializeMiddleware = store => next => async (action) => {
               payload: 'Timeout'
             });
           }
-        }, 10000);
+        }, 3000);
       }
     }
   } else {
