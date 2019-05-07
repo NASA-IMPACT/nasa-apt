@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withFormik } from 'formik';
 import jsonschema from 'jsonschema';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { get, set } from 'object-path';
 
 import apiSchema from '../schemas/schema.json';
@@ -30,10 +30,7 @@ import {
   FormHelper,
   FormHelperMessage
 } from '../styles/form/helper';
-import {
-  FormCheckable,
-  FormCheckableGroup
-} from '../styles/form/checkable';
+import { FormCheckable } from '../styles/form/checkable';
 import Form from '../styles/form/form';
 import FormLegend from '../styles/form/legend';
 import FormLabel from '../styles/form/label';
@@ -302,26 +299,24 @@ export const InnerContactForm = (props) => {
           </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
-          <FormCheckableGroup>
-            <InputFormGroup>
-              {roleTypes.map((roleType, i) => (
-                <FormCheckable
-                  key={`${id}-${i}-role-type`}
-                  id={`${id}-${i}-role-type`}
-                  type="checkbox"
-                  name={`roles[${i}]`}
-                  onChange={(e) => {
-                    const name = `roles[${i}]`;
-                    handleChange({ target: { name, value: e.target.checked } });
-                    handleBlur({ target: { name } });
-                  }}
-                  checked={get(values, [roles, i])}
-                >
-                  {roleType}
-                </FormCheckable>
-              ))}
-            </InputFormGroup>
-          </FormCheckableGroup>
+          <InputFormGroup>
+            {roleTypes.map((roleType, i) => (
+              <FormCheckable
+                key={`${id}-${i}-role-type`}
+                id={`${id}-${i}-role-type`}
+                type="checkbox"
+                name={`roles[${i}]`}
+                onChange={(e) => {
+                  const name = `roles[${i}]`;
+                  handleChange({ target: { name, value: e.target.checked } });
+                  handleBlur({ target: { name } });
+                }}
+                checked={get(values, [roles, i])}
+              >
+                {roleType}
+              </FormCheckable>
+            ))}
+          </InputFormGroup>
         </FormGroupBody>
       </FormGroup>
 

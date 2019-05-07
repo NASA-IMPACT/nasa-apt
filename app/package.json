@@ -6,6 +6,7 @@
     "react-router": "4.3.1"
   },
   "dependencies": {
+    "babel-plugin-macros": "^2.5.1",
     "connected-react-router": "^6.3.2",
     "formik": "^1.5.1",
     "history": "^4.9.0",

@@ -2,13 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { StickyContainer, Sticky } from 'react-sticky';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { push } from 'connected-react-router';
 import { createAtbd } from '../actions/actions';
 import {
   atbdsedit,
   drafts,
-  contacts
+  identifying_information
 } from '../constants/routes';
 import { themeVal } from '../styles/utils/general';
 import { multiply, divide } from '../styles/utils/math';
@@ -31,9 +31,12 @@ import {
 } from './common/Inpage';
 
 import Dropdown, {
-  DropdownList,
-  DropdownItem
+  DropTitle,
+  DropMenu,
+  DropMenuItem
 } from './Dropdown';
+
+import AtbdPreview from './AtbdPreview';
 
 const SearchButton = styled(Button)`
   &::before {
@@ -105,11 +108,13 @@ const FilterTrigger = styled(Button)`
 `;
 
 const AtbdList = (props) => {
-  const { atbds, createAtbd: create } = props;
+  const {
+    atbds,
+    createAtbd: create,
+  } = props;
+
   const atbdElements = atbds.map((atbd) => {
     const { atbd_id, title, atbd_versions } = atbd;
-    // We are using a default single version for the prototype.
-    // This should be updated in the future.
     const { status } = atbd_versions[0];
     return (
       <AtbdRow scope="row" key={atbd_id}>
@@ -120,7 +125,13 @@ const AtbdList = (props) => {
         </AtbdCell>
         <AtbdCell>2 hours ago</AtbdCell>
         <AtbdCell>Author Name</AtbdCell>
-        <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${contacts}`)}><EditIcon /></AtbdCell>
+        <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${identifying_information}`)}><EditIcon /></AtbdCell>
+        <AtbdCell>
+          <AtbdPreview
+            atbd_id={atbd_id}
+            atbd_version={1}
+          />
+        </AtbdCell>
       </AtbdRow>
     );
   });
@@ -140,41 +151,61 @@ const AtbdList = (props) => {
                   <FilterItem>
                     <FilterLabel>Status</FilterLabel>
                     <Dropdown
+                      alignment="left"
                       triggerElement={
                         <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
                       }
                     >
-                      <DropdownList role="menu">
-                        <DropdownItem>All</DropdownItem>
-                        <DropdownItem>Published</DropdownItem>
-                        <DropdownItem>Draft</DropdownItem>
-                      </DropdownList>
+                      <DropTitle>Select status</DropTitle>
+                      <DropMenu role="menu" selectable>
+                        <li>
+                          <DropMenuItem active>All</DropMenuItem>
+                        </li>
+                        <li>
+                          <DropMenuItem>Published</DropMenuItem>
+                        </li>
+                        <li>
+                          <DropMenuItem>Draft</DropMenuItem>
+                        </li>
+                      </DropMenu>
                     </Dropdown>
                   </FilterItem>
 
                   <FilterItem>
                     <FilterLabel>Authors</FilterLabel>
                     <Dropdown
+                      alignment="left"
                       triggerElement={
                         <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
                       }
                     >
-                      <DropdownList role="menu">
-                        <DropdownItem>All</DropdownItem>
-                      </DropdownList>
+                      <DropTitle>Select author</DropTitle>
+                      <DropMenu role="menu" selectable>
+                        <li>
+                          <DropMenuItem active>All</DropMenuItem>
+                        </li>
+                        <li>
+                          <DropMenuItem>Lorem ipsum</DropMenuItem>
+                        </li>
+                      </DropMenu>
                     </Dropdown>
                   </FilterItem>
 
                   <FilterItem>
                     <FilterLabel>Sort</FilterLabel>
                     <Dropdown
+                      alignment="left"
                       triggerElement={
                         <FilterTrigger variation="achromic-plain" title="Toggle menu options">Newest</FilterTrigger>
                       }
                     >
-                      <DropdownList role="menu">
-                        <DropdownItem>Newest</DropdownItem>
-                      </DropdownList>
+                      <DropTitle>Sort by</DropTitle>
+                      <DropMenu role="menu" selectable>
+                        <li>
+                          <DropMenuItem active>Newest</DropMenuItem>
+                          <DropMenuItem>Other</DropMenuItem>
+                        </li>
+                      </DropMenu>
                     </Dropdown>
                   </FilterItem>
                 </InpageFilters>

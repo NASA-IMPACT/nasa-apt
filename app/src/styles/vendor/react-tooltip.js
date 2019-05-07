@@ -1,13 +1,18 @@
-import { css } from 'styled-components';
+import { css } from 'styled-components/macro';
 import { themeVal } from '../utils/general';
+import { divide } from '../utils/math';
+import { antialiased } from '../helpers';
 
 export default () => css`
   /* Overrides for react-tooltip styles. */
 
   .__react_component_tooltip {
-    border-radius: 0;
+    ${antialiased};
+    border-radius: ${themeVal('shape.rounded')};
     font-size: 0.875rem;
+    line-height: 1.25rem;
     max-width: 16rem;
+    padding: ${divide(themeVal('layout.space'), 2)} ${themeVal('layout.space')};
 
     &.type-primary {
       background: ${themeVal('color.base')};

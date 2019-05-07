@@ -59,7 +59,23 @@ Parameters:
     Type: String
     Default: nasa-apt-figures
     Description: Bucket for storing ATBD figures.
-
+  DesiredCapacity:
+    Type: Number
+    Default: '2'
+    Description: Number of EC2 instances to launch in your ECS cluster.
+  MaxSize:
+    Type: Number
+    Default: '6'
+    Description: Maximum number of EC2 instances that can be launched.
+  ECSAMI:
+    Description: AMI ID
+    Type: AWS::EC2::Image::Id
+    Default: ami-0bc08634af113cccb
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.medium
+    ConstraintDescription: Please choose a valid instance type.
 Mappings:
   # Hard values for the subnet masks. These masks define
   # the range of internal IP addresses that can be assigned.
@@ -189,14 +205,14 @@ Resources:
     Properties:
       Description: Ingress from the public ALB
       GroupId: !Ref 'FargateContainerSecurityGroup'
-      IpProtocol: -1
+      IpProtocol: '-1'
       SourceSecurityGroupId: !Ref 'PublicLoadBalancerSG'
   EcsSecurityGroupIngressFromSelf:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       Description: Ingress from other containers in the same security group
       GroupId: !Ref 'FargateContainerSecurityGroup'
-      IpProtocol: -1
+      IpProtocol: '-1'
       SourceSecurityGroupId: !Ref 'FargateContainerSecurityGroup'
 
   # Load balancers for getting traffic to containers.
@@ -216,7 +232,7 @@ Resources:
       SecurityGroupIngress:
         # Allow access to ALB from anywhere on the internet
         - CidrIp: 0.0.0.0/0
-          IpProtocol: -1
+          IpProtocol: '-1'
   PublicLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -248,8 +264,6 @@ Resources:
       VpcId: !Ref 'VPC'
   PublicLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - PublicLoadBalancer
     Properties:
       DefaultActions:
         - TargetGroupArn: !Ref 'DummyTargetGroupPublic'
@@ -472,7 +486,8 @@ Resources:
           SUBNET2: !Ref 'PublicSubnetTwo'
           SECURITY_GROUP: !Ref FargateContainerSecurityGroup
           ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
-          ECS_TASK_ROLE: !GetAtt SerializeTaskRole.Arn
+          ECS_TASK_ROLE: !GetAtt TaskRole.Arn
+          ATBD_BUCKET_NAME: !Ref AtbdBucketName
       Handler: index.handler
       Runtime: nodejs8.10
       Code:
@@ -486,27 +501,14 @@ Resources:
             const params = {
               cluster: process.env.CLUSTER,
               taskDefinition: process.env.TASK,
-              launchType: 'FARGATE',
-              networkConfiguration: {
-                awsvpcConfiguration: {
-                  subnets: [
-                    process.env.SUBNET1,
-                    process.env.SUBNET2
-                  ],
-                  assignPublicIp: 'ENABLED',
-                  securityGroups: [
-                    process.env.SECURITY_GROUP
-                  ]
-                }
-              },
+              launchType: 'EC2',
               overrides: {
                 containerOverrides: [
                   {
                     command: [
-                      'python',
-                      './s3eventHandler.py',
                       bucketName,
-                      key
+                      key,
+                      process.env.ATBD_BUCKET_NAME
                     ],
                     name: 'serialize'
                   }
@@ -520,12 +522,11 @@ Resources:
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn: AtbdJsonBucketLambda
     Properties:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref AtbdJsonBucketLambda
       Principal: 's3.amazonaws.com'
-      SourceArn: 'arn:aws:s3:::nasa-apt-json'
+      SourceArn: !Sub 'arn:aws:s3:::${AtbdJsonBucketName}'
 
   # ATBD json bucket
   AtbdJsonBucket:
@@ -541,7 +542,139 @@ Resources:
             Event: 's3:ObjectCreated:*'
             Function: !GetAtt AtbdJsonBucketLambda.Arn
 
-  SerializeTaskRole:
+  AtbdBucketLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          CLUSTER: !GetAtt ECSCluster.Arn
+          PDF_TASK: !Ref PdfTaskDefinition
+          HTML_TASK: !Ref HtmlTaskDefinition
+          SUBNET1: !Ref 'PublicSubnetOne'
+          SUBNET2: !Ref 'PublicSubnetTwo'
+          SECURITY_GROUP: !Ref FargateContainerSecurityGroup
+          ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
+          ECS_TASK_ROLE: !GetAtt TaskRole.Arn
+          ATBD_BUCKET_NAME: !Ref AtbdBucketName
+      Handler: index.handler
+      Runtime: nodejs8.10
+      Code:
+        ZipFile: >
+          const AWS = require('aws-sdk');
+          exports.handler = async function handler(event) {
+            const record = event.Records[0];
+            const bucketName = record.s3.bucket.name;
+            const key = record.s3.object.key;
+            const ecs = new AWS.ECS();
+            const params = {
+              cluster: process.env.CLUSTER,
+              taskDefinition: process.env.PDF_TASK,
+              launchType: 'EC2',
+              overrides: {
+                containerOverrides: [
+                  {
+                    command: [
+                      bucketName,
+                      key,
+                      process.env.ATBD_BUCKET_NAME
+                    ],
+                    name: 'pdf'
+                  }
+                ],
+                executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
+                taskRoleArn: process.env.ECS_TASK_ROLE
+              }
+            };
+            const htmlParams = {
+              cluster: process.env.CLUSTER,
+              taskDefinition: process.env.HTML_TASK,
+              launchType: 'EC2',
+              overrides: {
+                containerOverrides: [
+                  {
+                    command: [
+                      bucketName,
+                      key,
+                      process.env.ATBD_BUCKET_NAME
+                    ],
+                    name: 'html'
+                  }
+                ],
+                executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
+                taskRoleArn: process.env.ECS_TASK_ROLE
+              }
+            }
+            const pdfPromise = ecs.runTask(params).promise();
+            const htmlPromise = ecs.runTask(htmlParams).promise();
+            return Promise.all([pdfPromise, htmlPromise]);
+          }
+
+  AtbdBucketLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn: AtbdBucketLambda
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref AtbdBucketLambda
+      Principal: 's3.amazonaws.com'
+      SourceArn: !Sub 'arn:aws:s3:::${AtbdBucketName}'
+
+  AtbdBucket:
+    Type: AWS::S3::Bucket
+    #DependsOn:
+      #- AtbdBucketLambda
+      #- AtbdBucketLambdaInvokePermission
+    Properties:
+      BucketName: !Ref 'AtbdBucketName'
+      NotificationConfiguration:
+        LambdaConfigurations:
+          -
+            Event: 's3:ObjectCreated:*'
+            Function: !GetAtt AtbdBucketLambda.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  -
+                    Name: 'suffix'
+                    Value: 'tex'
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods:
+              - GET
+              - HEAD
+              - PUT
+              - POST
+            AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
+
+  AtbdBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: AtbdBucketName
+      PolicyDocument:
+        Statement:
+          Action:
+            - 's3:List*'
+            - 's3:Get*'
+            - 's3:PutObject'
+            - 's3:PutObjectAcl'
+          Effect: Allow
+          Principal:
+            AWS:
+              - '*'
+          Resource:
+            Fn::Join:
+              - ''
+              -
+                - 'arn:aws:s3:::'
+                -
+                  Ref: AtbdBucketName
+                - "/*"
+
+  TaskRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -558,42 +691,79 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: 's3:PutObject*'
-                Resource: !Sub 'arn:aws:s3:::${AtbdBucket}*'
-  AtbdBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref 'AtbdBucketName'
+                Resource: !Sub 'arn:aws:s3:::${AtbdBucketName}*'
 
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: /ecs/nasa-apt-serializetask
+      LogGroupName: /ecs/nasa-apt-tasks
 
   SerializeTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: 'serialize'
-      Cpu: 1024
-      Memory: 2048
-      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '512'
+      #NetworkMode: awsvpc
       RequiresCompatibilities:
-        - FARGATE
+        - EC2
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: 'serialize'
-          Cpu: 1024
-          Memory: 2048
+          #Cpu: 1024
+          #Memory: 2048
           Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt:latest'
-          Environment:
-            -
-              Name: ATBD_BUCKET
-              Value: !Ref AtbdBucket
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-group: !Ref LogGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: serializetask
+
+  PdfTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'pdf'
+      Cpu: '512'
+      Memory: '512'
+      #NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - EC2
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: 'pdf'
+          #Cpu: 1024
+          #Memory: 2048
+          Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt-pdf'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: pdftask
+
+  HtmlTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'html'
+      Cpu: '512'
+      Memory: '512'
+      #NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - EC2
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: 'html'
+          #Cpu: 1024
+          #Memory: 2048
+          Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt-html'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: htmltask
+
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -620,6 +790,99 @@ Resources:
                 - 'arn:aws:s3:::'
                 - !Ref WebsiteBucket
                 - /*
+  # Autoscaling group. This launches the actual EC2 instances that will register
+  # themselves as members of the cluster, and run the docker containers.
+  ECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref PublicSubnetOne
+        - !Ref PublicSubnetTwo
+      LaunchConfigurationName: !Ref 'ContainerInstances'
+      MinSize: '1'
+      MaxSize: !Ref 'MaxSize'
+      DesiredCapacity: !Ref 'DesiredCapacity'
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+    UpdatePolicy:
+      AutoScalingReplacingUpdate:
+        WillReplace: true
+  ContainerInstances:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref 'ECSAMI'
+      SecurityGroups: [!Ref 'FargateContainerSecurityGroup']
+      InstanceType: !Ref 'InstanceType'
+      IamInstanceProfile: !Ref 'EC2InstanceProfile'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
+          echo ECS_IMAGE_PULL_BEHAVIOR=prefer-cached >> /etc/ecs/ecs.config
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} \
+            --resource ECSAutoScalingGroup --region ${AWS::Region}
+  AutoscalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [application-autoscaling.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: service-autoscaling
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'application-autoscaling:*'
+                  - 'cloudwatch:DescribeAlarms'
+                  - 'cloudwatch:PutMetricAlarm'
+                  - 'ecs:DescribeServices'
+                  - 'ecs:UpdateService'
+                Resource: '*'
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles: [!Ref 'EC2Role']
+
+  # Role for the EC2 hosts. This allows the ECS agent on the EC2 hosts
+  # to communciate with the ECS control plane, as well as download the docker
+  # images from ECR to run on your host.
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ec2.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: ecs-service
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ecs:CreateCluster'
+                  - 'ecs:DeregisterContainerInstance'
+                  - 'ecs:DiscoverPollEndpoint'
+                  - 'ecs:Poll'
+                  - 'ecs:RegisterContainerInstance'
+                  - 'ecs:StartTelemetrySession'
+                  - 'ecs:Submit*'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:BatchGetImage'
+                  - 'ecr:GetDownloadUrlForLayer'
+                Resource: '*'
 Outputs:
   S3Endpoint:
     Value: 's3.amazonaws.com'
@@ -633,6 +896,10 @@ Outputs:
     Value: !Ref 'AtbdBucketName'
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucket'
+  AtbdBucketWebsite:
+    Value: !GetAtt WebsiteBucket.WebsiteURL
+    Export:
+      Name: !Sub '${AWS::StackName}-AtbdBucketWebsite'
   FiguresBucket:
     Value: !Ref 'FiguresBucket'
     Export:
