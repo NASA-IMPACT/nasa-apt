@@ -37,6 +37,7 @@ import {
 import Prose from '../../styles/type/prose';
 
 import Dropdown, {
+  DropTitle,
   DropdownList,
   DropdownItem
 } from '../Dropdown';
@@ -149,10 +150,12 @@ const EditPage = (props) => {
                       { stepCount }
                     </StepperLabel>
                     <Dropdown
+                      alignment="right"
                       triggerElement={
                         <StepDropTrigger variation="achromic-plain" title="Toggle menu options">{items[step - 1].display}</StepDropTrigger>
                       }
                     >
+                      <DropTitle>Select step</DropTitle>
                       <DropdownList>
                         {items.map((d, i) => (
                           <Item
