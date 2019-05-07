@@ -13,33 +13,6 @@ import collecticon from '../styles/collecticons';
 const _rgba = stylizeFunction(rgba);
 const _tint = stylizeFunction(tint);
 
-export const DropdownTrigger = styled.a`
-  color: #FFF;
-  font-weight: bold;
-  &::after {
-    margin-left: ${divide(themeVal('layout.space'), 2)};
-    ${collecticon('chevron-down--small')};
-  }
-`;
-
-export const DropdownList = styled.ul`
-  margin-left: -${themeVal('layout.space')};
-  margin-right: -${themeVal('layout.space')};
-`;
-
-export const DropdownItem = styled.li`
-  display: flex;
-  align-items: center;
-  background-color: ${themeVal('color.background')};
-  cursor: pointer;
-  padding: ${divide(themeVal('layout.space'), 4)} ${themeVal('layout.space')};
-  transition: background-color .16s ease;
-
-  &:hover {
-    background-color: ${themeVal('color.shadow')};
-  }
-`;
-
 // Not reassigned but contents are modified.
 let activeDropdowns = []; // eslint-disable-line
 
@@ -340,14 +313,12 @@ const transitions = {
 const DropContent = styled.div`
   background: #fff;
   border-radius: ${themeVal('shape.rounded')};
-  box-shadow: 0 0 32px 2px ${_rgba(themeVal('color.base'), 0.08)}, 0 16px 48px -16px ${_rgba(themeVal('color.base'), 0.16)};
+  box-shadow: 0 0 0 1px ${themeVal('color.shadow')}, 0 0 32px 2px ${themeVal('color.shadow')}, 0 16px 48px -16px ${_rgba(themeVal('color.base'), 0.16)};
   position: relative;
   z-index: 1000;
-  width: 100%;
+  width: 100vw;
   max-width: 14rem;
-  margin: 0;
   padding: ${themeVal('layout.space')};
-  overflow: hidden;
   text-align: left;
   color: ${themeVal('type.base.color')};
   font-size: 1rem;
@@ -553,5 +524,23 @@ export const DropInset = styled.div`
 
   > *:last-child {
     margin-bottom: 0;
+  }
+`;
+
+export const DropdownList = styled.ul`
+  margin-left: -${themeVal('layout.space')};
+  margin-right: -${themeVal('layout.space')};
+`;
+
+export const DropdownItem = styled.li`
+  display: flex;
+  align-items: center;
+  background-color: ${themeVal('color.background')};
+  cursor: pointer;
+  padding: ${divide(themeVal('layout.space'), 4)} ${themeVal('layout.space')};
+  transition: background-color .16s ease;
+
+  &:hover {
+    background-color: ${themeVal('color.shadow')};
   }
 `;
