@@ -32,6 +32,7 @@ const types = createTypes([
   ...async('CREATE_ALGORITHM_IMPLEMENTATION'),
   ...async('UPDATE_ALGORITHM_IMPLEMENTATION'),
   ...async('DELETE_ALGORITHM_IMPLEMENTATION'),
+  ...async('FETCH_ATBD_VERSION_REFERENCES'),
   ...async('CREATE_REFERENCE'),
   ...async('DELETE_REFERENCE'),
   ...async('UPLOAD_FILE'),
