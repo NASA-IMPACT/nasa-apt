@@ -1,6 +1,6 @@
 import React from 'react';
 import T from 'prop-types';
-import styled, { css } from 'styled-components';
+import styled, { css } from 'styled-components/macro';
 import { rgba } from 'polished';
 
 import { disabled, visuallyHidden } from '../helpers';

@@ -1,6 +1,6 @@
 import {
-  fetchAtbdVersion,
   fetchAtbd,
+  fetchEntireAtbdVersion,
   uploadJson,
   checkPdf,
   checkHtml
@@ -13,10 +13,10 @@ const serializeMiddleware = store => next => async (action) => {
   let returnAction;
   if (type === types.SERIALIZE_DOCUMENT) {
     returnAction = next(action);
-    const fetchAtbdVersionResp = await store.dispatch(fetchAtbdVersion(versionObject));
+    const fetchAtbdVersionResp = await store.dispatch(fetchEntireAtbdVersion(versionObject));
     const fetchAtbdResp = await store.dispatch(fetchAtbd(versionObject.atbd_id));
     if (fetchAtbdVersionResp.type === types.FETCH_ATBD_VERSION_SUCCESS &&
-        fetchAtbdResp.type === types.FETCH_ATBD_SUCCESS) {
+        fetchAtbdResp.type === types.FETCH_ATBD_SUCCESS) 
       const { payload: json } = fetchAtbdVersionResp;
       const { payload: { contacts } } = fetchAtbdResp;
       json.atbd.contacts = contacts;

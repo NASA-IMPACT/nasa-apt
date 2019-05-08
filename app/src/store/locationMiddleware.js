@@ -5,12 +5,11 @@ import {
   atbds,
   atbdsedit,
   identifying_information,
-  introduction,
   contacts,
   drafts,
   algorithm_description,
-  algorithm_usage,
   algorithm_implementation,
+  references,
   error
 } from '../constants/routes';
 
@@ -18,18 +17,31 @@ const locationMiddleware = store => next => async (action) => {
   const { type, payload } = action;
   if (type === LOCATION_CHANGE) {
     const { location: { pathname } } = payload;
+
+    // Redirect '/' to '/atbds'
+    if (pathname === '/') {
+      return store.dispatch(push(`/${atbds}`));
+    }
+
     const pathComponents = pathname.split('/');
     if (pathComponents[1] === atbds) {
       store.dispatch(actions.fetchAtbds());
     }
     if (pathComponents[1] === atbdsedit) {
       if (pathComponents[3] === drafts) {
-        if (pathComponents[5] === algorithm_description || pathComponents[5] === introduction
-          || pathComponents[5] === algorithm_usage || pathComponents[5] === identifying_information) {
-          store.dispatch(actions.fetchAtbdVersion({
-            atbd_id: pathComponents[2],
-            atbd_version: pathComponents[4]
-          }));
+        const versionObject = {
+          atbd_id: pathComponents[2],
+          atbd_version: pathComponents[4]
+        };
+
+        // Version variables and algorithm implementations
+        // queries both include the atbd version in their query.
+        if (pathComponents[5] === algorithm_description) {
+          store.dispatch(actions.fetchAtbdVersionVariables(versionObject));
+        } else if (pathComponents[5] === algorithm_implementation) {
+          store.dispatch(actions.fetchAlgorithmImplmentations(versionObject));
+        } else {
+          store.dispatch(actions.fetchAtbdVersion(versionObject));
         }
 
         if (pathComponents[5] === contacts) {
@@ -38,18 +50,12 @@ const locationMiddleware = store => next => async (action) => {
           store.dispatch(actions.fetchContactGroups());
         }
 
-        if (pathComponents[5] === algorithm_implementation) {
-          store.dispatch(actions.fetchAlgorithmImplmentations({
-            atbd_id: pathComponents[2],
-            atbd_version: pathComponents[4]
-          }));
+        if (pathComponents[5] === identifying_information) {
+          store.dispatch(actions.fetchCitation(versionObject));
         }
 
-        if (pathComponents[5] === identifying_information) {
-          store.dispatch(actions.fetchCitation({
-            atbd_id: pathComponents[2],
-            atbd_version: pathComponents[4]
-          }));
+        if (pathComponents[5] === references) {
+          store.dispatch(actions.fetchAtbdVersionReferences(versionObject));
         }
       }
     }

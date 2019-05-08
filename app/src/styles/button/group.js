@@ -1,5 +1,5 @@
 import T from 'prop-types';
-import styled, { css } from 'styled-components';
+import styled, { css } from 'styled-components/macro';
 
 import Button from './button';
 

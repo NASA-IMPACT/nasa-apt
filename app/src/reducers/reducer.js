@@ -5,11 +5,13 @@ const initialState = {
   atbds: [],
   contacts: [],
   contact_groups: [],
+  references: [],
   lastCreatedContact: undefined,
   uploadedFile: undefined,
   atbdVersion: undefined,
   atbdCitation: undefined,
   selectedAtbd: undefined,
+  lastCreatedReference: undefined,
   t: undefined
 };
 
@@ -70,6 +72,7 @@ const replaceAtIndex = (arr, idProperty, next) => {
 
 export default function (state = initialState, action) {
   switch (action.type) {
+    case actions.FETCH_ALGORITHM_VARIABLES_SUCCESS:
     case actions.FETCH_ALGORITHM_IMPLEMENTATION_SUCCESS:
     case actions.FETCH_ATBD_VERSION_SUCCESS: {
       const { payload } = action;
@@ -232,6 +235,31 @@ export default function (state = initialState, action) {
           ...state.atbdVersion,
           algorithm_implementations: next
         }
+      };
+    }
+
+    case actions.FETCH_ATBD_VERSION_REFERENCES_SUCCESS: {
+      const { payload } = action;
+      return {
+        ...state,
+        references: payload
+      };
+    }
+
+    case actions.CREATE_REFERENCE_SUCCESS: {
+      const { payload } = action;
+      return {
+        ...state,
+        lastCreatedReference: payload
+      };
+    }
+
+    case actions.DELETE_REFERENCE_SUCCESS: {
+      const { payload } = action;
+      const id = payload.publication_reference_id;
+      return {
+        ...state,
+        references: state.references.filter(d => d.publication_reference_id !== id)
       };
     }
 
