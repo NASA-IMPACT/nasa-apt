@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { PropTypes as T } from 'prop-types';
 import styled from 'styled-components';
 
-import { themeVal } from '../styles/utils/general';
 import Button from '../styles/button/button';
 import collecticon from '../styles/collecticons';
 import { createReference } from '../actions/actions';
@@ -24,24 +23,7 @@ import {
   FormHelperMessage
 } from '../styles/form/helper';
 import Modal from '../styles/modal/modal';
-
-const ModalInner = styled.div`
-  background: ${themeVal('color.mist')};
-  display: grid;
-  grid-template-rows: auto;
-  grid-gap: ${themeVal('layout.space')};
-  padding: 2rem;
-  position: relative;
-`;
-
-const CloseModal = styled(Button)`
-  position: absolute;
-  right: 0;
-  top: 0;
-  ::before {
-    ${collecticon('xmark--small')}
-  }
-`;
+import { ModalInner, CloseModal } from '../styles/modal/inner';
 
 export const ReferenceBtn = styled(Button)`
   ::before {
@@ -136,6 +118,8 @@ export class EditorReferenceTool extends Component {
       onSubmit
     } = this;
 
+    const { active } = this.props;
+
     return (
       <Fragment>
         <Modal
@@ -187,6 +171,7 @@ export class EditorReferenceTool extends Component {
           onClick={() => setModalState(true)}
           variation="base-plain"
           size="large"
+          active={active}
         >
           Reference
         </ReferenceBtn>
@@ -199,7 +184,8 @@ EditorReferenceTool.propTypes = {
   onSaveSuccess: T.func,
   createReference: T.func,
   lastCreatedReference: T.object,
-  atbdVersion: T.object
+  atbdVersion: T.object,
+  active: T.bool
 };
 
 const mapStateToProps = state => ({
