@@ -496,6 +496,153 @@ export function deleteAlgorithmImplementation(id) {
   };
 }
 
+export function createAccessInput(body) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/data_access_input_data`,
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ACCESS_INPUT,
+        types.CREATE_ACCESS_INPUT_SUCCESS,
+        types.CREATE_ACCESS_INPUT_FAIL
+      ]
+    }
+  };
+}
+
+export function updateAccessInput(id, body) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/data_access_input_data`
+        + `?data_access_input_data_id=eq.${id}`,
+      method: 'PATCH',
+      body: JSON.stringify(body),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_ACCESS_INPUT,
+        types.UPDATE_ACCESS_INPUT_SUCCESS,
+        types.UPDATE_ACCESS_INPUT_FAIL
+      ]
+    }
+  };
+}
+
+export function deleteAccessInput(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/data_access_input_data`
+        + `?data_access_input_data_id=eq.${id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ACCESS_INPUT,
+        types.DELETE_ACCESS_INPUT_SUCCESS,
+        types.DELETE_ACCESS_INPUT_FAIL
+      ]
+    }
+  };
+}
+
+export function createAccessOutput(body) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/data_access_output_data`,
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ACCESS_OUTPUT,
+        types.CREATE_ACCESS_OUTPUT_SUCCESS,
+        types.CREATE_ACCESS_OUTPUT_FAIL
+      ]
+    }
+  };
+}
+
+export function updateAccessOutput(id, body) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/data_access_output_data`
+        + `?data_access_output_data_id=eq.${id}`,
+      method: 'PATCH',
+      body: JSON.stringify(body),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_ACCESS_OUTPUT,
+        types.UPDATE_ACCESS_OUTPUT_SUCCESS,
+        types.UPDATE_ACCESS_OUTPUT_FAIL
+      ]
+    }
+  };
+}
+
+export function deleteAccessOutput(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/data_access_output_data`
+        + `?data_access_output_data_id=eq.${id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ACCESS_OUTPUT,
+        types.DELETE_ACCESS_OUTPUT_SUCCESS,
+        types.DELETE_ACCESS_OUTPUT_FAIL
+      ]
+    }
+  };
+}
+
+export function createAccessRelated(body) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/data_access_related_urls`,
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_ACCESS_RELATED,
+        types.CREATE_ACCESS_RELATED_SUCCESS,
+        types.CREATE_ACCESS_RELATED_FAIL
+      ]
+    }
+  };
+}
+
+export function updateAccessRelated(id, body) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/data_access_related_urls`
+        + `?data_access_related_url_id=eq.${id}`,
+      method: 'PATCH',
+      body: JSON.stringify(body),
+      headers: returnObjectHeaders,
+      types: [
+        types.UPDATE_ACCESS_RELATED,
+        types.UPDATE_ACCESS_RELATED_SUCCESS,
+        types.UPDATE_ACCESS_RELATED_FAIL
+      ]
+    }
+  };
+}
+
+export function deleteAccessRelated(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/data_access_related_urls`
+        + `?data_access_related_url_id=eq.${id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_ACCESS_RELATED,
+        types.DELETE_ACCESS_RELATED_SUCCESS,
+        types.DELETE_ACCESS_RELATED_FAIL
+      ]
+    }
+  };
+}
+
 export function fetchAtbdVersionReferences(versionObject) {
   const { atbd_id, atbd_version } = versionObject;
   return {

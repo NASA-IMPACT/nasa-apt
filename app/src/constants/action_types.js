@@ -32,6 +32,19 @@ const types = createTypes([
   ...async('CREATE_ALGORITHM_IMPLEMENTATION'),
   ...async('UPDATE_ALGORITHM_IMPLEMENTATION'),
   ...async('DELETE_ALGORITHM_IMPLEMENTATION'),
+
+  ...async('CREATE_ACCESS_INPUT'),
+  ...async('UPDATE_ACCESS_INPUT'),
+  ...async('DELETE_ACCESS_INPUT'),
+
+  ...async('CREATE_ACCESS_OUTPUT'),
+  ...async('UPDATE_ACCESS_OUTPUT'),
+  ...async('DELETE_ACCESS_OUTPUT'),
+
+  ...async('CREATE_ACCESS_RELATED'),
+  ...async('UPDATE_ACCESS_RELATED'),
+  ...async('DELETE_ACCESS_RELATED'),
+
   ...async('FETCH_ATBD_VERSION_REFERENCES'),
   ...async('CREATE_REFERENCE'),
   ...async('DELETE_REFERENCE'),
