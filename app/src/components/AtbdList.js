@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { StickyContainer, Sticky } from 'react-sticky';
 import styled from 'styled-components/macro';
+import { rgba } from 'polished';
 import { push } from 'connected-react-router';
 import { createAtbd } from '../actions/actions';
 import {
@@ -10,9 +11,10 @@ import {
   drafts,
   identifying_information
 } from '../constants/routes';
-import { themeVal } from '../styles/utils/general';
-import { multiply, divide } from '../styles/utils/math';
-import { visuallyHidden, truncated } from '../styles/helpers';
+import { themeVal, stylizeFunction } from '../styles/utils/general';
+import { divide } from '../styles/utils/math';
+
+import { visuallyHidden, truncated, antialiased } from '../styles/helpers';
 import { VerticalDivider } from '../styles/divider';
 import Button from '../styles/button/button';
 import collecticon from '../styles/collecticons';
@@ -37,17 +39,11 @@ import Dropdown, {
   DropMenuItem
 } from './Dropdown';
 
-import {
-  Table,
-  TableHead,
-  TableBody,
-  TableTr,
-  TableHeadTh,
-  TableBodyTh,
-  TableTd
-} from '../styles/table';
+import Table from '../styles/table';
 
 import AtbdPreview from './AtbdPreview';
+
+const _rgba = stylizeFunction(rgba);
 
 const SearchButton = styled(Button)`
   &::before {
@@ -62,48 +58,28 @@ const CreateButton = styled(Button)`
 `;
 
 const DocTable = styled(Table)`
-  table-layout: fixed;
+  white-space: nowrap;
 
-  thead {
-    white-space;
+  th, td {
+    padding: ${themeVal('layout.space')};
   }
 `;
 
-const DocTableHeadThStatus = styled(TableHeadTh)`
-
-`;
-
-const DocTableHeadThTitle = styled(TableHeadTh)`
-
-`;
-
-const DocTableHeadThTime = styled(TableHeadTh)`
-
-`;
-
-const DocTableHeadThAuthors = styled(TableHeadTh)`
-
-`;
-
-const DocTableHeadThActions = styled(TableHeadTh)`
+const DocTableHeadThActions = styled.th`
   > span {
     ${visuallyHidden};
   }
 `;
 
-const DocTableBodyTdStatus = styled(TableTd)`
-  white-space: nowrap;
+const DocTableBodyThStatus = styled.th`
+  max-width: 10rem;
 `;
 
-const DocTableBodyThTitle = styled(TableBodyTh)`
-  width: auto;
+const DocTableBodyThTitle = styled.th`
+  white-space: normal;
 `;
 
-const DocTableBodyTdTime = styled(TableTd)`
-  white-space: nowrap;
-`;
-
-const DocTableBodyTdAuthors = styled(TableTd)`
+const DocTableBodyTdAuthors = styled.td`
   > span {
     ${truncated};
     display: block;
@@ -111,9 +87,8 @@ const DocTableBodyTdAuthors = styled(TableTd)`
   }
 `;
 
-const DocTableBodyTdActions = styled(TableTd)`
+const DocTableBodyTdActions = styled.td`
   text-align: right;
-  white-space: nowrap;
 
   > *:not(:first-child) {
     margin-left: 0.5rem;
@@ -121,13 +96,18 @@ const DocTableBodyTdActions = styled(TableTd)`
 `;
 
 const AtbdPublishedState = styled.span`
-  background-color: ${themeVal('color.darkgray')};
-  border-radius: ${multiply(themeVal('layout.space'), 2)};
-  color: ${themeVal('color.surface')};
-  display: inline-block;
-  padding: ${divide(themeVal('layout.space'), 2)} 0;
-  text-align: center;
-  width: 100%;
+  ${antialiased}
+  display: flex;
+  justify-content: center;
+  padding: 0 ${divide(themeVal('layout.space'), 2)};
+  background-color: ${_rgba(themeVal('color.base'), 0.64)};
+  border-radius: ${themeVal('shape.ellipsoid')};
+  color: #FFF;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: ${themeVal('type.base.bold')};
+  line-height: 1.5rem;
+  min-width: 6rem;
 `;
 
 const AtbdVersion = styled.span`
@@ -159,13 +139,13 @@ const AtbdList = (props) => {
     const { atbd_id, title, atbd_versions } = atbd;
     const { status } = atbd_versions[0];
     return (
-      <TableTr key={atbd_id}>
-        <DocTableBodyTdStatus><AtbdPublishedState>{status}</AtbdPublishedState></DocTableBodyTdStatus>
+      <tr key={atbd_id}>
+        <td><AtbdPublishedState>{status}</AtbdPublishedState></td>
         <DocTableBodyThTitle scope="row">
           <strong>{title}</strong>
           { false && <AtbdVersion>Version 1.0</AtbdVersion> }
         </DocTableBodyThTitle>
-        <DocTableBodyTdTime><span>2 hours ago</span></DocTableBodyTdTime>
+        <td><span>2 hours ago</span></td>
         <DocTableBodyTdAuthors><span>Author Name</span></DocTableBodyTdAuthors>
         <DocTableBodyTdActions>
           <AtbdPreview
@@ -175,7 +155,7 @@ const AtbdList = (props) => {
           <a href="#" title="Publish document">Publish</a>
           <a href="#" title="Edit document" onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${identifying_information}`)}>Edit</a>
         </DocTableBodyTdActions>
-      </TableTr>
+      </tr>
     );
   });
   return (
@@ -265,18 +245,18 @@ const AtbdList = (props) => {
         <InpageBody>
           <InpageBodyInner>
             <DocTable>
-              <TableHead>
-                <TableTr>
-                  <DocTableHeadThStatus scope="col"><span>Status</span></DocTableHeadThStatus>
-                  <DocTableHeadThTitle scope="col"><span>Title</span></DocTableHeadThTitle>
-                  <DocTableHeadThTime scope="col"><span>Last Edit</span></DocTableHeadThTime>
-                  <DocTableHeadThAuthors scope="col"><span>Authors</span></DocTableHeadThAuthors>
+              <thead>
+                <tr>
+                  <DocTableBodyThStatus scope="col"><span>Status</span></DocTableBodyThStatus>
+                  <th scope="col"><span>Title</span></th>
+                  <th scope="col"><span>Last Edit</span></th>
+                  <th scope="col"><span>Authors</span></th>
                   <DocTableHeadThActions scope="col"><span>Actions</span></DocTableHeadThActions>
-                </TableTr>
-              </TableHead>
-              <TableBody>
+                </tr>
+              </thead>
+              <tbody>
                 {atbdElements}
-              </TableBody>
+              </tbody>
             </DocTable>
           </InpageBodyInner>
         </InpageBody>
