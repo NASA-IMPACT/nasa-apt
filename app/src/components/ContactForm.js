@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withFormik } from 'formik';
 import jsonschema from 'jsonschema';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { get, set } from 'object-path';
 
 import apiSchema from '../schemas/schema.json';
@@ -12,10 +12,7 @@ import addMinLength from '../schemas/addMinLength';
 import transformErrors from '../schemas/transformErrors';
 import validateEmail from '../schemas/validateEmail';
 import Select from './common/Select';
-import Input, {
-  InputFormGroup,
-  InputSubmit
-} from './common/Input';
+import Input, { InputFormGroup } from './common/Input';
 import {
   FormFieldset,
   FormFieldsetHeader,
@@ -30,15 +27,13 @@ import {
   FormHelper,
   FormHelperMessage
 } from '../styles/form/helper';
-import {
-  FormCheckable,
-  FormCheckableGroup
-} from '../styles/form/checkable';
+import { FormCheckable } from '../styles/form/checkable';
 import Form from '../styles/form/form';
 import FormLegend from '../styles/form/legend';
 import FormLabel from '../styles/form/label';
 import FormToolbar from '../styles/form/toolbar';
 import InfoButton from './common/InfoButton';
+import SubmitBtn from '../styles/button/submit';
 import AddBtn from '../styles/button/add';
 import RemoveButton from '../styles/button/remove';
 
@@ -302,34 +297,35 @@ export const InnerContactForm = (props) => {
           </FormToolbar>
         </FormGroupHeader>
         <FormGroupBody>
-          <FormCheckableGroup>
-            <InputFormGroup>
-              {roleTypes.map((roleType, i) => (
-                <FormCheckable
-                  key={`${id}-${i}-role-type`}
-                  id={`${id}-${i}-role-type`}
-                  type="checkbox"
-                  name={`roles[${i}]`}
-                  onChange={(e) => {
-                    const name = `roles[${i}]`;
-                    handleChange({ target: { name, value: e.target.checked } });
-                    handleBlur({ target: { name } });
-                  }}
-                  checked={get(values, [roles, i])}
-                >
-                  {roleType}
-                </FormCheckable>
-              ))}
-            </InputFormGroup>
-          </FormCheckableGroup>
+          <InputFormGroup>
+            {roleTypes.map((roleType, i) => (
+              <FormCheckable
+                key={`${id}-${i}-role-type`}
+                id={`${id}-${i}-role-type`}
+                type="checkbox"
+                name={`roles[${i}]`}
+                onChange={(e) => {
+                  const name = `roles[${i}]`;
+                  handleChange({ target: { name, value: e.target.checked } });
+                  handleBlur({ target: { name } });
+                }}
+                checked={get(values, [roles, i])}
+              >
+                {roleType}
+              </FormCheckable>
+            ))}
+          </InputFormGroup>
         </FormGroupBody>
       </FormGroup>
 
-      <InputSubmit
+      <SubmitBtn
         type="submit"
+        variation="base-raised-light"
+        size="large"
         disabled={!submitEnabled}
-        value={submitValue}
-      />
+      >
+        {submitValue}
+      </SubmitBtn>
     </Form>
   );
 };

@@ -196,17 +196,52 @@ export function fetchAtbdVersion(versionObject) {
   const { atbd_id, atbd_version } = versionObject;
   return {
     [RSAA]: {
-      method: 'GET',
       endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
-        + `atbd_version=eq.${atbd_version}&select=*,atbd(*),`
-        + `algorithm_input_variables(*),algorithm_output_variables(*),`
-        + `algorithm_implementations(*),publication_references(*),`
-        + `data_access_input_data(*),data_access_related_urls(*)`,
+        + `atbd_version=eq.${atbd_version}&select=*,atbd(*)`,
+      method: 'GET',
       headers: returnObjectHeaders,
       types: [
         types.FETCH_ATBD_VERSION,
         types.FETCH_ATBD_VERSION_SUCCESS,
         types.FETCH_ATBD_VERSION_FAIL
+      ]
+    }
+  };
+}
+
+export function fetchEntireAtbdVersion(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}&select=*,atbd(*),`
+        + `algorithm_input_variables(*),algorithm_output_variables(*),`
+        + `algorithm_implementations(*),publication_references(*),`
+        + `data_access_input_data(*),data_access_related_urls(*)`,
+      method: 'GET',
+      headers: returnObjectHeaders,
+      types: [
+        types.FETCH_ATBD_VERSION,
+        types.FETCH_ATBD_VERSION_SUCCESS,
+        types.FETCH_ATBD_VERSION_FAIL
+      ]
+    }
+  };
+}
+
+export function fetchAtbdVersionVariables(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}&select=*,atbd(*),algorithm_input_variables(*),`
+        + `algorithm_output_variables(*)`,
+      method: 'GET',
+      headers: returnObjectHeaders,
+      types: [
+        types.FETCH_ALGORITHM_VARIABLES,
+        types.FETCH_ALGORITHM_VARIABLES_SUCCESS,
+        types.FETCH_ALGORITHM_VARIABLES_FAIL
       ]
     }
   };
@@ -456,6 +491,54 @@ export function deleteAlgorithmImplementation(id) {
         types.DELETE_ALGORITHM_IMPLEMENTATION,
         types.DELETE_ALGORITHM_IMPLEMENTATION_SUCCESS,
         types.DELETE_ALGORITHM_IMPLEMENTATION_FAIL
+      ]
+    }
+  };
+}
+
+export function fetchAtbdVersionReferences(versionObject) {
+  const { atbd_id, atbd_version } = versionObject;
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/publication_references?atbd_id=eq.${atbd_id}&`
+        + `atbd_version=eq.${atbd_version}`,
+      method: 'GET',
+      types: [
+        types.FETCH_ATBD_VERSION_REFERENCES,
+        types.FETCH_ATBD_VERSION_REFERENCES_SUCCESS,
+        types.FETCH_ATBD_VERSION_REFERENCES_FAIL
+      ]
+    }
+  };
+}
+
+export function createReference(reference) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/publication_references`,
+      method: 'POST',
+      body: JSON.stringify(reference),
+      headers: returnObjectHeaders,
+      types: [
+        types.CREATE_REFERENCE,
+        types.CREATE_REFERENCE_SUCCESS,
+        types.CREATE_REFERENCE_FAIL
+      ]
+    }
+  };
+}
+
+export function deleteReference(id) {
+  return {
+    [RSAA]: {
+      endpoint: `${BASE_URL}/publication_references`
+        + `?publication_reference_id=eq.${id}`,
+      method: 'DELETE',
+      headers: returnObjectHeaders,
+      types: [
+        types.DELETE_REFERENCE,
+        types.DELETE_REFERENCE_SUCCESS,
+        types.DELETE_REFERENCE_FAIL
       ]
     }
   };

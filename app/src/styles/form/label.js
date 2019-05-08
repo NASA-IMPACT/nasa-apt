@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React from 'react';
 import T from 'prop-types';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 
 import { themeVal } from '../utils/general';
 

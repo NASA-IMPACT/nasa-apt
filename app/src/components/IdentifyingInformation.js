@@ -154,16 +154,16 @@ export class IdentifyingInformation extends Component {
                         onBlur={e => onTextFieldBlur(e, 'titleEmpty')}
                         invalid={titleEmpty}
                       />
-                      <Button
-                        onClick={updateAtbdTitle}
-                        variation="base-raised-light"
-                        size="large"
-                        type="submit"
-                      >
-                        Save
-                      </Button>
                     </FormGroupBody>
                   </FormGroup>
+                  <Button
+                    onClick={updateAtbdTitle}
+                    variation="base-raised-light"
+                    size="large"
+                    type="submit"
+                  >
+                    Save
+                  </Button>
                 </FormFieldsetBody>
               </FormFieldset>
             </Form>

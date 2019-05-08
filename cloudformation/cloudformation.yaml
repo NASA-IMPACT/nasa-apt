@@ -626,6 +626,10 @@ Resources:
       #- AtbdBucketLambdaInvokePermission
     Properties:
       BucketName: !Ref 'AtbdBucketName'
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
       NotificationConfiguration:
         LambdaConfigurations:
           -
@@ -897,7 +901,7 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucket'
   AtbdBucketWebsite:
-    Value: !GetAtt WebsiteBucket.WebsiteURL
+    Value: !GetAtt AtbdBucket.WebsiteURL
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucketWebsite'
   FiguresBucket:

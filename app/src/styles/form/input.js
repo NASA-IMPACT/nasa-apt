@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import controlSkin from './control-skin';
 
 const FormInput = styled.input.attrs(props => ({

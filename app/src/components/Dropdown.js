@@ -2,42 +2,16 @@ import React from 'react';
 import { PropTypes as T } from 'prop-types';
 import TetherComponent from 'react-tether';
 import { CSSTransition } from 'react-transition-group';
-import styled, { css } from 'styled-components';
+import styled, { css } from 'styled-components/macro';
 import { rgba, tint } from 'polished';
 
 import { themeVal, stylizeFunction } from '../styles/utils/general';
 import { divide, multiply } from '../styles/utils/math';
+import { headingAlt } from '../styles/type/heading';
 import collecticon from '../styles/collecticons';
 
 const _rgba = stylizeFunction(rgba);
 const _tint = stylizeFunction(tint);
-
-export const DropdownTrigger = styled.a`
-  color: #FFF;
-  font-weight: bold;
-  &::after {
-    margin-left: ${divide(themeVal('layout.space'), 2)};
-    ${collecticon('chevron-down--small')};
-  }
-`;
-
-export const DropdownList = styled.ul`
-  margin-left: -${themeVal('layout.space')};
-  margin-right: -${themeVal('layout.space')};
-`;
-
-export const DropdownItem = styled.li`
-  display: flex;
-  align-items: center;
-  background-color: ${themeVal('color.background')};
-  cursor: pointer;
-  padding: ${divide(themeVal('layout.space'), 4)} ${themeVal('layout.space')};
-  transition: background-color .16s ease;
-
-  &:hover {
-    background-color: ${themeVal('color.shadow')};
-  }
-`;
 
 // Not reassigned but contents are modified.
 let activeDropdowns = []; // eslint-disable-line
@@ -339,14 +313,12 @@ const transitions = {
 const DropContent = styled.div`
   background: #fff;
   border-radius: ${themeVal('shape.rounded')};
-  box-shadow: 0 0 32px 2px ${_rgba(themeVal('color.base'), 0.08)}, 0 16px 48px -16px ${_rgba(themeVal('color.base'), 0.16)};
+  box-shadow: 0 0 0 1px ${themeVal('color.shadow')}, 0 0 32px 2px ${themeVal('color.shadow')}, 0 16px 48px -16px ${_rgba(themeVal('color.base'), 0.16)};
   position: relative;
   z-index: 1000;
-  width: 100%;
+  width: 100vw;
   max-width: 14rem;
-  margin: 0;
   padding: ${themeVal('layout.space')};
-  overflow: hidden;
   text-align: left;
   color: ${themeVal('type.base.color')};
   font-size: 1rem;
@@ -450,12 +422,22 @@ if (process.env.NODE_ENV !== 'production') {
 const glbS = themeVal('layout.space');
 
 // Drop content elements.
+export const DropTitle = styled.h6`
+  ${headingAlt};
+  color: ${_rgba(themeVal('color.base'), 0.64)};
+  font-size: 0.875rem;
+  line-height: 1rem;
+  margin: 0 0 ${themeVal('layout.space')} 0;
+`;
+
 export const DropMenu = styled.ul`
   list-style: none;
   margin: -${glbS} -${glbS} ${glbS} -${glbS};
   box-shadow: 0 ${themeVal('layout.border')} 0 0 ${themeVal('color.shadow')};
   padding: ${divide(glbS, 2)} 0;
   min-width: 12rem;
+  font-family: ${themeVal('type.base.family')};
+  font-weight: ${themeVal('type.base.bold')};
 
   /* Styles when the ul items have icons */
   ${({ iconified }) => iconified && css`
@@ -465,7 +447,7 @@ export const DropMenu = styled.ul`
       &::before {
         position: absolute;
         z-index: 1;
-        top: ${divide(glbS, 4)};
+        top: ${divide(glbS, 2)};
         left: ${glbS};
         font-size: 1rem;
         line-height: 1.5rem;
@@ -475,22 +457,31 @@ export const DropMenu = styled.ul`
     }
   `}
 
+  /* Styles when the ul items are selectable */
+  ${({ selectable }) => selectable && css`
+    ${DropMenuItem} {
+      padding-right: ${multiply(glbS, 2.5)};
+    }
+  `}
+
   &:last-child {
     margin-bottom: -${glbS};
     box-shadow: none;
   }
 `;
 
-export const DropMenuItem = styled.span`
+export const DropMenuItem = styled.a`
   position: relative;
-  display: block;
-  padding: 0.25rem 1rem;
+  display: flex;
+  align-items: center;
+  padding: ${divide(themeVal('layout.space'), 2)} ${themeVal('layout.space')};
   color: ${themeVal('type.base.color')};
   transition: all 0.16s ease 0s;
 
   &:hover,
   &:focus {
-    background-color: ${_rgba(themeVal('color.base'), 0.04)};
+    color: ${themeVal('color.link')};
+    background-color: ${_rgba(themeVal('color.link'), 0.12)};
     opacity: 1;
   }
 
@@ -505,7 +496,7 @@ export const DropMenuItem = styled.span`
       ${collecticon('tick--small')}
       position: absolute;
       z-index: 1;
-      top: ${divide(themeVal('layout.space'), 4)};
+      top: ${divide(themeVal('layout.space'), 2)};
       right: ${divide(themeVal('layout.space'), 2)};
       font-size: 1rem;
       line-height: 1.5rem;

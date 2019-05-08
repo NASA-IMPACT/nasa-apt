@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import { StickyContainer, Sticky } from 'react-sticky';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { rgba } from 'polished';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
-import { multiply } from '../../styles/utils/math';
+import { antialiased } from '../../styles/helpers';
 import { headingAlt } from '../../styles/type/heading';
 import Button from '../../styles/button/button';
 import { VerticalDivider } from '../../styles/divider';
@@ -31,17 +31,24 @@ import {
   drafts,
   algorithm_description,
   algorithm_usage,
-  algorithm_implementation
+  algorithm_implementation,
+  references
 } from '../../constants/routes';
 
 import Prose from '../../styles/type/prose';
 
 import Dropdown, {
-  DropdownList,
-  DropdownItem
+  DropTitle,
+  DropMenu,
+  DropMenuItem
 } from '../Dropdown';
 
 const _rgba = stylizeFunction(rgba);
+
+
+const StepperDrop = styled(Dropdown)`
+  min-width: 20rem;
+`;
 
 const PrevButton = styled(Button)`
   &::before {
@@ -78,35 +85,21 @@ const StepperLabel = styled.h6`
   margin-right: 0.5rem;
 `;
 
-export const RemovableListItem = styled.li`
-  &::before {
-    cursor: pointer;
-    ${collecticon('xmark--small')}
-  }
-`;
-
-const Item = styled(DropdownItem)`
-  border-top: 1px solid ${themeVal('color.lightgray')};
-  font-weight: bold;
-  padding: ${multiply(themeVal('layout.space'), 0.5)} ${themeVal('layout.space')};
-  text-align: left;
-
-  &:first-child {
-    border-top: none;
-  }
-`;
-
 const ItemCount = styled.span`
-  align-items: center;
-  color: #FFF;
-  background-color: ${themeVal('color.darkgray')};
-  border-radius: ${multiply(themeVal('layout.space'), 1.2)};
-  display: inline-flex;
-  justify-content: center;
-  height: ${multiply(themeVal('layout.space'), 2)};
-  margin-right: ${multiply(themeVal('layout.space'), 0.5)};
-  width: ${multiply(themeVal('layout.space'), 2)};
+  ${antialiased}
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  line-height: 1.5rem;
+  color: #FFF;
+  background-color: ${themeVal('color.link')};
+  border-radius: ${themeVal('shape.ellipsoid')};
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 0.5rem;
+
 `;
 
 const EditPage = (props) => {
@@ -126,7 +119,7 @@ const EditPage = (props) => {
     { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_description}` },
     { display: 'Algorithm usage', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_usage}` },
     { display: 'Algorithm implementation', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_implementation}` },
-    { display: 'References' }
+    { display: 'References', link: `/${atbdsedit}/${id}/${drafts}/${version}/${references}` }
   ];
 
   const numSteps = items.length;
@@ -148,27 +141,43 @@ const EditPage = (props) => {
                     <StepperLabel>
                       { stepCount }
                     </StepperLabel>
-                    <Dropdown
+                    <StepperDrop
+                      alignment="right"
                       triggerElement={
                         <StepDropTrigger variation="achromic-plain" title="Toggle menu options">{items[step - 1].display}</StepDropTrigger>
                       }
                     >
-                      <DropdownList>
+                      <DropTitle>Select step</DropTitle>
+                      <DropMenu role="menu" selectable>
                         {items.map((d, i) => (
-                          <Item
-                            key={d.display}
-                            onClick={() => d.link && props.push(d.link)}
-                          >
-                            <ItemCount>{i + 1}</ItemCount>
-                            {d.display}
-                          </Item>
+                          <li key={d.display}>
+                            <DropMenuItem
+                              onClick={() => d.link && props.push(d.link)}
+                              active={i === step - 1}
+                            >
+                              <ItemCount>{i + 1}</ItemCount>
+                              <span>{d.display}</span>
+                            </DropMenuItem>
+                          </li>
                         ))}
-                      </DropdownList>
-                    </Dropdown>
+                      </DropMenu>
+                    </StepperDrop>
                   </Stepper>
                   <VerticalDivider />
-                  <PrevButton variation="achromic-plain" title="View previous step">Prev</PrevButton>
-                  <NextButton variation="achromic-plain" title="View next step" disabled>Next</NextButton>
+                  <PrevButton
+                    variation="achromic-plain"
+                    title="View previous step"
+                    onClick={() => items[step - 2].link && props.push(items[step - 2].link)}
+                    disabled={(step === 1)}
+                  > Prev
+                  </PrevButton>
+                  <NextButton
+                    variation="achromic-plain"
+                    title="View next step"
+                    onClick={() => items[step].link && props.push(items[step].link)}
+                    disabled={(step === 7)}
+                  > Next
+                  </NextButton>
                 </InpageToolbar>
               </InpageHeaderInner>
             </InpageHeader>

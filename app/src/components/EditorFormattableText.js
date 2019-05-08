@@ -121,6 +121,7 @@ export class FormatOptions extends React.Component {
 
   handleKeyPress(e) {
     const { keyCode } = e;
+    // enter
     if (keyCode === 13) {
       e.preventDefault();
       this.insertLink();

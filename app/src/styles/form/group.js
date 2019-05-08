@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { themeVal } from '../utils/general';
 import { divide } from '../utils/math';
 
