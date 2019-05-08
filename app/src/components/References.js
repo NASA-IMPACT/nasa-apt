@@ -2,12 +2,12 @@ import React from 'react';
 import { PropTypes as T } from 'prop-types';
 import { connect } from 'react-redux';
 import { deleteReference } from '../actions/actions';
-import RemovableListItem from './common/RemovableListItem';
 
 import {
   Inpage
 } from './common/Inpage';
 import EditPage from './common/EditPage';
+import RemoveButton from '../styles/button/remove';
 
 export function References(props) {
   const {
@@ -30,13 +30,22 @@ export function References(props) {
           step={7}
         >
           <h2>References</h2>
-          {references.map(d => (
-            <RemovableListItem
-              key={d.publication_reference_id}
-              label={d.title}
-              deleteAction={() => del(d.publication_reference_id)}
-            />
-          ))}
+          <p>Please remove any references that are no longer attached.</p>
+          <ul>
+            {references.map((d, i) => (
+              <li key={d.publication_reference_id}>
+                <span>#{i + 1} {d.title}</span>
+                <RemoveButton
+                  variation="base-plain"
+                  size="small"
+                  hideText
+                  onClick={() => del(d.publication_reference_id)}
+                >
+                  Delete
+                </RemoveButton>
+              </li>
+            ))}
+          </ul>
         </EditPage>
       </Inpage>
     );

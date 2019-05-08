@@ -85,13 +85,6 @@ const StepperLabel = styled.h6`
   margin-right: 0.5rem;
 `;
 
-export const RemovableListItem = styled.li`
-  &::before {
-    cursor: pointer;
-    ${collecticon('xmark--small')}
-  }
-`;
-
 const ItemCount = styled.span`
   ${antialiased}
   flex: none;
