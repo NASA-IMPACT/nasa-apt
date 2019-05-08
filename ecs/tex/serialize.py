@@ -10,6 +10,8 @@ from functools import reduce
 debug = False
 pdfImgs = []
 htmlImgs = []
+references = []
+refIDs = {}
 
 # from https://stackoverflow.com/questions/19053707/converting-snake-case-to-lower-camel-case-lowercamelcase
 def toCamelCase(snake_str):
@@ -64,7 +66,11 @@ def processText(nodes):
             url_nodes = node['nodes']
             to_return += f'\\href{{{url}}}{{{processText(url_nodes)}}}'
         elif node['object'] == 'inline' and node['type'] == 'reference':
-            print('id is ', node['data']['id'])
+            try:
+                refID = refIDs[node['data']['id']]
+                to_return += f'\\cite{{{refID}}}'
+            except KeyError:
+                to_return += ''
     return to_return
 
 def saveImage(imgUrl, img):
@@ -111,7 +117,8 @@ def accessURL(url):
 
 def processImplementations(collection):
     return reduce((lambda x, y: x + y),
-                  list(map(lambda x: accessURL(x['access_url']) + f'\\textbf{{Description: }}' + processWYSIWYG(x['execution_description']) + '\\\\', collection)))
+                  list(map(lambda x: accessURL(x['access_url']) + f'\\textbf{{Description: }}' + processWYSIWYG(x['execution_description']) 
+                           + '\\\\', collection)), '')
 
 def processVarList(element):
     varDF = pd.DataFrame.from_dict(element, orient='columns')
@@ -140,8 +147,31 @@ mapVars = {
 }
 
 def processReferences(refs):
-    # create BibTeX 
-    print(refs)
+    # create BibTeX
+    counter = 1
+    for ref in refs:
+        identifier = 'REF'+ num2words(counter)
+        if debug:
+            print('ref is {}'.format(ref))
+        this_ref = '\n'
+        # currently just for Article
+        for element in ['title', 'pages', 'volume']:
+            if ref[element] is not None:
+                this_ref += element.upper() + '="{}", \n'.format(ref[element])
+        if ref['authors'] is not None:
+            this_ref += 'AUTHOR' + '="{}", \n'.format(ref['authors'])
+        else:
+            this_ref += 'key' + '="{}", \n'.format(ref['title'])
+        if ref['publisher'] is not None :
+            this_ref += 'JOURNAL' + '="{}", \n'.format(ref['publisher'])
+        if ref['issue'] is not None:
+            this_ref += 'NUMBER' + '="{}", \n'.format(ref['issue'])
+        if ref['publication_date'] is not None:
+            this_ref += 'YEAR' + '="{}", \n'.format(ref['publication_date'])
+        bibtexRef = f'@ARTICLE{{{identifier},{this_ref}}}'
+        references.append(bibtexRef)
+        refIDs[ref['publication_reference_id']] = identifier
+        counter +=1
 
 def macroWrap(name, value):
     return '\\newcommand{{\\{fn}}}{{{val}}}'.format(fn=name, val=value)
@@ -196,9 +226,9 @@ class ATBD:
         return f'{atbd_name}.{ext}'
 
     def filewrite(self):
-        with open(os.path.join('ATBD.tex'),  'r') as original:
+        with open('ATBD.tex',  'r') as original:
             data = original.read()
-        with open(os.path.join(self.nameFile('tex')), 'w') as modified:
+        with open(self.nameFile('tex'), 'w') as modified:
             modified.write('\\ifx \\convertType \\undefined \n')
             modified.write('\n'.join(filetypeSpecific('HTML')))
             modified.write('\n \\else \n')
@@ -206,8 +236,8 @@ class ATBD:
             modified.write('\n \\fi \n')
             modified.write('\n'.join(self.texVars) + ' \n' + data)
             fileName = modified.name
-        if debug:
-            print(fileName)
+        with open(os.path.join(os.path.dirname(fileName), 'main.bib'), 'w') as bibFile:
+            bibFile.write('\n'.join(references))
         return fileName
 
 def createLatex(args):
