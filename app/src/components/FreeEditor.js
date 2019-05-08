@@ -23,6 +23,7 @@ import EditorFigureTool from './EditorFigureTool';
 import EditorReference from './EditorReference';
 import EditorReferenceTool from './EditorReferenceTool';
 import EditorFormattableText from './EditorFormattableText';
+import EditorInlineMetadata from './EditorInlineMetadata';
 import { getValidOrBlankDocument } from './editorBlankDocument';
 import schema from './editorSchema';
 import { themeVal, stylizeFunction } from '../styles/utils/general';
@@ -234,10 +235,13 @@ export class FreeEditor extends React.Component {
     });
   }
 
-  insertLink(url) {
+  insertLink(url, replaceText) {
     const { value } = this.state;
     const { selection } = value;
-    const text = selection.isCollapsed ? 'link' : value.fragment.text;
+    let text = replaceText;
+    if (!text) {
+      text = selection.isCollapsed ? 'link' : value.fragment.text;
+    }
     this.editor.insertInline({
       type: 'link',
       data: { url },
@@ -252,10 +256,13 @@ export class FreeEditor extends React.Component {
 
   insertReference() {
     const { lastCreatedReference } = this.props;
-    const { publication_reference_id: id } = lastCreatedReference;
+    const {
+      publication_reference_id: id,
+      title: name
+    } = lastCreatedReference;
     this.editor.insertInline({
       type: reference,
-      data: { id },
+      data: { id, name },
       nodes: [{
         object: 'text',
         leaves: [{
@@ -326,6 +333,8 @@ export class FreeEditor extends React.Component {
       isFocused
     } = props;
     const { value } = this.state;
+    const selectedText = value.fragment.text;
+
     switch (node.type) {
       case 'equation':
         return <EquationEditor {...props} />;
@@ -357,10 +366,17 @@ export class FreeEditor extends React.Component {
         // Use focus text in addition to the length of any highlighted text
         // to determine whether we have a selection.
         const focusText = value.focusText ? value.focusText.text : '';
-        const selectedText = value.fragment.text;
-        const hasSelection = !!(focusText.length && selectedText.length);
+
+        // The reason we must check whether the value fragment exists
+        // in the focused text is because focusing on an inline fragment,
+        // ie a link or reference, will trigger this case as well as
+        // the case for that specific inline node.
+        const hasSelection = !!(focusText.length && selectedText.length
+          && focusText.indexOf(selectedText) >= 0);
+
         const activeMarks = Array.from(value.activeMarks)
           .map(Mark => Mark.type);
+
         return (
           <EditorFormattableText
             hasSelection={hasSelection}
@@ -371,20 +387,35 @@ export class FreeEditor extends React.Component {
           />
         );
       }
+
       case 'link': {
         const url = node.data.get('url');
         return (
-          <a href={url} rel="noopener noreferrer" target="_blank" {...attributes}>{children}</a>
+          <EditorInlineMetadata
+            hasActiveSelection={!!(selectedText.length && url)}
+            metadata={url}
+            readOnly
+          >
+            <a href={url} rel="noopener noreferrer" target="_blank" {...attributes}>{children}</a>
+          </EditorInlineMetadata>
         );
       }
+
       case reference: {
+        const name = node.data.get('name');
         return (
-          <EditorReference
-            data-reference-id={node.data.get('id')}
-            {...attributes}
+          <EditorInlineMetadata
+            hasActiveSelection={!!(selectedText.length && name)}
+            metadata={`Ref: ${name}`}
+            readOnly
           >
-            {children}
-          </EditorReference>
+            <EditorReference
+              data-reference-id={node.data.get('id')}
+              {...attributes}
+            >
+              {children}
+            </EditorReference>
+          </EditorInlineMetadata>
         );
       }
       default:

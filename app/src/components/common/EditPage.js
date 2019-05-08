@@ -85,13 +85,6 @@ const StepperLabel = styled.h6`
   margin-right: 0.5rem;
 `;
 
-export const RemovableListItem = styled.li`
-  &::before {
-    cursor: pointer;
-    ${collecticon('xmark--small')}
-  }
-`;
-
 const ItemCount = styled.span`
   ${antialiased}
   flex: none;
@@ -157,9 +150,8 @@ const EditPage = (props) => {
                       <DropTitle>Select step</DropTitle>
                       <DropMenu role="menu" selectable>
                         {items.map((d, i) => (
-                          <li>
+                          <li key={d.display}>
                             <DropMenuItem
-                              key={d.display}
                               onClick={() => d.link && props.push(d.link)}
                               active={i === step - 1}
                             >

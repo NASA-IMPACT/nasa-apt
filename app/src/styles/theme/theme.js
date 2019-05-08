@@ -61,7 +61,7 @@ const layout = {
 
 const boxShadow = {
   inset: 'inset 0px 0px 3px 0px rgba(0,0,0,0.2);',
-  input: '0px 0px 1px 0px rgba(99,99,99,0.2);'
+  input: '0 -1px 1px 0 rgba(0,0,0,0.08), 0 2px 6px 0 rgba(0,0,0,0.16);'
 };
 
 export default {
