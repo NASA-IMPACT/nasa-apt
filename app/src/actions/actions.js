@@ -201,8 +201,8 @@ export function fetchAtbdVersion(versionObject) {
         + `atbd_version=eq.${atbd_version}&select=*,atbd(*),`
         + `algorithm_input_variables(*),algorithm_output_variables(*),`
         + `algorithm_implementations(*),publication_references(*),`
-        + `data_access_input_data(*),data_access_related_urls(*)`,
-        + `citations(*)`
+        + `data_access_input_data(*),data_access_related_urls(*),`
+        + `citations(*)`,
       headers: returnObjectHeaders,
       types: [
         types.FETCH_ATBD_VERSION,
