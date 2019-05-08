@@ -30,8 +30,10 @@ export function References(props) {
           step={7}
         >
           <h2>References</h2>
-          <p>Please remove any references that are no longer attached to this ATBD.<br />
-            Do not delete any that are currently referenced in any section with a <sup>ref</sup> superscript.</p>
+          <p>
+            Please remove any references that are no longer attached to this ATBD.<br />
+            Do not delete any that are currently referenced in any section with a <sup>ref</sup> superscript.
+          </p>
           <ul>
             {references.map((d, i) => (
               <li key={d.publication_reference_id}>
