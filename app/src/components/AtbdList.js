@@ -95,6 +95,18 @@ const DocTableBodyTdActions = styled.td`
   }
 `;
 
+const DocTableEditButton = styled(Button)`
+  &::before {
+    ${collecticon('pencil')};
+  }
+`;
+
+const DocTablePublishButton = styled(Button)`
+  &::before {
+    ${collecticon('arrow-up-right')};
+  }
+`;
+
 const AtbdPublishedState = styled.span`
   ${antialiased}
   display: flex;
@@ -113,14 +125,6 @@ const AtbdPublishedState = styled.span`
 const AtbdVersion = styled.span`
   text-transform: uppercase;
   color: ${themeVal('color.darkgray')};
-`;
-
-const EditIcon = styled.span`
-  color: ${themeVal('color.link')};
-  cursor: pointer;
-  &::before {
-    ${collecticon('pencil')};
-  }
 `;
 
 const FilterTrigger = styled(Button)`
@@ -152,8 +156,8 @@ const AtbdList = (props) => {
             atbd_id={atbd_id}
             atbd_version={1}
           />
-          <a href="#" title="Publish document">Publish</a>
-          <a href="#" title="Edit document" onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${identifying_information}`)}>Edit</a>
+          <DocTablePublishButton variation="primary-plain" size="small" href="#" title="Publish document">Publish</DocTablePublishButton>
+          <DocTableEditButton variation="primary-plain" size="small" title="Edit document" onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${identifying_information}`)}>Edit</DocTableEditButton>
         </DocTableBodyTdActions>
       </tr>
     );
