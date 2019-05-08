@@ -193,7 +193,7 @@ export default function (state = initialState, action) {
 
     case actions.DELETE_ALGORITHM_INPUT_VARIABLE_SUCCESS: {
       const idKey = 'algorithm_input_variable_id';
-      const tableName = 'algorithm_input_variables'
+      const tableName = 'algorithm_input_variables';
       return deleteAtbdVersionChildItem(idKey, tableName, state, action);
     }
 
