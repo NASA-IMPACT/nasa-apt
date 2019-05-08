@@ -12,6 +12,7 @@ import {
 } from '../constants/routes';
 import { themeVal } from '../styles/utils/general';
 import { multiply, divide } from '../styles/utils/math';
+import { visuallyHidden, truncated } from '../styles/helpers';
 import { VerticalDivider } from '../styles/divider';
 import Button from '../styles/button/button';
 import collecticon from '../styles/collecticons';
@@ -36,40 +37,87 @@ import Dropdown, {
   DropMenuItem
 } from './Dropdown';
 
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableTr,
+  TableHeadTh,
+  TableBodyTh,
+  TableTd
+} from '../styles/table';
+
 import AtbdPreview from './AtbdPreview';
 
 const SearchButton = styled(Button)`
   &::before {
-    ${collecticon('magnifier-right')}
+    ${collecticon('magnifier-right')};
   }
 `;
 
 const CreateButton = styled(Button)`
   &::before {
-    ${collecticon('plus')}
+    ${collecticon('plus')};
   }
 `;
 
-const AtbdTable = styled.table`
-  border-collapse: collapse;
-  padding: ${themeVal('layout.space')};
-  width: 100%;
+const DocTable = styled(Table)`
+  table-layout: fixed;
+
+  thead {
+    white-space;
+  }
 `;
 
-const AtbdRow = styled.tr`
+const DocTableHeadThStatus = styled(TableHeadTh)`
+
 `;
 
-const AtbdCell = styled.td`
-  border-bottom: 1px solid ${themeVal('color.darkgray')};
-  padding: ${themeVal('layout.space')};
+const DocTableHeadThTitle = styled(TableHeadTh)`
+
 `;
 
-const AtbdHeaderCell = styled.th`
-  color: ${themeVal('color.darkgray')};
-  font-weight: normal;
-  padding: ${themeVal('layout.space')} ${themeVal('layout.space')} 0;
-  text-align: left;
-  text-transform: uppercase;
+const DocTableHeadThTime = styled(TableHeadTh)`
+
+`;
+
+const DocTableHeadThAuthors = styled(TableHeadTh)`
+
+`;
+
+const DocTableHeadThActions = styled(TableHeadTh)`
+  > span {
+    ${visuallyHidden};
+  }
+`;
+
+const DocTableBodyTdStatus = styled(TableTd)`
+  white-space: nowrap;
+`;
+
+const DocTableBodyThTitle = styled(TableBodyTh)`
+  width: auto;
+`;
+
+const DocTableBodyTdTime = styled(TableTd)`
+  white-space: nowrap;
+`;
+
+const DocTableBodyTdAuthors = styled(TableTd)`
+  > span {
+    ${truncated};
+    display: block;
+    max-width: 8rem;
+  }
+`;
+
+const DocTableBodyTdActions = styled(TableTd)`
+  text-align: right;
+  white-space: nowrap;
+
+  > *:not(:first-child) {
+    margin-left: 0.5rem;
+  }
 `;
 
 const AtbdPublishedState = styled.span`
@@ -80,12 +128,6 @@ const AtbdPublishedState = styled.span`
   padding: ${divide(themeVal('layout.space'), 2)} 0;
   text-align: center;
   width: 100%;
-`;
-
-const AtbdTitle = styled.h5`
-  font-size: 1em;
-  line-height: 1.4;
-  margin: 0;
 `;
 
 const AtbdVersion = styled.span`
@@ -117,22 +159,23 @@ const AtbdList = (props) => {
     const { atbd_id, title, atbd_versions } = atbd;
     const { status } = atbd_versions[0];
     return (
-      <AtbdRow scope="row" key={atbd_id}>
-        <AtbdCell><AtbdPublishedState>{status}</AtbdPublishedState></AtbdCell>
-        <AtbdCell>
-          <AtbdTitle>{title}</AtbdTitle>
+      <TableTr key={atbd_id}>
+        <DocTableBodyTdStatus><AtbdPublishedState>{status}</AtbdPublishedState></DocTableBodyTdStatus>
+        <DocTableBodyThTitle scope="row">
+          <strong>{title}</strong>
           { false && <AtbdVersion>Version 1.0</AtbdVersion> }
-        </AtbdCell>
-        <AtbdCell>2 hours ago</AtbdCell>
-        <AtbdCell>Author Name</AtbdCell>
-        <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${identifying_information}`)}><EditIcon /></AtbdCell>
-        <AtbdCell>
+        </DocTableBodyThTitle>
+        <DocTableBodyTdTime><span>2 hours ago</span></DocTableBodyTdTime>
+        <DocTableBodyTdAuthors><span>Author Name</span></DocTableBodyTdAuthors>
+        <DocTableBodyTdActions>
           <AtbdPreview
             atbd_id={atbd_id}
             atbd_version={1}
           />
-        </AtbdCell>
-      </AtbdRow>
+          <a href="#" title="Publish document">Publish</a>
+          <a href="#" title="Edit document" onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${identifying_information}`)}>Edit</a>
+        </DocTableBodyTdActions>
+      </TableTr>
     );
   });
   return (
@@ -221,19 +264,20 @@ const AtbdList = (props) => {
         </Sticky>
         <InpageBody>
           <InpageBodyInner>
-            <AtbdTable>
-              <thead>
-                <tr>
-                  <AtbdHeaderCell scope="col" />
-                  <AtbdHeaderCell scope="col" />
-                  <AtbdHeaderCell scope="col">Last Edit</AtbdHeaderCell>
-                  <AtbdHeaderCell scope="col">Authors</AtbdHeaderCell>
-                </tr>
-              </thead>
-              <tbody>
+            <DocTable>
+              <TableHead>
+                <TableTr>
+                  <DocTableHeadThStatus scope="col"><span>Status</span></DocTableHeadThStatus>
+                  <DocTableHeadThTitle scope="col"><span>Title</span></DocTableHeadThTitle>
+                  <DocTableHeadThTime scope="col"><span>Last Edit</span></DocTableHeadThTime>
+                  <DocTableHeadThAuthors scope="col"><span>Authors</span></DocTableHeadThAuthors>
+                  <DocTableHeadThActions scope="col"><span>Actions</span></DocTableHeadThActions>
+                </TableTr>
+              </TableHead>
+              <TableBody>
                 {atbdElements}
-              </tbody>
-            </AtbdTable>
+              </TableBody>
+            </DocTable>
           </InpageBodyInner>
         </InpageBody>
       </StickyContainer>

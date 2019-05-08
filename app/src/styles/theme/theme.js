@@ -12,6 +12,7 @@ color = {
   surface: '#FFFFFF',
   mist: rgba(color.base, 0.04),
   shadow: rgba(color.base, 0.08),
+  smoke: rgba(color.base, 0.16),
   lightgray: '#EEEEEE',
   gray: '#DBDBDB',
   darkgray: '#666666',
