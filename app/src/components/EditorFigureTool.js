@@ -59,6 +59,7 @@ const Figure = styled.figure`
   justify-content: center;
   > img {
     width: 320px;
+    height: 100%;
   }
 `;
 
