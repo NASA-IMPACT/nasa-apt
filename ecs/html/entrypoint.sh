@@ -5,6 +5,8 @@ if [ $? -eq 0 ]; then
 else
     echo 'Failed to retrieve TeX file'
 fi
+
+aws s3 cp s3://$1/$(echo $2|cut -d. -f1).bib main.bib
 engrafo $2 .
 
 if [ $? -eq 0 ]; then
