@@ -69,10 +69,13 @@ def saveImage(imgUrl, img):
     htmlImgs.append(f'\\newcommand{{\\{imgLink}}}{{{imgUrl}}}')
     return imgLink
 
-def wrapImage(img):
-    wrapper = f''' \\begin{{center}}
+def wrapImage(img, cap=''):
+    if cap:
+        cap = f'\\caption{{{cap}}}'
+    wrapper = f''' \\begin{{figure}}
         \\includegraphics[width=\\maxwidth{{\\linewidth}}]{{\\{img}}}
-        \\end{{center}}
+        {cap}
+        \\end{{figure}}
     '''
     return wrapper
 
@@ -85,7 +88,11 @@ def processWYSIWYGElement(node):
         imgUrl = node['data']['src']
         filename = imgUrl.rsplit('/', 1)[1]
         imgCommand = saveImage(imgUrl, filename)
-        return wrapImage(imgCommand)
+        try:
+            caption = node['data']['caption']
+            return wrapImage(imgCommand, caption)
+        except:
+            return wrapImage(imgCommand)
     elif node['type'] == 'equation':
         return ' \\begin{equation} ' + \
             node['nodes'][0]['leaves'][0]['text'] + ' \\end{equation} '
