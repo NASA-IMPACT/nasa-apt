@@ -9,7 +9,6 @@ import styled from 'styled-components/macro';
 import { rgba } from 'polished';
 import EquationEditor from './EquationEditor';
 import TrailingBlock from '../slate-plugins/TrailingBlock';
-import { uploadFile } from '../actions/actions';
 import {
   EquationBtn,
   ParagraphBtn,
@@ -89,7 +88,9 @@ export class FreeEditor extends React.Component {
     const { initialValue } = props;
     this.state = {
       value: Value.fromJSON(getValidOrBlankDocument(initialValue)),
-      activeTool: null
+      activeTool: null,
+      uploadedImageToPlace: null,
+      uploadedImageCaption: null
     };
     this.onChange = this.onChange.bind(this);
     this.renderNode = this.renderNode.bind(this);
@@ -113,19 +114,13 @@ export class FreeEditor extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     const {
-      initialValue,
-      uploadedFile
+      initialValue
     } = nextProps;
     const {
-      initialValue: previousInitialValue,
-      uploadedFile: previousUploadedFile
+      initialValue: previousInitialValue
     } = this.props;
 
-    if (uploadedFile !== previousUploadedFile) {
-      this.setState({
-        activeTool: image
-      });
-    } else if (initialValue !== previousInitialValue) {
+    if (initialValue !== previousInitialValue) {
       this.setState({
         value: Value.fromJSON(getValidOrBlankDocument(initialValue))
       });
@@ -228,10 +223,26 @@ export class FreeEditor extends React.Component {
   }
 
   insertImage() {
-    const { uploadedFile } = this.props;
+    const {
+      uploadedImageToPlace: src,
+      uploadedImageCaption: caption
+    } = this.state;
     this.editor.insertBlock({
       type: 'image',
-      data: { src: uploadedFile },
+      data: {
+        src,
+        caption
+      }
+    }).insertBlock({
+      type: paragraph,
+      nodes: [
+        {
+          object: 'text',
+          leaves: [{
+            text: '',
+          }]
+        },
+      ],
     });
   }
 
@@ -340,12 +351,16 @@ export class FreeEditor extends React.Component {
         return <EquationEditor {...props} />;
       case 'image': {
         const src = node.data.get('src');
+        const caption = node.data.get('caption');
         return (
-          <EditorImage
-            isFocused={isFocused}
-            src={src}
-            {...attributes}
-          />
+          <figure>
+            <EditorImage
+              isFocused={isFocused}
+              src={src}
+              {...attributes}
+            />
+            <figcaption>{caption}</figcaption>
+          </figure>
         );
       }
       case 'table': {
@@ -439,8 +454,7 @@ export class FreeEditor extends React.Component {
     const {
       className,
       inlineSaveBtn,
-      invalid,
-      uploadFile: upload
+      invalid
     } = this.props;
 
     return (
@@ -478,10 +492,15 @@ export class FreeEditor extends React.Component {
               >
                 Table
               </TableBtn>
+
               <EditorFigureTool
-                upload={upload}
+                onSaveSuccess={(uploadedFile, caption) => {
+                  this.setState({
+                    uploadedImageToPlace: uploadedFile,
+                    uploadedImageCaption: caption
+                  }, () => this.selectTool(image));
+                }}
                 active={activeTool === image}
-                icon={{ icon: 'picture' }}
               />
 
               <EditorReferenceTool
@@ -532,8 +551,6 @@ FreeEditor.propTypes = {
   initialValue: PropTypes.object,
   save: PropTypes.func.isRequired,
   className: PropTypes.string,
-  uploadFile: PropTypes.func.isRequired,
-  uploadedFile: PropTypes.string,
   lastCreatedReference: PropTypes.object,
   inlineSaveBtn: PropTypes.bool,
   invalid: PropTypes.bool
@@ -567,11 +584,9 @@ const StyledFreeEditor = styled(FreeEditor)`
   }
 `;
 
-const mapDispatchToProps = { uploadFile };
-
 const mapStateToProps = (state) => {
-  const { uploadedFile, lastCreatedReference } = state.application;
-  return { uploadedFile, lastCreatedReference };
+  const { lastCreatedReference } = state.application;
+  return { lastCreatedReference };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(StyledFreeEditor);
+export default connect(mapStateToProps, null)(StyledFreeEditor);
