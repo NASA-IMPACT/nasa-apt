@@ -6,6 +6,7 @@ import { StickyContainer, Sticky } from 'react-sticky';
 import styled from 'styled-components/macro';
 import { rgba } from 'polished';
 import { themeVal, stylizeFunction } from '../../styles/utils/general';
+import { divide } from '../../styles/utils/math';
 import { antialiased } from '../../styles/helpers';
 import { headingAlt } from '../../styles/type/heading';
 import Button from '../../styles/button/button';
@@ -44,11 +45,6 @@ import Dropdown, {
 
 const _rgba = stylizeFunction(rgba);
 
-
-const StepperDrop = styled(Dropdown)`
-  min-width: 20rem;
-`;
-
 const PrevButton = styled(Button)`
   &::before {
     ${collecticon('chevron-left--small')}
@@ -64,6 +60,18 @@ const NextButton = styled(Button)`
 const StepDropTrigger = styled(Button)`
   &::after {
     ${collecticon('chevron-down--small')}
+  }
+`;
+
+const StepDrop = styled(Dropdown)`
+  min-width: 20rem;
+`;
+
+const StepDropMenuItem = styled(DropMenuItem)`
+  padding: ${divide(themeVal('layout.space'), 2)} ${themeVal('layout.space')};
+
+  &::after {
+    top: ${divide(themeVal('layout.space'), 2)};
   }
 `;
 
@@ -147,7 +155,7 @@ const EditPage = (props) => {
                     <StepperLabel>
                       { stepCount }
                     </StepperLabel>
-                    <StepperDrop
+                    <StepDrop
                       alignment="right"
                       triggerElement={
                         <StepDropTrigger variation="achromic-plain" title="Toggle menu options">{items[step - 1].display}</StepDropTrigger>
@@ -157,18 +165,18 @@ const EditPage = (props) => {
                       <DropMenu role="menu" selectable>
                         {items.map((d, i) => (
                           <li>
-                            <DropMenuItem
+                            <StepDropMenuItem
                               key={d.display}
                               onClick={() => d.link && props.push(d.link)}
                               active={i === step - 1}
                             >
                               <ItemCount>{i + 1}</ItemCount>
                               <span>{d.display}</span>
-                            </DropMenuItem>
+                            </StepDropMenuItem>
                           </li>
                         ))}
                       </DropMenu>
-                    </StepperDrop>
+                    </StepDrop>
                   </Stepper>
                   <VerticalDivider />
                   <PrevButton
