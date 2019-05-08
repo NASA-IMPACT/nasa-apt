@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import isUrl from 'is-url';
+import uuid from 'uuid';
 
 import FreeEditor from './FreeEditor';
 import InfoButton from './common/InfoButton';
@@ -25,49 +26,51 @@ import {
   FormHelperMessage
 } from '../styles/form/helper';
 import RemoveButton from '../styles/button/remove';
+import AddBtn from '../styles/button/add';
 import { isBlankDocument } from './editorBlankDocument';
 
-class ImplementationForm extends Component {
+class ImplementationInnerForm extends Component {
   constructor(props) {
     super(props);
-    const { accessUrl = '' } = props;
+    const { initialValue } = props;
+    const { url = '' } = initialValue;
     this.state = {
-      accessUrl,
-      accessUrlInvalid: false,
-      executionDescriptionInvalid: false
+      url,
+      urlInvalid: false,
+      descriptionInvalid: false
     };
-    this.onAccessUrlChange = this.onAccessUrlChange.bind(this);
-    this.onAccessUrlBlur = this.onAccessUrlBlur.bind(this);
+    this.onUrlChange = this.onUrlChange.bind(this);
+    this.onUrlBlur = this.onUrlBlur.bind(this);
     this.onSave = this.onSave.bind(this);
   }
 
-  onAccessUrlChange(e) {
-    this.setState({ accessUrl: e.currentTarget.value });
+  onUrlChange(e) {
+    this.setState({ url: e.currentTarget.value });
   }
 
-  onAccessUrlBlur() {
-    const { accessUrl } = this.state;
-    if (accessUrl.length && !isUrl(accessUrl)) {
-      this.setState({ accessUrlInvalid: true });
+  onUrlBlur() {
+    const { url } = this.state;
+    if (url.length && !isUrl(url)) {
+      this.setState({ urlInvalid: true });
     } else {
-      this.setState({ accessUrlInvalid: false });
+      this.setState({ urlInvalid: false });
     }
   }
 
-  onSave(executionDescription) {
-    const { accessUrl } = this.state;
-    const accessUrlInvalid = !isUrl(accessUrl);
-    const executionDescriptionInvalid = isBlankDocument(executionDescription);
+  onSave(description) {
+    const { url } = this.state;
+    const urlInvalid = !isUrl(url);
+    const descriptionInvalid = isBlankDocument(description);
     this.setState({
-      accessUrlInvalid,
-      executionDescriptionInvalid
+      urlInvalid,
+      descriptionInvalid
     });
 
-    if (!accessUrlInvalid && !executionDescriptionInvalid) {
+    if (!urlInvalid && !descriptionInvalid) {
       const { save } = this.props;
       save({
-        accessUrl,
-        executionDescription
+        url,
+        description
       });
     }
   }
@@ -76,20 +79,23 @@ class ImplementationForm extends Component {
     const {
       id,
       label,
-      executionDescription,
+      initialValue,
       del,
       t
     } = this.props;
+
     const {
-      accessUrl,
-      accessUrlInvalid,
-      executionDescriptionInvalid
+      url,
+      urlInvalid,
+      descriptionInvalid
     } = this.state;
+
     const {
-      onAccessUrlChange,
-      onAccessUrlBlur,
+      onUrlChange,
+      onUrlBlur,
       onSave
     } = this;
+
     return (
       <Form>
         <FormFieldset>
@@ -100,7 +106,7 @@ class ImplementationForm extends Component {
                 variation="base-plain"
                 size="small"
                 hideText
-                onClick={() => del()}
+                onClick={del}
               >
                 Remove fieldset
               </RemoveButton>
@@ -110,23 +116,23 @@ class ImplementationForm extends Component {
           <FormFieldsetBody>
             <FormGroup>
               <FormGroupHeader>
-                <FormLabel htmlFor={`${id}-access`}>Access URL</FormLabel>
+                <FormLabel htmlFor={`${id}-url`}>URL</FormLabel>
                 <FormToolbar>
-                  <InfoButton text={t.access_url} />
+                  <InfoButton text={t.url} />
                 </FormToolbar>
               </FormGroupHeader>
               <FormGroupBody>
                 <FormInput
                   type="text"
                   size="large"
-                  id={`${id}-access`}
-                  placeholder="Enter an access URL"
-                  value={accessUrl}
-                  onChange={onAccessUrlChange}
-                  onBlur={onAccessUrlBlur}
-                  invalid={accessUrlInvalid}
+                  id={`${id}-url`}
+                  placeholder="Enter a URL"
+                  value={url}
+                  onChange={onUrlChange}
+                  onBlur={onUrlBlur}
+                  invalid={urlInvalid}
                 />
-                {accessUrlInvalid && (
+                {urlInvalid && (
                   <FormHelper>
                     <FormHelperMessage>Please enter a valid URL.</FormHelperMessage>
                   </FormHelper>
@@ -135,18 +141,18 @@ class ImplementationForm extends Component {
             </FormGroup>
             <FormGroup>
               <FormGroupHeader>
-                <FormLabel>Execution Description</FormLabel>
+                <FormLabel>Description</FormLabel>
                 <FormToolbar>
-                  <InfoButton text={t.execution_description} />
+                  <InfoButton text={t.description} />
                 </FormToolbar>
               </FormGroupHeader>
               <FormGroupBody>
                 <FreeEditor
-                  initialValue={executionDescription}
+                  initialValue={initialValue.description}
                   save={onSave}
-                  invalid={executionDescriptionInvalid}
+                  invalid={descriptionInvalid}
                 />
-                {executionDescriptionInvalid && (
+                {descriptionInvalid && (
                   <FormHelper>
                     <FormHelperMessage>This field is required.</FormHelperMessage>
                   </FormHelper>
@@ -161,18 +167,159 @@ class ImplementationForm extends Component {
   }
 }
 
-ImplementationForm.propTypes = {
+ImplementationInnerForm.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
-  accessUrl: PropTypes.string,
-  executionDescription: PropTypes.object,
+  initialValue: PropTypes.object,
   save: PropTypes.func,
   del: PropTypes.func,
   t: PropTypes.object
 };
 
+class ImplementationForm extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      newFields: []
+    };
+    this.addField = this.addField.bind(this);
+    this.removeField = this.removeField.bind(this);
+  }
+
+  addField() {
+    const { newFields } = this.state;
+    const next = newFields.concat([uuid()]);
+    this.setState({ newFields: next });
+  }
+
+  removeField(id) {
+    const { newFields } = this.state;
+    const next = newFields.filter(d => d !== id);
+    this.setState({ newFields: next });
+  }
+
+  render() {
+    const {
+      title,
+      data,
+      id,
+      idProperty,
+      urlProperty,
+      descriptionProperty,
+      t,
+      create,
+      update,
+      del,
+      atbdVersion
+    } = this.props;
+
+    const {
+      atbd,
+      atbd_version
+    } = atbdVersion;
+    const { atbd_id } = atbd;
+
+    const {
+      addField,
+      removeField
+    } = this;
+
+    const { newFields } = this.state;
+    const existingFields = data.map(d => ({
+      id: d[idProperty],
+      url: d[urlProperty],
+      description: d[descriptionProperty]
+    }));
+
+    return (
+      <FormFieldset>
+        <FormFieldsetHeader>
+          <FormLegend>{title}</FormLegend>
+        </FormFieldsetHeader>
+        <FormFieldsetBody>
+
+          <FormGroupHeader>
+            <FormLabel>Current fields</FormLabel>
+          </FormGroupHeader>
+          <FormGroupBody>
+            {existingFields.map((d, i) => (
+              <ImplementationInnerForm
+                id={`${id}-existing-${d.id}`}
+                key={`${id}-existing-${d.id}`}
+                label={`${title} #${i + 1}`}
+                initialValue={d}
+                t={t}
+                del={() => del(d.id)}
+                save={({ url, description }) => {
+                  update(d.id, {
+                    [urlProperty]: url,
+                    [descriptionProperty]: description
+                  });
+                }}
+              />
+            ))}
+            {!data.length && (
+              <FormFieldset>
+                <FormFieldsetBody>
+                  <FormHelper>
+                    <FormHelperMessage>No current fields. Add one below.</FormHelperMessage>
+                  </FormHelper>
+                </FormFieldsetBody>
+              </FormFieldset>
+            )}
+          </FormGroupBody>
+
+          <FormGroupHeader>
+            <FormLabel>New fields</FormLabel>
+          </FormGroupHeader>
+          <FormGroupBody>
+            {newFields.map((newId, i) => (
+              <ImplementationInnerForm
+                id={`${newId}`}
+                key={`${newId}`}
+                label={`New ${title} #${i + 1}`}
+                initialValue={{}}
+                t={t}
+                del={() => removeField(newId)}
+                save={({ url, description }) => {
+                  create({
+                    atbd_id,
+                    atbd_version,
+                    [urlProperty]: url,
+                    [descriptionProperty]: description
+                  });
+                  removeField(newId);
+                }}
+              />
+            ))}
+          </FormGroupBody>
+
+          <AddBtn variation="base-plain" onClick={addField}>
+            Add
+          </AddBtn>
+
+        </FormFieldsetBody>
+      </FormFieldset>
+    );
+  }
+}
+
+ImplementationForm.propTypes = {
+  title: PropTypes.string,
+  data: PropTypes.array,
+  id: PropTypes.string.isRequired,
+  idProperty: PropTypes.string.isRequired,
+  urlProperty: PropTypes.string.isRequired,
+  descriptionProperty: PropTypes.string.isRequired,
+  t: PropTypes.object,
+  create: PropTypes.func,
+  update: PropTypes.func,
+  del: PropTypes.func,
+  atbdVersion: PropTypes.object
+};
+
 const mapStateToProps = state => ({
-  t: state.application.t ? state.application.t.algorithm_implementation : {}
+  atbdVersion: state.application.atbdVersion
 });
 
 export default connect(mapStateToProps)(ImplementationForm);
