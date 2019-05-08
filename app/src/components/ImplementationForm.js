@@ -27,7 +27,7 @@ import {
 import RemoveButton from '../styles/button/remove';
 import { isBlankDocument } from './editorBlankDocument';
 
-class AlgorithmImplementationForm extends Component {
+class ImplementationForm extends Component {
   constructor(props) {
     super(props);
     const { accessUrl = '' } = props;
@@ -161,7 +161,7 @@ class AlgorithmImplementationForm extends Component {
   }
 }
 
-AlgorithmImplementationForm.propTypes = {
+ImplementationForm.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   accessUrl: PropTypes.string,
@@ -175,4 +175,4 @@ const mapStateToProps = state => ({
   t: state.application.t ? state.application.t.algorithm_implementation : {}
 });
 
-export default connect(mapStateToProps)(AlgorithmImplementationForm);
+export default connect(mapStateToProps)(ImplementationForm);

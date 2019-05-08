@@ -13,7 +13,7 @@ import {
 } from './common/Inpage';
 import EditPage from './common/EditPage';
 import AddBtn from '../styles/button/add';
-import AlgorithmImplementationForm from './AlgorithmImplementationForm';
+import ImplementationForm from './ImplementationForm';
 
 export class AlgorithmImplementation extends Component {
   constructor(props) {
@@ -71,7 +71,7 @@ export class AlgorithmImplementation extends Component {
             <h2>Algorithm Implementation</h2>
 
             {algorithm_implementations.map((d, i) => (
-              <AlgorithmImplementationForm
+              <ImplementationForm
                 key={`algorithm-implementation-form-${i}`} // eslint-disable-line react/no-array-index-key
                 id={`algorithm-implementation-form-${i}`}
                 label={`Implementation #${i + 1}`}
@@ -88,7 +88,7 @@ export class AlgorithmImplementation extends Component {
             ))}
 
             {implementations.map(id => (
-              <AlgorithmImplementationForm
+              <ImplementationForm
                 key={id}
                 id={id}
                 label="New Implementation"
