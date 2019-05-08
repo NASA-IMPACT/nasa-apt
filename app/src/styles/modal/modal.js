@@ -17,8 +17,8 @@ const ModalBg = styled.div`
 
 const ModalContentWrapper = styled.div`
   left: 0;
-  margin-top: -10%;
   position: fixed;
+  top: 10%;
   width: 100%;
   z-index: 11;
 `;
