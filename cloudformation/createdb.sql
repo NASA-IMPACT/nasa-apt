@@ -1,6 +1,5 @@
 CREATE ROLE app_user;
 GRANT app_user TO masteruser;
-DROP SCHEMA apt CASCADE;
 CREATE SCHEMA apt;
 GRANT USAGE ON SCHEMA apt TO app_user;
 GRANT CONNECT ON DATABASE nasadb TO app_user;
