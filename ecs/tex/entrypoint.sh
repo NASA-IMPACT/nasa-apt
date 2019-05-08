@@ -16,6 +16,7 @@ else
 fi
 
 aws s3 cp $texName s3://$3/$texName --acl public-read
+aws s3 cp main.bib s3://$3/$(echo $texName|cut -d. -f1).bib --acl public-read
 
 if [ $? -eq 0 ]; then
     echo 'Successfully saved to s3://'$3'/'$texName
