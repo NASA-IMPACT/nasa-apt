@@ -5,10 +5,13 @@ import os
 import pandas as pd
 from latex import build_pdf
 from num2words import num2words
+from functools import reduce
 
 debug = False
 pdfImgs = []
 htmlImgs = []
+references = []
+refIDs = {}
 
 # from https://stackoverflow.com/questions/19053707/converting-snake-case-to-lower-camel-case-lowercamelcase
 def toCamelCase(snake_str):
@@ -19,19 +22,20 @@ def toCamelCase(snake_str):
 
 def processTable(nodeRows):
     tableList = []
-    for row in nodeRows['nodes']:
+    for rows in nodeRows:
         tableList.append([])
-        for cell in row['nodes']:
-            for subcell in cell['nodes']:
-                text = processWYSIWYGElement(subcell)
-                tableList[-1].append(text)
+        for row in rows['nodes']:
+            for cell in row['nodes']:
+                for subcell in cell['nodes']:
+                    for cellnode in subcell['leaves']:
+                        text = cellnode['text']
+                        tableList[-1].append(text)
     columnNames = tableList.pop(0)
     df = pd.DataFrame(tableList, columns=columnNames)
     col_width = int(12/len(df.columns))
     col_format = 'p{' + str(col_width) + 'cm}'
     col_format *= len(df.columns)
-    latexTable = '\\\\ \\\\' + \
-        df.to_latex(index=False, column_format=col_format) + '\\\\ \\\\'
+    latexTable = df.to_latex(index=False, column_format=col_format) + '\\\\ \\\\'
     return latexTable
 
 def addMarkup(text, marks):
@@ -57,10 +61,16 @@ def processText(nodes):
                     to_return += addMarkup(preserveStyle(leaf['text']), leaf['marks'])
                 else:
                     to_return += preserveStyle(leaf['text'])
-        elif node['object'] == 'inline':
+        elif node['object'] == 'inline' and node['type'] == 'link':
             url = node['data']['url']
             url_nodes = node['nodes']
             to_return += f'\\href{{{url}}}{{{processText(url_nodes)}}}'
+        elif node['object'] == 'inline' and node['type'] == 'reference':
+            try:
+                refID = refIDs[node['data']['id']]
+                to_return += f'\\cite{{{refID}}}'
+            except KeyError:
+                to_return += ''
     return to_return
 
 def saveImage(imgUrl, img):
@@ -78,7 +88,7 @@ def wrapImage(img):
 
 def processWYSIWYGElement(node):
     if node['type'] == 'table':
-        processTable(node['nodes'])
+        return processTable(node['nodes'])
     elif node['type'] == 'table_cell':
         return processWYSIWYGElement(node['nodes'])
     elif node['type'] == 'image':
@@ -91,6 +101,8 @@ def processWYSIWYGElement(node):
             node['nodes'][0]['leaves'][0]['text'] + ' \\end{equation} '
     elif node['type'] == 'paragraph':
         return processText(node['nodes'])
+    else:
+        print('oops! here with {}'.format(node))
 
 def processWYSIWYG(element):
     if debug:
@@ -100,13 +112,21 @@ def processWYSIWYG(element):
         to_return += processWYSIWYGElement(node)
     return to_return
 
+def accessURL(url):
+    return f'\\textbf{{Access URL: }} {{{url}}} \\\\'
+
+def processImplementations(collection):
+    return reduce((lambda x, y: x + y),
+                  list(map(lambda x: accessURL(x['access_url']) + f'\\textbf{{Description: }}' + processWYSIWYG(x['execution_description']) 
+                           + '\\\\', collection)), '')
+
 def processVarList(element):
     varDF = pd.DataFrame.from_dict(element, orient='columns')
     latexDF = varDF.to_latex(index=False, bold_rows=True, escape=False, column_format='p{9cm} p{3cm}',
         columns=['long_name', 'unit'], header = ['\\textbf{{Name}}', '\\textbf{{Unit}}'])
     return latexDF
 
-def processATBD(element):
+def title(element):
     return element['title']
 
 mapVars = {
@@ -116,10 +136,42 @@ mapVars = {
     'mathematical_theory_assumptions': processWYSIWYG,
     'algorithm_input_variables': processVarList,
     'algorithm_output_variables': processVarList,
-    'atbd': processATBD,
+    'atbd': title,
     'introduction': processWYSIWYG,
-    'historical_perspective': processWYSIWYG
+    'historical_perspective': processWYSIWYG,
+    'algorithm_usage_constraints': processWYSIWYG,
+    'performance_assessment_validation_methods': processWYSIWYG,
+    'performance_assessment_validation_uncertainties': processWYSIWYG,
+    'performance_assessment_validation_errors': processWYSIWYG,
+    'algorithm_implementations': processImplementations
 }
+
+def processReferences(refs):
+    # create BibTeX
+    counter = 1
+    for ref in refs:
+        identifier = 'REF'+ num2words(counter)
+        if debug:
+            print('ref is {}'.format(ref))
+        this_ref = '\n'
+        # currently just for Article
+        for element in ['title', 'pages', 'volume']:
+            if ref[element] is not None:
+                this_ref += element.upper() + '="{}", \n'.format(ref[element])
+        if ref['authors'] is not None:
+            this_ref += 'AUTHOR' + '="{}", \n'.format(ref['authors'])
+        else:
+            this_ref += 'key' + '="{}", \n'.format(ref['title'])
+        if ref['publisher'] is not None :
+            this_ref += 'JOURNAL' + '="{}", \n'.format(ref['publisher'])
+        if ref['issue'] is not None:
+            this_ref += 'NUMBER' + '="{}", \n'.format(ref['issue'])
+        if ref['publication_date'] is not None:
+            this_ref += 'YEAR' + '="{}", \n'.format(ref['publication_date'])
+        bibtexRef = f'@ARTICLE{{{identifier},{this_ref}}}'
+        references.append(bibtexRef)
+        refIDs[ref['publication_reference_id']] = identifier
+        counter +=1
 
 def macroWrap(name, value):
     return '\\newcommand{{\\{fn}}}{{{val}}}'.format(fn=name, val=value)
@@ -128,11 +180,11 @@ def texify (name, element):
     if debug:
         print('name: {} || element: {}'.format(name, element))
     if name == 'atbd':
-        return macroWrap('ATBDTitle', processATBD(element))
+        return macroWrap('ATBDTitle', title(element))
     elif name in mapVars.keys() and element is not None:
         return macroWrap(toCamelCase(name), mapVars[name](element))
     elif element is None:
-        return macroWrap(toCamelCase(name), 'Lorem Ipsum Filler text')
+        return macroWrap(toCamelCase(name), '')
     else:
         return name
 
@@ -158,8 +210,9 @@ class ATBD:
 
     def texVariables (self):
         myJson = json.loads(open(self.filepath).read())
+        processReferences(myJson.pop('publication_references'))
         if debug:
-            for item, value in myJson[0].items():
+            for item, value in myJson.items():
                 print('item: {}, value: {}'.format(item, value))
         commands = [texify(x, y) for x,y in myJson.items() if x in mapVars.keys()]
         if debug:
@@ -173,9 +226,9 @@ class ATBD:
         return f'{atbd_name}.{ext}'
 
     def filewrite(self):
-        with open(os.path.join('ATBD.tex'),  'r') as original:
+        with open('ATBD.tex',  'r') as original:
             data = original.read()
-        with open(os.path.join(self.nameFile('tex')), 'w') as modified:
+        with open(self.nameFile('tex'), 'w') as modified:
             modified.write('\\ifx \\convertType \\undefined \n')
             modified.write('\n'.join(filetypeSpecific('HTML')))
             modified.write('\n \\else \n')
@@ -183,8 +236,8 @@ class ATBD:
             modified.write('\n \\fi \n')
             modified.write('\n'.join(self.texVars) + ' \n' + data)
             fileName = modified.name
-        if debug:
-            print(fileName)
+        with open(os.path.join(os.path.dirname(fileName), 'main.bib'), 'w') as bibFile:
+            bibFile.write('\n'.join(references))
         return fileName
 
 def createLatex(args):

@@ -1,6 +1,34 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import RemovableListItem from './common/RemovableListItem';
+import styled from 'styled-components/macro';
+
+import {
+  FormFieldset,
+  FormFieldsetHeader,
+  FormFieldsetBody
+} from '../styles/form/fieldset';
+import {
+  FormHelper,
+  FormHelperMessage
+} from '../styles/form/helper';
+import FormLegend from '../styles/form/legend';
+import RemoveButton from '../styles/button/remove';
+import { InputFormGroup } from './common/Input';
+
+const VariableList = styled.ul`
+  list-style: none;
+  margin: 1rem 0;
+`;
+
+const VariableListItem = styled.li`
+  margin-bottom: 1rem;
+  &&:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const InputProperty = styled.div`
+`;
 
 const AlgorithmVariables = (props) => {
   const {
@@ -9,7 +37,19 @@ const AlgorithmVariables = (props) => {
     deleteVariable
   } = props;
 
-  const variableItems = variables.map((variable) => {
+  if (!variables.length) {
+    return (
+      <FormFieldset>
+        <FormFieldsetBody>
+          <FormHelper>
+            <FormHelperMessage>No variables. Add one below.</FormHelperMessage>
+          </FormHelper>
+        </FormFieldsetBody>
+      </FormFieldset>
+    );
+  }
+
+  const variableItems = variables.map((variable, i) => {
     const {
       [`${schemaKey}_id`]: id,
       name,
@@ -18,18 +58,41 @@ const AlgorithmVariables = (props) => {
     } = variable;
 
     return (
-      <RemovableListItem
-        key={id}
-        label={`${name} || ${long_name} || ${unit}`}
-        deleteAction={() => deleteVariable(id)}
-      />
+      <VariableListItem key={id}>
+        <FormFieldset>
+          <FormFieldsetHeader>
+            <FormLegend>Variable #{i + 1}</FormLegend>
+            <RemoveButton
+              variation="base-plain"
+              size="small"
+              hideText
+              onClick={() => deleteVariable(id)}
+            >
+              Remove
+            </RemoveButton>
+          </FormFieldsetHeader>
+          <FormFieldsetBody>
+            <InputFormGroup>
+              <InputProperty>
+                <strong>Name:</strong> {name}
+              </InputProperty>
+              <InputProperty>
+                <strong>Long Name:</strong> {long_name}
+              </InputProperty>
+              <InputProperty>
+                <strong>Unit:</strong> {unit}
+              </InputProperty>
+            </InputFormGroup>
+          </FormFieldsetBody>
+        </FormFieldset>
+      </VariableListItem>
     );
   });
 
   return (
-    <ul>
+    <VariableList>
       {variableItems}
-    </ul>
+    </VariableList>
   );
 };
 

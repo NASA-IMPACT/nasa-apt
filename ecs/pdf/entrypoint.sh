@@ -8,6 +8,12 @@ else
     echo 'Failed to retrieve TeX file'
 fi
 
+aws s3 cp s3://$1/$(echo $2|cut -d. -f1).bib main.bib
+
+pdflatex --shell-escape "\def\convertType{PDF}\input{$2}"
+bibtex $(echo $2|cut -d. -f1)
+pdflatex --shell-escape "\def\convertType{PDF}\input{$2}"
+bibtex $(echo $2|cut -d. -f1)
 pdflatex --shell-escape "\def\convertType{PDF}\input{$2}"
 
 if [ $? -eq 0 ]; then
