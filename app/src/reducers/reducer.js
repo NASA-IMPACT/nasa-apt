@@ -254,6 +254,15 @@ export default function (state = initialState, action) {
       };
     }
 
+    case actions.DELETE_REFERENCE_SUCCESS: {
+      const { payload } = action;
+      const id = payload.publication_reference_id;
+      return {
+        ...state,
+        references: state.references.filter(d => d.publication_reference_id !== id)
+      };
+    }
+
     case actions.FETCH_CITATIONS_SUCCESS: {
       const { payload } = action;
       return {

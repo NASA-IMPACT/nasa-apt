@@ -30,7 +30,7 @@ export function References(props) {
           step={7}
         >
           <h2>References</h2>
-          <p>Please remove any references that are no longer attached.</p>
+          <p>Please remove any references that are no longer attached to this ATBD.</p>
           <ul>
             {references.map((d, i) => (
               <li key={d.publication_reference_id}>
@@ -45,6 +45,7 @@ export function References(props) {
                 </RemoveButton>
               </li>
             ))}
+            {!references.length && <p>No references attached.</p>}
           </ul>
         </EditPage>
       </Inpage>
