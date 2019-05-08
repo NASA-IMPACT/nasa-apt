@@ -31,7 +31,8 @@ import {
   drafts,
   algorithm_description,
   algorithm_usage,
-  algorithm_implementation
+  algorithm_implementation,
+  references
 } from '../../constants/routes';
 
 import Prose from '../../styles/type/prose';
@@ -84,13 +85,6 @@ const StepperLabel = styled.h6`
   margin-right: 0.5rem;
 `;
 
-export const RemovableListItem = styled.li`
-  &::before {
-    cursor: pointer;
-    ${collecticon('xmark--small')}
-  }
-`;
-
 const ItemCount = styled.span`
   ${antialiased}
   flex: none;
@@ -125,7 +119,7 @@ const EditPage = (props) => {
     { display: 'Algorithm description', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_description}` },
     { display: 'Algorithm usage', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_usage}` },
     { display: 'Algorithm implementation', link: `/${atbdsedit}/${id}/${drafts}/${version}/${algorithm_implementation}` },
-    { display: 'References' }
+    { display: 'References', link: `/${atbdsedit}/${id}/${drafts}/${version}/${references}` }
   ];
 
   const numSteps = items.length;
@@ -156,9 +150,8 @@ const EditPage = (props) => {
                       <DropTitle>Select step</DropTitle>
                       <DropMenu role="menu" selectable>
                         {items.map((d, i) => (
-                          <li>
+                          <li key={d.display}>
                             <DropMenuItem
-                              key={d.display}
                               onClick={() => d.link && props.push(d.link)}
                               active={i === step - 1}
                             >

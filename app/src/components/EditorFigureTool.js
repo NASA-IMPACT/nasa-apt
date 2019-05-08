@@ -20,6 +20,7 @@ const FigureButton = styled(Button)`
 `;
 
 const FigureLabel = styled.label`
+  cursor: pointer;
   display: block;
   width: 100%;
   height: 100%

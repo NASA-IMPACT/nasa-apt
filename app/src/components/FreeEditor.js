@@ -20,7 +20,10 @@ import {
 import EditorImage from './EditorImage';
 import EditorTable from './EditorTable';
 import EditorFigureTool from './EditorFigureTool';
+import EditorReference from './EditorReference';
+import EditorReferenceTool from './EditorReferenceTool';
 import EditorFormattableText from './EditorFormattableText';
+import EditorInlineMetadata from './EditorInlineMetadata';
 import { getValidOrBlankDocument } from './editorBlankDocument';
 import schema from './editorSchema';
 import { themeVal, stylizeFunction } from '../styles/utils/general';
@@ -32,6 +35,7 @@ const equation = 'equation';
 const paragraph = 'paragraph';
 const table = 'table';
 const image = 'image';
+const reference = 'reference';
 
 const _rgba = stylizeFunction(rgba);
 
@@ -104,6 +108,7 @@ export class FreeEditor extends React.Component {
     this.removeTable = this.removeTable.bind(this);
     this.insertImage = this.insertImage.bind(this);
     this.insertLink = this.insertLink.bind(this);
+    this.insertReference = this.insertReference.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -142,6 +147,9 @@ export class FreeEditor extends React.Component {
         }
         if (activeTool === image) {
           this.insertImage();
+        }
+        if (activeTool === reference) {
+          this.insertReference();
         }
       }, 0);
     }
@@ -227,10 +235,13 @@ export class FreeEditor extends React.Component {
     });
   }
 
-  insertLink(url) {
+  insertLink(url, replaceText) {
     const { value } = this.state;
     const { selection } = value;
-    const text = selection.isCollapsed ? 'link' : value.fragment.text;
+    let text = replaceText;
+    if (!text) {
+      text = selection.isCollapsed ? 'link' : value.fragment.text;
+    }
     this.editor.insertInline({
       type: 'link',
       data: { url },
@@ -238,6 +249,26 @@ export class FreeEditor extends React.Component {
         object: 'text',
         leaves: [{
           text
+        }]
+      }]
+    });
+  }
+
+  insertReference() {
+    const { lastCreatedReference } = this.props;
+    const {
+      publication_reference_id: id,
+      title: name
+    } = lastCreatedReference;
+    this.editor.insertInline({
+      type: reference,
+      data: { id, name },
+      nodes: [{
+        object: 'text',
+        leaves: [{
+          // TODO: decide if we want to render something
+          // more meaningful than this stand-in.
+          text: 'ref'
         }]
       }]
     });
@@ -302,6 +333,8 @@ export class FreeEditor extends React.Component {
       isFocused
     } = props;
     const { value } = this.state;
+    const selectedText = value.fragment.text;
+
     switch (node.type) {
       case 'equation':
         return <EquationEditor {...props} />;
@@ -333,10 +366,17 @@ export class FreeEditor extends React.Component {
         // Use focus text in addition to the length of any highlighted text
         // to determine whether we have a selection.
         const focusText = value.focusText ? value.focusText.text : '';
-        const selectedText = value.fragment.text;
-        const hasSelection = !!(focusText.length && selectedText.length);
+
+        // The reason we must check whether the value fragment exists
+        // in the focused text is because focusing on an inline fragment,
+        // ie a link or reference, will trigger this case as well as
+        // the case for that specific inline node.
+        const hasSelection = !!(focusText.length && selectedText.length
+          && focusText.indexOf(selectedText) >= 0);
+
         const activeMarks = Array.from(value.activeMarks)
           .map(Mark => Mark.type);
+
         return (
           <EditorFormattableText
             hasSelection={hasSelection}
@@ -347,10 +387,35 @@ export class FreeEditor extends React.Component {
           />
         );
       }
+
       case 'link': {
         const url = node.data.get('url');
         return (
-          <a href={url} rel="noopener noreferrer" target="_blank" {...attributes}>{children}</a>
+          <EditorInlineMetadata
+            hasActiveSelection={!!(selectedText.length && url)}
+            metadata={url}
+            readOnly
+          >
+            <a href={url} rel="noopener noreferrer" target="_blank" {...attributes}>{children}</a>
+          </EditorInlineMetadata>
+        );
+      }
+
+      case reference: {
+        const name = node.data.get('name');
+        return (
+          <EditorInlineMetadata
+            hasActiveSelection={!!(selectedText.length && name)}
+            metadata={`Ref: ${name}`}
+            readOnly
+          >
+            <EditorReference
+              data-reference-id={node.data.get('id')}
+              {...attributes}
+            >
+              {children}
+            </EditorReference>
+          </EditorInlineMetadata>
         );
       }
       default:
@@ -418,6 +483,12 @@ export class FreeEditor extends React.Component {
                 active={activeTool === image}
                 icon={{ icon: 'picture' }}
               />
+
+              <EditorReferenceTool
+                onSaveSuccess={() => { this.selectTool(reference); }}
+                active={activeTool === reference}
+              />
+
               {inlineSaveBtn && (
                 <Button
                   onClick={save}
@@ -463,6 +534,7 @@ FreeEditor.propTypes = {
   className: PropTypes.string,
   uploadFile: PropTypes.func.isRequired,
   uploadedFile: PropTypes.string,
+  lastCreatedReference: PropTypes.object,
   inlineSaveBtn: PropTypes.bool,
   invalid: PropTypes.bool
 };
@@ -498,8 +570,8 @@ const StyledFreeEditor = styled(FreeEditor)`
 const mapDispatchToProps = { uploadFile };
 
 const mapStateToProps = (state) => {
-  const { uploadedFile } = state.application;
-  return { uploadedFile };
+  const { uploadedFile, lastCreatedReference } = state.application;
+  return { uploadedFile, lastCreatedReference };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(StyledFreeEditor);
