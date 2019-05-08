@@ -434,7 +434,8 @@ export function fetchAlgorithmImplmentations(versionObject) {
   return {
     [RSAA]: {
       endpoint: `${BASE_URL}/atbd_versions?atbd_id=eq.${atbd_id}&`
-        + `atbd_version=eq.${atbd_version}&select=atbd_version,atbd(*),algorithm_implementations(*)`,
+        + `atbd_version=eq.${atbd_version}&select=atbd_version,atbd(*),algorithm_implementations(*),`
+        + 'data_access_input_data(*),data_access_output_data(*),data_access_related_urls(*)',
       method: 'GET',
       headers: returnObjectHeaders,
       types: [
