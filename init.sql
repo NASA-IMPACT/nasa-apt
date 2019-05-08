@@ -152,7 +152,7 @@ CREATE TABLE data_access_input_data(
   atbd_id INTEGER NOT NULL,
   FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
   access_url VARCHAR (1024),
-  description VARCHAR (4000)
+  description json
 );
 CREATE TABLE data_access_output_data(
   data_access_output_data_id serial PRIMARY KEY,
@@ -160,7 +160,7 @@ CREATE TABLE data_access_output_data(
   atbd_id INTEGER NOT NULL,
   FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
   access_url VARCHAR (1024),
-  description VARCHAR (4000)
+  description json
 );
 CREATE TABLE data_access_related_urls(
   data_access_related_url_id serial PRIMARY KEY,
@@ -168,7 +168,7 @@ CREATE TABLE data_access_related_urls(
   atbd_id INTEGER NOT NULL,
   FOREIGN KEY (atbd_id, atbd_version) REFERENCES atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
   url VARCHAR (1024),
-  description VARCHAR (4000)
+  description json
 );
 CREATE FUNCTION create_atbd_version(OUT created_atbd atbds, OUT created_version atbd_versions)
   AS $$
