@@ -88,13 +88,15 @@ def saveImage(imgUrl, img):
     htmlImgs.append(f'\\newcommand{{\\{imgLink}}}{{{imgUrl}}}')
     return imgLink
 
-def wrapImage(img):
-    wrapper = f''' \\begin{{center}}
+def wrapImage(img, cap=''):
+    if cap:
+        cap = f'\\caption{{{cap}}}'
+    wrapper = f''' \\begin{{figure}}
         \\includegraphics[width=\\maxwidth{{\\linewidth}}]{{\\{img}}}
-        \\end{{center}}
+        {cap}
+        \\end{{figure}}
     '''
     return wrapper
-
 
 def processWYSIWYGElement(node, text_prepend=''):
     if node['type'] == 'table':
@@ -105,7 +107,11 @@ def processWYSIWYGElement(node, text_prepend=''):
         imgUrl = node['data']['src']
         filename = imgUrl.rsplit('/', 1)[1]
         imgCommand = saveImage(imgUrl, filename)
-        return wrapImage(imgCommand)
+        try:
+            caption = node['data']['caption']
+            return wrapImage(imgCommand, caption)
+        except:
+            return wrapImage(imgCommand)
     elif node['type'] == 'equation':
         return ' \\begin{equation} ' + \
             node['nodes'][0]['leaves'][0]['text'] + ' \\end{equation} '
@@ -113,7 +119,6 @@ def processWYSIWYGElement(node, text_prepend=''):
         return text_prepend + processText(node['nodes'])
     else:
         print('oops! here with {}'.format(node))
-
 
 def processWYSIWYG(element, text_prepend=''):
     if debug:
@@ -143,7 +148,6 @@ def processDataAccess(collection):
 def processDataAccessURL(collection):
     return reduce((lambda x, y: x + y),
                   list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['description']) + '\\\\' + simpleList('URL', x['url']), collection)), '')
-
 
 def processContacts(collection):
     allContacts = ''

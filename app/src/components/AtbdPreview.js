@@ -3,10 +3,17 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import Button from '../styles/button/button';
+import collecticon from '../styles/collecticons';
 import { serializeDocument } from '../actions/actions';
 
 const Link = styled.a`
-  margin-left: 1rem 
+  margin-left: 1rem
+`;
+
+const DocTablePreviewButton = styled(Button)`
+  &::before {
+    ${collecticon('eye')};
+  }
 `;
 
 const AtbdPreview = (props) => {
@@ -37,8 +44,12 @@ const AtbdPreview = (props) => {
   }
   return (
     <Fragment>
-      <Button
-        variation="base-raised-light"
+      {pdfLink}
+      {htmlLink}
+      <DocTablePreviewButton
+        variation="primary-plain"
+        size="small"
+        title="Preview document"
         onClick={() => {
           serialize({
             atbd_id,
@@ -47,9 +58,7 @@ const AtbdPreview = (props) => {
         }}
       >
         {label}
-      </Button>
-      {pdfLink}
-      {htmlLink}
+      </DocTablePreviewButton>
     </Fragment>
   );
 };
