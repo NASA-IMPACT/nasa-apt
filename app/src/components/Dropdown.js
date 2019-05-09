@@ -447,7 +447,7 @@ export const DropMenu = styled.ul`
       &::before {
         position: absolute;
         z-index: 1;
-        top: ${divide(glbS, 2)};
+        top: ${divide(glbS, 4)};
         left: ${glbS};
         font-size: 1rem;
         line-height: 1.5rem;
@@ -474,7 +474,7 @@ export const DropMenuItem = styled.a`
   position: relative;
   display: flex;
   align-items: center;
-  padding: ${divide(themeVal('layout.space'), 2)} ${themeVal('layout.space')};
+  padding: ${divide(themeVal('layout.space'), 4)} ${themeVal('layout.space')};
   color: ${themeVal('type.base.color')};
   transition: all 0.16s ease 0s;
 
@@ -496,7 +496,7 @@ export const DropMenuItem = styled.a`
       ${collecticon('tick--small')}
       position: absolute;
       z-index: 1;
-      top: ${divide(themeVal('layout.space'), 2)};
+      top: ${divide(themeVal('layout.space'), 4)};
       right: ${divide(themeVal('layout.space'), 2)};
       font-size: 1rem;
       line-height: 1.5rem;
