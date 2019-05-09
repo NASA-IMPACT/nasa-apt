@@ -140,7 +140,14 @@ def simpleList(name, item):
 def processImplementations(collection):
     return reduce((lambda x, y: x + y),
                   list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['execution_description']) + '\\\\' + simpleList('access_url', x['access_url']), collection)), '')
-                  # accessURL(x['access_url']) + f'\\textbf{{Description: }}' + processWYSIWYG(x['execution_description']) + '\\\\', collection)), '')
+
+def processDataAccess(collection):
+    return reduce((lambda x, y: x + y),
+                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['description']) + '\\\\' + simpleList('access_url', x['access_url']), collection)), '')
+
+def processDataAccessURL(collection):
+    return reduce((lambda x, y: x + y),
+                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['description']) + '\\\\' + simpleList('URL', x['url']), collection)), '')
 
 def processContacts(collection):
     allContacts = ''
@@ -183,7 +190,9 @@ mapVars = {
     'performance_assessment_validation_uncertainties': processWYSIWYG,
     'performance_assessment_validation_errors': processWYSIWYG,
     'algorithm_implementations': processImplementations,
-    'contacts': processContacts
+    'data_access_input_data': processDataAccess,
+    'data_access_output_data': processDataAccess,
+    'data_access_related_urls': processDataAccessURL
 }
 
 def processReferences(refs):
