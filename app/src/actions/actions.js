@@ -883,3 +883,14 @@ export function checkHtml(key) {
     }
   };
 }
+
+// This supports the use case of allowing a user to select
+// a reference from a list of pre-existing references.
+// TODO: the naming for the `lastCreatedReference` object in state
+// is no longer very clear, and should be generalized.
+export function setLastCreatedReference(reference) {
+  return {
+    type: types.SET_LAST_CREATED_REFERENCE,
+    payload: reference
+  };
+}

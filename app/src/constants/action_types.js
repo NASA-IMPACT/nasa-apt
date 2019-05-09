@@ -53,7 +53,9 @@ const types = createTypes([
   ...async('UPLOAD_JSON'),
   ...async('SERIALIZE_DOCUMENT'),
   ...async('CHECK_PDF'),
-  ...async('CHECK_HTML')
+  ...async('CHECK_HTML'),
+
+  'SET_LAST_CREATED_REFERENCE'
 ]);
 
 export default types;

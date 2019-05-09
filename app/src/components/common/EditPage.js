@@ -158,9 +158,8 @@ const EditPage = (props) => {
                       <DropTitle>Select step</DropTitle>
                       <DropMenu role="menu" selectable>
                         {items.map((d, i) => (
-                          <li>
+                          <li key={d.display}>
                             <StepDropMenuItem
-                              key={d.display}
                               onClick={() => d.link && props.push(d.link)}
                               active={i === step - 1}
                             >

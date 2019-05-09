@@ -275,10 +275,19 @@ export default function (state = initialState, action) {
       };
     }
 
+    case actions.SET_LAST_CREATED_REFERENCE: {
+      const { payload } = action;
+      return {
+        ...state,
+        lastCreatedReference: payload
+      };
+    }
+
     case actions.CREATE_REFERENCE_SUCCESS: {
       const { payload } = action;
       return {
         ...state,
+        references: state.references.concat([payload]),
         lastCreatedReference: payload
       };
     }
