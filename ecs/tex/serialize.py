@@ -30,15 +30,13 @@ def processTable(nodeRows):
         tableList.append([])
         for row in rows['nodes']:
             for cell in row['nodes']:
-                for subcell in cell['nodes']:
-                    for cellnode in subcell['leaves']:
-                        tableList[-1].append(cellnode['text'])
+                tableList[-1].append(processWYSIWYGElement(cell)[0])
     columnNames = tableList.pop(0)
     df = pd.DataFrame(tableList, columns=columnNames)
     col_width = int(12/len(df.columns))
     col_format = 'p{' + str(col_width) + 'cm}'
     col_format *= len(df.columns)
-    latexTable = df.to_latex(index=False, column_format=col_format)
+    latexTable = df.to_latex(index=False, column_format=col_format, escape=False)
     return latexTable
 
 def addMarkup(text, marks):
@@ -98,38 +96,52 @@ def wrapImage(img, cap=''):
     '''
     return wrapper
 
-def processWYSIWYGElement(node, text_prepend=''):
+def processWYSIWYGElement(node):
     if node['type'] == 'table':
-        return '\n \n' + processTable(node['nodes'])
+        return '\n \n' + processTable(node['nodes']) + '\n \n', 'table'
     elif node['type'] == 'table_cell':
-        return processWYSIWYGElement(node['nodes'])
+        return processWYSIWYGElement(node['nodes']), 'table_cell'
     elif node['type'] == 'image':
         imgUrl = node['data']['src']
         filename = imgUrl.rsplit('/', 1)[1]
         imgCommand = saveImage(imgUrl, filename)
         try:
             caption = node['data']['caption']
-            return wrapImage(imgCommand, caption)
+            cmd= '\n \n' + wrapImage(imgCommand, caption) + '\n \n'
         except:
-            return wrapImage(imgCommand)
+            cmd= '\n \n' + wrapImage(imgCommand) + '\n \n'
+        return cmd, 'image'
     elif node['type'] == 'equation':
         return ' \\begin{equation} ' + \
-            node['nodes'][0]['leaves'][0]['text'] + ' \\end{equation} '
+            node['nodes'][0]['leaves'][0]['text'] + ' \\end{equation} ', 'equation'
     elif node['type'] == 'paragraph':
-        return text_prepend + processText(node['nodes'])
+        text = processText(node['nodes'])
+        if text:
+            return text, 'text'
+        else:
+            return None, None
     else:
         print('oops! here with {}'.format(node))
+        return None, None
 
-def processWYSIWYG(element, text_prepend=''):
+def processWYSIWYG(element):
     if debug:
         print('element in WYSIWYG is ' + str(element))
-    to_return = ''
+    to_return = []
+    ctr = 0
     for node in element['document']['nodes']:
-        returned = processWYSIWYGElement(node, text_prepend)
-        if returned: #ignore newlines at the beginning
-            to_return += returned
-            text_prepend = '\\\\\\\\'
-    return to_return
+        prepend = ''
+        returnedElement, elementType = processWYSIWYGElement(node)
+        if returnedElement:  # ignore newlines at the beginning
+            if elementType == 'text':
+                if ctr != 0 and to_return[ctr-1][1] != 'image' and to_return[ctr-1][1] != 'table':
+                     # Only prepend with newlines if not the first item or preceded by image or table
+                    prepend = '\\\\\\\\'
+                returnedElement = prepend + str(returnedElement) + '\\\\\\\\'
+            to_return.append([returnedElement, elementType])
+            ctr += 1
+    return reduce((lambda x, y: x + y),
+                  list(map(lambda x: x[0], to_return)), '')
 
 def accessURL(url):
     return f'\\textbf{{Access URL: }} {{{url}}} \\\\'
