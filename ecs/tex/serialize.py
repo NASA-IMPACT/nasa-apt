@@ -139,6 +139,11 @@ def processDataAccess(collection):
     return reduce((lambda x, y: x + y),
                   list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['description']) + '\\\\' + simpleList('access_url', x['access_url']), collection)), '')
 
+def processDataAccessURL(collection):
+    return reduce((lambda x, y: x + y),
+                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['description']) + '\\\\' + simpleList('URL', x['url']), collection)), '')
+
+
 def processContacts(collection):
     allContacts = ''
     for contact in collection:
@@ -182,7 +187,7 @@ mapVars = {
     'algorithm_implementations': processImplementations,
     'data_access_input_data': processDataAccess,
     'data_access_output_data': processDataAccess,
-    'data_access_related_url': processDataAccess
+    'data_access_related_urls': processDataAccessURL
 }
 
 def processReferences(refs):
