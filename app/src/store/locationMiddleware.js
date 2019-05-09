@@ -5,9 +5,11 @@ import {
   atbds,
   atbdsedit,
   identifying_information,
+  introduction,
   contacts,
   drafts,
   algorithm_description,
+  algorithm_usage,
   algorithm_implementation,
   references,
   error
@@ -54,7 +56,16 @@ const locationMiddleware = store => next => async (action) => {
           store.dispatch(actions.fetchCitation(versionObject));
         }
 
-        if (pathComponents[5] === references) {
+        // Pages with rich editors need a full list of ATBD references
+        // to allow reference re-use.
+        const needsReferences = [
+          introduction,
+          algorithm_description,
+          algorithm_usage,
+          algorithm_implementation,
+          references
+        ];
+        if (needsReferences.indexOf(pathComponents[5]) >= 0) {
           store.dispatch(actions.fetchAtbdVersionReferences(versionObject));
         }
       }
