@@ -22,6 +22,7 @@ import {
   FormHelper,
   FormHelperMessage
 } from '../styles/form/helper';
+import Input, { InputFormGroup } from './common/Input';
 import Modal from '../styles/modal/modal';
 import { ModalInner, CloseModal } from '../styles/modal/inner';
 
@@ -31,16 +32,46 @@ export const ReferenceBtn = styled(Button)`
   }
 `;
 
+const defaultFieldValues = {
+  authors: '',
+  series: '',
+  edition: '',
+  volume: '',
+  issue: '',
+  report_number: '',
+  publication_place: '',
+  publisher: '',
+  pages: '',
+  isbn: '',
+  doi: '',
+  online_resource: '',
+  other_reference_details: ''
+};
+
+// 'report_number' => 'Report number'
+function formatFieldLabel(field) {
+  const result = field.split('_');
+  result[0] = result[0].charAt(0).toUpperCase() + result[0].slice(1, result[0].length);
+  return result.join(' ');
+}
+
 export class EditorReferenceTool extends Component {
   constructor(props) {
     super(props);
+
+    // Those we're calling these 'fields', they are really
+    // the optional fields.
+    const fields = { ...defaultFieldValues };
+
     this.state = {
       activeModal: false,
       referenceName: '',
-      referenceEmpty: false
+      referenceEmpty: false,
+      fields
     };
     this.setModalState = this.setModalState.bind(this);
     this.onReferenceNameChange = this.onReferenceNameChange.bind(this);
+    this.onOptionalFieldChange = this.onOptionalFieldChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.validate = this.validate.bind(this);
   }
@@ -61,9 +92,19 @@ export class EditorReferenceTool extends Component {
     });
   }
 
+  onOptionalFieldChange(e, fieldName) {
+    const { fields } = this.state;
+    this.setState({
+      fields: {
+        ...fields,
+        [fieldName]: e.currentTarget.value
+      }
+    });
+  }
+
   onSubmit(e) {
     e.preventDefault();
-    const { referenceName } = this.state;
+    const { referenceName, fields } = this.state;
     if (!referenceName.length) {
       return this.validate();
     }
@@ -75,6 +116,11 @@ export class EditorReferenceTool extends Component {
       atbd_version,
       title: referenceName
     };
+    Object.keys(fields).forEach((field) => {
+      if (fields[field]) {
+        payload[field] = fields[field];
+      }
+    });
     showGlobalLoading();
     create(payload);
   }
@@ -83,7 +129,8 @@ export class EditorReferenceTool extends Component {
     this.setState({
       activeModal: false,
       referenceName: '',
-      referenceEmpty: false
+      referenceEmpty: false,
+      fields: { ...defaultFieldValues }
     });
   }
 
@@ -94,7 +141,8 @@ export class EditorReferenceTool extends Component {
     this.setState({
       activeModal: !!nextState,
       referenceName: '',
-      referenceEmpty: false
+      referenceEmpty: false,
+      fields: { ...defaultFieldValues }
     });
   }
 
@@ -108,12 +156,14 @@ export class EditorReferenceTool extends Component {
     const {
       activeModal,
       referenceName,
-      referenceEmpty
+      referenceEmpty,
+      fields
     } = this.state;
 
     const {
       setModalState,
       onReferenceNameChange,
+      onOptionalFieldChange,
       validate,
       onSubmit
     } = this;
@@ -146,6 +196,22 @@ export class EditorReferenceTool extends Component {
                     <FormHelperMessage>Please enter a reference.</FormHelperMessage>
                   </FormHelper>
                 )}
+              </FormGroupBody>
+              <FormGroupBody>
+                <InputFormGroup>
+                  {Object.keys(fields).map(field => (
+                    <Input
+                      id={`reference-form-${field}`}
+                      name={`reference-form-${field}`}
+                      key={`reference-form-${field}`}
+                      label={formatFieldLabel(field)}
+                      type="text"
+                      value={fields[field]}
+                      onChange={e => onOptionalFieldChange(e, field)}
+                      optional
+                    />
+                  ))}
+                </InputFormGroup>
               </FormGroupBody>
             </FormGroup>
             <Button
