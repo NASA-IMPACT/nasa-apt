@@ -1,4 +1,11 @@
 #!/bin/sh
+
+aws s3 cp s3://nasa-apt-scripts/serialize.py /app
+aws s3 cp s3://nasa-apt-scripts/ATBD.tex /app
+aws s3 cp s3://nasa-apt-scripts/supplemental_requirements.txt /app
+
+pip install -r supplemental_requirements.txt
+
 aws s3 cp s3://$1/$2 .
 
 if [ $? -eq 0 ]; then
