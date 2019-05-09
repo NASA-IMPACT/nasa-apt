@@ -100,7 +100,7 @@ def wrapImage(img, cap=''):
 
 def processWYSIWYGElement(node, text_prepend=''):
     if node['type'] == 'table':
-        return processTable(node['nodes'])
+        return '\n \n' + processTable(node['nodes'])
     elif node['type'] == 'table_cell':
         return processWYSIWYGElement(node['nodes'])
     elif node['type'] == 'image':
