@@ -30,7 +30,7 @@ function AlgorithmImplementation(props) {
     atbdVersion
   } = props;
   let returnValue;
-  if (atbdVersion) {
+  if (atbdVersion && Array.isArray(atbdVersion.data_access_input_data)) {
     const {
       atbd,
       t,
