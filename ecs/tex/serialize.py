@@ -60,6 +60,7 @@ def preserveStyle(text):
     while (text[-2:].strip() == '\\\\'):
         text=text[:-2]
     return text
+
 def processText(nodes):
     to_return = ''
     for node in nodes:
@@ -223,8 +224,6 @@ def macroWrap(name, value):
 def texify (name, element):
     if debug:
         print('name: {} || element: {}'.format(name, element))
-    if name == 'atbd':
-        return macroWrap('ATBDTitle', title(element))
     elif name in mapVars.keys() and element is not None:
         return macroWrap(toCamelCase(name), mapVars[name](element))
     elif element is None:
