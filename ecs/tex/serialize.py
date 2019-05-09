@@ -151,9 +151,13 @@ def processContacts(collection):
         else:
             contactString = contact['first_name'] + ' ' + contact['last_name']
         contactString += ' \\\\ '
-        contactString += simpleList('uuid', contact['uuid']) if contact['uuid'] is not None else ''
-        for attribute in ["contact_mechanism_type", "contact_mechanism_value"]:
-            contactString += simpleList(attribute, contact[attribute]) if contact[attribute] is not None else ''
+        contactString += simpleList('uuid', contact['uuid']) if contact['uuid'] else ''
+        contactString += simpleList('url',
+                                    contact['url']) if contact['url'] else ''
+        if 'mechanisms' in contact:
+            contactString += '\\subsubsection{Contact Mechanisms}'
+            for mechanism in contact['mechanisms']:
+                contactString += mechanism['mechanism_value'] + '\\\\' if mechanism is not None else ''
         allContacts += '\\subsection{} ' + contactString
     return allContacts
 
@@ -165,7 +169,10 @@ def processVarList(element):
 
 def processATBD(element):
     title = macroWrap('ATBDTitle', element['title'])
-    contacts = macroWrap('Contacts', processContacts(element['contacts']))
+    try:
+        contacts = macroWrap('Contacts', processContacts(element['contacts']))
+    except KeyError:
+        return [title]
     return [title, contacts]
 
 mapVars = {
