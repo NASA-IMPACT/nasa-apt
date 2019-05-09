@@ -15,19 +15,29 @@ const initialState = {
   t: undefined
 };
 
-const deleteAtbdVersionChildItem = (schemaKey, state, action) => {
-  const idKey = `${schemaKey}_id`;
-  const keyPlural = `${schemaKey}s`;
-
+const deleteAtbdVersionChildItem = (idKey, tableName, state, action) => {
   const { payload } = action;
   const { [idKey]: id } = payload;
-  const variables = state.atbdVersion[keyPlural]
+  const variables = state.atbdVersion[tableName]
     .filter(variable => (variable[idKey] !== id));
   return {
     ...state,
     atbdVersion: {
       ...state.atbdVersion,
-      [keyPlural]: variables
+      [tableName]: variables
+    }
+  };
+};
+
+const addAtbdVersionChildItem = (tableName, state, action) => {
+  const { payload } = action;
+  const next = state.atbdVersion[tableName]
+    .concat([payload]);
+  return {
+    ...state,
+    atbdVersion: {
+      ...state.atbdVersion,
+      [tableName]: next
     }
   };
 };
@@ -182,13 +192,15 @@ export default function (state = initialState, action) {
     }
 
     case actions.DELETE_ALGORITHM_INPUT_VARIABLE_SUCCESS: {
-      const schemaKey = 'algorithm_input_variable';
-      return deleteAtbdVersionChildItem(schemaKey, state, action);
+      const idKey = 'algorithm_input_variable_id';
+      const tableName = 'algorithm_input_variables';
+      return deleteAtbdVersionChildItem(idKey, tableName, state, action);
     }
 
     case actions.DELETE_ALGORITHM_OUTPUT_VARIABLE_SUCCESS: {
-      const schemaKey = 'algorithm_output_variable';
-      return deleteAtbdVersionChildItem(schemaKey, state, action);
+      const idKey = 'algorithm_output_variable_id';
+      const tableName = 'algorithm_output_variables';
+      return deleteAtbdVersionChildItem(idKey, tableName, state, action);
     }
 
     case actions.UPLOAD_FILE_SUCCESS: {
@@ -212,30 +224,47 @@ export default function (state = initialState, action) {
     }
 
     case actions.CREATE_ALGORITHM_IMPLEMENTATION_SUCCESS: {
-      const { payload } = action;
-      const next = (state.atbdVersion.algorithm_implementations || [])
-        .concat([payload]);
-      return {
-        ...state,
-        atbdVersion: {
-          ...state.atbdVersion,
-          algorithm_implementations: next
-        }
-      };
+      const tableName = 'algorithm_implementations';
+      return addAtbdVersionChildItem(tableName, state, action);
     }
 
     case actions.DELETE_ALGORITHM_IMPLEMENTATION_SUCCESS: {
-      const { payload } = action;
-      const id = payload.algorithm_implementation_id;
-      const next = state.atbdVersion.algorithm_implementations
-        .filter(d => id !== d.algorithm_implementation_id);
-      return {
-        ...state,
-        atbdVersion: {
-          ...state.atbdVersion,
-          algorithm_implementations: next
-        }
-      };
+      const idKey = 'algorithm_implementation_id';
+      const tableName = 'algorithm_implementations';
+      return deleteAtbdVersionChildItem(idKey, tableName, state, action);
+    }
+
+    case actions.CREATE_ACCESS_INPUT_SUCCESS: {
+      const tableName = 'data_access_input_data';
+      return addAtbdVersionChildItem(tableName, state, action);
+    }
+
+    case actions.DELETE_ACCESS_INPUT_SUCCESS: {
+      const idKey = 'data_access_input_data_id';
+      const tableName = 'data_access_input_data';
+      return deleteAtbdVersionChildItem(idKey, tableName, state, action);
+    }
+
+    case actions.CREATE_ACCESS_OUTPUT_SUCCESS: {
+      const tableName = 'data_access_output_data';
+      return addAtbdVersionChildItem(tableName, state, action);
+    }
+
+    case actions.DELETE_ACCESS_OUTPUT_SUCCESS: {
+      const idKey = 'data_access_output_data_id';
+      const tableName = 'data_access_output_data';
+      return deleteAtbdVersionChildItem(idKey, tableName, state, action);
+    }
+
+    case actions.CREATE_ACCESS_RELATED_SUCCESS: {
+      const tableName = 'data_access_related_urls';
+      return addAtbdVersionChildItem(tableName, state, action);
+    }
+
+    case actions.DELETE_ACCESS_RELATED_SUCCESS: {
+      const idKey = 'data_access_related_url_id';
+      const tableName = 'data_access_related_urls';
+      return deleteAtbdVersionChildItem(idKey, tableName, state, action);
     }
 
     case actions.FETCH_ATBD_VERSION_REFERENCES_SUCCESS: {

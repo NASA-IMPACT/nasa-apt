@@ -1,149 +1,197 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import uuid from 'uuid';
 
 import {
   createAlgorithmImplementation,
   updateAlgorithmImplementation,
-  deleteAlgorithmImplementation
+  deleteAlgorithmImplementation,
+
+  createAccessInput,
+  updateAccessInput,
+  deleteAccessInput,
+
+  createAccessOutput,
+  updateAccessOutput,
+  deleteAccessOutput,
+
+  createAccessRelated,
+  updateAccessRelated,
+  deleteAccessRelated
 } from '../actions/actions';
 import {
   Inpage
 } from './common/Inpage';
 import EditPage from './common/EditPage';
-import AddBtn from '../styles/button/add';
-import AlgorithmImplementationForm from './AlgorithmImplementationForm';
+import ImplementationForm from './ImplementationForm';
 
-export class AlgorithmImplementation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      implementations: []
-    };
-    this.addImplementation = this.addImplementation.bind(this);
-    this.removeImplementation = this.removeImplementation.bind(this);
-  }
-
-  addImplementation() {
-    const { implementations } = this.state;
-    const next = implementations.concat([uuid()]);
-    this.setState({ implementations: next });
-  }
-
-  removeImplementation(id) {
-    const { implementations } = this.state;
-    const next = implementations.filter(d => d !== id);
-    this.setState({ implementations: next });
-  }
-
-  render() {
+function AlgorithmImplementation(props) {
+  const {
+    atbdVersion
+  } = props;
+  let returnValue;
+  if (atbdVersion && Array.isArray(atbdVersion.data_access_input_data)) {
     const {
-      atbdVersion,
       atbd,
-      createAlgorithmImplementation: create,
-      updateAlgorithmImplementation: update,
-      deleteAlgorithmImplementation: del
-    } = this.props;
-    let returnValue;
-    if (atbdVersion && Array.isArray(atbdVersion.algorithm_implementations)) {
-      const {
-        title,
-        atbd_id
-      } = atbd;
-      const {
-        algorithm_implementations,
-        atbd_version
-      } = atbdVersion;
-      const { implementations } = this.state;
-      const {
-        addImplementation,
-        removeImplementation
-      } = this;
+      t,
+      createAlgorithmImplementation: createImplementation,
+      updateAlgorithmImplementation: updateImplementation,
+      deleteAlgorithmImplementation: delImplementation,
 
-      returnValue = (
-        <Inpage>
-          <EditPage
-            title={title || ''}
-            id={atbd_id}
-            step={6}
-          >
-            <h2>Algorithm Implementation</h2>
+      createAccessInput: createInput,
+      updateAccessInput: updateInput,
+      deleteAccessInput: deleteInput,
 
-            {algorithm_implementations.map((d, i) => (
-              <AlgorithmImplementationForm
-                key={`algorithm-implementation-form-${i}`} // eslint-disable-line react/no-array-index-key
-                id={`algorithm-implementation-form-${i}`}
-                label={`Implementation #${i + 1}`}
-                accessUrl={d.access_url}
-                executionDescription={d.execution_description}
-                save={(object) => {
-                  update(d.algorithm_implementation_id, {
-                    access_url: object.accessUrl,
-                    execution_description: object.executionDescription
-                  });
-                }}
-                del={() => del(d.algorithm_implementation_id)}
-              />
-            ))}
+      createAccessOutput: createOutput,
+      updateAccessOutput: updateOutput,
+      deleteAccessOutput: deleteOutput,
 
-            {implementations.map(id => (
-              <AlgorithmImplementationForm
-                key={id}
-                id={id}
-                label="New Implementation"
-                save={(object) => {
-                  create({
-                    atbd_id,
-                    atbd_version,
-                    access_url: object.accessUrl,
-                    execution_description: object.executionDescription
-                  });
-                  removeImplementation(id);
-                }}
-                del={() => removeImplementation(id)}
-              />
-            ))}
+      createAccessRelated: createRelated,
+      updateAccessRelated: updateRelated,
+      deleteAccessRelated: deleteRelated
 
-            <AddBtn
-              variation="base-plain"
-              onClick={addImplementation}
-            >
-              Add an implementation
-            </AddBtn>
+    } = props;
 
-          </EditPage>
-        </Inpage>
-      );
-    } else {
-      returnValue = <div>Loading</div>;
-    }
-    return returnValue;
+    const {
+      title,
+      atbd_id
+    } = atbd;
+
+    const {
+      algorithm_implementations,
+      data_access_input_data,
+      data_access_output_data,
+      data_access_related_urls
+    } = atbdVersion;
+
+    returnValue = (
+      <Inpage>
+        <EditPage
+          title={title || ''}
+          id={atbd_id}
+          step={6}
+        >
+          <h2>Algorithm Implementation</h2>
+          <ImplementationForm
+            title="Algorithm Implementation"
+            id="implementations-form"
+            idProperty="algorithm_implementation_id"
+            urlProperty="access_url"
+            descriptionProperty="execution_description"
+            data={algorithm_implementations}
+            create={createImplementation}
+            update={updateImplementation}
+            del={delImplementation}
+            t={{
+              url: t.implementation_url,
+              description: t.implementation_description
+            }}
+          />
+
+          <ImplementationForm
+            title="Data Access Input"
+            id="data-access-input-form"
+            idProperty="data_access_input_data_id"
+            urlProperty="access_url"
+            descriptionProperty="description"
+            data={data_access_input_data}
+            create={createInput}
+            update={updateInput}
+            del={deleteInput}
+            t={{
+              url: t.access_input_url,
+              description: t.access_input_description
+            }}
+          />
+
+          <ImplementationForm
+            title="Data Access Output"
+            id="data-access-output-form"
+            idProperty="data_access_output_data_id"
+            urlProperty="access_url"
+            descriptionProperty="description"
+            data={data_access_output_data}
+            create={createOutput}
+            update={updateOutput}
+            del={deleteOutput}
+            t={{
+              url: t.access_output_url,
+              description: t.access_output_description
+            }}
+          />
+
+          <ImplementationForm
+            title="Data Access Related URLs"
+            id="data-access-related-form"
+            idProperty="data_access_related_url_id"
+            urlProperty="url"
+            descriptionProperty="description"
+            data={data_access_related_urls}
+            create={createRelated}
+            update={updateRelated}
+            del={deleteRelated}
+            t={{
+              url: t.access_related_url,
+              description: t.access_related_description
+            }}
+          />
+        </EditPage>
+      </Inpage>
+    );
+  } else {
+    returnValue = <div>Loading</div>;
   }
+  return returnValue;
 }
 
 AlgorithmImplementation.propTypes = {
   atbdVersion: PropTypes.object,
   atbd: PropTypes.object,
+  t: PropTypes.object,
   createAlgorithmImplementation: PropTypes.func,
   updateAlgorithmImplementation: PropTypes.func,
-  deleteAlgorithmImplementation: PropTypes.func
+  deleteAlgorithmImplementation: PropTypes.func,
+
+  createAccessInput: PropTypes.func,
+  updateAccessInput: PropTypes.func,
+  deleteAccessInput: PropTypes.func,
+
+  createAccessOutput: PropTypes.func,
+  updateAccessOutput: PropTypes.func,
+  deleteAccessOutput: PropTypes.func,
+
+  createAccessRelated: PropTypes.func,
+  updateAccessRelated: PropTypes.func,
+  deleteAccessRelated: PropTypes.func
 };
 
 const mapStateToProps = (state) => {
   const { application: app } = state;
-  const { atbdVersion } = app;
+  const { atbdVersion, t } = app;
   const atbd = atbdVersion ? atbdVersion.atbd : {};
   return {
     atbdVersion,
-    atbd
+    atbd,
+    t: t ? t.algorithm_implementation : {}
   };
 };
 
 const mapDispatchToProps = {
   createAlgorithmImplementation,
   updateAlgorithmImplementation,
-  deleteAlgorithmImplementation
+  deleteAlgorithmImplementation,
+
+  createAccessInput,
+  updateAccessInput,
+  deleteAccessInput,
+
+  createAccessOutput,
+  updateAccessOutput,
+  deleteAccessOutput,
+
+  createAccessRelated,
+  updateAccessRelated,
+  deleteAccessRelated
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlgorithmImplementation);

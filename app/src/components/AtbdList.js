@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { StickyContainer, Sticky } from 'react-sticky';
 import styled from 'styled-components/macro';
+import { rgba } from 'polished';
 import { push } from 'connected-react-router';
 import { createAtbd } from '../actions/actions';
 import {
@@ -10,8 +11,10 @@ import {
   drafts,
   identifying_information
 } from '../constants/routes';
-import { themeVal } from '../styles/utils/general';
-import { multiply, divide } from '../styles/utils/math';
+import { themeVal, stylizeFunction } from '../styles/utils/general';
+import { divide } from '../styles/utils/math';
+
+import { visuallyHidden, truncated, antialiased } from '../styles/helpers';
 import { VerticalDivider } from '../styles/divider';
 import Button from '../styles/button/button';
 import collecticon from '../styles/collecticons';
@@ -36,69 +39,92 @@ import Dropdown, {
   DropMenuItem
 } from './Dropdown';
 
+import Table from '../styles/table';
+
 import AtbdPreview from './AtbdPreview';
+
+const _rgba = stylizeFunction(rgba);
 
 const SearchButton = styled(Button)`
   &::before {
-    ${collecticon('magnifier-right')}
+    ${collecticon('magnifier-right')};
   }
 `;
 
 const CreateButton = styled(Button)`
   &::before {
-    ${collecticon('plus')}
+    ${collecticon('plus')};
   }
 `;
 
-const AtbdTable = styled.table`
-  border-collapse: collapse;
-  padding: ${themeVal('layout.space')};
-  width: 100%;
+const DocTable = styled(Table)`
+  white-space: nowrap;
+
+  th, td {
+    padding: ${themeVal('layout.space')};
+  }
 `;
 
-const AtbdRow = styled.tr`
+const DocTableHeadThActions = styled.th`
+  > span {
+    ${visuallyHidden};
+  }
 `;
 
-const AtbdCell = styled.td`
-  border-bottom: 1px solid ${themeVal('color.darkgray')};
-  padding: ${themeVal('layout.space')};
+const DocTableBodyThStatus = styled.th`
+  max-width: 10rem;
 `;
 
-const AtbdHeaderCell = styled.th`
-  color: ${themeVal('color.darkgray')};
-  font-weight: normal;
-  padding: ${themeVal('layout.space')} ${themeVal('layout.space')} 0;
-  text-align: left;
-  text-transform: uppercase;
+const DocTableBodyThTitle = styled.th`
+  white-space: normal;
+`;
+
+const DocTableBodyTdAuthors = styled.td`
+  > span {
+    ${truncated};
+    display: block;
+    max-width: 8rem;
+  }
+`;
+
+const DocTableBodyTdActions = styled.td`
+  text-align: right;
+
+  > *:not(:first-child) {
+    margin-left: 0.5rem;
+  }
+`;
+
+const DocTableEditButton = styled(Button)`
+  &::before {
+    ${collecticon('pencil')};
+  }
+`;
+
+const DocTablePublishButton = styled(Button)`
+  &::before {
+    ${collecticon('arrow-up-right')};
+  }
 `;
 
 const AtbdPublishedState = styled.span`
-  background-color: ${themeVal('color.darkgray')};
-  border-radius: ${multiply(themeVal('layout.space'), 2)};
-  color: ${themeVal('color.surface')};
-  display: inline-block;
-  padding: ${divide(themeVal('layout.space'), 2)} 0;
-  text-align: center;
-  width: 100%;
-`;
-
-const AtbdTitle = styled.h5`
-  font-size: 1em;
-  line-height: 1.4;
-  margin: 0;
+  ${antialiased}
+  display: flex;
+  justify-content: center;
+  padding: 0 ${divide(themeVal('layout.space'), 2)};
+  background-color: ${_rgba(themeVal('color.base'), 0.64)};
+  border-radius: ${themeVal('shape.ellipsoid')};
+  color: #FFF;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: ${themeVal('type.base.bold')};
+  line-height: 1.5rem;
+  min-width: 6rem;
 `;
 
 const AtbdVersion = styled.span`
   text-transform: uppercase;
   color: ${themeVal('color.darkgray')};
-`;
-
-const EditIcon = styled.span`
-  color: ${themeVal('color.link')};
-  cursor: pointer;
-  &::before {
-    ${collecticon('pencil')};
-  }
 `;
 
 const FilterTrigger = styled(Button)`
@@ -117,22 +143,23 @@ const AtbdList = (props) => {
     const { atbd_id, title, atbd_versions } = atbd;
     const { status } = atbd_versions[0];
     return (
-      <AtbdRow scope="row" key={atbd_id}>
-        <AtbdCell><AtbdPublishedState>{status}</AtbdPublishedState></AtbdCell>
-        <AtbdCell>
-          <AtbdTitle>{title}</AtbdTitle>
+      <tr key={atbd_id}>
+        <td><AtbdPublishedState>{status}</AtbdPublishedState></td>
+        <DocTableBodyThTitle scope="row">
+          <strong>{title}</strong>
           { false && <AtbdVersion>Version 1.0</AtbdVersion> }
-        </AtbdCell>
-        <AtbdCell>2 hours ago</AtbdCell>
-        <AtbdCell>Author Name</AtbdCell>
-        <AtbdCell onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${identifying_information}`)}><EditIcon /></AtbdCell>
-        <AtbdCell>
+        </DocTableBodyThTitle>
+        <td><span>2 hours ago</span></td>
+        <DocTableBodyTdAuthors><span>Author Name</span></DocTableBodyTdAuthors>
+        <DocTableBodyTdActions>
           <AtbdPreview
             atbd_id={atbd_id}
             atbd_version={1}
           />
-        </AtbdCell>
-      </AtbdRow>
+          <DocTablePublishButton variation="primary-plain" size="small" href="#" title="Publish document">Publish</DocTablePublishButton>
+          <DocTableEditButton variation="primary-plain" size="small" title="Edit document" onClick={() => props.push(`/${atbdsedit}/${atbd_id}/${drafts}/1/${identifying_information}`)}>Edit</DocTableEditButton>
+        </DocTableBodyTdActions>
+      </tr>
     );
   });
   return (
@@ -170,44 +197,6 @@ const AtbdList = (props) => {
                       </DropMenu>
                     </Dropdown>
                   </FilterItem>
-
-                  <FilterItem>
-                    <FilterLabel>Authors</FilterLabel>
-                    <Dropdown
-                      alignment="left"
-                      triggerElement={
-                        <FilterTrigger variation="achromic-plain" title="Toggle menu options">All</FilterTrigger>
-                      }
-                    >
-                      <DropTitle>Select author</DropTitle>
-                      <DropMenu role="menu" selectable>
-                        <li>
-                          <DropMenuItem active>All</DropMenuItem>
-                        </li>
-                        <li>
-                          <DropMenuItem>Lorem ipsum</DropMenuItem>
-                        </li>
-                      </DropMenu>
-                    </Dropdown>
-                  </FilterItem>
-
-                  <FilterItem>
-                    <FilterLabel>Sort</FilterLabel>
-                    <Dropdown
-                      alignment="left"
-                      triggerElement={
-                        <FilterTrigger variation="achromic-plain" title="Toggle menu options">Newest</FilterTrigger>
-                      }
-                    >
-                      <DropTitle>Sort by</DropTitle>
-                      <DropMenu role="menu" selectable>
-                        <li>
-                          <DropMenuItem active>Newest</DropMenuItem>
-                          <DropMenuItem>Other</DropMenuItem>
-                        </li>
-                      </DropMenu>
-                    </Dropdown>
-                  </FilterItem>
                 </InpageFilters>
 
                 <InpageToolbar>
@@ -221,19 +210,20 @@ const AtbdList = (props) => {
         </Sticky>
         <InpageBody>
           <InpageBodyInner>
-            <AtbdTable>
+            <DocTable>
               <thead>
                 <tr>
-                  <AtbdHeaderCell scope="col" />
-                  <AtbdHeaderCell scope="col" />
-                  <AtbdHeaderCell scope="col">Last Edit</AtbdHeaderCell>
-                  <AtbdHeaderCell scope="col">Authors</AtbdHeaderCell>
+                  <DocTableBodyThStatus scope="col"><span>Status</span></DocTableBodyThStatus>
+                  <th scope="col"><span>Title</span></th>
+                  <th scope="col"><span>Last Edit</span></th>
+                  <th scope="col"><span>Authors</span></th>
+                  <DocTableHeadThActions scope="col"><span>Actions</span></DocTableHeadThActions>
                 </tr>
               </thead>
               <tbody>
                 {atbdElements}
               </tbody>
-            </AtbdTable>
+            </DocTable>
           </InpageBodyInner>
         </InpageBody>
       </StickyContainer>
