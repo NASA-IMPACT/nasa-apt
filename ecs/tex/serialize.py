@@ -165,7 +165,10 @@ def processVarList(element):
 
 def processATBD(element):
     title = macroWrap('ATBDTitle', element['title'])
-    contacts = macroWrap('Contacts', processContacts(element['contacts']))
+    try:
+        contacts = macroWrap('Contacts', processContacts(element['contacts']))
+    except KeyError:
+        return [title]
     return [title, contacts]
 
 mapVars = {
