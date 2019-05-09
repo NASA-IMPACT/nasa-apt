@@ -20,6 +20,10 @@ def toCamelCase(snake_str):
     # with the 'title' method and join them together.
     return ''.join(x.title() for x in components)
 
+def toSpaceCase(snake_str):
+    components = snake_str.split('_')
+    return ' '.join(x.title() for x in components)
+
 def processTable(nodeRows):
     tableList = []
     for rows in nodeRows:
@@ -28,14 +32,13 @@ def processTable(nodeRows):
             for cell in row['nodes']:
                 for subcell in cell['nodes']:
                     for cellnode in subcell['leaves']:
-                        text = cellnode['text']
-                        tableList[-1].append(text)
+                        tableList[-1].append(cellnode['text'])
     columnNames = tableList.pop(0)
     df = pd.DataFrame(tableList, columns=columnNames)
     col_width = int(12/len(df.columns))
     col_format = 'p{' + str(col_width) + 'cm}'
     col_format *= len(df.columns)
-    latexTable = df.to_latex(index=False, column_format=col_format) + '\\\\ \\\\'
+    latexTable = df.to_latex(index=False, column_format=col_format)
     return latexTable
 
 def addMarkup(text, marks):
@@ -50,8 +53,13 @@ def addMarkup(text, marks):
     return text
 
 def preserveStyle(text):
-    return text.encode("unicode_escape").decode("utf-8").replace('\\n', '\\\\')
-
+    text = text.encode("unicode_escape").decode(
+        "utf-8").replace('\\n', '\\\\')
+    while (text[:2].strip() == '\\\\'):
+        text=text[2:]
+    while (text[-2:].strip() == '\\\\'):
+        text=text[:-2]
+    return text
 def processText(nodes):
     to_return = ''
     for node in nodes:
@@ -86,7 +94,8 @@ def wrapImage(img):
     '''
     return wrapper
 
-def processWYSIWYGElement(node):
+
+def processWYSIWYGElement(node, text_prepend=''):
     if node['type'] == 'table':
         return processTable(node['nodes'])
     elif node['type'] == 'table_cell':
@@ -100,25 +109,50 @@ def processWYSIWYGElement(node):
         return ' \\begin{equation} ' + \
             node['nodes'][0]['leaves'][0]['text'] + ' \\end{equation} '
     elif node['type'] == 'paragraph':
-        return processText(node['nodes'])
+        return text_prepend + processText(node['nodes'])
     else:
         print('oops! here with {}'.format(node))
 
-def processWYSIWYG(element):
+
+def processWYSIWYG(element, text_prepend=''):
     if debug:
         print('element in WYSIWYG is ' + str(element))
     to_return = ''
     for node in element['document']['nodes']:
-        to_return += processWYSIWYGElement(node)
+        returned = processWYSIWYGElement(node, text_prepend)
+        if returned: #ignore newlines at the beginning
+            to_return += returned
+            text_prepend = '\\\\\\\\'
     return to_return
 
 def accessURL(url):
     return f'\\textbf{{Access URL: }} {{{url}}} \\\\'
 
+def simpleList(name, item):
+    return f'\\textbf{{{toSpaceCase(name)}: }} {item} \\\\'
+
 def processImplementations(collection):
     return reduce((lambda x, y: x + y),
-                  list(map(lambda x: accessURL(x['access_url']) + f'\\textbf{{Description: }}' + processWYSIWYG(x['execution_description']) 
-                           + '\\\\', collection)), '')
+                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['execution_description']) + '\\\\' + simpleList('access_url', x['access_url']), collection)), '')
+
+def processDataAccess(collection):
+    return reduce((lambda x, y: x + y),
+                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['description']) + '\\\\' + simpleList('access_url', x['access_url']), collection)), '')
+
+def processContacts(collection):
+    allContacts = ''
+    for contact in collection:
+        if contact['middle_name'] is not None:
+            contactString = contact['first_name'] + ' ' + \
+                contact['middle_name'] + ' ' + contact['last_name']
+        else:
+            contactString = contact['first_name'] + ' ' + contact['last_name']
+        contactString += ' \\\\ '
+        contactString += simpleList('uuid', contact['uuid']) if contact['uuid'] is not None else ''
+        for attribute in ["contact_mechanism_type", "contact_mechanism_value"]:
+            contactString += simpleList(attribute, contact[attribute]) if contact[attribute] is not None else ''
+        allContacts += '\\subsection{} ' + contactString
+    return allContacts
 
 def processVarList(element):
     varDF = pd.DataFrame.from_dict(element, orient='columns')
@@ -126,8 +160,10 @@ def processVarList(element):
         columns=['long_name', 'unit'], header = ['\\textbf{{Name}}', '\\textbf{{Unit}}'])
     return latexDF
 
-def title(element):
-    return element['title']
+def processATBD(element):
+    title = macroWrap('ATBDTitle', element['title'])
+    contacts = macroWrap('Contacts', processContacts(element['contacts']))
+    return [title, contacts]
 
 mapVars = {
     'scientific_theory': processWYSIWYG,
@@ -136,14 +172,17 @@ mapVars = {
     'mathematical_theory_assumptions': processWYSIWYG,
     'algorithm_input_variables': processVarList,
     'algorithm_output_variables': processVarList,
-    'atbd': title,
+    'atbd': processATBD,
     'introduction': processWYSIWYG,
     'historical_perspective': processWYSIWYG,
     'algorithm_usage_constraints': processWYSIWYG,
     'performance_assessment_validation_methods': processWYSIWYG,
     'performance_assessment_validation_uncertainties': processWYSIWYG,
     'performance_assessment_validation_errors': processWYSIWYG,
-    'algorithm_implementations': processImplementations
+    'algorithm_implementations': processImplementations,
+    'data_access_input_data': processDataAccess,
+    'data_access_output_data': processDataAccess,
+    'data_access_related_url': processDataAccess
 }
 
 def processReferences(refs):
@@ -211,10 +250,11 @@ class ATBD:
     def texVariables (self):
         myJson = json.loads(open(self.filepath).read())
         processReferences(myJson.pop('publication_references'))
+        commands = processATBD(myJson.pop('atbd'))
         if debug:
             for item, value in myJson.items():
                 print('item: {}, value: {}'.format(item, value))
-        commands = [texify(x, y) for x,y in myJson.items() if x in mapVars.keys()]
+        commands += [texify(x, y) for x,y in myJson.items() if x in mapVars.keys()]
         if debug:
             print(commands)
         self.texVars = commands
