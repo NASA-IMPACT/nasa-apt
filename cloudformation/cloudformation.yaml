@@ -492,6 +492,7 @@ Resources:
           ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
           ECS_TASK_ROLE: !GetAtt TaskRole.Arn
           ATBD_BUCKET_NAME: !Ref AtbdBucketName
+          SCRIPTS_BUCKET_NAME: !Ref ScriptsBucketName
       Handler: index.handler
       Runtime: nodejs8.10
       Code:
@@ -512,7 +513,8 @@ Resources:
                     command: [
                       bucketName,
                       key,
-                      process.env.ATBD_BUCKET_NAME
+                      process.env.ATBD_BUCKET_NAME,
+                      process.env.SCRIPTS_BUCKET_NAME
                     ],
                     name: 'serialize'
                   }
