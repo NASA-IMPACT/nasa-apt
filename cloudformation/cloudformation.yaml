@@ -59,6 +59,10 @@ Parameters:
     Type: String
     Default: nasa-apt-figures
     Description: Bucket for storing ATBD figures.
+  ScriptsBucketName:
+    Type: String
+    Default: nasa-apt-scripts
+    Description: Bucket for storing scripts used by ECS Task images.
   DesiredCapacity:
     Type: Number
     Default: '2'
@@ -536,6 +540,7 @@ Resources:
       - LambdaInvokePermission
     Properties:
       BucketName: !Ref 'AtbdJsonBucketName'
+      AccessControl: PublicWrite
       NotificationConfiguration:
         LambdaConfigurations:
           -
@@ -678,6 +683,50 @@ Resources:
                   Ref: AtbdBucketName
                 - "/*"
 
+  ScriptsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref 'ScriptsBucketName'
+      AccessControl: PublicRead
+
+  ScriptsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: ScriptsBucketName
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - 's3:List*'
+              - 's3:Get*'
+            Effect: Allow
+            Principal:
+              AWS:
+                - '*'
+            Resource:
+              Fn::Join:
+                - ''
+                -
+                  - 'arn:aws:s3:::'
+                  -
+                    Ref: ScriptsBucketName
+                  - "/*"
+          -
+            Action:
+              - 's3:PutObject'
+              - 's3:PutObjectAcl'
+            Effect: Allow
+            Principal:
+              AWS: 'arn:aws:iam::552819999234:user/alyssa@developmentseed.org'
+            Resource:
+              Fn::Join:
+                - ''
+                -
+                  - 'arn:aws:s3:::'
+                  -
+                    Ref: ScriptsBucketName
+                  - "/*"
   TaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -916,6 +965,10 @@ Outputs:
     Value: !GetAtt WebsiteBucket.WebsiteURL
     Export:
       Name: !Sub '${AWS::StackName}-WebsiteURL'
+  ScriptsBucket:
+    Value: !Ref 'ScriptsBucket'
+    Export:
+      Name: !Sub '${AWS::StackName}-ScriptsBucket'
   PGConnection:
     Value: !Join ['', ['postgres://', 'masteruser', ':',
                        !Ref 'DBPassword', '@',
