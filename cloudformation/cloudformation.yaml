@@ -542,7 +542,7 @@ Resources:
       - LambdaInvokePermission
     Properties:
       BucketName: !Ref 'AtbdJsonBucketName'
-      AccessControl: PublicWrite
+      AccessControl: PublicReadWrite
       NotificationConfiguration:
         LambdaConfigurations:
           -
