@@ -1,4 +1,11 @@
 #!/bin/sh
+
+aws s3 cp s3://$4/serialize.py /app
+aws s3 cp s3://$4/ATBD.tex /app
+aws s3 cp s3://$4/supplemental_requirements.txt /app
+
+pip install -r supplemental_requirements.txt
+
 aws s3 cp s3://$1/$2 .
 
 if [ $? -eq 0 ]; then
@@ -10,7 +17,7 @@ fi
 texName=$(python3 serialize.py $2)
 
 if [ $? -eq 0 ]; then
-    echo 'Successfully wrote TeX file'$texName
+    echo 'Successfully wrote TeX file '$texName
 else
     echo 'Failed to write TeX file'
 fi

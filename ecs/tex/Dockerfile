@@ -9,5 +9,3 @@ COPY base_commands.sh /
 RUN ./base_commands.sh
 
 WORKDIR /app
-COPY serialize.py /app
-COPY ATBD.tex /app
