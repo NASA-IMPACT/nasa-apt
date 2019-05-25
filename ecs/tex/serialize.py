@@ -65,7 +65,7 @@ def preserveStyle(text):
     return text
 
 def escapeSpecialChars(text):
-    return text.replace('%', '\%').replace('&', '\&')
+    return text.replace('%', '\%').replace('&', '\&').replace('_', '\_')
 
 def processText(nodes):
     to_return = ''
