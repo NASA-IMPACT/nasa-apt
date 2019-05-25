@@ -51,19 +51,21 @@ def addMarkup(text, marks):
     return text
 
 def whiteSpaceStrip(text):
+    text = text.replace('\n', '\\\\')
     while (text[:2].strip() == '\\\\'):
         text = text[2:]
     while (text[-2:].strip() == '\\\\'):
         text = text[:-2]
-    text = text.encode("unicode_escape").decode(
-        "utf-8").replace('/', '\/')
+    text = text.replace('/', '\/')
     return text
 
 def preserveStyle(text):
     text = whiteSpaceStrip(text)
-    text = text.encode("unicode_escape").decode(
-        "utf-8").replace('\\n', '\\\\').replace('%', '\\%').replace('&', '\\&')
+    text = escapeSpecialChars(text)
     return text
+
+def escapeSpecialChars(text):
+    return text.replace('%', '\%').replace('&', '\&')
 
 def processText(nodes):
     to_return = ''
@@ -156,7 +158,7 @@ def simpleList(name, item):
     return f'\\textbf{{{toSpaceCase(name)}: }} {item} \\\\'
 
 def simpleListURLs(name, item):
-    return f'\\textbf{{{toSpaceCase(name)}: }} \\url{{{preserveStyle(item)}}} \\\\'
+    return f'\\textbf{{{toSpaceCase(name)}: }} \\url{{{escapeSpecialChars(item)}}} \\\\'
 
 def processImplementations(collection):
     return reduce((lambda x, y: x + y),
