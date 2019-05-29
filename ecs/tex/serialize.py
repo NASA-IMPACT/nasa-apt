@@ -193,9 +193,12 @@ def processContacts(collection):
 
 def processVarList(element):
     varDF = pd.DataFrame.from_dict(element, orient='columns')
-    latexDF = varDF.to_latex(index=False, bold_rows=True, escape=False, column_format='p{9cm} p{3cm}',
-        columns=['long_name', 'unit'], header = ['\\textbf{{Name}}', '\\textbf{{Unit}}'])
-    return latexDF
+    if not varDF.empty:
+        latexDF = varDF.to_latex(index=False, bold_rows=True, escape=False, column_format='p{9cm} p{3cm}',
+            columns=['long_name', 'unit'], header = ['\\textbf{{Name}}', '\\textbf{{Unit}}'])
+        return latexDF
+    else:
+        return ''
 
 def processATBD(element):
     title = macroWrap('ATBDTitle', element['title'])
