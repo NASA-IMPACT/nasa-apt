@@ -50,14 +50,22 @@ def addMarkup(text, marks):
             text= f'\\underline{{{text}}}'
     return text
 
-def preserveStyle(text):
-    text = text.encode("unicode_escape").decode(
-        "utf-8").replace('\\n', '\\\\')
+def whiteSpaceStrip(text):
+    text = text.replace('\n', '\\\\')
     while (text[:2].strip() == '\\\\'):
-        text=text[2:]
+        text = text[2:]
     while (text[-2:].strip() == '\\\\'):
-        text=text[:-2]
+        text = text[:-2]
+    text = text.replace('/', '\/')
     return text
+
+def preserveStyle(text):
+    text = whiteSpaceStrip(text)
+    text = escapeSpecialChars(text)
+    return text
+
+def escapeSpecialChars(text):
+    return text.replace('%', '\%').replace('&', '\&').replace('_', '\_')
 
 def processText(nodes):
     to_return = ''
@@ -149,17 +157,20 @@ def accessURL(url):
 def simpleList(name, item):
     return f'\\textbf{{{toSpaceCase(name)}: }} {item} \\\\'
 
+def simpleListURLs(name, item):
+    return f'\\textbf{{{toSpaceCase(name)}: }} \\url{{{escapeSpecialChars(item)}}} \\\\'
+
 def processImplementations(collection):
     return reduce((lambda x, y: x + y),
-                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['execution_description']) + '\\\\' + simpleList('access_url', x['access_url']), collection)), '')
+                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['execution_description']) + '\\\\' + simpleListURLs('access_url', x['access_url']), collection)), '')
 
 def processDataAccess(collection):
     return reduce((lambda x, y: x + y),
-                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['description']) + '\\\\' + simpleList('access_url', x['access_url']), collection)), '')
+                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['description']) + '\\\\' + simpleListURLs('access_url', x['access_url']), collection)), '')
 
 def processDataAccessURL(collection):
     return reduce((lambda x, y: x + y),
-                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['description']) + '\\\\' + simpleList('URL', x['url']), collection)), '')
+                  list(map(lambda x: '\\subsection {}' + processWYSIWYG(x['description']) + '\\\\' + simpleListURLs('URL', x['url']), collection)), '')
 
 def processContacts(collection):
     allContacts = ''
@@ -171,7 +182,7 @@ def processContacts(collection):
             contactString = contact['first_name'] + ' ' + contact['last_name']
         contactString += ' \\\\ '
         contactString += simpleList('uuid', contact['uuid']) if contact['uuid'] else ''
-        contactString += simpleList('url',
+        contactString += simpleListURLs('url',
                                     contact['url']) if contact['url'] else ''
         if 'mechanisms' in contact:
             contactString += '\\subsubsection{Contact Mechanisms}'
