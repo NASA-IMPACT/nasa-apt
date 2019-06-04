@@ -83,7 +83,7 @@ const DocTableBodyTdAuthors = styled.td`
   > span {
     ${truncated};
     display: block;
-    max-width: 8rem;
+    max-width: 12rem;
   }
 `;
 
@@ -140,7 +140,11 @@ const AtbdList = (props) => {
   } = props;
 
   const atbdElements = atbds.map((atbd) => {
-    const { atbd_id, title, atbd_versions } = atbd;
+    const { atbd_id, title, atbd_versions, contacts } = atbd;
+    let contact = ''
+    if (contacts[0] !== undefined){
+      contact = contacts[0].first_name + ' ' + contacts[0].last_name
+    }
     const { status } = atbd_versions[0];
     return (
       <tr key={atbd_id}>
@@ -149,8 +153,7 @@ const AtbdList = (props) => {
           <strong>{title}</strong>
           { false && <AtbdVersion>Version 1.0</AtbdVersion> }
         </DocTableBodyThTitle>
-        <td><span>2 hours ago</span></td>
-        <DocTableBodyTdAuthors><span>Author Name</span></DocTableBodyTdAuthors>
+        <DocTableBodyTdAuthors><span>{contact}</span></DocTableBodyTdAuthors>
         <DocTableBodyTdActions>
           <AtbdPreview
             atbd_id={atbd_id}
@@ -215,7 +218,6 @@ const AtbdList = (props) => {
                 <tr>
                   <DocTableBodyThStatus scope="col"><span>Status</span></DocTableBodyThStatus>
                   <th scope="col"><span>Title</span></th>
-                  <th scope="col"><span>Last Edit</span></th>
                   <th scope="col"><span>Authors</span></th>
                   <DocTableHeadThActions scope="col"><span>Actions</span></DocTableHeadThActions>
                 </tr>
