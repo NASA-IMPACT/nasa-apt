@@ -144,10 +144,12 @@ const AtbdList = (props) => {
   } = props;
 
   const atbdElements = atbds.map((atbd) => {
-    const { atbd_id, title, atbd_versions, contacts } = atbd;
-    let contact = ''
-    if (contacts[0] !== undefined){
-      contact = contacts[0].first_name + ' ' + contacts[0].last_name
+    const {
+      atbd_id, title, atbd_versions, contacts
+    } = atbd;
+    let contact = '';
+    if (contacts[0] !== undefined) {
+      contact = `${contacts[0].first_name} ${contacts[0].last_name}`;
     }
     const { status } = atbd_versions[0];
     return (
