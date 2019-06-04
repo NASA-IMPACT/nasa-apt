@@ -65,13 +65,17 @@ const DocTable = styled(Table)`
   }
 `;
 
+const DocTableHeadThTitle = styled.th`
+  width: 100%;
+`;
+
 const DocTableHeadThActions = styled.th`
   > span {
     ${visuallyHidden};
   }
 `;
 
-const DocTableBodyThStatus = styled.th`
+const DocTableHeadThStatus = styled.th`
   max-width: 10rem;
 `;
 
@@ -216,8 +220,8 @@ const AtbdList = (props) => {
             <DocTable>
               <thead>
                 <tr>
-                  <DocTableBodyThStatus scope="col"><span>Status</span></DocTableBodyThStatus>
-                  <th scope="col"><span>Title</span></th>
+                  <DocTableHeadThStatus scope="col"><span>Status</span></DocTableHeadThStatus>
+                  <DocTableHeadThTitle scope="col"><span>Title</span></DocTableHeadThTitle>
                   <th scope="col"><span>Authors</span></th>
                   <DocTableHeadThActions scope="col"><span>Actions</span></DocTableHeadThActions>
                 </tr>
