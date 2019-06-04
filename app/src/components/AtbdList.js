@@ -88,7 +88,7 @@ const DocTableBodyTdAuthors = styled.td`
 `;
 
 const DocTableBodyTdActions = styled.td`
-  text-align: right;
+  text-align: right !important;
 
   > *:not(:first-child) {
     margin-left: 0.5rem;
