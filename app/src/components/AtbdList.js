@@ -157,7 +157,7 @@ const AtbdList = (props) => {
           <strong>{title}</strong>
           { false && <AtbdVersion>Version 1.0</AtbdVersion> }
         </DocTableBodyThTitle>
-        <DocTableBodyTdAuthors><span>{contact}</span></DocTableBodyTdAuthors>
+        <DocTableBodyTdAuthors title={contact}><span>{contact}</span></DocTableBodyTdAuthors>
         <DocTableBodyTdActions>
           <AtbdPreview
             atbd_id={atbd_id}
