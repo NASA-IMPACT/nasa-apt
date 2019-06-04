@@ -65,13 +65,17 @@ const DocTable = styled(Table)`
   }
 `;
 
+const DocTableHeadThTitle = styled.th`
+  width: 100%;
+`;
+
 const DocTableHeadThActions = styled.th`
   > span {
     ${visuallyHidden};
   }
 `;
 
-const DocTableBodyThStatus = styled.th`
+const DocTableHeadThStatus = styled.th`
   max-width: 10rem;
 `;
 
@@ -83,12 +87,12 @@ const DocTableBodyTdAuthors = styled.td`
   > span {
     ${truncated};
     display: block;
-    max-width: 8rem;
+    max-width: 12rem;
   }
 `;
 
 const DocTableBodyTdActions = styled.td`
-  text-align: right;
+  text-align: right !important;
 
   > *:not(:first-child) {
     margin-left: 0.5rem;
@@ -140,7 +144,13 @@ const AtbdList = (props) => {
   } = props;
 
   const atbdElements = atbds.map((atbd) => {
-    const { atbd_id, title, atbd_versions } = atbd;
+    const {
+      atbd_id, title, atbd_versions, contacts
+    } = atbd;
+    let contact = '';
+    if (contacts[0] !== undefined) {
+      contact = `${contacts[0].first_name} ${contacts[0].last_name}`;
+    }
     const { status } = atbd_versions[0];
     return (
       <tr key={atbd_id}>
@@ -149,8 +159,7 @@ const AtbdList = (props) => {
           <strong>{title}</strong>
           { false && <AtbdVersion>Version 1.0</AtbdVersion> }
         </DocTableBodyThTitle>
-        <td><span>2 hours ago</span></td>
-        <DocTableBodyTdAuthors><span>Author Name</span></DocTableBodyTdAuthors>
+        <DocTableBodyTdAuthors title={contact}><span>{contact}</span></DocTableBodyTdAuthors>
         <DocTableBodyTdActions>
           <AtbdPreview
             atbd_id={atbd_id}
@@ -213,9 +222,8 @@ const AtbdList = (props) => {
             <DocTable>
               <thead>
                 <tr>
-                  <DocTableBodyThStatus scope="col"><span>Status</span></DocTableBodyThStatus>
-                  <th scope="col"><span>Title</span></th>
-                  <th scope="col"><span>Last Edit</span></th>
+                  <DocTableHeadThStatus scope="col"><span>Status</span></DocTableHeadThStatus>
+                  <DocTableHeadThTitle scope="col"><span>Title</span></DocTableHeadThTitle>
                   <th scope="col"><span>Authors</span></th>
                   <DocTableHeadThActions scope="col"><span>Actions</span></DocTableHeadThActions>
                 </tr>
