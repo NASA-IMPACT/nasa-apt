@@ -32,11 +32,9 @@ def processTable(nodeRows):
             for cell in row['nodes']:
                 tableList[-1].append(processWYSIWYGElement(cell)[0])
     columnNames = tableList.pop(0)
+    pd.set_option('display.max_colwidth', 1000)
     df = pd.DataFrame(tableList, columns=columnNames)
-    col_width = int(12/len(df.columns))
-    col_format = 'p{' + str(col_width) + 'cm}'
-    col_format *= len(df.columns)
-    latexTable = df.to_latex(index=False, column_format=col_format, escape=False)
+    latexTable = df.to_latex(index=False, escape=False)
     return latexTable
 
 def addMarkup(text, marks):
