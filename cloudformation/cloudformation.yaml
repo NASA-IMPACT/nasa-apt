@@ -49,19 +49,19 @@ Parameters:
                  assigned to different paths on the load balancer.
   AtbdJsonBucketName:
     Type: String
-    Default: nasa-apt-json
+    Default: json
     Description: Bucket for sending ATBD json.
   AtbdBucketName:
     Type: String
-    Default: nasa-apt-atbd
+    Default: atbd
     Description: Bucket for output ATBDs.
   FiguresBucketName:
     Type: String
-    Default: nasa-apt-figures
+    Default: figures
     Description: Bucket for storing ATBD figures.
   ScriptsBucketName:
     Type: String
-    Default: nasa-apt-scripts
+    Default: scripts
     Description: Bucket for storing scripts used by ECS Task images.
   DesiredCapacity:
     Type: Number
@@ -317,7 +317,7 @@ Resources:
         - FARGATE
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
-        - Name: 'postgrest'
+        - Name: !Sub '${AWS::StackName}-postgrest'
           Cpu: !Ref 'PostgrestContainerCpu'
           Memory: !Ref 'PostgrestContainerMemory'
           Image: postgrest/postgrest
@@ -345,7 +345,7 @@ Resources:
     Type: AWS::ECS::Service
     DependsOn: LoadBalancerRule
     Properties:
-      ServiceName: postgrest
+      ServiceName: !Sub '${AWS::StackName}-postgrest'
       Cluster: !Ref ECSCluster
       LaunchType: FARGATE
       DeploymentConfiguration:
@@ -380,7 +380,7 @@ Resources:
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
       TargetType: ip
-      Name: postgrest
+      Name: !Sub '${AWS::StackName}-postgrest'
       Port: 3000
       Protocol: HTTP
       UnhealthyThresholdCount: 2
@@ -403,7 +403,7 @@ Resources:
   FiguresBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Ref 'FiguresBucketName'
+      BucketName: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'FiguresBucketName']]
       CorsConfiguration:
         CorsRules:
           - AllowedMethods:
@@ -491,8 +491,8 @@ Resources:
           SECURITY_GROUP: !Ref FargateContainerSecurityGroup
           ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
           ECS_TASK_ROLE: !GetAtt TaskRole.Arn
-          ATBD_BUCKET_NAME: !Ref AtbdBucketName
-          SCRIPTS_BUCKET_NAME: !Ref ScriptsBucketName
+          ATBD_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', !Ref 'AtbdBucketName']]
+          SCRIPTS_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', !Ref 'ScriptsBucketName']]
       Handler: index.handler
       Runtime: nodejs8.10
       Code:
@@ -532,7 +532,7 @@ Resources:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref AtbdJsonBucketLambda
       Principal: 's3.amazonaws.com'
-      SourceArn: !Sub 'arn:aws:s3:::${AtbdJsonBucketName}'
+      SourceArn: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'AtbdJsonBucketName']]
 
   # ATBD json bucket
   AtbdJsonBucket:
@@ -541,7 +541,7 @@ Resources:
       - AtbdJsonBucketLambda
       - LambdaInvokePermission
     Properties:
-      BucketName: !Ref 'AtbdJsonBucketName'
+      BucketName: !Join ['', [!Ref 'AWS::StackName', !Ref 'AtbdJsonBucketName']]
       AccessControl: PublicReadWrite
       NotificationConfiguration:
         LambdaConfigurations:
@@ -563,7 +563,7 @@ Resources:
           SECURITY_GROUP: !Ref FargateContainerSecurityGroup
           ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
           ECS_TASK_ROLE: !GetAtt TaskRole.Arn
-          ATBD_BUCKET_NAME: !Ref AtbdBucketName
+          ATBD_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', !Ref 'AtbdBucketName']]
       Handler: index.handler
       Runtime: nodejs8.10
       Code:
@@ -624,7 +624,7 @@ Resources:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref AtbdBucketLambda
       Principal: 's3.amazonaws.com'
-      SourceArn: !Sub 'arn:aws:s3:::${AtbdBucketName}'
+      SourceArn: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'AtbdBucketName']]
 
   AtbdBucket:
     Type: AWS::S3::Bucket
@@ -632,7 +632,7 @@ Resources:
       #- AtbdBucketLambda
       #- AtbdBucketLambdaInvokePermission
     Properties:
-      BucketName: !Ref 'AtbdBucketName'
+      BucketName: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
       AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html
@@ -664,7 +664,7 @@ Resources:
     Type: AWS::S3::BucketPolicy
     Properties:
       Bucket:
-        Ref: AtbdBucketName
+        Ref: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
       PolicyDocument:
         Statement:
           Action:
@@ -676,26 +676,19 @@ Resources:
           Principal:
             AWS:
               - '*'
-          Resource:
-            Fn::Join:
-              - ''
-              -
-                - 'arn:aws:s3:::'
-                -
-                  Ref: AtbdBucketName
-                - "/*"
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'AtbdBucketName', '/*']]
 
   ScriptsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Ref 'ScriptsBucketName'
+      BucketName: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
       AccessControl: PublicRead
 
   ScriptsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
       Bucket:
-        Ref: ScriptsBucketName
+        Ref: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
       PolicyDocument:
         Statement:
           -
@@ -706,14 +699,7 @@ Resources:
             Principal:
               AWS:
                 - '*'
-            Resource:
-              Fn::Join:
-                - ''
-                -
-                  - 'arn:aws:s3:::'
-                  -
-                    Ref: ScriptsBucketName
-                  - "/*"
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'ScriptsBucketName', '/*']]
           -
             Action:
               - 's3:PutObject'
@@ -722,13 +708,7 @@ Resources:
             Principal:
               AWS: 'arn:aws:iam::552819999234:user/alyssa@developmentseed.org'
             Resource:
-              Fn::Join:
-                - ''
-                -
-                  - 'arn:aws:s3:::'
-                  -
-                    Ref: ScriptsBucketName
-                  - "/*"
+              Fn::Join: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'ScriptsBucketName', '/*']]
   TaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -746,12 +726,12 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: 's3:PutObject*'
-                Resource: !Sub 'arn:aws:s3:::${AtbdBucketName}*'
+                Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'ScriptsBucketName']]
 
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: /ecs/nasa-apt-tasks
+      LogGroupName: !Join ['', ['ecs/', !Ref 'AWS::StackName', '/tasks']]
 
   SerializeTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -819,32 +799,6 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: htmltask
 
-  WebsiteBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: nasa-apt-application
-      AccessControl: PublicRead
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: index.html
-  WebsiteBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket:
-        Ref: WebsiteBucket
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Sid: PublicReadForGetBucketObjects
-            Effect: Allow
-            Principal: '*'
-            Action: 's3:GetObject'
-            Resource: !Join
-              - ''
-              -
-                - 'arn:aws:s3:::'
-                - !Ref WebsiteBucket
-                - /*
   # Autoscaling group. This launches the actual EC2 instances that will register
   # themselves as members of the cluster, and run the docker containers.
   ECSAutoScalingGroup:
@@ -944,31 +898,19 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-S3Endpoint'
   AtbdJsonBucket:
-    Value: !Ref 'AtbdJsonBucketName'
+    Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdJsonBucketName']]
     Export:
       Name: !Sub '${AWS::StackName}-AtbdJsonBucket'
   AtbdBucket:
-    Value: !Ref 'AtbdBucketName'
+    Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucket'
-  AtbdBucketWebsite:
-    Value: !GetAtt AtbdBucket.WebsiteURL
-    Export:
-      Name: !Sub '${AWS::StackName}-AtbdBucketWebsite'
   FiguresBucket:
-    Value: !Ref 'FiguresBucket'
+    Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'FirguresBucketName']]
     Export:
       Name: !Sub '${AWS::StackName}-FiguresBucket'
-  WebsiteBucket:
-    Value: 's3://nasa-apt-application'
-    Export:
-      Name: !Sub '${AWS::StackName}-WebsiteBucket'
-  WebsiteURL:
-    Value: !GetAtt WebsiteBucket.WebsiteURL
-    Export:
-      Name: !Sub '${AWS::StackName}-WebsiteURL'
   ScriptsBucket:
-    Value: !Ref 'ScriptsBucket'
+    Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
     Export:
       Name: !Sub '${AWS::StackName}-ScriptsBucket'
   PGConnection:
