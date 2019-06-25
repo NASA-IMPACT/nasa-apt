@@ -420,8 +420,7 @@ Resources:
   FiguresBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket:
-        Ref: FiguresBucket
+      Bucket: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'FiguresBucketName', '/*']]
       PolicyDocument:
         Statement:
           Action:
@@ -433,14 +432,7 @@ Resources:
           Principal:
             AWS:
               - '*'
-          Resource:
-            Fn::Join:
-              - ''
-              -
-                - 'arn:aws:s3:::'
-                -
-                  Ref: FiguresBucket
-                - "/*"
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'FiguresBucketName', '/*']]
 
   LambdaRole:
     Type: AWS::IAM::Role
@@ -491,8 +483,8 @@ Resources:
           SECURITY_GROUP: !Ref FargateContainerSecurityGroup
           ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
           ECS_TASK_ROLE: !GetAtt TaskRole.Arn
-          ATBD_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', !Ref 'AtbdBucketName']]
-          SCRIPTS_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', !Ref 'ScriptsBucketName']]
+          ATBD_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
+          SCRIPTS_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
       Handler: index.handler
       Runtime: nodejs8.10
       Code:
@@ -532,7 +524,7 @@ Resources:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref AtbdJsonBucketLambda
       Principal: 's3.amazonaws.com'
-      SourceArn: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'AtbdJsonBucketName']]
+      SourceArn: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'AtbdJsonBucketName']]
 
   # ATBD json bucket
   AtbdJsonBucket:
@@ -541,7 +533,7 @@ Resources:
       - AtbdJsonBucketLambda
       - LambdaInvokePermission
     Properties:
-      BucketName: !Join ['', [!Ref 'AWS::StackName', !Ref 'AtbdJsonBucketName']]
+      BucketName: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdJsonBucketName']]
       AccessControl: PublicReadWrite
       NotificationConfiguration:
         LambdaConfigurations:
@@ -563,7 +555,7 @@ Resources:
           SECURITY_GROUP: !Ref FargateContainerSecurityGroup
           ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
           ECS_TASK_ROLE: !GetAtt TaskRole.Arn
-          ATBD_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', !Ref 'AtbdBucketName']]
+          ATBD_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
       Handler: index.handler
       Runtime: nodejs8.10
       Code:
@@ -624,7 +616,7 @@ Resources:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref AtbdBucketLambda
       Principal: 's3.amazonaws.com'
-      SourceArn: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'AtbdBucketName']]
+      SourceArn: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
 
   AtbdBucket:
     Type: AWS::S3::Bucket
@@ -663,8 +655,7 @@ Resources:
   AtbdBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket:
-        Ref: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
+      Bucket: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
       PolicyDocument:
         Statement:
           Action:
@@ -676,7 +667,7 @@ Resources:
           Principal:
             AWS:
               - '*'
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'AtbdBucketName', '/*']]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName', '/*']]
 
   ScriptsBucket:
     Type: AWS::S3::Bucket
@@ -687,8 +678,7 @@ Resources:
   ScriptsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket:
-        Ref: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
+      Bucket: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
       PolicyDocument:
         Statement:
           -
@@ -707,8 +697,7 @@ Resources:
             Effect: Allow
             Principal:
               AWS: 'arn:aws:iam::552819999234:user/alyssa@developmentseed.org'
-            Resource:
-              Fn::Join: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'ScriptsBucketName', '/*']]
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName', '/*']]
   TaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -906,7 +895,7 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucket'
   FiguresBucket:
-    Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'FirguresBucketName']]
+    Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'FiguresBucketName']]
     Export:
       Name: !Sub '${AWS::StackName}-FiguresBucket'
   ScriptsBucket:
