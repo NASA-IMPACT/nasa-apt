@@ -675,29 +675,21 @@ Resources:
       BucketName: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
       AccessControl: PublicRead
 
-  # ScriptsBucketPolicy:
-    # Type: AWS::S3::BucketPolicy
-    # Properties:
-      # Bucket: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']] 
-      # PolicyDocument:
-        # Statement:
-          # -
-            # Action:
-              # - 's3:List*'
-              # - 's3:Get*'
-            # Effect: Allow
-            # Principal:
-              # AWS:
-                # - '*'
-            # Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName', '/*']]
-          # -
-            # Action:
-              # - 's3:PutObject'
-              # - 's3:PutObjectAcl'
-            # Effect: Allow
-            # Principal:
-              # AWS: 'arn:aws:iam::552819999234:user/alyssa@developmentseed.org'
-            # Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName', '/*']]
+  ScriptsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']] 
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - 's3:List*'
+              - 's3:Get*'
+            Effect: Allow
+            Principal:
+              AWS:
+                - '*'
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName', '/*']]
   TaskRole:
     Type: AWS::IAM::Role
     Properties:
