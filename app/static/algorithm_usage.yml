@@ -1,4 +1,0 @@
-constraints: Description of constraints or limitations on use of the algorithm output data.
-validation_methods: Description of the scientific methods utilized for algorithm validation. Details provided should match the current algorithms maturity.
-validation_uncertainties: Description of errors applicable to the validation method. This may include uncertainty in scientific or mathematical methods and/or errors associated with observation retrievals.
-validation_errors: Results of the algorithm validation including statistical relations between the algorithm output and the implemented validation.
