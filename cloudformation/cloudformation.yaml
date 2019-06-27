@@ -678,7 +678,7 @@ Resources:
   ScriptsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']] 
+      Bucket: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
       PolicyDocument:
         Statement:
           -
