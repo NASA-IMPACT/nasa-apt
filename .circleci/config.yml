@@ -22,9 +22,11 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "${DEVELOPMENT_BRANCH}" ]; then
               aws s3 cp ~/repo/ecs/tex/ATBD.tex s3://nasa-apt-staging-scripts/ATBD.tex
               aws s3 cp ~/repo/ecs/tex/serialize.py s3://nasa-apt-staging-scripts/serialize.py
+              aws s3 cp ~/repo/ecs/tex/supplemental_requirements.txt s3://nasa-apt-staging-scripts/supplemental_requirements.txt
             elif [ "${CIRCLE_BRANCH}" == "${PRODUCTION_BRANCH}" ]; then
               aws s3 cp ~/repo/ecs/tex/ATBD.tex s3://nasa-apt-production-scripts/ATBD.tex
               aws s3 cp ~/repo/ecs/text/serialize.py s3://nasa-apt-production-scripts/serialize.py
+              aws s3 cp ~/repo/ecs/tex/supplemental_requirements.txt s3://nasa-apt-production-scripts/supplemental_requirements.txt
             else
               echo "Not the branch you're looking for, skipping deploy"
             fi
