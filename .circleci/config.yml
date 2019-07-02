@@ -1,0 +1,28 @@
+version: 2
+jobs:
+  deploy:
+    docker:
+      - image: circleci/python:2.7-jessie
+
+    environment:
+      - DEVELOPMENT_BRANCH: splitRepos
+      - PRODUCTION_BRANCH: master
+
+    working_directory: ~/repo/ecs/tex
+
+    steps:
+      - run:
+          name: Install awscli
+          command: sudo pip install awscli
+      - run:
+          name: Deploy to S3
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "${DEVELOPMENT_BRANCH}" ]; then
+              aws s3 cp ATBD.tex s3://nasa-apt-staging-scripts/ATBD.tex
+              aws s3 cp serialize.py s3://nasa-apt-staging-scripts/serialize.py
+            elif [ "${CIRCLE_BRANCH}" == "${PRODUCTION_BRANCH}" ]; then
+              aws s3 cp ATBD.tex s3://nasa-apt-production-scripts/ATBD.tex
+              aws s3 cp serialize.py s3://nasa-apt-production-scripts/serialize.py
+            else
+              echo "Not the branch you're looking for, skipping deploy"
+            fi
