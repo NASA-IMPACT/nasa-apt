@@ -535,6 +535,17 @@ Resources:
     Properties:
       BucketName: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdJsonBucketName']]
       AccessControl: PublicReadWrite
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods:
+              - GET
+              - HEAD
+              - PUT
+              - POST
+            AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
       NotificationConfiguration:
         LambdaConfigurations:
           -
