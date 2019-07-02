@@ -8,7 +8,7 @@ jobs:
       - DEVELOPMENT_BRANCH: splitRepos
       - PRODUCTION_BRANCH: master
 
-    working_directory: ~/repo/ecs/tex
+    working_directory: ~/repo
 
     steps:
       - run:
@@ -18,11 +18,11 @@ jobs:
           name: Deploy to S3
           command: |
             if [ "${CIRCLE_BRANCH}" == "${DEVELOPMENT_BRANCH}" ]; then
-              aws s3 cp ATBD.tex s3://nasa-apt-staging-scripts/ATBD.tex
-              aws s3 cp serialize.py s3://nasa-apt-staging-scripts/serialize.py
+              aws s3 cp ~/repo/ecs/tex/ATBD.tex s3://nasa-apt-staging-scripts/ATBD.tex
+              aws s3 cp ~/repo/ecs/tex/serialize.py s3://nasa-apt-staging-scripts/serialize.py
             elif [ "${CIRCLE_BRANCH}" == "${PRODUCTION_BRANCH}" ]; then
-              aws s3 cp ATBD.tex s3://nasa-apt-production-scripts/ATBD.tex
-              aws s3 cp serialize.py s3://nasa-apt-production-scripts/serialize.py
+              aws s3 cp ~/repo/ecs/tex/ATBD.tex s3://nasa-apt-production-scripts/ATBD.tex
+              aws s3 cp ~/repo/ecs/text/serialize.py s3://nasa-apt-production-scripts/serialize.py
             else
               echo "Not the branch you're looking for, skipping deploy"
             fi
