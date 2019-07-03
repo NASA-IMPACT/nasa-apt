@@ -46,6 +46,10 @@ def addMarkup(text, marks):
             text= f'\\textbf{{{text}}}'
         elif markupType == 'underline':
             text= f'\\underline{{{text}}}'
+        elif markupType == 'subscript':
+            text = f'\\textsubscript{{{text}}}'
+        elif markupType == 'superscript':
+            text = f'\\textsuperscript{{{text}}}'
     return text
 
 def whiteSpaceStrip(text):
