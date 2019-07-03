@@ -5,7 +5,7 @@ jobs:
       - image: circleci/python:2.7-jessie
 
     environment:
-      - DEVELOPMENT_BRANCH: splitRepos
+      - DEVELOPMENT_BRANCH: develop
       - PRODUCTION_BRANCH: master
 
     working_directory: ~/repo
