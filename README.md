@@ -16,6 +16,7 @@ Followed by
 ```
 ./startserver.sh
 ```
+This will take 10-12 seconds for the server instance to spin up before the API is available.
 
 This will create a test instance of the DB with data loaded, the API and some
 stubbed versions of supporting services.
