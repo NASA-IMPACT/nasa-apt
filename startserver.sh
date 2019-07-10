@@ -1,5 +1,7 @@
 #!/bin/bash
 docker-compose stop
+docker-compose rm -f
+docker rmi nasa_apt_db
 docker-compose build --no-cache
 docker-compose up & while ! nc -z localhost 4572; do sleep 1; done;
 sleep 10;
