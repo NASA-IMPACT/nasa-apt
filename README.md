@@ -8,12 +8,14 @@ Code and issues relevant to the NASA APT project
 The project API is built using [Postgrest](https://github.com/PostgREST/postgrest).
 
 To create a test instance of the database and API with `docker-compose` run
-
-`docker-compose build`<br/>
+```
+docker-compose build
+```
 
 Followed by
-
-`./startserver.sh`<br/>
+```
+./startserver.sh
+```
 
 This will create a test instance of the DB with data loaded, the API and some
 stubbed versions of supporting services.
@@ -28,21 +30,21 @@ You can find a nice outline of managing Postgres migrations with Sqitch [here](h
 This project uses a Sqitch Docker image referencing some local files in order to manage migrations.
 As an example, to add a table we could run the following from the project root.
 
-To move to the `db` directory.
-
-`cd db`<br/>
-
 To create a Sqitch `change`
+```
+cd db
+./sqitch add somechange -n 'Change the database in some way'
+```
 
-`./sqitch add somechange -n 'Change the database in some way'`<br/>
-
-This creates new empty `sql` scripts in the `deploy`, `revert and `verify` directories.
+This creates new empty `sql` scripts in the `deploy`, `revert` and `verify` directories.
 You can then update the `somechange.sql` script in the `deploy` directory with the necessary change.
 See the Sqitch [documentation](https://sqitch.org/docs/manual/sqitchtutorial) for more details on change dependencies and validation.
 
-To update your local environment with the new database changes you need to re-run (note that this will remove any new data stored in your local development database.)
-
-`./startserver.sh`<br/>
+To update your local environment with the new database changes you need to re-run 
+```
+./startserver.sh
+```
+(note that this will remove any new data stored in your local development database.)
 
 ## Deploying to AWS
 To deploy the AWS infrastructure for the application you will need an
@@ -50,9 +52,10 @@ installation of the [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/c
 with credentials which allow creating all the stack resources.
 
 To deploy the AWS infrastructure from the root directory run
-
-`cd cloudformation`<br/>
-`./deploy.sh`<br/>
+```
+cd cloudformation
+./deploy.sh
+```
 
 You will be prompted for a stack name and a master db password.  The current
 stacks are `nasa-apt-staging` and `nasa-apt-production`.
@@ -61,9 +64,10 @@ After the stack has been successfully deployed you can create the database table
 You will need an installation of the `psql` command line client.  You may also
 need to update the RDS instance's security policy to allow inbound traffic from the IP address of the machine where you are executing the deployment.
 To create the schema and tables in the AWS RDS from the project root run
-
-`cd db`<br/>
-`./sqitch deploy --verify db:pg://{yourmasteruser}:{yourmasterpassword}@{yourRDSendpoint}:5432/nasadb`<br/>
+```
+cd db
+./sqitch deploy --verify db:pg://{yourmasteruser}:{yourmasterpassword}@{yourRDSendpoint}:5432/nasadb
+```
 
 Because of PostgREST's schema reloading [model](http://postgrest.org/en/v5.2/admin.html#schema-reloading) some underlying database changes may require a restart of the PostgREST ECS instances to reflect the changes.
 
