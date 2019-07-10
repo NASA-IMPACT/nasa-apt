@@ -3,7 +3,7 @@
 ## Local development
 Code and issues relevant to the NASA APT project
 
-[![CircleCI](https://circleci.com/gh/developmentseed/nasa-apt/tree/master.svg?style=svg)](https://circleci.com/gh/developmentseed/nasa-apt/tree/master)
+[![CircleCI](https://circleci.com/gh/developmentseed/nasa-apt/tree/develop.svg?style=svg&circle-token=ffc901ab7ce00ffa5cef07cce59ff64a2c635d2b)](https://circleci.com/gh/developmentseed/nasa-apt/tree/develop)
 
 The project API is built using [Postgrest](https://github.com/PostgREST/postgrest).
 
