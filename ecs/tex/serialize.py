@@ -330,4 +330,6 @@ def createLatex(args):
     texFile = newTex.filewrite()
     print(texFile)
 
-createLatex(sys.argv[1])
+
+if __name__ == '__main__':
+    createLatex(sys.argv[1])
