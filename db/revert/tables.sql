@@ -5,7 +5,7 @@ DROP TABLE apt.data_access_related_urls;
 DROP TABLE apt.data_access_output_data;
 DROP TABLE apt.data_access_input_data;
 DROP TABLE apt.publication_references;
-DROP TABLE apt.algorithm_implementation;
+DROP TABLE apt.algorithm_implementations;
 DROP TABLE apt.algorithm_output_variables;
 DROP TABLE apt.algorithm_input_variables;
 DROP TABLE apt.citations;
