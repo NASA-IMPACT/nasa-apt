@@ -34,7 +34,7 @@ As an example, to add a table we could run the following from the project root.
 To create a Sqitch `change`
 ```
 cd db
-./sqitch add somechange -n 'Change the database in some way'
+./sqitch add somechange --requires previouschange -n 'Change the database in some way'
 ```
 
 This creates new empty `sql` scripts in the `deploy`, `revert` and `verify` directories.
