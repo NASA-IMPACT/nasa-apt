@@ -41,7 +41,7 @@ This creates new empty `sql` scripts in the `deploy`, `revert` and `verify` dire
 You can then update the `somechange.sql` script in the `deploy` directory with the necessary change.
 See the Sqitch [documentation](https://sqitch.org/docs/manual/sqitchtutorial) for more details on change dependencies and validation.
 
-To update your local environment with the new database changes you need to re-run 
+To update your local environment with the new database changes you need to re-run
 ```
 ./startserver.sh
 ```
