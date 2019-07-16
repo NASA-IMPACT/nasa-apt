@@ -1,40 +1,32 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
 version: 2
 jobs:
   build:
-    working_directory: ~/repo/app
     docker:
-      - image: circleci/node:8
+      - image: circleci/python:2.7-jessie
+
+    environment:
+      - DEVELOPMENT_BRANCH: develop
+      - PRODUCTION_BRANCH: master
+
+    working_directory: ~/repo
+
     steps:
+      - run:
+          name: Install awscli
+          command: sudo pip install awscli
       - checkout:
           path: ~/repo
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
-      - run: 
-          name: Install
-          command: yarn install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-
       - run:
-          name: Build Collecticons Catalog
-          command: yarn collecticons
-
-      - run:
-          name: Lint
-          command: yarn lint
-
-      - run:
-          name: Test
-          command: yarn test
+          name: Deploy to S3
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "${DEVELOPMENT_BRANCH}" ]; then
+              aws s3 cp ~/repo/ecs/tex/ATBD.tex s3://nasa-apt-staging-scripts/ATBD.tex
+              aws s3 cp ~/repo/ecs/tex/serialize.py s3://nasa-apt-staging-scripts/serialize.py
+              aws s3 cp ~/repo/ecs/tex/supplemental_requirements.txt s3://nasa-apt-staging-scripts/supplemental_requirements.txt
+            elif [ "${CIRCLE_BRANCH}" == "${PRODUCTION_BRANCH}" ]; then
+              aws s3 cp ~/repo/ecs/tex/ATBD.tex s3://nasa-apt-production-scripts/ATBD.tex
+              aws s3 cp ~/repo/ecs/text/serialize.py s3://nasa-apt-production-scripts/serialize.py
+              aws s3 cp ~/repo/ecs/tex/supplemental_requirements.txt s3://nasa-apt-production-scripts/supplemental_requirements.txt
+            else
+              echo "Not the branch you're looking for, skipping deploy"
+            fi

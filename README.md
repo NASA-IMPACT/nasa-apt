@@ -36,15 +36,14 @@ To deploy the AWS infrastructure from the root directory run
 `cd cloudformation`<br/>
 `./deploy.sh`<br/>
 
+You will be prompted for a stack name and a master db password.  The current
+stacks are `nasa-apt-staging` and `nasa-apt-production`.
+
 After the stack has been successfully deployed you can create the database
 schema and tables.  You will need an installation of the `psql` command line
 client.  To create the schema and tables in the AWS RDS run  
 
-`./createschema.sh`
- 
- To deploy the front end application to AWS using the stack resources you just
- created from the root directory run
+`./createschema.sh`<br/>
 
-`cd app`<br/>
-`./deploy.sh`<br/>
-
+You will be prompted for a stackname and your db and schema will be created in
+in that stack's RDS instance. 
