@@ -1,7 +1,6 @@
 -- Revert nasa-apt:referenceyear from pg
 
 BEGIN;
-
--- XXX Add DDLs here.
-
+  alter TABLE apt.publication_references
+  drop COLUMN year;
 COMMIT;
