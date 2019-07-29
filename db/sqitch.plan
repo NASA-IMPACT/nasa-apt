@@ -7,3 +7,4 @@ tables [appschema] 2019-07-09T17:16:54Z Sean Harkins <seanharkins@Seans-MacBook-
 functions [tables] 2019-07-09T17:47:01Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add functions for nasa-apt.
 atbdConstraint [tables] 2019-07-12T15:33:30Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add cascade constraint to atbd_versions
 contactsContraints [tables] 2019-07-15T16:09:04Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add cascade delete behavior for contacts and groups.
+referenceyear [tables] 2019-07-18T16:06:36Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add year to publication_references
