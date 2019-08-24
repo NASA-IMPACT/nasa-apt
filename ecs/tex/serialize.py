@@ -106,11 +106,16 @@ def wrapImage(img, cap=''):
     '''
     return wrapper
 
+def processList(nodeRows):
+
+
 def processWYSIWYGElement(node):
     if node['type'] == 'table':
         return '\n \n' + processTable(node['nodes']) + '\n \n', 'table'
     elif node['type'] == 'table_cell':
         return processWYSIWYGElement(node['nodes']), 'table_cell'
+    elif node['type'][-4:] == 'list':
+        print("Here")
     elif node['type'] == 'image':
         imgUrl = node['data']['src']
         filename = imgUrl.rsplit('/', 1)[1]
