@@ -34,7 +34,7 @@ def processTable(nodeRows):
     columnNames = tableList.pop(0)
     pd.set_option('display.max_colwidth', 1000)
     df = pd.DataFrame(tableList, columns=columnNames)
-    latexTable = df.to_latex(index=False, escape=False)
+    latexTable = df.to_latex(index=False, escape=False, header=False)
     return latexTable
 
 def addMarkup(text, marks):
