@@ -1,7 +1,5 @@
 -- Revert nasa-apt:textsearch from pg
-
 BEGIN;
-
--- XXX Add DDLs here.
-
+DROP FUNCTION apt.search_text(searchstring text);
 COMMIT;
+
