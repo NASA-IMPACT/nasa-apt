@@ -15,7 +15,8 @@ CREATE TYPE apt.atbd_reduced AS (
   atbd_versions apt.atbd_reduced_versions[]
 );
 
-CREATE FUNCTION apt.search_text(searchstring text default '%', statusstring text default 'Draft,Published') returns SETOF apt.atbd_reduced
+CREATE FUNCTION apt.search_text(searchstring text default '%',
+  statusstring text default 'Draft,Published') returns SETOF apt.atbd_reduced
   LANGUAGE sql
   IMMUTABLE
   AS $_$
@@ -33,9 +34,9 @@ CREATE FUNCTION apt.search_text(searchstring text default '%', statusstring text
   FULL OUTER JOIN apt.atbd_versions ON apt.atbd_versions.atbd_id = apt.atbds.atbd_id
   FULL OUTER JOIN apt.atbd_contacts ON apt.atbd_contacts.atbd_id = apt.atbds.atbd_id
   FULL OUTER JOIN apt.contacts ON apt.contacts.contact_id = apt.atbd_contacts.contact_id
-  WHERE apt.atbds.title LIKE searchstring
-  AND apt.atbd_versions.status = ANY (regexp_split_to_array(statusstring, ',')::apt.atbd_status[])
-  --  OR CONCAT(apt.contacts.first_name, ' ', apt.contacts.last_name) LIKE searchstring
+  WHERE apt.atbd_versions.status = ANY (regexp_split_to_array(statusstring, ',')::apt.atbd_status[])
+  AND (apt.atbds.title LIKE searchstring
+  OR CONCAT(apt.contacts.first_name, ' ', apt.contacts.last_name) LIKE searchstring)
   GROUP BY apt.atbds.atbd_id;
   $_$;
 COMMIT;
