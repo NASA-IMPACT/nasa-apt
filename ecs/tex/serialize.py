@@ -155,8 +155,8 @@ def processWYSIWYG(element):
         returnedElement, elementType = processWYSIWYGElement(node)
         if returnedElement:  # ignore newlines at the beginning
             if elementType == 'text':
-                if ctr != 0 and to_return[ctr-1][1] != 'image' and to_return[ctr-1][1] != 'table':
-                     # Only prepend with newlines if not the first item or preceded by image or table
+                if ctr != 0 and to_return[ctr-1][1] != 'image' and to_return[ctr-1][1] != 'table' and to_return[ctr-1][1] != 'list':
+                    # Only prepend with newlines if not the first item or preceded by image or table
                     prepend = '\\\\\\\\'
                 returnedElement = prepend + str(returnedElement) + '\\\\\\\\'
             to_return.append([returnedElement, elementType])
