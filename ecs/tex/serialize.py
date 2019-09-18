@@ -250,8 +250,8 @@ def processReferences(refs):
             this_ref += 'JOURNAL' + '="{}", \n'.format(ref['publisher'])
         if ref['issue'] is not None:
             this_ref += 'NUMBER' + '="{}", \n'.format(ref['issue'])
-        if ref['publication_date'] is not None:
-            this_ref += 'YEAR' + '="{}", \n'.format(ref['publication_date'])
+        if ref['year'] is not None:
+            this_ref += 'YEAR' + '="{}", \n'.format(ref['year'])
         bibtexRef = f'@ARTICLE{{{identifier},{this_ref}}}'
         references.append(bibtexRef)
         refIDs[ref['publication_reference_id']] = identifier
