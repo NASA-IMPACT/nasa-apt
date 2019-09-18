@@ -106,8 +106,14 @@ def wrapImage(img, cap=''):
     '''
     return wrapper
 
-def processList(nodeRows):
-
+def processList(nodeRows, listType):
+    itemList = ''
+    for item in nodeRows:
+        itemList += '\\item ' + processText(item['nodes']) + '\n'
+    if listType == 'unordered':
+        return f'\\begin{{itemize}} {itemList} \\end{{itemize}}'
+    elif listType == 'ordered':
+        return f'\\begin{{enumerate}} {itemList} \\end{{enumerate}}'
 
 def processWYSIWYGElement(node):
     if node['type'] == 'table':
@@ -115,7 +121,7 @@ def processWYSIWYGElement(node):
     elif node['type'] == 'table_cell':
         return processWYSIWYGElement(node['nodes']), 'table_cell'
     elif node['type'][-4:] == 'list':
-        print("Here")
+        return processList(node['nodes'], node['type'][:-5]), 'list'
     elif node['type'] == 'image':
         imgUrl = node['data']['src']
         filename = imgUrl.rsplit('/', 1)[1]
