@@ -106,11 +106,22 @@ def wrapImage(img, cap=''):
     '''
     return wrapper
 
+def processList(nodeRows, listType):
+    itemList = ''
+    for item in nodeRows:
+        itemList += '\\item ' + processText(item['nodes']) + '\n'
+    if listType == 'unordered':
+        return f'\\begin{{itemize}} {itemList} \\end{{itemize}}'
+    elif listType == 'ordered':
+        return f'\\begin{{enumerate}} {itemList} \\end{{enumerate}}'
+
 def processWYSIWYGElement(node):
     if node['type'] == 'table':
         return '\n \n' + processTable(node['nodes']) + '\n \n', 'table'
     elif node['type'] == 'table_cell':
         return processWYSIWYGElement(node['nodes']), 'table_cell'
+    elif node['type'][-4:] == 'list':
+        return processList(node['nodes'], node['type'][:-5]), 'list'
     elif node['type'] == 'image':
         imgUrl = node['data']['src']
         filename = imgUrl.rsplit('/', 1)[1]
@@ -144,8 +155,8 @@ def processWYSIWYG(element):
         returnedElement, elementType = processWYSIWYGElement(node)
         if returnedElement:  # ignore newlines at the beginning
             if elementType == 'text':
-                if ctr != 0 and to_return[ctr-1][1] != 'image' and to_return[ctr-1][1] != 'table':
-                     # Only prepend with newlines if not the first item or preceded by image or table
+                if ctr != 0 and to_return[ctr-1][1] != 'image' and to_return[ctr-1][1] != 'table' and to_return[ctr-1][1] != 'list':
+                    # Only prepend with newlines if not the first item or preceded by image or table
                     prepend = '\\\\\\\\'
                 returnedElement = prepend + str(returnedElement) + '\\\\\\\\'
             to_return.append([returnedElement, elementType])
