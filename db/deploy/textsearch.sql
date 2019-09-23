@@ -14,29 +14,31 @@ CREATE TYPE apt.atbd_reduced AS (
   contacts apt.contacts[],
   atbd_versions apt.atbd_reduced_versions[]
 );
-
 CREATE FUNCTION apt.search_text(searchstring text default '%',
   statusstring text default 'Draft,Published') returns SETOF apt.atbd_reduced
-  LANGUAGE sql
-  IMMUTABLE
-  AS $_$
-  SELECT
+AS $$
+  BEGIN
+    RETURN QUERY
+    SELECT
     apt.atbds.atbd_id,
     apt.atbds.title,
     array_agg(apt.contacts.*) as contacts,
     array_agg(
       ROW(
         apt.atbd_versions.atbd_id, apt.atbd_versions.atbd_version, apt.atbd_versions.status)
-        ::apt.atbd_reduced_versions
-      )
-        AS atbd_versions
-  FROM apt.atbds
-  FULL OUTER JOIN apt.atbd_versions ON apt.atbd_versions.atbd_id = apt.atbds.atbd_id
-  FULL OUTER JOIN apt.atbd_contacts ON apt.atbd_contacts.atbd_id = apt.atbds.atbd_id
-  FULL OUTER JOIN apt.contacts ON apt.contacts.contact_id = apt.atbd_contacts.contact_id
-  WHERE apt.atbd_versions.status = ANY (regexp_split_to_array(statusstring, ',')::apt.atbd_status[])
-  AND (apt.atbds.title LIKE searchstring
-  OR CONCAT(apt.contacts.first_name, ' ', apt.contacts.last_name) LIKE searchstring)
-  GROUP BY apt.atbds.atbd_id;
-  $_$;
+      ::apt.atbd_reduced_versions
+    )
+    AS atbd_versions
+    FROM apt.atbds
+    FULL OUTER JOIN apt.atbd_versions ON apt.atbd_versions.atbd_id = apt.atbds.atbd_id
+    FULL OUTER JOIN apt.atbd_contacts ON apt.atbd_contacts.atbd_id = apt.atbds.atbd_id
+    FULL OUTER JOIN apt.contacts ON apt.contacts.contact_id = apt.atbd_contacts.contact_id
+    WHERE apt.atbd_versions.status = ANY (regexp_split_to_array(statusstring, ',')::apt.atbd_status[])
+    AND (to_tsvector(apt.atbds.title) @@ plainto_tsquery(searchstring) OR
+         to_tsvector(CONCAT(apt.contacts.first_name, ' ', apt.contacts.last_name))
+          @@ plainto_tsquery(searchstring))
+    GROUP BY apt.atbds.atbd_id;
+  END
+  $$ LANGUAGE plpgsql IMMUTABLE;
 COMMIT;
+
