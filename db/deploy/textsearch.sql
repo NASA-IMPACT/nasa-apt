@@ -14,7 +14,7 @@ CREATE TYPE apt.atbd_reduced AS (
   contacts apt.contacts[],
   atbd_versions apt.atbd_reduced_versions[]
 );
-CREATE FUNCTION apt.search_text(searchstring text default '%',
+CREATE FUNCTION apt.search_text(searchstring text default '',
   statusstring text default 'Draft,Published') returns SETOF apt.atbd_reduced
 AS $$
   BEGIN
@@ -34,9 +34,11 @@ AS $$
     FULL OUTER JOIN apt.atbd_contacts ON apt.atbd_contacts.atbd_id = apt.atbds.atbd_id
     FULL OUTER JOIN apt.contacts ON apt.contacts.contact_id = apt.atbd_contacts.contact_id
     WHERE apt.atbd_versions.status = ANY (regexp_split_to_array(statusstring, ',')::apt.atbd_status[])
-    AND (to_tsvector(apt.atbds.title) @@ plainto_tsquery(searchstring) OR
+    AND (CASE WHEN searchstring = '' THEN TRUE
+    ELSE (to_tsvector(apt.atbds.title) @@ plainto_tsquery(searchstring) OR
          to_tsvector(CONCAT(apt.contacts.first_name, ' ', apt.contacts.last_name))
           @@ plainto_tsquery(searchstring))
+    END)
     GROUP BY apt.atbds.atbd_id;
   END
   $$ LANGUAGE plpgsql IMMUTABLE;
