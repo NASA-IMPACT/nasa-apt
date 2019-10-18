@@ -2,6 +2,6 @@
 
 BEGIN;
 
--- XXX Add DDLs here.
+DROP FUNCTION copyATBD(orig_id integer, OUT new_id integer, OUT created_atbd apt.atbds);
 
 COMMIT;
