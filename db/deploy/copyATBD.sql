@@ -5,7 +5,7 @@ BEGIN;
 
 CREATE EXTENSION hstore;
 
-CREATE FUNCTION copyATBD(orig_id integer, OUT new_id integer, OUT created_atbd apt.atbds)
+CREATE FUNCTION apt.copy_atbd(orig_id integer, OUT new_id integer, OUT created_atbd apt.atbds)
 AS $$
 BEGIN
 new_id := (select nextval(pg_get_serial_sequence('apt.atbds', 'atbd_id')));
