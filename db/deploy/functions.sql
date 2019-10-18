@@ -1,5 +1,6 @@
 -- Deploy nasa-apt:functions to pg
 -- requires: tables
+
 BEGIN;
 CREATE FUNCTION apt.create_atbd_version(OUT created_atbd apt.atbds, OUT created_version apt.atbd_versions)
   AS $$
