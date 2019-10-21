@@ -30,6 +30,13 @@ FROM  (
    FROM   apt.citations t WHERE atbd_id = originalid
    ) sub;
 
+INSERT INTO apt.atbd_contacts
+SELECT (t1).*
+FROM  (
+   SELECT t #= hstore('atbd_id', new_id::text) AS t1
+   FROM   apt.atbd_contacts t WHERE atbd_id = originalid
+   ) sub;
+
 INSERT INTO apt.data_access_input_data
 SELECT (t1).*
 FROM  (
