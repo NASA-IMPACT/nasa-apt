@@ -7,12 +7,15 @@ CREATE EXTENSION hstore;
 
 CREATE FUNCTION apt.copy_atbd(originalid integer, OUT new_id integer, OUT created_atbd apt.atbds)
 AS $$
+DECLARE
+new_title text;
 BEGIN
 new_id := (select nextval(pg_get_serial_sequence('apt.atbds', 'atbd_id')));
+new_title = (select CONCAT('Copy of ', title) from apt.atbds where atbd_id = originalid);
 INSERT INTO apt.atbds
 SELECT (t1).*
 FROM  (
-   SELECT t #= hstore('atbd_id', new_id::text) AS t1
+   SELECT t #= (hstore('atbd_id', new_id::text) || hstore('title', new_title)) AS t1
    FROM   apt.atbds t WHERE atbd_id = originalid
    ) sub RETURNING * INTO created_atbd;
 
