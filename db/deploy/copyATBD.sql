@@ -22,7 +22,7 @@ FROM  (
 INSERT INTO apt.atbd_versions
 SELECT (t1).*
 FROM  (
-   SELECT t #= hstore('atbd_id', new_id::text) AS t1
+   SELECT t #= (hstore('atbd_id', new_id::text) || hstore('status', 'Draft')) AS t1
    FROM   apt.atbd_versions t WHERE atbd_id = originalid
    ) sub;
 
