@@ -36,6 +36,7 @@ def processTable(nodeRows):
         tableList.append([])
         for row in rows['nodes']:
             for cell in row['nodes']:
+                # Since we kept each cell in the table as a flexible type, they must be processed as generic WYSIWYG elements
                 tableList[-1].append(processWYSIWYGElement(cell)[0])
     columnNames = tableList.pop(0)
     pd.set_option('display.max_colwidth', 1000)
