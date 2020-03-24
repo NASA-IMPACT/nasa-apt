@@ -1,6 +1,6 @@
 """
 Using ATBD.tex as a template, this file adds variable definitions and others at the beginning to correctly fill out the template with the data held in the JSON file used as input.
-The main code and class are at the end of this file. In general, the functions are more straightforward at the beginning and more complex at the end, and are commented accordingly.
+The driver code and main class are at the end of this file. In general, the functions are more straightforward at the beginning and more complex at the end, and are commented accordingly.
 Turn debug to True in order to see output as print statements instead of attempting to build the new TeX file.
 """
 
