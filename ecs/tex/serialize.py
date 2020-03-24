@@ -65,6 +65,7 @@ def whiteSpaceStrip(text):
         text = text[2:]
     while (text[-2:].strip() == '\\\\'):
         text = text[:-2]
+    # The below line should perhaps be moved to the escapeSpecialChars function
     text = text.replace('/', '\/')
     return text
 
@@ -73,6 +74,7 @@ def preserveStyle(text):
     text = escapeSpecialChars(text)
     return text
 
+#TODO: This is an incomplete list of special characters which cause errors when not escaped in LaTeX code - more will need to be added, or a different method is needed to escape them
 def escapeSpecialChars(text):
     return text.replace('%', '\%').replace('&', '\&').replace('_', '\_')
 
