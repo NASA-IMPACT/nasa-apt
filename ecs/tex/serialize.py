@@ -252,7 +252,7 @@ mapVars = {
     'data_access_related_urls': processDataAccessURL
 }
 
-# Formats each reference in `refs` and appends to the `references` list which will comprise the BibTex file
+# Formats each reference in {refs} and appends to the references list which will comprise the BibTex file
 def processReferences(refs):
     # create BibTeX
     counter = 1
