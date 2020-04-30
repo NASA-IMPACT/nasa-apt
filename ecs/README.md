@@ -1,3 +1,7 @@
+This folder contains the code which converts the json file pulled from the database into a LaTeX document in `/tex`, and the code which uses that document to generate PDF and HTML files respectively in `/pdf` and `/html`. Each of those folders corresponds to a separate docker image, and thus is run separately at run time via ECR and ECS.
+
+## Running Locally
+
 #### First, load your AWS credentials into environment variables:
 ```
 export AWS_ACCESS_KEY=

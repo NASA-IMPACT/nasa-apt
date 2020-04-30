@@ -1,3 +1,9 @@
+"""
+Using ATBD.tex as a template, this file adds variable definitions and others at the beginning to correctly fill out the template with the data held in the JSON file used as input.
+The driver code and main class are at the end of this file. In general, the functions are more straightforward at the beginning and more complex at the end, and are commented accordingly.
+Turn debug to True in order to see output as print statements instead of attempting to build the new TeX file.
+"""
+
 import json
 import sys
 from shutil import copyfile
@@ -30,6 +36,7 @@ def processTable(nodeRows):
         tableList.append([])
         for row in rows['nodes']:
             for cell in row['nodes']:
+                # Since we kept each cell in the table as a flexible type, they must be processed as generic WYSIWYG elements
                 tableList[-1].append(processWYSIWYGElement(cell)[0])
     columnNames = tableList.pop(0)
     pd.set_option('display.max_colwidth', 1000)
@@ -58,6 +65,7 @@ def whiteSpaceStrip(text):
         text = text[2:]
     while (text[-2:].strip() == '\\\\'):
         text = text[:-2]
+    # The below line should perhaps be moved to the escapeSpecialChars function
     text = text.replace('/', '\/')
     return text
 
@@ -66,6 +74,7 @@ def preserveStyle(text):
     text = escapeSpecialChars(text)
     return text
 
+#TODO: This is an incomplete list of special characters which cause errors when not escaped in LaTeX code - more will need to be added, or a different method is needed to escape them
 def escapeSpecialChars(text):
     return text.replace('%', '\%').replace('&', '\&').replace('_', '\_')
 
@@ -115,6 +124,7 @@ def processList(nodeRows, listType):
     elif listType == 'ordered':
         return f'\\begin{{enumerate}} {itemList} \\end{{enumerate}}'
 
+# Depending on the type of the node, call the corresponding function to correctly format and return
 def processWYSIWYGElement(node):
     if node['type'] == 'table':
         return '\n \n' + processTable(node['nodes']) + '\n \n', 'table'
@@ -145,6 +155,7 @@ def processWYSIWYGElement(node):
         print('oops! here with {}'.format(node))
         return None, None
 
+# Catch-all function which will handle each element (returnedElement) in the body of the ATBD in accordance with its type (elementType)
 def processWYSIWYG(element):
     if debug:
         print('element in WYSIWYG is ' + str(element))
@@ -154,10 +165,12 @@ def processWYSIWYG(element):
         prepend = ''
         returnedElement, elementType = processWYSIWYGElement(node)
         if returnedElement:  # ignore newlines at the beginning
+            # Only need to worry about adding newline characters around text elements
             if elementType == 'text':
+                # Only prepend text with newlines if not the first item or preceded by image, table, or list
                 if ctr != 0 and to_return[ctr-1][1] != 'image' and to_return[ctr-1][1] != 'table' and to_return[ctr-1][1] != 'list':
-                    # Only prepend with newlines if not the first item or preceded by image or table
                     prepend = '\\\\\\\\'
+                # Convert element to string, and add newlines following and before (if needed)
                 returnedElement = prepend + str(returnedElement) + '\\\\\\\\'
             to_return.append([returnedElement, elementType])
             ctr += 1
@@ -221,6 +234,7 @@ def processATBD(element):
         return [title]
     return [title, contacts]
 
+# Map variables to be found in JSON to the functions which will correctly format them into their TeX counterparts
 mapVars = {
     'scientific_theory': processWYSIWYG,
     'scientific_theory_assumptions': processWYSIWYG,
@@ -241,6 +255,7 @@ mapVars = {
     'data_access_related_urls': processDataAccessURL
 }
 
+# Formats each reference in {refs} and appends to the references list which will comprise the BibTex file
 def processReferences(refs):
     # create BibTeX
     counter = 1
@@ -268,6 +283,7 @@ def processReferences(refs):
         refIDs[ref['publication_reference_id']] = identifier
         counter +=1
 
+# Creates a new TeX variable called {name} and defines it as {value} in the TeX file
 def macroWrap(name, value):
     return '\\newcommand{{\\{fn}}}{{{val}}}'.format(fn=name, val=value)
 
@@ -281,6 +297,7 @@ def texify (name, element):
     else:
         return name
 
+# Include a section at the top of the ATBD which has filetype specific instructions so that images will render correctly in both HTML and PDF
 def filetypeSpecific(filetype):
     functionList = []
     if filetype == 'HTML':
@@ -298,9 +315,8 @@ def filetypeSpecific(filetype):
 
 class ATBD:
     def __init__(self, path):
-        #TODO: Handle paths locally and pulling from s3
         self.filepath = path
-
+    # Parse the JSON file into the corresponding sections (variables) enumerated in the ATBD
     def texVariables (self):
         myJson = json.loads(open(self.filepath).read())
         processReferences(myJson.pop('publication_references'))
