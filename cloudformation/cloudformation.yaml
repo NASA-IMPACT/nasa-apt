@@ -182,7 +182,7 @@ Resources:
       AllocatedStorage: '5'
       DBInstanceClass: db.t2.small
       Engine: Postgres
-      EngineVersion: '9.4'
+      EngineVersion: '11.1'
       PubliclyAccessible: true
       VPCSecurityGroups:
         - !Ref FargateContainerSecurityGroup
@@ -320,7 +320,7 @@ Resources:
         - Name: !Sub '${AWS::StackName}-postgrest'
           Cpu: !Ref 'PostgrestContainerCpu'
           Memory: !Ref 'PostgrestContainerMemory'
-          Image: postgrest/postgrest
+          Image: postgrest/postgrest:v6.0.2
           PortMappings:
             - ContainerPort: 3000
           Environment:
