@@ -88,3 +88,7 @@ Steps to deploy:
 2 - Update the cloudformation stack if needed (see previous section).
 3 - Update the database as described in the previous section. (_The easiest way to get the connection string is to check the env variables of the task of the corresponding ECS cluster_). You may need to add your ip address to the sec group inbound rules.
 4 - Force a new deployment of the PostgREST ECS service so that it can infer database schema changes (`aws ecs update-service --force-new-deployment --cluster <cluster> --service <service>`.
+
+# License
+
+This project is licensed under **The MIT License (MIT)**, see the [LICENSE](LICENSE.md) file for more details.
