@@ -1,5 +1,7 @@
 # nasa-apt
 
+Version: 0.2.0
+
 ## Local development
 Code and issues relevant to the NASA APT project
 
