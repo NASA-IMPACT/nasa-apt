@@ -72,3 +72,17 @@ cd db
 
 Because of PostgREST's schema reloading [model](http://postgrest.org/en/v5.2/admin.html#schema-reloading) some underlying database changes may require a restart of the PostgREST ECS instances to reflect the changes.
 
+## Environments
+There are currently 2 environments defined for NASA-APT, which follow specific branches
+- Staging (`develop`): http://nasa-publi-1l90d8d31sxmx-2113866973.us-east-1.elb.amazonaws.com
+- Production (`master`): http://nasa-publi-8fvzs7xeloxf-2015041748.us-east-1.elb.amazonaws.com
+
+**Given that deployment is a manual process it is important that the environments are kept up to date after a merge to `master` or `develop`.**
+
+**NOTE:** Although the product is not yet being fully used, the data in the production environment should not be lost, and should be taken into account on any database migrations.
+
+Steps to deploy:
+1 - Make a snapshot backup of the RDS instance.
+2 - Update the cloudformation stack if needed (see previous section).
+3 - Update the database as described in the previous section. (_The easiest way to get the connection string is to check the env variables of the task of the corresponding ECS cluster_). You may need to add your ip address to the sec group inbound rules.
+4 - Force a new deployment of the PostgREST ECS service so that it can infer database schema changes (`aws ecs update-service --force-new-deployment --cluster <cluster> --service <service>`.
