@@ -1,6 +1,6 @@
 # nasa-apt
 
-Version: 0.2.0
+**Version:** 0.2.0
 
 ## Local development
 Code and issues relevant to the NASA APT project
@@ -84,10 +84,19 @@ There are currently 2 environments defined for NASA-APT, which follow specific b
 **NOTE:** Although the product is not yet being fully used, the data in the production environment should not be lost, and should be taken into account on any database migrations.
 
 Steps to deploy:
-1 - Make a snapshot backup of the RDS instance.
-2 - Update the cloudformation stack if needed (see previous section).
-3 - Update the database as described in the previous section. (_The easiest way to get the connection string is to check the env variables of the task of the corresponding ECS cluster_). You may need to add your ip address to the sec group inbound rules.
-4 - Force a new deployment of the PostgREST ECS service so that it can infer database schema changes (`aws ecs update-service --force-new-deployment --cluster <cluster> --service <service>`.
+1. Make a snapshot backup of the RDS instance.
+2. Update the cloudformation stack if needed (see previous section).
+3. Update the database as described in the previous section. (_The easiest way to get the connection string is to check the env variables of the task of the corresponding ECS cluster_). You may need to add your ip address to the sec group inbound rules.
+4. Force a new deployment of the PostgREST ECS service so that it can infer database schema changes (`aws ecs update-service --force-new-deployment --cluster <cluster> --service <service>`.
+
+## Releases
+
+**A new release should be created every time there's a merge to master.**
+
+Releases are tied to a version number and created manually using GH's releases page.  
+The version in this README should be increased according to [semver](https://semver.org/) and the release tag should follow the format `v<major>.<minor>.<patch>`, ex: `v2.0.1`.  
+The release description should have a [changelog](https://gist.github.com/vgeorge/e6fd828987b2f7d62a447df2bd132c4a) with "Features", "Improvements" and "Fixes".
+
 
 # License
 
