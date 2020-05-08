@@ -2,8 +2,8 @@ INSERT INTO contacts(first_name, last_name, mechanisms, roles)
 VALUES ('Leonardo', 'Davinci', '{ "(\"Email\",\"test@email.com\")" }', '{ "Science contact", "Metadata author" }');
 INSERT INTO contacts(first_name, last_name)
 VALUES ('Gregor', 'Mendel');
-INSERT INTO atbds(title)
-VALUES ('Test ATBD 1');
+INSERT INTO atbds(title, alias)
+VALUES ('Test ATBD 1', 'test-atbd-1');
 INSERT INTO atbd_contacts(atbd_id, contact_id)
 VALUES (1, 1);
 INSERT INTO atbd_versions(atbd_id, atbd_version, scientific_theory, introduction, historical_perspective)
