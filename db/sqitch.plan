@@ -12,3 +12,4 @@ textsearch [atbdConstraint tables] 2019-09-04T17:10:13Z Sean Harkins <seanharkin
 copyATBD [tables] 2019-10-18T14:14:13Z Alyssa Harris <alyssaharris@Alyssas-MacBook-Pro.local> # Add function to copy entire ATBD
 atbdAlias [tables] 2020-05-07T14:34:43Z Daniel da Silva <daniel@hystericalhamster> # Add alias field to atbd
 copyATBDAlias [copyATBD] 2020-05-08T15:56:26Z Daniel da Silva <daniel@hystericalhamster> # Creates a unique alias when copying atbd
+textsearchAlias [textsearch] 2020-05-08T15:57:18Z Daniel da Silva <daniel@hystericalhamster> # Includes the atbs alias when searching
