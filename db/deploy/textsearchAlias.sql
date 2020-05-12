@@ -36,9 +36,11 @@ AS $$
     FULL OUTER JOIN apt.contacts ON apt.contacts.contact_id = apt.atbd_contacts.contact_id
     WHERE apt.atbd_versions.status = ANY (regexp_split_to_array(statusstring, ',')::apt.atbd_status[])
     AND (CASE WHEN searchstring = '' THEN TRUE
-    ELSE (to_tsvector(apt.atbds.title) @@ plainto_tsquery(searchstring) OR
-         to_tsvector(CONCAT(apt.contacts.first_name, ' ', apt.contacts.last_name))
-          @@ plainto_tsquery(searchstring))
+    ELSE (
+        to_tsvector(apt.atbds.title) @@ plainto_tsquery(searchstring) OR
+        to_tsvector(apt.atbds.alias) @@ plainto_tsquery(searchstring) OR
+        to_tsvector(CONCAT(apt.contacts.first_name, ' ', apt.contacts.last_name)) @@ plainto_tsquery(searchstring)
+      )
     END)
     GROUP BY apt.atbds.atbd_id;
   END
