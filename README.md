@@ -65,14 +65,19 @@ stacks are `nasa-apt-staging` and `nasa-apt-production`.
 
 After the stack has been successfully deployed you can create the database tables.
 You will need an installation of the `psql` command line client.  You may also
-need to update the RDS instance's security policy to allow inbound traffic from the IP address of the machine where you are executing the deployment.
+need to update the RDS instance's security policy to allow inbound traffic from the IP address of the machine where you 
+are executing the deployment. (see Resources | DBInstance | Security and Networks | Security Groups |
+Edit inbound rules).
+
 To create the schema and tables in the AWS RDS from the project root run
 ```
 cd db
 ./sqitch deploy --verify db:pg://{yourmasteruser}:{yourmasterpassword}@{yourRDSendpoint}:5432/nasadb
 ```
 
-Because of PostgREST's schema reloading [model](http://postgrest.org/en/v5.2/admin.html#schema-reloading) some underlying database changes may require a restart of the PostgREST ECS instances to reflect the changes.
+Because of PostgREST's schema reloading [model](http://postgrest.org/en/v5.2/admin.html#schema-reloading) some 
+underlying database changes may require a forced redeployment of the PostgREST ECS service to reflect the changes. (See Note in 
+[Environments](#environments))
 
 ## Environments
 There are currently 2 environments defined for NASA-APT, which follow specific branches
