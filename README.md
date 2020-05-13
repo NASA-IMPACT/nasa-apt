@@ -20,8 +20,8 @@ Followed by
 ```
 This will take 10-12 seconds for the server instance to spin up before the API is available.
 
-This will create a test instance of the DB with data loaded, the API and some
-stubbed versions of supporting services.
+This will create a test instance of the DB with data loaded, the API and **stubbed versions of (some) supporting services.** 
+Note: this local development environment incomplete, for example the LaTeX, PDF and HTML serialization workflow is not implemented.
 
 The Swagger API documentation is accessible via [http://localhost:8080](http://localhost:8080).
 The API is accessible via [http://localhost:3000](http://localhost:3000).
