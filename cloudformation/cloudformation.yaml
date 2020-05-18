@@ -8,8 +8,8 @@ Parameters:
     MinLength: '1'
     MaxLength: '64'
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
-    ConstraintDescription: must begin with a letter and contain only
-      alphanumeric characters.
+    ConstraintDescription: must begin with a letter, contain only
+      alphanumeric characters, and length 1 to 64.
   DBUser:
     NoEcho: 'true'
     Description: The database admin account username
@@ -17,8 +17,8 @@ Parameters:
     MinLength: '1'
     MaxLength: '16'
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
-    ConstraintDescription: must begin with a letter and contain only
-      alphanumeric characters.
+    ConstraintDescription: must begin with a letter, contain only
+      alphanumeric characters, and length 1 to 16.
   DBPassword:
     NoEcho: 'true'
     Description: The database admin account password
@@ -26,7 +26,7 @@ Parameters:
     MinLength: '8'
     MaxLength: '41'
     AllowedPattern: '[a-zA-Z0-9]*'
-    ConstraintDescription: must contain only alphanumeric characters.
+    ConstraintDescription: must contain only alphanumeric characters and length 8 to 41.
   PostgrestContainerCpu:
     Type: Number
     Default: 256
@@ -486,7 +486,7 @@ Resources:
           ATBD_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
           SCRIPTS_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
       Handler: index.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
       Code:
         ZipFile: >
           const AWS = require('aws-sdk');
@@ -585,7 +585,7 @@ Resources:
           ECS_TASK_ROLE: !GetAtt TaskRole.Arn
           ATBD_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
       Handler: index.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
       Code:
         ZipFile: >
           const AWS = require('aws-sdk');

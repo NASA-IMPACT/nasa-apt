@@ -2,3 +2,5 @@
 *.swp
 .DS_Store
 ecs/tex/Misc Test Files
+.idea
+venv
