@@ -9,13 +9,15 @@
 # TODO: there are errors but pdf is still produced by this script. (for example  bash `set -e` will cause script to fail)
 # TODO: try pdflatex -halt-on-error option
 # TODO: try --draftmode to prevent duplicate pdf generation https://github.com/developmentseed/nasa-apt/issues/253
+# TODO: revisit the above todos which were written before switch to xelatex
 
+pdf_command=xelatex
 basename=$(basename $1 .tex)
 
 # 3 passes is correct
 # https://tex.stackexchange.com/questions/53235/why-does-latex-bibtex-need-three-passes-to-clear-up-all-warnings#53236
 
-pdflatex --shell-escape "\def\convertType{PDF}\input{$1}"
+$pdf_command $1
 bibtex $basename
-pdflatex --shell-escape "\def\convertType{PDF}\input{$1}"
-pdflatex --shell-escape "\def\convertType{PDF}\input{$1}"
+$pdf_command $1
+$pdf_command $1
