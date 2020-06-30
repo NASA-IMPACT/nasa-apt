@@ -11,13 +11,13 @@
 # TODO: try --draftmode to prevent duplicate pdf generation https://github.com/developmentseed/nasa-apt/issues/253
 # TODO: revisit the above todos which were written before switch to xelatex
 
-pdf_command=xelatex
+pdf_command="xelatex -shell-escape"
 basename=$(basename $1 .tex)
 
-# 3 passes is correct
+# running latex in 3 passes is correct:
 # https://tex.stackexchange.com/questions/53235/why-does-latex-bibtex-need-three-passes-to-clear-up-all-warnings#53236
 
-$pdf_command $1
+$pdf_command "\def\convertType{PDF} \input{$1}"
 bibtex $basename
-$pdf_command $1
-$pdf_command $1
+$pdf_command "\def\convertType{PDF} \input{$1}"
+$pdf_command "\def\convertType{PDF} \input{$1}"
