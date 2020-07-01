@@ -1,28 +1,53 @@
-version: '3'
+version: '3.8'
 services:
-  server:
-    image: postgrest/postgrest:v6.0.2
-    ports:
-      - "3000:3000"
-    links:
-      - db:db
-    environment:
-      PGRST_DB_URI: postgres://masteruser:password@db:5432/nasadb
-      PGRST_DB_SCHEMA: apt
-      PGRST_DB_ANON_ROLE: app_user #In production this role should not be the same as the one used for the connection
-    depends_on:
-      - db
   db:
-    image: nasa_apt_db
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # Postgres db for local development only.
+    # For staging/production, see RDS instance in cloudformation.yaml
+    image: postgres:11.1
     ports:
       - "5432:5432"
     environment:
       POSTGRES_DB: nasadb
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
+  # localstack for local development only. AWS S3 used for staging/production
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - 4572:4572 #s3
+    environment:
+      - SERVICES=s3
+      - DATA_DIR=./figures
+  rest-api:
+    image: postgrest/postgrest:v6.0.2
+    ports:
+      - "3000:3000"
+    environment:
+      PGRST_DB_URI: postgres://masteruser:password@db:5432/nasadb
+      PGRST_DB_SCHEMA: apt
+      PGRST_DB_ANON_ROLE: app_user
+    depends_on:
+      - db
+  pdf-api:
+    build: ./pdf
+    image: nasa-apt/dev/pdf
+    ports:
+      - "8000:8000"
+    volumes:
+      - type: bind
+        source: ./pdf/app
+        target: /app/app
+    environment:
+      # the boto3 library needs these AWS_* env vars, even though we are using localstack.
+      AWS_ACCESS_KEY_ID: stub
+      AWS_SECRET_ACCESS_KEY: stub
+      REST_API_ENDPOINT: $REST_API_ENDPOINT
+      S3_ENDPOINT: $S3_ENDPOINT
+      PDFS_S3_BUCKET: $PDFS_S3_BUCKET
+      FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
+    depends_on:
+      - localstack
+      - rest-api
   swagger:
     image: swaggerapi/swagger-ui
     ports:
@@ -31,10 +56,15 @@ services:
       - "8080"
     environment:
       API_URL: http://localhost:3000/
-  localstack:
-    image: localstack/localstack:latest
-    ports:
-      - 4572:4572 #s3
-    environment:
-      - SERVICES=s3
-      - DATA_DIR=./figures
+    depends_on:
+      - rest-api
+  db-ready:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - db
+    command: db:5432
+  localstack-ready:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - localstack
+    command: localstack:4572

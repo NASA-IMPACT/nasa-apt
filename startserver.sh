@@ -1,26 +1,69 @@
-#!/bin/bash
-docker-compose stop
-docker-compose rm -f
-docker rmi nasa_apt_db
-docker-compose build --no-cache
-docker-compose up & while ! nc -z localhost 4572; do sleep 1; done;
-sleep 10;
-aws --endpoint-url=http://localhost:4572 s3 mb s3://figures --no-sign-request
-aws --endpoint-url=http://localhost:4572 s3api put-bucket-acl --bucket figures \
-  --acl public-read-write --no-sign-request
-aws --endpoint-url=http://localhost:4572 s3 cp \
-  ./figures/fullmoon.jpg s3://figures --no-sign-request
-aws --endpoint-url=http://localhost:4572 s3 mb s3://nasa-apt-json \
-  --no-sign-request
-aws --endpoint-url=http://localhost:4572 s3api put-bucket-acl \
-  --bucket nasa-apt-json --acl public-read-write --no-sign-request
-aws --endpoint-url=http://localhost:4572 s3 mb s3://nasa-apt-atbd \
-  --no-sign-request
-aws --endpoint-url=http://localhost:4572 s3api put-bucket-acl \
-  --bucket nasa-apt-atbd --acl public-read --no-sign-request
-cd db
+#!/usr/bin/env bash
+
+# start local development environment
+
+set -e
+
+PG_PORT=5432
+S3_PORT=4572
+S3=http://localhost:$S3_PORT # localstack
+
+# .env loading in the shell
+dotenv () {
+  set -a
+  [ -f .env ] && . .env
+  set +a
+}
+dotenv
+
+if [ -z "$FIGURES_S3_BUCKET" ]
+then
+  echo "error: require FIGURES_S3_BUCKET environment variable (see .env file)"
+  exit 1
+fi
+
+if [ -z "$PDFS_S3_BUCKET" ]
+then
+  echo "error: require PDFS_S3_BUCKET environment variable (see .env file)"
+  exit 1
+fi
+
+docker-compose down
+
+if nc -z localhost $PG_PORT
+then
+  echo "error: is another postgresql db running?"
+  exit 1
+fi
+
+docker-compose build
+
+# blocks until given endpoints are accessible over tcp
+docker-compose run --rm localstack-ready
+docker-compose run --rm db-ready
+
+# start remaining services
+docker-compose up --detach
+
+# all the services are up, now create & populate the s3 buckets and the pg database
+
+# localstack: create s3 bucket for figures
+aws --endpoint-url=${S3} s3 mb s3://"$FIGURES_S3_BUCKET" --no-sign-request
+aws --endpoint-url=${S3} s3api put-bucket-acl --bucket "$FIGURES_S3_BUCKET" --acl public-read-write --no-sign-request
+aws --endpoint-url=${S3} s3 cp ./figures/fullmoon.jpg s3://"$FIGURES_S3_BUCKET" --no-sign-request
+
+# localstack: create s3 bucket for pdfs
+aws --endpoint-url=${S3} s3 mb s3://"$PDFS_S3_BUCKET" --no-sign-request
+aws --endpoint-url=${S3} s3api put-bucket-acl --bucket "$PDFS_S3_BUCKET" --acl public-read-write --no-sign-request
+
+# create db with squitch and load mock data
+pushd db
 ./createdb.sh
 ./loadTestData.sh
-docker-compose stop
-sleep 5;
-docker-compose up 
+popd
+
+# force postgrest restart to see new schema
+docker-compose restart rest-api
+
+# tail the logs
+docker-compose logs --follow

@@ -29,40 +29,56 @@ Parameters:
     ConstraintDescription: must contain only alphanumeric characters and length 8 to 41.
   PostgrestContainerCpu:
     Type: Number
-    Default: 256
+    Default: 512
     Description: How much CPU to give the container. 1024 is 1 CPU
   PostgrestContainerMemory:
     Type: Number
-    Default: 512
+    Default: 1024
     Description: How much memory in megabytes to give the container
-  Path:
+  PostgRESTPATH:
     Type: String
-    Default: "*"
+    Default: "/*"
+    Description: A path on the public load balancer that this service
+      should be connected to. Use * to send all load balancer
+      traffic to this service.
+  PostgRESTPriority:
+    Type: Number
+    Default: 3
+    Description: The priority for the routing rule added to the load balancer.
+      This only applies if your have multiple services which are
+      assigned to different paths on the load balancer.
+  PDFContainerCpu:
+    Type: Number
+    Default: 512
+    Description: How much CPU to give the container. 1024 is 1 CPU
+  PDFContainerMemory:
+    Type: Number
+    Default: 1024
+    Description: How much memory in megabytes to give the container
+  PDFPATH:
+    Type: String
+    Default: "/pdf/*"
     Description: A path on the public load balancer that this service
                  should be connected to. Use * to send all load balancer
                  traffic to this service.
-  Priority:
+  PDFAPIPrefix:
+    Type: String
+    Default: "/pdf/"
+    Description: API prefix as used by FastAPI in PDF service (must be consistent with PDFPATH)
+  PDFPriority:
     Type: Number
-    Default: 1
+    Default: 2
     Description: The priority for the routing rule added to the load balancer.
                  This only applies if your have multiple services which are
                  assigned to different paths on the load balancer.
-  AtbdJsonBucketName:
+  PDFsBucketName:
     Type: String
-    Default: json
-    Description: Bucket for sending ATBD json.
-  AtbdBucketName:
-    Type: String
-    Default: atbd
-    Description: Bucket for output ATBDs.
+    Default: pdfs
+    Description: Bucket for output PDFs of ATBDs.
   FiguresBucketName:
     Type: String
     Default: figures
     Description: Bucket for storing ATBD figures.
-  ScriptsBucketName:
-    Type: String
-    Default: scripts
-    Description: Bucket for storing scripts used by ECS Task images.
   DesiredCapacity:
     Type: Number
     Default: '2'
@@ -237,6 +253,7 @@ Resources:
         # Allow access to ALB from anywhere on the internet
         - CidrIp: 0.0.0.0/0
           IpProtocol: '-1'
+
   PublicLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -251,6 +268,7 @@ Resources:
         - !Ref PublicSubnetOne
         - !Ref PublicSubnetTwo
       SecurityGroups: [!Ref 'PublicLoadBalancerSG']
+
   # A dummy target group is used to setup the ALB to just drop traffic
   # initially, before any real service target groups have been added.
   DummyTargetGroupPublic:
@@ -266,6 +284,7 @@ Resources:
       Protocol: HTTP
       UnhealthyThresholdCount: 2
       VpcId: !Ref 'VPC'
+
   PublicLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -317,7 +336,7 @@ Resources:
         - FARGATE
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
-        - Name: !Sub '${AWS::StackName}-postgrest'
+        - Name: !Sub '${AWS::StackName}-ctr-pgr'
           Cpu: !Ref 'PostgrestContainerCpu'
           Memory: !Ref 'PostgrestContainerMemory'
           Image: postgrest/postgrest:v6.0.2
@@ -337,20 +356,26 @@ Resources:
             -
               Name: PGRST_DB_ANON_ROLE
               Value: app_user
+          LogConfiguration:
+            LogDriver: 'awslogs'
+            Options:
+              'awslogs-group': !Ref 'LogGroup'
+              'awslogs-region': !Ref 'AWS::Region'
+              'awslogs-stream-prefix': 'postgres-task'
 
   # The service. The service is a resource which allows you to run multiple
   # copies of a type of task, and gather up their logs and metrics, as well
   # as monitor the number of running tasks and replace any that have crashed
   PostgRESTService:
     Type: AWS::ECS::Service
-    DependsOn: LoadBalancerRule
+    DependsOn: PostgRESTLoadBalancerRule
     Properties:
-      ServiceName: !Sub '${AWS::StackName}-postgrest'
+      ServiceName: !Sub '${AWS::StackName}-svc-pgr'
       Cluster: !Ref ECSCluster
       LaunchType: FARGATE
       DeploymentConfiguration:
         MaximumPercent: 200
-        MinimumHealthyPercent: 75
+        MinimumHealthyPercent: 100
       DesiredCount: 2
       NetworkConfiguration:
         AwsvpcConfiguration:
@@ -362,42 +387,138 @@ Resources:
             - !Ref PublicSubnetTwo
       TaskDefinition: !Ref 'PostgRESTTaskDefinition'
       LoadBalancers:
-        - ContainerName: !Sub '${AWS::StackName}-postgrest'
+        - ContainerName: !Sub '${AWS::StackName}-ctr-pgr'
           ContainerPort: 3000
-          TargetGroupArn: !Ref 'TargetGroup'
+          TargetGroupArn: !Ref 'PostgRESTTargetGroup'
+
+  # The task definition. This is a simple metadata description of what
+  # container to run, and what resource requirements it has.
+  PDFTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'pdf'
+      Cpu: !Ref 'PDFContainerCpu'
+      Memory: !Ref 'PDFContainerMemory'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      TaskRoleArn: !GetAtt PDFTaskRole.Arn
+      ContainerDefinitions:
+        - Name: !Sub '${AWS::StackName}-ctr-pdf'
+          Cpu: !Ref 'PDFContainerCpu'
+          Memory: !Ref 'PDFContainerMemory'
+          Image: 552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt/prod/pdf:latest
+          PortMappings:
+            - ContainerPort: 80
+          Environment:
+            - Name: API_PREFIX
+              Value: !Ref 'PDFAPIPrefix'
+            - Name: REST_API_ENDPOINT
+              Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
+            - Name: S3_ENDPOINT
+              Value: 'http://s3.amazonaws.com'
+            - Name: PDFS_S3_BUCKET
+              Value: !Ref 'PDFsBucket'
+            - Name: FIGURES_S3_BUCKET
+              Value: !Ref 'FiguresBucket'
+          LogConfiguration:
+            LogDriver: 'awslogs'
+            Options:
+              'awslogs-group': !Ref 'LogGroup'
+              'awslogs-region': !Ref 'AWS::Region'
+              'awslogs-stream-prefix': 'pdf-task'
+
+  # The service. The service is a resource which allows you to run multiple
+  # copies of a type of task, and gather up their logs and metrics, as well
+  # as monitor the number of running tasks and replace any that have crashed
+  PDFService:
+    Type: AWS::ECS::Service
+    DependsOn: PDFLoadBalancerRule
+    Properties:
+      ServiceName: !Sub '${AWS::StackName}-svc-pdf'
+      Cluster: !Ref ECSCluster
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref FargateContainerSecurityGroup
+          Subnets:
+            - !Ref PublicSubnetOne
+            - !Ref PublicSubnetTwo
+      TaskDefinition: !Ref 'PDFTaskDefinition'
+      LoadBalancers:
+        - ContainerName: !Sub '${AWS::StackName}-ctr-pdf'
+          ContainerPort: 80
+          TargetGroupArn: !Ref 'PDFTargetGroup'
 
   # A target group. This is used for keeping track of all the tasks, and
   # what IP addresses / port numbers they have. You can query it yourself,
   # to use the addresses yourself, but most often this target group is just
   # connected to an application load balancer, or network load balancer, so
   # it can automatically distribute traffic across all the targets.
-  TargetGroup:
+  PostgRESTTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      HealthCheckIntervalSeconds: 6
       HealthCheckPath: /
-      HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 2
+      Matcher:
+        # if the database has not been migrated yet, then http 400 is expected
+        HttpCode: '200,400'
       TargetType: ip
-      Name: !Sub '${AWS::StackName}-postgrest'
+      Name: !Sub '${AWS::StackName}-tg-pgr'
       Port: 3000
       Protocol: HTTP
       UnhealthyThresholdCount: 2
       VpcId: !Ref VPC
 
+  # A target group. This is used for keeping track of all the tasks, and
+  # what IP addresses / port numbers they have. You can query it yourself,
+  # to use the addresses yourself, but most often this target group is just
+  # connected to an application load balancer, or network load balancer, so
+  # it can automatically distribute traffic across all the targets.
+  PDFTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckPath: !Ref 'PDFAPIPrefix'
+      Matcher:
+        HttpCode: '200'
+      HealthCheckProtocol: HTTP
+      TargetType: ip
+      Name: !Sub '${AWS::StackName}-tg-pdf'
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VPC
+
   # Create a rule on the load balancer for routing traffic to the target group
-  LoadBalancerRule:
+  PostgRESTLoadBalancerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       Actions:
-        - TargetGroupArn: !Ref 'TargetGroup'
+        - TargetGroupArn: !Ref 'PostgRESTTargetGroup'
           Type: 'forward'
       Conditions:
         - Field: path-pattern
-          Values: [!Ref 'Path']
+          Values: [!Ref 'PostgRESTPATH']
+      Priority: !Ref 'PostgRESTPriority'
       ListenerArn: !Ref PublicLoadBalancerListener
-      Priority: !Ref 'Priority'
+
+  PDFLoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'PDFTargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values: [!Ref 'PDFPATH']
+      Priority: !Ref 'PDFPriority'
+      ListenerArn: !Ref PublicLoadBalancerListener
 
   # Figures bucket
   FiguresBucket:
@@ -434,240 +555,29 @@ Resources:
               - '*'
           Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'FiguresBucketName', '/*']]
 
-  LambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: "/"
-      Policies:
-        -
-          PolicyName: LambdaRunECSTask
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ecs:RunTask
-                  - iam:PassRole
-                Resource:
-                  - "*"
-        -
-          PolicyName: Logging
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource:
-                  - "arn:aws:logs:*:*:*"
-
-  AtbdJsonBucketLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Role: !GetAtt LambdaRole.Arn
-      Environment:
-        Variables:
-          CLUSTER: !GetAtt ECSCluster.Arn
-          TASK: !Ref SerializeTaskDefinition
-          SUBNET1: !Ref 'PublicSubnetOne'
-          SUBNET2: !Ref 'PublicSubnetTwo'
-          SECURITY_GROUP: !Ref FargateContainerSecurityGroup
-          ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
-          ECS_TASK_ROLE: !GetAtt TaskRole.Arn
-          ATBD_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
-          SCRIPTS_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
-      Handler: index.handler
-      Runtime: nodejs12.x
-      Code:
-        ZipFile: >
-          const AWS = require('aws-sdk');
-          exports.handler = async function handler(event) {
-            const record = event.Records[0];
-            const bucketName = record.s3.bucket.name;
-            const key = record.s3.object.key;
-            const ecs = new AWS.ECS();
-            const params = {
-              cluster: process.env.CLUSTER,
-              taskDefinition: process.env.TASK,
-              launchType: 'EC2',
-              overrides: {
-                containerOverrides: [
-                  {
-                    command: [
-                      bucketName,
-                      key,
-                      process.env.ATBD_BUCKET_NAME,
-                      process.env.SCRIPTS_BUCKET_NAME
-                    ],
-                    name: 'serialize'
-                  }
-                ],
-                executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
-                taskRoleArn: process.env.ECS_TASK_ROLE
-              }
-            };
-            return ecs.runTask(params).promise();
-          }
-
-  LambdaInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: 'lambda:InvokeFunction'
-      FunctionName: !Ref AtbdJsonBucketLambda
-      Principal: 's3.amazonaws.com'
-      SourceArn: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'AtbdJsonBucketName']]
-
-  # ATBD json bucket
-  AtbdJsonBucket:
-    Type: AWS::S3::Bucket
-    DependsOn:
-      - AtbdJsonBucketLambda
-      - LambdaInvokePermission
-    Properties:
-      BucketName: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdJsonBucketName']]
-      AccessControl: PublicReadWrite
-      CorsConfiguration:
-        CorsRules:
-          - AllowedMethods:
-              - GET
-              - HEAD
-              - PUT
-              - POST
-            AllowedOrigins:
-              - '*'
-            AllowedHeaders:
-              - '*'
-      NotificationConfiguration:
-        LambdaConfigurations:
-          -
-            Event: 's3:ObjectCreated:*'
-            Function: !GetAtt AtbdJsonBucketLambda.Arn
-
-  AtbdBJsonBucketPolicy:
+  PDFsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdJsonBucketName']]
+      Bucket: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'PDFsBucketName']]
       PolicyDocument:
         Statement:
           Action:
             - 's3:List*'
             - 's3:Get*'
-            - 's3:PutObject'
-            - 's3:PutObjectAcl'
           Effect: Allow
           Principal:
             AWS:
               - '*'
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'AtbdJsonBucketName', '/*']]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'PDFsBucketName', '/*']]
 
-  AtbdBucketLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Role: !GetAtt LambdaRole.Arn
-      Environment:
-        Variables:
-          CLUSTER: !GetAtt ECSCluster.Arn
-          PDF_TASK: !Ref PdfTaskDefinition
-          HTML_TASK: !Ref HtmlTaskDefinition
-          SUBNET1: !Ref 'PublicSubnetOne'
-          SUBNET2: !Ref 'PublicSubnetTwo'
-          SECURITY_GROUP: !Ref FargateContainerSecurityGroup
-          ECS_TASK_EXECUTION_ROLE: !GetAtt ECSTaskExecutionRole.Arn
-          ECS_TASK_ROLE: !GetAtt TaskRole.Arn
-          ATBD_BUCKET_NAME: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
-      Handler: index.handler
-      Runtime: nodejs12.x
-      Code:
-        ZipFile: >
-          const AWS = require('aws-sdk');
-          exports.handler = async function handler(event) {
-            const record = event.Records[0];
-            const bucketName = record.s3.bucket.name;
-            const key = record.s3.object.key;
-            const ecs = new AWS.ECS();
-            const params = {
-              cluster: process.env.CLUSTER,
-              taskDefinition: process.env.PDF_TASK,
-              launchType: 'EC2',
-              overrides: {
-                containerOverrides: [
-                  {
-                    command: [
-                      bucketName,
-                      key,
-                      process.env.ATBD_BUCKET_NAME
-                    ],
-                    name: 'pdf'
-                  }
-                ],
-                executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
-                taskRoleArn: process.env.ECS_TASK_ROLE
-              }
-            };
-            const htmlParams = {
-              cluster: process.env.CLUSTER,
-              taskDefinition: process.env.HTML_TASK,
-              launchType: 'EC2',
-              overrides: {
-                containerOverrides: [
-                  {
-                    command: [
-                      bucketName,
-                      key,
-                      process.env.ATBD_BUCKET_NAME
-                    ],
-                    name: 'html'
-                  }
-                ],
-                executionRoleArn: process.env.ECS_TASK_EXECUTION_ROLE,
-                taskRoleArn: process.env.ECS_TASK_ROLE
-              }
-            }
-            const pdfPromise = ecs.runTask(params).promise();
-            const htmlPromise = ecs.runTask(htmlParams).promise();
-            return Promise.all([pdfPromise, htmlPromise]);
-          }
-
-  AtbdBucketLambdaInvokePermission:
-    Type: AWS::Lambda::Permission
-    DependsOn: AtbdBucketLambda
-    Properties:
-      Action: 'lambda:InvokeFunction'
-      FunctionName: !Ref AtbdBucketLambda
-      Principal: 's3.amazonaws.com'
-      SourceArn: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
-
-  AtbdBucket:
+  PDFsBucket:
     Type: AWS::S3::Bucket
-    #DependsOn:
-      #- AtbdBucketLambda
-      #- AtbdBucketLambdaInvokePermission
     Properties:
-      BucketName: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
+      BucketName: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'PDFsBucketName']]
       AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: index.html
-      NotificationConfiguration:
-        LambdaConfigurations:
-          -
-            Event: 's3:ObjectCreated:*'
-            Function: !GetAtt AtbdBucketLambda.Arn
-            Filter:
-              S3Key:
-                Rules:
-                  -
-                    Name: 'suffix'
-                    Value: 'tex'
       CorsConfiguration:
         CorsRules:
           - AllowedMethods:
@@ -680,45 +590,8 @@ Resources:
             AllowedHeaders:
               - '*'
 
-  AtbdBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
-      PolicyDocument:
-        Statement:
-          Action:
-            - 's3:List*'
-            - 's3:Get*'
-            - 's3:PutObject'
-            - 's3:PutObjectAcl'
-          Effect: Allow
-          Principal:
-            AWS:
-              - '*'
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName', '/*']]
-
-  ScriptsBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
-      AccessControl: PublicRead
-
-  ScriptsBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
-      PolicyDocument:
-        Statement:
-          -
-            Action:
-              - 's3:List*'
-              - 's3:Get*'
-            Effect: Allow
-            Principal:
-              AWS:
-                - '*'
-            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName', '/*']]
-  TaskRole:
+  # IAM role for pdf task to have permission on the pdf cache bucket.
+  PDFTaskRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -729,84 +602,17 @@ Resources:
             Action: ['sts:AssumeRole']
       Path: /
       Policies:
-        - PolicyName: s3PutObject
-          # Allow serialize task to write to bucket.
+        - PolicyName: s3Policy
           PolicyDocument:
             Statement:
               - Effect: Allow
-                Action: 's3:PutObject*'
-                Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', !Ref 'ScriptsBucketName']]
+                Action: ['s3:Put*', 's3:List*', 's3:Get*']
+                Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'PDFsBucketName', '/*']]
 
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['', ['ecs/', !Ref 'AWS::StackName', '/tasks']]
-
-  SerializeTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: 'serialize'
-      Cpu: '512'
-      Memory: '512'
-      #NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - EC2
-      ExecutionRoleArn: !Ref ECSTaskExecutionRole
-      ContainerDefinitions:
-        - Name: 'serialize'
-          #Cpu: 1024
-          #Memory: 2048
-          Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt:latest'
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref LogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: serializetask
-
-  PdfTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: 'pdf'
-      Cpu: '512'
-      Memory: '512'
-      #NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - EC2
-      ExecutionRoleArn: !Ref ECSTaskExecutionRole
-      ContainerDefinitions:
-        - Name: 'pdf'
-          #Cpu: 1024
-          #Memory: 2048
-          Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt-pdf'
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref LogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: pdftask
-
-  HtmlTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: 'html'
-      Cpu: '512'
-      Memory: '512'
-      #NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - EC2
-      ExecutionRoleArn: !Ref ECSTaskExecutionRole
-      ContainerDefinitions:
-        - Name: 'html'
-          #Cpu: 1024
-          #Memory: 2048
-          Image: '552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt-html'
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref LogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: htmltask
 
   # Autoscaling group. This launches the actual EC2 instances that will register
   # themselves as members of the cluster, and run the docker containers.
@@ -863,6 +669,7 @@ Resources:
                   - 'ecs:DescribeServices'
                   - 'ecs:UpdateService'
                 Resource: '*'
+
   EC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -903,25 +710,17 @@ Resources:
                 Resource: '*'
 Outputs:
   S3Endpoint:
-    Value: 's3.amazonaws.com'
+    Value: 'http://s3.amazonaws.com'
     Export:
       Name: !Sub '${AWS::StackName}-S3Endpoint'
-  AtbdJsonBucket:
-    Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdJsonBucketName']]
-    Export:
-      Name: !Sub '${AWS::StackName}-AtbdJsonBucket'
-  AtbdBucket:
-    Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'AtbdBucketName']]
+  PDFsBucket:
+    Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'PDFsBucketName']]
     Export:
       Name: !Sub '${AWS::StackName}-AtbdBucket'
   FiguresBucket:
     Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'FiguresBucketName']]
     Export:
       Name: !Sub '${AWS::StackName}-FiguresBucket'
-  ScriptsBucket:
-    Value: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'ScriptsBucketName']]
-    Export:
-      Name: !Sub '${AWS::StackName}-ScriptsBucket'
   PGConnection:
     Value: !Join ['', ['postgres://', 'masteruser', ':',
                        !Ref 'DBPassword', '@',
@@ -930,7 +729,11 @@ Outputs:
                        !Ref 'DBName']]
     Export:
       Name: !Sub '${AWS::StackName}-PGConnection'
-  PostgRESTEndpoint:
+  APIEndpoint:
     Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
     Export:
-      Name: !Sub '${AWS::StackName}-PostgRESTEndpoint'
+      Name: !Sub '${AWS::StackName}-APIEndpoint'
+  PDFEndpoint:
+    Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName, !Ref 'PDFAPIPrefix']]
+    Export:
+      Name: !Sub '${AWS::StackName}-PDFEndpoint'
