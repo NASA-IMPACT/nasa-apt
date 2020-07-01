@@ -99,6 +99,24 @@ aws ecs update-service --force-new-deployment --cluster stackname-ECSCluster-nWS
 # then wait until the service's desired count == the running count (this will take about 10 minutes)
 ```
 
+## Updating the PDF service
+The PDF generation service uses docker and it is stored on amazon ECR. During the first cloudformation deployment, the container is created and uploaded, but subsequent updates need to be performed manually.  
+We're currently using a single ECR repo (nasa-apt/prod/pdf) to store the container and it is shared between the production and staging environments.
+
+1) Build the container
+```
+cd nasa-apt/pdf/
+# from the pdf/Readme
+docker build --target prod . -t nasa-apt/prod/pdf
+```
+2) Go to the [ECR page](https://us-east-1.console.aws.amazon.com/ecr/repositories?region=us-east-1), select the correct repo and click "View Push Commands".
+3) Follow steps 1, 3, and 4.
+4) Update the pdf service. Easiest way to know the cluster and service is to go to the [ECS cluster](https://us-east-1.console.aws.amazon.com/ecs/home?region=us-east-1#/clusters)page and selecting the appropriate one.
+```
+aws ecs update-service --force-new-deployment --cluster <cluster> --service <service>
+```
+
+
 ## Releases
 
 **A new release should be created every time there's a merge to master.**
