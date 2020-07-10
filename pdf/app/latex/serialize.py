@@ -1,4 +1,13 @@
+#!/usr/bin/env python3
+
 """
+copied from  https://github.com/developmentseed/nasa-apt/blob/eb0b6bc897efa29284dd11b4e46b085f388d9743/ecs/tex/serialize.py
+
+TODO: refactor to be a python package instead of cli tool
+TODO: unit tests
+TODO: use a templating package instead of string formatting
+TODO: rename functions and classes to be pythonic
+
 Using ATBD.tex as a template, this file adds variable definitions and others at the beginning to correctly fill out the template with the data held in the JSON file used as input.
 The driver code and main class are at the end of this file. In general, the functions are more straightforward at the beginning and more complex at the end, and are commented accordingly.
 Turn debug to True in order to see output as print statements instead of attempting to build the new TeX file.
@@ -101,7 +110,7 @@ def processText(nodes):
 
 def saveImage(imgUrl, img):
     imgLink = num2words(len(pdfImgs))
-    pdfImgs.append(r'\immediate\write18{wget "' + imgUrl + f'"}} \n \\newcommand{{\\{imgLink}}}{{{img}}}')
+    pdfImgs.append(r'\immediate\write18{wget --quiet  --timestamping "' + imgUrl + f'"}} \n \\newcommand{{\\{imgLink}}}{{{img}}}')
     htmlImgs.append(f'\\newcommand{{\\{imgLink}}}{{{imgUrl}}}')
     return imgLink
 
