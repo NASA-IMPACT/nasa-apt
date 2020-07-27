@@ -10,6 +10,14 @@ services:
       POSTGRES_DB: nasadb
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
+  elastic:
+    # Elastic db for local development only.
+    # For staging/production, add elasticache instance
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
   # localstack for local development only. AWS S3 used for staging/production
   localstack:
     image: localstack/localstack:latest
