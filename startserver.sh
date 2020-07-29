@@ -48,7 +48,7 @@ docker-compose up --detach
 # all the services are up, now create & populate the s3 buckets and the pg database
 
 # localstack: create s3 bucket for figures
-aws --endpoint-url=${S3} s3 mb s3://"$FIGURES_S3_BUCKET" --no-sign-request 
+aws --endpoint-url=${S3} s3 mb s3://"$FIGURES_S3_BUCKET" --no-sign-request
 aws --endpoint-url=${S3} s3api put-bucket-acl --bucket "$FIGURES_S3_BUCKET" --acl public-read-write --no-sign-request &>0
 aws --endpoint-url=${S3} s3 cp ./figures/fullmoon.jpg s3://"$FIGURES_S3_BUCKET" --no-sign-request
 
