@@ -10,14 +10,25 @@ services:
       POSTGRES_DB: nasadb
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
+    command: postgres -c log_statement=all
   elastic:
     # Elastic db for local development only.
     # For staging/production, add elasticache instance
     image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
     environment:
       - discovery.type=single-node
+      - http.port=9200
+      - http.cors.allow-origin=*
+      - http.cors.enabled=true
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - http.cors.allow-credentials=true
     ports:
       - "9200:9200"
+  dejavu:
+    # Elastic browser to debug elastic issues for development
+    image: appbaseio/dejavu
+    ports:
+      - "1358:1358"
   # localstack for local development only. AWS S3 used for staging/production
   localstack:
     image: localstack/localstack:latest
@@ -53,6 +64,8 @@ services:
       S3_ENDPOINT: $S3_ENDPOINT
       PDFS_S3_BUCKET: $PDFS_S3_BUCKET
       FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
+      DBURL: postgres://masteruser:password@db:5432/nasadb
+      ELASTICURL: http://elastic:9200
     depends_on:
       - localstack
       - rest-api

@@ -1,4 +1,4 @@
--- Verify nasa-apt:searcheverything on pg
+-- Verify nasa-apt:notifytriggers on pg
 
 BEGIN;
 

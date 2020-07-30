@@ -3,9 +3,9 @@ from sys import exit
 from tempfile import TemporaryDirectory
 from typing import Union, Dict, Type
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.logger import logger
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 
 from .atbd.checksum_atbd import checksum_atbd
 from .atbd.get_atbd import get_atbd
@@ -14,15 +14,36 @@ from .atbd.Status import Status
 from .cache import Cache, CacheException
 from .latex.json_to_latex import json_to_latex, JsonToLatexException
 from .pdf.latex_to_pdf import latex_to_pdf, LatexToPDFException
+from .search.searchindex import update_index, index_atbd, log_listener
+
+import asyncpg
+import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 root_path: str = environ.get('API_PREFIX', '/')
 rest_api_endpoint: str = environ.get('REST_API_ENDPOINT') or exit('REST_API_ENDPOINT env var required')
 s3_endpoint: str = environ.get('S3_ENDPOINT') or exit('S3_ENDPOINT env var required')
 pdfs_bucket_name: str = environ.get('PDFS_S3_BUCKET') or exit('PDFS_S3_BUCKET env var required')
 figures_bucket_name: str = environ.get('FIGURES_S3_BUCKET') or exit('FIGURES_S3_BUCKET env var required')
+DBURL: str = environ.get('DBURL') or sys.exit('DBURL env var required')
 
 app: FastAPI = FastAPI()
 cache: Cache = Cache(s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name)
+
+@app.on_event("startup")
+async def startup() -> None:
+    app.state.connection = await asyncpg.connect(DBURL, server_settings={'search_path':'apt,public'})
+    await app.state.connection.add_listener('atbd', index_atbd())
+
+@app.on_event("shutdown")
+async def shutdown() -> None:
+    # await app.state.connection.remove_listener('atbd', index_atbd)
+    await app.state.connection.close()
+
+
 
 
 def get_cache_key(atbd_doc: Dict) -> str:
@@ -119,3 +140,7 @@ def cleanup_tmp_dir(tmp_dir: Type[TemporaryDirectory]):
     logger.info(f'cleaned up {tmp_dir.name}')
 
 
+@app.get('/reindex',)
+async def reindex(request: Request):
+    results = await update_index(connection=request.app.state.connection)
+    return JSONResponse(content=results)

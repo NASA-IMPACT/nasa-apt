@@ -1,0 +1,128 @@
+import requests
+import sys
+from os import environ
+from typing import Optional, Dict
+from fastapi import APIRouter, HTTPException
+from os import environ
+import jq
+import asyncpg
+import asyncio
+import logging
+from fastapi.responses import JSONResponse
+
+logger = logging.getLogger(__name__)
+
+ELASTICURL: str = environ.get('ELASTICURL') or sys.exit('ELASTICURL env var required')
+
+
+def prep_json(json: Dict) -> Dict:
+    """
+    Cleans up json document returned from the database to be added
+    to Elasticsearch Index
+    """
+    query="""
+    def atbddoc:
+    del(._id)
+    | del(..|.type?)
+    | del(..|.object?)
+    | del(.[]|..|.atbd_id?)
+    | del(.[]|..|.atbd_version?)
+    | walk(if type=="object" then with_entries(select(.value != null and .value != "" and .value != [] and .value != {})) else . end)
+    | walk(if type=="object" and has("document") then {document:( .. | select(.text?) )} else . end);
+
+    .[] | {"index": {"_index": "atbd", "_type": "atbd", "_id": ._id}}, atbddoc
+    """
+    return jq.compile(query).input(text=json).text() + "\n"
+
+
+def send_to_elastic(json: Dict):
+    """
+    POST json to elastic endpoint
+    """
+    json = prep_json(json).encode('utf-8')
+    url = f"{ELASTICURL}/atbd/_bulk"
+    response = requests.post(url, data=json, headers={'Content-Type':'application/json'})
+    logger.debug(response.status_code, response.text)
+    print(response.status_code, response.text)
+    if not response.ok:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+    return response.json()
+
+
+async def get_index(connection: asyncpg.connection, atbd_id: Optional[int] = None, atbd_version:Optional[int] = None) -> Dict:
+    """
+    Get data for Index from PostgreSQL Database
+    """
+    where=""
+    args=()
+    if atbd_id is not None:
+        where = " WHERE atbd_id=$1"
+        args=(atbd_id,)
+        if atbd_version is not None:
+            where = f"{where} AND atbd_version=$2"
+            args=(atbd_id,atbd_version,)
+    query=f"""
+    WITH t AS (
+    SELECT
+    v.atbd_id *10000 + v.atbd_version as _id,
+    atbds.title, atbds.alias,
+    v.*,
+    (SELECT json_agg(c) FROM (
+        SELECT * FROM atbd_contacts LEFT JOIN contacts USING (contact_id) WHERE atbd_id=atbds.atbd_id
+    ) as c ) as contacts,
+    (SELECT json_agg(c) FROM (
+        SELECT * FROM atbd_contact_groups LEFT JOIN contact_groups USING (contact_group_id) WHERE atbd_id=atbds.atbd_id
+    ) as c ) as contact_groups,
+    (SELECT json_agg(c) FROM (
+        SELECT * FROM atbd_contacts LEFT JOIN contacts USING (contact_id) WHERE atbd_id=atbds.atbd_id
+    ) as c ) as contacts,
+    (SELECT json_agg(c) FROM (
+        SELECT * FROM citations WHERE atbd_id=atbds.atbd_id and atbd_version=v.atbd_version
+    ) as c ) as citations,
+    (SELECT json_agg(c) FROM (
+        SELECT * FROM algorithm_input_variables WHERE atbd_id=atbds.atbd_id and atbd_version=v.atbd_version
+    ) as c ) as algorithm_input_variables,
+    (SELECT json_agg(c) FROM (
+        SELECT * FROM algorithm_output_variables WHERE atbd_id=atbds.atbd_id and atbd_version=v.atbd_version
+    ) as c ) as algorithm_output_variables,
+    (SELECT json_agg(c) FROM (
+        SELECT * FROM publication_references WHERE atbd_id=atbds.atbd_id and atbd_version=v.atbd_version
+    ) as c ) as publication_references,
+    (SELECT json_agg(c) FROM (
+        SELECT * FROM data_access_input_data WHERE atbd_id=atbds.atbd_id and atbd_version=v.atbd_version
+    ) as c ) as data_access_input_data,
+    (SELECT json_agg(c) FROM (
+        SELECT * FROM data_access_output_data WHERE atbd_id=atbds.atbd_id and atbd_version=v.atbd_version
+    ) as c ) as data_access_output_data,
+    (SELECT json_agg(c) FROM (
+        SELECT * FROM data_access_related_urls WHERE atbd_id=atbds.atbd_id and atbd_version=v.atbd_version
+    ) as c ) as data_access_related_urls
+    FROM
+    atbds
+    JOIN atbd_versions v USING (atbd_id)
+    {where}
+    )
+    SELECT json_agg(json_strip_nulls(row_to_json(t))) FROM t;
+    """
+    return await connection.fetchval(query, *args)
+
+
+async def update_index(connection: asyncpg.connection, atbd_id: Optional[int] = None, atbd_version:Optional[int] = None) -> Dict:
+    """
+    update data for Elastic from PostgreSQL Database
+    """
+    logger.debug('Updating Index for', atbd_id, atbd_version)
+    content = await get_index(connection, atbd_id, atbd_version)
+    results = send_to_elastic(content)
+    return results
+
+
+def index_atbd(connection: asyncpg.connection=None, pid: int=None, channel: str=None, payload: str=None):
+    logger.debug('In index_atbd', pid, channel, payload)
+    def callback(connection: asyncpg.connection, pid: int, channel: str, payload: str):
+        logger.debug('Listen',pid, channel, payload)
+        asyncio.ensure_future( update_index(connection=connection, atbd_id=int(payload)) )
+    return callback
+
+async def log_listener(connection: asyncpg.connection, message: str):
+    logger.debug('Logs',message)
