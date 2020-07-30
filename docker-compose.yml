@@ -24,11 +24,6 @@ services:
       - http.cors.allow-credentials=true
     ports:
       - "9200:9200"
-  dejavu:
-    # Elastic browser to debug elastic issues for development
-    image: appbaseio/dejavu
-    ports:
-      - "1358:1358"
   # localstack for local development only. AWS S3 used for staging/production
   localstack:
     image: localstack/localstack:latest
