@@ -14,9 +14,11 @@ from .atbd.Status import Status
 from .cache import Cache, CacheException
 from .latex.json_to_latex import json_to_latex, JsonToLatexException
 from .pdf.latex_to_pdf import latex_to_pdf, LatexToPDFException
-from .search.searchindex import update_index, index_atbd
+from .search.searchindex import update_index, index_atbd, ELASTICURL
 
 import asyncpg
+import asyncio
+import requests
 import logging
 
 logger.setLevel(logging.DEBUG)
@@ -42,6 +44,10 @@ cache: Cache = Cache(s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name)
 
 @app.on_event("startup")
 async def startup() -> None:
+    """
+    Create database connection when FastAPI App has started.
+    Add listener to atbd channel on database connection.
+    """
     app.state.connection = await asyncpg.connect(
         DBURL, server_settings={"search_path": "apt,public"}
     )
@@ -164,5 +170,24 @@ def cleanup_tmp_dir(tmp_dir: Type[TemporaryDirectory]):
 
 @app.get("/reindex",)
 async def reindex(request: Request):
+    """
+    Reindex all ATBD's into ElasticSearch
+    """
     results = await update_index(connection=request.app.state.connection)
     return JSONResponse(content=results)
+
+
+@app.post("/search",)
+async def search_elastic(request: Request):
+    """
+    Proxies POST json to elastic search endpoint
+    """
+    url = f"{ELASTICURL}/atbd/_search"
+    data = await request.body()
+    response = requests.post(url, data=data, headers=request.headers)
+    logger.debug(response.status_code, response.text)
+    if not response.ok:
+        raise HTTPException(
+            status_code=response.status_code, detail=response.text
+        )
+    return response.json()

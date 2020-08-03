@@ -48,7 +48,6 @@ def send_to_elastic(json: Dict):
         url, data=json, headers={"Content-Type": "application/json"}
     )
     logger.debug(response.status_code, response.text)
-    print(response.status_code, response.text)
     if not response.ok:
         raise HTTPException(
             status_code=response.status_code, detail=response.text
@@ -151,7 +150,9 @@ def index_atbd(
     channel: str = None,
     payload: str = None,
 ):
-    logger.debug("In index_atbd", pid, channel, payload)
+    """
+    Callback function to update index for an ATBD document
+    """
 
     def callback(
         connection: asyncpg.connection, pid: int, channel: str, payload: str
@@ -162,7 +163,3 @@ def index_atbd(
         )
 
     return callback
-
-
-async def log_listener(connection: asyncpg.connection, message: str):
-    logger.debug("Logs", message)
