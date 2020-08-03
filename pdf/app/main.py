@@ -17,7 +17,6 @@ from .pdf.latex_to_pdf import latex_to_pdf, LatexToPDFException
 from .search.searchindex import update_index, index_atbd, ELASTICURL
 
 import asyncpg
-import asyncio
 import requests
 import logging
 
