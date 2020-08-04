@@ -117,7 +117,7 @@ def saveImage(imgUrl, img):
 def wrapImage(img, cap=''):
     if cap:
         cap = f'\\caption{{{cap}}}'
-    wrapper = f''' \\begin{{figure}}
+    wrapper = f''' \\begin{{figure}}[H]
         \\includegraphics[width=\\maxwidth{{\\linewidth}}]{{\\{img}}}
         {cap}
         \\end{{figure}}
