@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.logger import logger
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 
+
 from .atbd.checksum_atbd import checksum_atbd
 from .atbd.get_atbd import get_atbd
 from .atbd.get_status import get_status
@@ -14,13 +15,13 @@ from .atbd.Status import Status
 from .cache import Cache, CacheException
 from .latex.json_to_latex import json_to_latex, JsonToLatexException
 from .pdf.latex_to_pdf import latex_to_pdf, LatexToPDFException
-from .search.searchindex import update_index, index_atbd, ELASTICURL
+from .search.searchindex import update_index, index_atbd, ELASTICURL, aws_auth
 
 import asyncpg
 import requests
 import logging
 
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 root_path: str = environ.get("API_PREFIX", "/")
 rest_api_endpoint: str = environ.get("REST_API_ENDPOINT") or exit(
@@ -55,7 +56,7 @@ async def startup() -> None:
 
 @app.on_event("shutdown")
 async def shutdown() -> None:
-    # await app.state.connection.remove_listener('atbd', index_atbd)
+    await app.state.connection.remove_listener('atbd', index_atbd)
     await app.state.connection.close()
 
 
@@ -167,24 +168,31 @@ def cleanup_tmp_dir(tmp_dir: Type[TemporaryDirectory]):
     logger.info(f"cleaned up {tmp_dir.name}")
 
 
-@app.get("/reindex",)
+@app.get(root_path + "reindex",)
 async def reindex(request: Request):
     """
     Reindex all ATBD's into ElasticSearch
     """
+    logger.info('Reindexing %s', ELASTICURL)
     results = await update_index(connection=request.app.state.connection)
     return JSONResponse(content=results)
 
 
-@app.post("/search",)
+@app.post(root_path + "search",)
 async def search_elastic(request: Request):
     """
     Proxies POST json to elastic search endpoint
     """
     url = f"{ELASTICURL}/atbd/_search"
     data = await request.body()
-    response = requests.post(url, data=data, headers=request.headers)
-    logger.debug(response.status_code, response.text)
+    logger.info("Searching %s %s", url, data)
+    response = requests.post(
+        url,
+        auth=aws_auth,
+        data=data,
+        headers=request.headers
+    )
+    logger.info(response.status_code, response.text)
     if not response.ok:
         raise HTTPException(
             status_code=response.status_code, detail=response.text

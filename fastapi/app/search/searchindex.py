@@ -1,4 +1,6 @@
 import requests
+from requests_aws4auth import AWS4Auth
+import boto3
 import sys
 from os import environ
 from typing import Optional, Dict
@@ -9,10 +11,26 @@ import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 ELASTICURL: str = environ.get("ELASTICURL") or sys.exit(
     "ELASTICURL env var required"
 )
+logging.debug('ELASTICURL %s', ELASTICURL)
+
+
+def aws_auth():
+    logger.info('Getting AWS Auth Credentials')
+    region = 'us-east-1'
+    credentials = boto3.Session().get_credentials()
+    awsauth = AWS4Auth(
+        credentials.access_key,
+        credentials.secret_key,
+        region,
+        'es',
+        session_token=credentials.token
+    )
+    return awsauth
 
 
 def prep_json(json: Dict) -> Dict:
@@ -44,10 +62,14 @@ def send_to_elastic(json: Dict):
     """
     json = prep_json(json).encode("utf-8")
     url = f"{ELASTICURL}/atbd/_bulk"
+    logger.info("sending %s %s", json, url)
     response = requests.post(
-        url, data=json, headers={"Content-Type": "application/json"}
+        url,
+        auth=aws_auth(),
+        data=json,
+        headers={"Content-Type": "application/json"}
     )
-    logger.debug(response.status_code, response.text)
+    logger.info("%s %s %s", url, response.status_code, response.text)
     if not response.ok:
         raise HTTPException(
             status_code=response.status_code, detail=response.text
@@ -138,8 +160,9 @@ async def update_index(
     """
     update data for Elastic from PostgreSQL Database
     """
-    logger.debug("Updating Index for", atbd_id, atbd_version)
+    logger.info("Updating Index for %s %s", atbd_id, atbd_version)
     content = await get_index(connection, atbd_id, atbd_version)
+    logger.info('dbcontent %s', content)
     results = send_to_elastic(content)
     return results
 
@@ -157,7 +180,7 @@ def index_atbd(
     def callback(
         connection: asyncpg.connection, pid: int, channel: str, payload: str
     ):
-        logger.debug("Listen", pid, channel, payload)
+        logger.info("Listen %s %s %s", pid, channel, payload)
         asyncio.ensure_future(
             update_index(connection=connection, atbd_id=int(payload))
         )

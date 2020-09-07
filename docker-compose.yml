@@ -42,14 +42,14 @@ services:
       PGRST_DB_ANON_ROLE: app_user
     depends_on:
       - db
-  pdf-api:
-    build: ./pdf
-    image: nasa-apt/dev/pdf
+  fastapi:
+    build: ./fastapi
+    image: nasa-apt/dev/fastapi
     ports:
-      - "8000:8000"
+      - "8000:80"
     volumes:
       - type: bind
-        source: ./pdf/app
+        source: ./fastapi/app
         target: /app/app
     environment:
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.

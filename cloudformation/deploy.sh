@@ -13,4 +13,5 @@ aws cloudformation deploy \
       DBName=nasadb \
       DBUser=masteruser \
       DBPassword=$dbpassword \
+      ElasticsearchDomainName=nasadb-$stackname \
   --region us-east-1 --capabilities CAPABILITY_IAM
