@@ -6,6 +6,7 @@ from typing import Union, Dict, Type
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.logger import logger
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 
 from .atbd.checksum_atbd import checksum_atbd
@@ -40,6 +41,21 @@ DBURL: str = environ.get("DBURL") or exit("DBURL env var required")
 
 app: FastAPI = FastAPI()
 cache: Cache = Cache(s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name)
+
+
+origins = [
+    "http://localhost:3000",
+    "http://localhost:3006",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 
 @app.on_event("startup")

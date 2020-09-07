@@ -116,6 +116,9 @@ docker build --target prod . -t nasa-apt/prod/fastapi
 aws ecs update-service --force-new-deployment --cluster <cluster> --service <service>
 ```
 
+## Notes
+The PDF serialization service supports unicode characters in text mode. The service uses the font `Latin Modern Math` which has a good coverage of unicode math symbols. See a list of symobls here: https://ctan.math.illinois.edu/macros/latex/contrib/unicode-math/unimath-symbols.pdf
+A symbol which is not covered by the font will be rendered as a blank space. Unicode characters used in LaTeX math mode will not be rendered.
 
 ## Releases
 
