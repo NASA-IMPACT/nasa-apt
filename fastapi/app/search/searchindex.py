@@ -16,7 +16,7 @@ logger.setLevel(logging.DEBUG)
 ELASTICURL: str = environ.get("ELASTICURL") or sys.exit(
     "ELASTICURL env var required"
 )
-logging.debug('ELASTICURL %s', ELASTICURL)
+logger.info('ELASTICURL %s', ELASTICURL)
 
 
 def aws_auth():
@@ -30,6 +30,7 @@ def aws_auth():
         'es',
         session_token=credentials.token
     )
+    logger.info('AWS Auth: %s', awsauth)
     return awsauth
 
 
@@ -62,10 +63,11 @@ def send_to_elastic(json: Dict):
     """
     json = prep_json(json).encode("utf-8")
     url = f"{ELASTICURL}/atbd/_bulk"
-    logger.info("sending %s %s", json, url)
+    auth = aws_auth()
+    logger.info("sending %s %s using auth: %s", json, url, auth)
     response = requests.post(
         url,
-        auth=aws_auth(),
+        auth=auth,
         data=json,
         headers={"Content-Type": "application/json"}
     )

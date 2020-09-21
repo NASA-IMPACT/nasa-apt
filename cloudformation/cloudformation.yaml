@@ -451,7 +451,7 @@ Resources:
                                   ':', !GetAtt [DB, Endpoint.Port], /,
                                   !Ref 'DBName']]
             - Name: ELASTICURL
-              Value: !Join ['', ['http://', !GetAtt [Elasticsearch, DomainEndpoint], ':9200']]
+              Value: !Join ['', ['https://', !GetAtt [Elasticsearch, DomainEndpoint]]]
           LogConfiguration:
             LogDriver: 'awslogs'
             Options:
