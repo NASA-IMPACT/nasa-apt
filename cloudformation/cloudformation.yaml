@@ -298,12 +298,12 @@ Resources:
     Properties:
       HealthCheckIntervalSeconds: 6
       HealthCheckPath: /
-      HealthCheckProtocol: HTTP
+      HealthCheckProtocol: HTTPS
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
-      Name: !Join ['-', [!Ref 'AWS::StackName', 'drop-1']]
-      Port: 80
-      Protocol: HTTP
+      Name: !Join ['-', [!Ref 'AWS::StackName', 'dummyTarget']]
+      Port: 443
+      Protocol: HTTPS
       UnhealthyThresholdCount: 2
       VpcId: !Ref 'VPC'
 
@@ -314,8 +314,8 @@ Resources:
         - TargetGroupArn: !Ref 'DummyTargetGroupPublic'
           Type: 'forward'
       LoadBalancerArn: !Ref 'PublicLoadBalancer'
-      Port: 80
-      Protocol: HTTP
+      Port: 443
+      Protocol: HTTPS
 
   # This is a role which is used by the ECS tasks themselves.
   ECSTaskExecutionRole:
