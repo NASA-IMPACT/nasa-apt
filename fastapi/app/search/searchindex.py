@@ -11,7 +11,7 @@ import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 ELASTICURL: str = environ.get("ELASTICURL") or sys.exit(
     "ELASTICURL env var required"

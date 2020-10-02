@@ -202,9 +202,10 @@ async def search_elastic(request: Request):
     url = f"{ELASTICURL}/atbd/_search"
     data = await request.body()
     logger.info("Searching %s %s", url, data)
+    auth = aws_auth()
     response = requests.post(
         url,
-        auth=aws_auth,
+        auth=auth,
         data=data,
         headers=request.headers
     )
