@@ -207,9 +207,9 @@ async def search_elastic(request: Request):
         url,
         auth=auth,
         data=data,
-        headers=request.headers
+        headers={"Content-Type": "application/json"}
     )
-    logger.info(response.status_code, response.text)
+    logger.info('status:%s response:%s', response.status_code, response.text)
     if not response.ok:
         raise HTTPException(
             status_code=response.status_code, detail=response.text
