@@ -39,6 +39,10 @@ figures_bucket_name: str = environ.get("FIGURES_S3_BUCKET") or exit(
 )
 DBURL: str = environ.get("DBURL") or exit("DBURL env var required")
 
+frontend_url: str = environ.get("APT_FRONTEND_URL") or exit(
+    "APT_FRONTEND_URL env var required"
+)
+
 app: FastAPI = FastAPI()
 cache: Cache = Cache(s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name)
 
@@ -46,6 +50,7 @@ cache: Cache = Cache(s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name)
 origins = [
     "http://localhost:3000",
     "http://localhost:3006",
+    frontend_url,
 ]
 
 app.add_middleware(
