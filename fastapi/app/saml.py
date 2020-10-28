@@ -17,6 +17,7 @@ logger.setLevel(logging.DEBUG)
 host: str = environ.get("FASTAPI_HOST") or exit(
     "FASTAPI_HOST env var required"
 )
+host = str.lower(host)
 
 idp_metadata_url: str = environ.get("IDP_METADATA_URL") or exit(
     "IDP_METADATA_URL env var required"
