@@ -41,6 +41,10 @@ figures_bucket_name: str = environ.get("FIGURES_S3_BUCKET") or exit(
 )
 DBURL: str = environ.get("DBURL") or exit("DBURL env var required")
 
+frontend_url: str = environ.get("APT_FRONTEND_URL") or exit(
+    "APT_FRONTEND_URL env var required"
+)
+
 app: FastAPI = FastAPI()
 cache: Cache = Cache(s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name)
 
@@ -49,6 +53,7 @@ origins = [
     "*",
     "http://localhost:3000",
     "http://localhost:3006",
+    frontend_url,
 ]
 
 app.add_middleware(
@@ -211,13 +216,14 @@ async def search_elastic(request: Request, user: User=Depends(require_user)):
     url = f"{ELASTICURL}/atbd/_search"
     data = await request.body()
     logger.info("Searching %s %s", url, data)
+    auth = aws_auth()
     response = requests.post(
         url,
-        auth=aws_auth,
+        auth=auth,
         data=data,
-        headers=request.headers
+        headers={"Content-Type": "application/json"}
     )
-    logger.info(response.status_code, response.text)
+    logger.info('status:%s response:%s', response.status_code, response.text)
     if not response.ok:
         raise HTTPException(
             status_code=response.status_code, detail=response.text
