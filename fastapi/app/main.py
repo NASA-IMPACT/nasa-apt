@@ -3,11 +3,11 @@ from sys import exit
 from tempfile import TemporaryDirectory
 from typing import Union, Dict, Type
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request, Depends
 from fastapi.logger import logger
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
+from starlette.middleware.sessions import SessionMiddleware
 
 from .atbd.checksum_atbd import checksum_atbd
 from .atbd.get_atbd import get_atbd
@@ -17,6 +17,8 @@ from .cache import Cache, CacheException
 from .latex.json_to_latex import json_to_latex, JsonToLatexException
 from .pdf.latex_to_pdf import latex_to_pdf, LatexToPDFException
 from .search.searchindex import update_index, index_atbd, ELASTICURL, aws_auth
+from .saml import router as saml
+from .saml import User, require_user
 
 import asyncpg
 import requests
@@ -44,6 +46,7 @@ cache: Cache = Cache(s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name)
 
 
 origins = [
+    "*",
     "http://localhost:3000",
     "http://localhost:3006",
 ]
@@ -56,6 +59,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(
+    SessionMiddleware,
+    secret_key = 'lk23j4l24jk23789098ulkhjljkjlk'
+)
+
+app.include_router(saml)
 
 
 @app.on_event("startup")
@@ -149,13 +158,13 @@ def atbd_pdf_handler(
 
 
 @app.get(root_path + "atbds/id/{atbd_id}.pdf")
-def get_atbd_by_id(atbd_id: int, background_tasks: BackgroundTasks):
+def get_atbd_by_id(atbd_id: int, background_tasks: BackgroundTasks, user: User=Depends(require_user)):
     atbd_doc = get_atbd(atbd_id=atbd_id)
     return atbd_pdf_handler(atbd_doc, background_tasks=background_tasks)
 
 
 @app.get(root_path + "atbds/alias/{alias}.pdf")
-def get_atbd_pdf_by_alias(alias: str, background_tasks: BackgroundTasks):
+def get_atbd_pdf_by_alias(alias: str, background_tasks: BackgroundTasks, user: User=Depends(require_user)):
     atbd_doc = get_atbd(alias=alias)
     return atbd_pdf_handler(atbd_doc, background_tasks=background_tasks)
 
@@ -185,7 +194,7 @@ def cleanup_tmp_dir(tmp_dir: Type[TemporaryDirectory]):
 
 
 @app.get(root_path + "reindex",)
-async def reindex(request: Request):
+async def reindex(request: Request, user: User=Depends(require_user)):
     """
     Reindex all ATBD's into ElasticSearch
     """
@@ -195,7 +204,7 @@ async def reindex(request: Request):
 
 
 @app.post(root_path + "search",)
-async def search_elastic(request: Request):
+async def search_elastic(request: Request, user: User=Depends(require_user)):
     """
     Proxies POST json to elastic search endpoint
     """

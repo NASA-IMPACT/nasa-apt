@@ -61,6 +61,8 @@ services:
       FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
       DBURL: postgres://masteruser:password@db:5432/nasadb
       ELASTICURL: http://elastic:9200
+      IDP_METADATA_URL: $IDP_METADATA_URL
+      FASTAPI_HOST: http://localhost:8000
     depends_on:
       - localstack
       - rest-api
