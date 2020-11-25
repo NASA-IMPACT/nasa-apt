@@ -419,7 +419,6 @@ class ATBD:
     # Parse the JSON file into the corresponding sections (variables) enumerated in the ATBD
     def texVariables(self):
         myJson = json.loads(open(self.filepath).read())
-        # print("DATA DATA DATA: ", myJson)
         processReferences(myJson.pop("publication_references"))
         commands = processATBD(myJson.pop("atbd"))
         if debug:
@@ -442,6 +441,8 @@ class ATBD:
         atbd_name = self.filepath.rsplit(".json", 1)[0]
         if debug:
             print(atbd_name)
+        if self.journal:
+            return f"{atbd_name}_journal.{ext}"
         return f"{atbd_name}.{ext}"
 
     def filewrite(self):
