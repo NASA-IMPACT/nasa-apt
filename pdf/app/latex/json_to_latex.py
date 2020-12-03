@@ -50,8 +50,10 @@ def json_to_latex(atbd_doc: Dict, tmp_dir: str, journal: bool) -> Tuple[str, str
             cwd=tmp_dir,
             encoding=encoding,
         )
+        print(completed.stdout)
         if completed.returncode != 0:
             # for debugging purposes, return the stdout in addition to the stderr
+
             raise JsonToLatexException(
                 {"stderr": completed.stderr, "stdout": completed.stdout}
             )

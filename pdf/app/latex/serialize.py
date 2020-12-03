@@ -41,7 +41,7 @@ def toSpaceCase(snake_str):
     return " ".join(x.title() for x in components)
 
 
-def processTable(nodeRows):
+def processTable(nodeRows, caption=None):
     tableList = []
     for rows in nodeRows:
         tableList.append([])
@@ -52,7 +52,21 @@ def processTable(nodeRows):
     columnNames = tableList.pop(0)
     pd.set_option("display.max_colwidth", 1000)
     df = pd.DataFrame(tableList, columns=columnNames)
-    latexTable = df.to_latex(index=False, escape=False, header=False)
+    # latex default text width = 426 pts
+    column_format = "|".join(
+        f" p{{{int(426/len(columnNames))}pt}} " for _ in columnNames
+    )
+    to_latex_params = dict(
+        index=False,
+        escape=False,
+        header=True,
+        column_format=column_format,
+    )
+    if caption:
+        to_latex_params["caption"] = caption
+
+    latexTable = df.to_latex(**to_latex_params)
+
     return latexTable
 
 
@@ -97,6 +111,7 @@ def escapeSpecialChars(text):
 def processText(nodes):
     to_return = ""
     for node in nodes:
+
         if node["object"] == "text":
             for leaf in node["leaves"]:
                 if "marks" in leaf and leaf["marks"]:
@@ -151,7 +166,12 @@ def processList(nodeRows, listType):
 # Depending on the type of the node, call the corresponding function to correctly format and return
 def processWYSIWYGElement(node):
     if node["type"] == "table":
-        return "\n \n" + processTable(node["nodes"]) + "\n \n", "table"
+        return (
+            "\n \n"
+            + processTable(node["nodes"], caption=node.get("caption"))
+            + "\n \n",
+            "table",
+        )
     elif node["type"] == "table_cell":
         return processWYSIWYGElement(node["nodes"]), "table_cell"
     elif node["type"][-4:] == "list":
@@ -190,9 +210,11 @@ def processWYSIWYG(element):
         print("element in WYSIWYG is " + str(element))
     to_return = []
     ctr = 0
+
     for node in element["document"]["nodes"]:
         prepend = ""
         returnedElement, elementType = processWYSIWYGElement(node)
+
         if returnedElement:  # ignore newlines at the beginning
             # Only need to worry about adding newline characters around text elements
             if elementType == "text":
@@ -300,13 +322,27 @@ def processContacts(collection):
 
 
 def processVarList(element):
+    for var in element:
+        var["long_name"] = processWYSIWYG(json.loads(var["long_name"])).replace(
+            "\\", ""
+        )
+        if var["unit"] is None:
+            continue
+        var["unit"] = processWYSIWYG(json.loads(var["unit"])).replace("\\", "")
+
+    pd.set_option("display.max_colwidth", 1000)
     varDF = pd.DataFrame.from_dict(element, orient="columns")
+
+    # varDF["long_name"] = varDF["long_name"].apply(axis=1, func=processWYSIWYG)
+    # varDF["unit"] = varDF["unit"].apply(axis=1, func=processWYSIWYG)
+    # page width is 426 pts - divide into 3/4 and 1/4 sections for algorithm name and units
+    column_format = f"p{{{int(426/4)*3}pt}} p{{{int(426/4)}pt}}"
     if not varDF.empty:
         latexDF = varDF.to_latex(
             index=False,
             bold_rows=True,
             escape=False,
-            column_format="p{9cm} p{3cm}",
+            column_format=column_format,
             columns=["long_name", "unit"],
             header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
         )
@@ -388,7 +424,7 @@ def texify(name, element):
     elif name in mapVars.keys() and element is not None:
         return macroWrap(toCamelCase(name), mapVars[name](element))
     elif element is None:
-        return macroWrap(toCamelCase(name), "")
+        return macroWrap(toCamelCase(name), "Placeholder text")
     else:
         return name
 
@@ -419,18 +455,18 @@ class ATBD:
     # Parse the JSON file into the corresponding sections (variables) enumerated in the ATBD
     def texVariables(self):
         myJson = json.loads(open(self.filepath).read())
-        # print("DATA DATA DATA: ", myJson)
+        print("DATA DATA DATA: ", myJson)
         processReferences(myJson.pop("publication_references"))
         commands = processATBD(myJson.pop("atbd"))
         if debug:
             for item, value in myJson.items():
                 print("item: {}, value: {}".format(item, value))
 
-        if not myJson.get("discussion"):
-            myJson["discussion"] = self.placeholder("Discussion omitted")
+        # if not myJson.get("discussion"):
+        #     myJson["discussion"] = self.placeholder("Discussion omitted")
 
-        if not myJson.get("acknowledgements"):
-            myJson["acknowledgements"] = self.placeholder("Acknowledgements omitted")
+        # if not myJson.get("acknowledgements"):
+        #     myJson["acknowledgements"] = self.placeholder("Acknowledgements omitted")
 
         commands += [texify(x, y) for x, y in myJson.items() if x in mapVars.keys()]
 
