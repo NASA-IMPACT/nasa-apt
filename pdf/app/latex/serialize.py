@@ -66,7 +66,8 @@ def processTable(nodeRows, caption=None):
         to_latex_params["caption"] = caption
 
     latexTable = df.to_latex(**to_latex_params)
-
+    # insert [H] for block latex from "floating" the table to the top of the page
+    latexTable = latexTable.replace("\\begin{table}", "\\begin{table}[H]")
     return latexTable
 
 
@@ -379,8 +380,8 @@ mapVars = {
     "data_access_input_data": processDataAccess,
     "data_access_output_data": processDataAccess,
     "data_access_related_urls": processDataAccessURL,
-    "discussion": processText,
-    "acknowledgements": processText,
+    "journal_discussion": processText,
+    "jounral_acknowledgements": processText,
 }
 
 
@@ -462,11 +463,13 @@ class ATBD:
             for item, value in myJson.items():
                 print("item: {}, value: {}".format(item, value))
 
-        # if not myJson.get("discussion"):
-        #     myJson["discussion"] = self.placeholder("Discussion omitted")
+        # TODO: remove this one `journal_discussion` and `journal_acknowledgements`
+        # get added as fields to the database
+        if self.journal and not myJson.get("journal_discussion"):
+            myJson["journal_discussion"] = None
 
-        # if not myJson.get("acknowledgements"):
-        #     myJson["acknowledgements"] = self.placeholder("Acknowledgements omitted")
+        if self.journal and not myJson.get("journal_acknowledgements"):
+            myJson["journal_acknowledgements"] = None
 
         commands += [texify(x, y) for x, y in myJson.items() if x in mapVars.keys()]
 
