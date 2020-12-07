@@ -61,13 +61,14 @@ def processTable(nodeRows, caption=None):
         escape=False,
         header=True,
         column_format=column_format,
+        na_rep=" ",
     )
     if caption:
         to_latex_params["caption"] = caption
 
     latexTable = df.to_latex(**to_latex_params)
-    # insert [H] for block latex from "floating" the table to the top of the page
-    latexTable = latexTable.replace("\\begin{table}", "\\begin{table}[H]")
+    # insert [h] for block latex from "floating" the table to the top of the page
+    latexTable = latexTable.replace("\\begin{table}", "\\begin{table}[h]")
     return latexTable
 
 
@@ -324,12 +325,12 @@ def processContacts(collection):
 
 def processVarList(element):
     for var in element:
-        var["long_name"] = processWYSIWYG(json.loads(var["long_name"])).replace(
-            "\\", ""
-        )
+        var["long_name"] = processWYSIWYG(json.loads(var["long_name"])).strip("\\")
         if var["unit"] is None:
             continue
-        var["unit"] = processWYSIWYG(json.loads(var["unit"])).replace("\\", "")
+        print("UNIT: ")
+        print(processWYSIWYG(json.loads(var["unit"])))
+        var["unit"] = processWYSIWYG(json.loads(var["unit"])).strip("\\")
 
     pd.set_option("display.max_colwidth", 1000)
     varDF = pd.DataFrame.from_dict(element, orient="columns")
@@ -344,6 +345,7 @@ def processVarList(element):
             bold_rows=True,
             escape=False,
             column_format=column_format,
+            na_rep=" ",
             columns=["long_name", "unit"],
             header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
         )
@@ -380,8 +382,8 @@ mapVars = {
     "data_access_input_data": processDataAccess,
     "data_access_output_data": processDataAccess,
     "data_access_related_urls": processDataAccessURL,
-    "journal_discussion": processText,
-    "jounral_acknowledgements": processText,
+    "discussion": processText,
+    "acknowledgements": processText,
 }
 
 
@@ -465,11 +467,11 @@ class ATBD:
 
         # TODO: remove this one `journal_discussion` and `journal_acknowledgements`
         # get added as fields to the database
-        if self.journal and not myJson.get("journal_discussion"):
-            myJson["journal_discussion"] = None
+        if self.journal and not myJson.get("discussion"):
+            myJson["discussion"] = None
 
-        if self.journal and not myJson.get("journal_acknowledgements"):
-            myJson["journal_acknowledgements"] = None
+        if self.journal and not myJson.get("acknowledgements"):
+            myJson["acknowledgements"] = None
 
         commands += [texify(x, y) for x, y in myJson.items() if x in mapVars.keys()]
 
