@@ -43,7 +43,6 @@ class Cache:
         :rtype: Optional[str]
         :raises CacheException:
         """
-        return None
         try:
             response = self.s3_client.head_object(Key=key, Bucket=self.bucket_name)
             if response["ContentLength"] > 0:
