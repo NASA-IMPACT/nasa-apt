@@ -28,6 +28,7 @@ htmlImgs = []
 references = []
 refIDs = {}
 
+
 # from https://stackoverflow.com/questions/19053707/converting-snake-case-to-lower-camel-case-lowercamelcase
 def toCamelCase(snake_str):
     components = snake_str.split("_")
@@ -382,8 +383,8 @@ mapVars = {
     "data_access_input_data": processDataAccess,
     "data_access_output_data": processDataAccess,
     "data_access_related_urls": processDataAccessURL,
-    "discussion": processText,
-    "acknowledgements": processText,
+    "journal_discussion": processWYSIWYG,
+    "journal_acknowledgements": processWYSIWYG,
 }
 
 
@@ -465,13 +466,10 @@ class ATBD:
             for item, value in myJson.items():
                 print("item: {}, value: {}".format(item, value))
 
-        # TODO: remove this one `journal_discussion` and `journal_acknowledgements`
-        # get added as fields to the database
-        if self.journal and not myJson.get("discussion"):
-            myJson["discussion"] = None
-
-        if self.journal and not myJson.get("acknowledgements"):
-            myJson["acknowledgements"] = None
+        if not self.journal and myJson.get("journal_discussion"):
+            del myJson["journal_discussion"]
+        if not self.journal and myJson.get("journal_acknowledgements"):
+            del myJson["journal_acknowledgements"]
 
         commands += [texify(x, y) for x, y in myJson.items() if x in mapVars.keys()]
 

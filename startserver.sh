@@ -6,7 +6,7 @@ set -e
 
 PG_PORT=5432
 S3_PORT=4566
-S3=http://localstack:$S3_PORT # localstack
+S3=http://localhost:$S3_PORT # localstack
 
 # .env loading in the shell
 dotenv () {
