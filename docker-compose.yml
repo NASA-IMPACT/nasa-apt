@@ -12,12 +12,21 @@ services:
       POSTGRES_PASSWORD: password
   # localstack for local development only. AWS S3 used for staging/production
   localstack:
-    image: localstack/localstack:latest
-    ports:
-      - 4572:4572 #s3
+    image: localstack/localstack
+    #   # https://github.com/localstack/localstack/issues/2983
+    #   - 4566:4566 # edge service
+    #   - 4572:4572
+    #   - 4571:4571
     environment:
       - SERVICES=s3
       - DATA_DIR=./figures
+      - HOSTNAME_EXTERNAL=localstack
+      - DEFAULT_REGION=us-east-1
+      - DEBUG=1
+      - LOCALSTACK_HOSTNAME=localstack
+    hostname: localstack
+    ports:
+      - "4563-4584:4563-4584"
   rest-api:
     image: postgrest/postgrest:v6.0.2
     ports:
@@ -48,6 +57,8 @@ services:
     depends_on:
       - localstack
       - rest-api
+    # links:
+    #   - "localstack:localhost"
   swagger:
     image: swaggerapi/swagger-ui
     ports:
@@ -67,4 +78,7 @@ services:
     image: dadarek/wait-for-dependencies
     depends_on:
       - localstack
-    command: localstack:4572
+    command: localstack:4566
+
+
+  

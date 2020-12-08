@@ -5,8 +5,8 @@
 set -e
 
 PG_PORT=5432
-S3_PORT=4572
-S3=http://localhost:$S3_PORT # localstack
+S3_PORT=4566
+S3=http://localstack:$S3_PORT # localstack
 
 # .env loading in the shell
 dotenv () {
@@ -36,14 +36,14 @@ then
   exit 1
 fi
 
-docker-compose build
+docker-compose build 
 
 # blocks until given endpoints are accessible over tcp
-docker-compose run --rm localstack-ready
-docker-compose run --rm db-ready
+docker-compose run --rm localstack-ready 
+docker-compose run --rm db-ready 
 
 # start remaining services
-docker-compose up --detach
+docker-compose up --detach 
 
 # all the services are up, now create & populate the s3 buckets and the pg database
 

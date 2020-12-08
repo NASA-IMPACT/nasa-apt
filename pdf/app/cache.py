@@ -15,6 +15,7 @@ class Cache:
     A simple s3 based cache for atbd pdfs. It has no cache invalidation logic, because the app business rules enforce
     only Published atbds should have cached pdfs, and Published atbds cannot be edited. So they are static resources.
     """
+
     s3_endpoint: ParseResult
     bucket_name: str
     s3_client: botostubs.S3
@@ -29,7 +30,7 @@ class Cache:
         """
         self.s3_endpoint = urlparse(s3_endpoint)
         self.bucket_name = bucket_name
-        self.s3_client = boto3.client('s3', endpoint_url=self.s3_endpoint.geturl())
+        self.s3_client = boto3.client("s3", endpoint_url=self.s3_endpoint.geturl())
 
     def get_file_url(self, key: str) -> Optional[str]:
         """
@@ -42,9 +43,10 @@ class Cache:
         :rtype: Optional[str]
         :raises CacheException:
         """
+        return None
         try:
             response = self.s3_client.head_object(Key=key, Bucket=self.bucket_name)
-            if response['ContentLength'] > 0:
+            if response["ContentLength"] > 0:
                 return self.s3_url_for_object(key)
         except UnknownKeyError:
             pass  # cache miss
@@ -65,7 +67,9 @@ class Cache:
         :raises CacheException:
         """
         try:
-            self.s3_client.upload_file(filename, self.bucket_name, key, ExtraArgs={'ACL': 'public-read'})
+            self.s3_client.upload_file(
+                filename, self.bucket_name, key, ExtraArgs={"ACL": "public-read"}
+            )
         except ClientError as e:
             raise CacheException(str(e)) from e
         return self.s3_url_for_object(key)
@@ -80,8 +84,13 @@ class Cache:
         :return: s3 url
         :rtype: str
         """
+
         scheme = self.s3_endpoint.scheme
         # workaround for local port forwarding in dev environment
-        port = f':{self.s3_endpoint.port}' if self.s3_endpoint.port else ''
-        hostname = 'localhost' if self.s3_endpoint.hostname == 'localstack' else self.s3_endpoint.hostname
-        return f'{scheme}://{hostname}{port}/{self.bucket_name}/{key}'
+        port = f":{self.s3_endpoint.port}" if self.s3_endpoint.port else ""
+        hostname = (
+            "localhost"
+            if self.s3_endpoint.hostname == "localstack"
+            else self.s3_endpoint.hostname
+        )
+        return f"{scheme}://{hostname}{port}/{self.bucket_name}/{key}"
