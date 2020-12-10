@@ -1,5 +1,7 @@
 #!/bin/bash
-
+# Start of a script for consolidating control of actions
+# for managing stacks
+# WIP
 command=$1
 shift
 
