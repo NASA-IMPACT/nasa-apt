@@ -1,4 +1,19 @@
 #!/bin/bash
+if [ $# -ne 2]; then
+echo <<EOD
+# Usage syncdb.sh <name of stack to move data from> <name of stack to move data to>
+# This script will update an instance using the data from another instance
+# It goes through the following steps
+# 1) Gets connection information from cloudformation for each stack
+# 2) syncs figures in s3 buckets
+# 3) uses pg_dump -a (only dump data) to dump the apt schema from the source data set
+# 4) modifies the generated sql to change the url paths in the output
+# 5) loads the data into the new database
+#    Note: the load is done in a transaction, so if there are any errors,
+#          the entire transaction is rolled back
+EOD
+fi
+
 get_output(){
     echo $outputs | jq --raw-output ".[][] | select(.OutputKey==\"$1\").OutputValue"
 }
@@ -20,25 +35,6 @@ echo "syncing data from $fromfigures to $tofigures"
 aws s3 sync --delete s3://${fromfigures} s3://${tofigures}
 
 echo "syncing data from $fromdb to $todb while replacing $fromurl with $tourl"
-psql -e -1 -v ON_ERROR_STOP=1 $todb <<EOSQL
-SET SEARCH_PATH to apt, public;
-
-CREATE OR REPLACE FUNCTION change_notification() RETURNS TRIGGER AS \$\$
-DECLARE
-atbd_id int;
-BEGIN
-IF TG_TABLE_NAME = 'contacts' THEN
-    SELECT INTO atbd_id c.atbd_id from atbd_contacts c WHERE contact_id=NEW.contact_id;
-ELSIF TG_TABLE_NAME = 'contact_groups' THEN
-    SELECT INTO atbd_id c.atbd_id from atbd_contact_groups c WHERE contact_group_id=NEW.contact_group_id;
-ELSE
-    atbd_id = NEW.atbd_id;
-END IF;
-PERFORM pg_notify('atbd',atbd_id::text);
-RETURN NEW;
-END;
-\$\$ LANGUAGE PLPGSQL;
-EOSQL
 
 pg_dump -a --schema=apt  $fromdb | \
   sed -e "s|${fromurl}|${tourl}|g" \
