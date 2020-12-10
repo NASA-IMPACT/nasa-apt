@@ -1,17 +1,20 @@
 #!/bin/bash
-if [ $# -ne 2]; then
-echo <<EOD
-# Usage syncdb.sh <name of stack to move data from> <name of stack to move data to>
-# This script will update an instance using the data from another instance
-# It goes through the following steps
-# 1) Gets connection information from cloudformation for each stack
-# 2) syncs figures in s3 buckets
-# 3) uses pg_dump -a (only dump data) to dump the apt schema from the source data set
-# 4) modifies the generated sql to change the url paths in the output
-# 5) loads the data into the new database
-#    Note: the load is done in a transaction, so if there are any errors,
-#          the entire transaction is rolled back
-EOD
+set -e
+if [ $# -ne 2 ]; then
+echo "
+    Usage:
+         syncdb.sh <name of stack to move data from> <name of stack to move data to>
+    This script will update an instance using the data from another instance
+    It goes through the following steps
+    1) Gets connection information from cloudformation for each stack
+    2) syncs figures in s3 buckets
+    3) uses pg_dump -a (only dump data) to dump the apt schema from the source data set
+    4) modifies the generated sql to change the url paths in the output
+    5) loads the data into the new database
+    Note: the load is done in a transaction, so if there are any errors,
+            the entire transaction is rolled back
+"
+exit
 fi
 
 get_output(){
@@ -33,6 +36,12 @@ tourl=${tos3}/${tofigures}
 
 echo "syncing data from $fromfigures to $tofigures"
 aws s3 sync --delete s3://${fromfigures} s3://${tofigures}
+
+echo "Running sqitch to run any migrations on the to database"
+
+cd db
+./sqitch deploy --verify db:$todb
+cd ..
 
 echo "syncing data from $fromdb to $todb while replacing $fromurl with $tourl"
 
