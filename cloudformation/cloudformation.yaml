@@ -307,12 +307,12 @@ Resources:
     Properties:
       HealthCheckIntervalSeconds: 6
       HealthCheckPath: /
-      HealthCheckProtocol: HTTPS
+      HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
       Name: !Join ['-', [!Ref 'AWS::StackName', 'dummyTarget']]
-      Port: 443
-      Protocol: HTTPS
+      Port: 80
+      Protocol: HTTP
       UnhealthyThresholdCount: 2
       VpcId: !Ref 'VPC'
 
@@ -323,8 +323,8 @@ Resources:
         - TargetGroupArn: !Ref 'DummyTargetGroupPublic'
           Type: 'forward'
       LoadBalancerArn: !Ref 'PublicLoadBalancer'
-      Port: 443
-      Protocol: HTTPS
+      Port: 80
+      Protocol: HTTP
 
   # This is a role which is used by the ECS tasks themselves.
   ECSTaskExecutionRole:
@@ -467,7 +467,7 @@ Resources:
             - Name: APT_FRONTEND_URL
               Value: 'http://nasa-apt-eltest-application.s3-website-us-east-1.amazonaws.com'
             - Name: IDP_METADATA_URL
-              Value: 'https://dbspatial.us.auth0.com/samlp/metadata/vEJRZ0X6OtSMzkhBqIUMM62KDJhSNyG3'
+              Value: 'https://auth.launchpad-sbx.nasa.gov/unauth/metadata/launchpad-sbx.idp.xml'
             - Name: FASTAPI_HOST
               Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
             - Name: JWT_SECRET
@@ -522,7 +522,7 @@ Resources:
       TargetType: ip
       Name: !Sub '${AWS::StackName}-tg-pgr'
       Port: 3000
-      Protocol: HTTPS
+      Protocol: HTTP
       UnhealthyThresholdCount: 2
       VpcId: !Ref VPC
 
@@ -541,7 +541,7 @@ Resources:
       TargetType: ip
       Name: !Sub '${AWS::StackName}-tg-fastapi'
       Port: 80
-      Protocol: HTTPS
+      Protocol: HTTP
       VpcId: !Ref VPC
 
   # Create a rule on the load balancer for routing traffic to the target group
