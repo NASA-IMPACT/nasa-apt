@@ -43,7 +43,7 @@ Parameters:
       traffic to this service.
   PostgRESTPriority:
     Type: Number
-    Default: 2
+    Default: 3
     Description: The priority for the routing rule added to the load balancer.
       This only applies if your have multiple services which are
       assigned to different paths on the load balancer.
@@ -67,7 +67,7 @@ Parameters:
     Description: API prefix as used by FastAPI in PDF service (must be consistent with PDFPATH)
   FastapiPriority:
     Type: Number
-    Default: 1
+    Default: 2
     Description: The priority for the routing rule added to the load balancer.
                  This only applies if your have multiple services which are
                  assigned to different paths on the load balancer.
@@ -555,12 +555,8 @@ Resources:
         - Field: path-pattern
           PathPatternConfig:
             Values:
-              - /sso
-              - /slo
-              - /sls
-              - /attrs
-              - /acs
-      Priority: !Ref 'FastapiPriority'
+              - /saml/*
+      Priority: 1
       ListenerArn: !Ref PublicLoadBalancerListener
 
   PostgRESTLoadBalancerRule:
