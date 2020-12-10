@@ -41,4 +41,5 @@ websockets==8.1
 yarg==0.1.9
 itsdangerous==1.1.0
 python3-saml==1.9.0
-python-multipart
+python-multipart==0.0.5
+python-jose==3.2.0

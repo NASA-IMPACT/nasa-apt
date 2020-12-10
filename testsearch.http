@@ -1,0 +1,21 @@
+POST https://apt.ds.io/fastapi/search HTTP/1.1
+content-type: application/json
+
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "multi_match": {
+            "query": "is"
+          }
+        }
+      ]
+    }
+  },
+  "highlight": {
+    "fields": {
+      "*": {}
+    }
+  }
+}

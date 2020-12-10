@@ -14,3 +14,4 @@ atbdAlias [tables] 2020-05-07T14:34:43Z Daniel da Silva <daniel@hystericalhamste
 copyATBDAlias [copyATBD] 2020-05-08T15:56:26Z Daniel da Silva <daniel@hystericalhamster> # Creates a unique alias when copying atbd
 textsearchAlias [textsearch] 2020-05-08T15:57:18Z Daniel da Silva <daniel@hystericalhamster> # Includes the atbs alias when searching
 notifytriggers 2020-07-30T16:31:36Z David Bitner <bitner@bitner-desktop> # Add triggers to send notify to be used for updating elastic
+anonymous 2020-12-10T13:24:06Z David Bitner <bitner@bitner-desktop> # add row level security for anonymous users

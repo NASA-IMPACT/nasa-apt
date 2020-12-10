@@ -1,0 +1,62 @@
+#!/bin/bash
+
+command=$1
+shift
+
+set -a
+source .env
+set +a
+REGION=us-east-1
+ECR=552819999234.dkr.ecr.us-east-1.amazonaws.com
+CONTAINER=${ECR}/nasa-apt/saml/fastapi
+
+if [ -z ${STACKNAME+x} ];
+    then read -p 'Stack name: ' STACKNAME
+fi
+
+if [ -z ${DBPASS+x} ];
+    then read -p 'Stack name: ' DBPASS
+fi
+
+
+get_output(){
+    echo $outputs | jq --raw-output ".[][] | select(.OutputKey==\"$1\").OutputValue"
+}
+outputs=`aws cloudformation describe-stacks --region us-east-1 --stack-name $STACKNAME --output json --query 'Stacks[*].Outputs[*]'`
+
+# CLUSTER=$(get_output CLUsTER)
+# FASTAPISERVICE=$(get_output SERVICE)
+
+
+
+deploy(){
+    cd cloudformation
+    aws cloudformation deploy \
+  --template-file cloudformation.yaml \
+  --stack-name $STACKNAME \
+  --tags Project=nasa-apt \
+  --parameter-overrides \
+      DBName=nasadb \
+      DBUser=masteruser \
+      DBPassword=$DBPASS \
+      ElasticsearchDomainName=nasadb-$STACKNAME \
+  --region us-east-1 --capabilities CAPABILITY_IAM
+}
+
+update_fastapi(){
+    aws ecr get-login-password --region $REGION | \
+    docker login --username AWS --password-stdin $ECR
+
+    docker build -t $CONTAINER fastapi/. && \
+    docker push $CONTAINER && \
+    aws ecs update-service --force-new-deployment \
+    --cluster $CLUSTER \
+    --service $FASTAPISERVICE \
+    --region $REGION
+}
+
+dburl(){
+    get_output PGConnection
+}
+
+$command "$@"

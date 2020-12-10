@@ -3,11 +3,20 @@ from sys import exit
 from tempfile import TemporaryDirectory
 from typing import Union, Dict, Type
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Request, Depends
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    BackgroundTasks,
+    Request,
+    Depends,
+)
 from fastapi.logger import logger
-from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
+from fastapi.responses import (
+    FileResponse,
+    RedirectResponse,
+    JSONResponse,
+)
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 
 from .atbd.checksum_atbd import checksum_atbd
 from .atbd.get_atbd import get_atbd
@@ -16,9 +25,14 @@ from .atbd.Status import Status
 from .cache import Cache, CacheException
 from .latex.json_to_latex import json_to_latex, JsonToLatexException
 from .pdf.latex_to_pdf import latex_to_pdf, LatexToPDFException
-from .search.searchindex import update_index, index_atbd, ELASTICURL, aws_auth
+from .search.searchindex import (
+    update_index,
+    index_atbd,
+    ELASTICURL,
+    aws_auth,
+)
 from .saml import router as saml
-from .saml import User, require_user
+from .saml import User, require_user, get_user
 
 import asyncpg
 import requests
@@ -46,7 +60,9 @@ frontend_url: str = environ.get("APT_FRONTEND_URL") or exit(
 )
 
 app: FastAPI = FastAPI()
-cache: Cache = Cache(s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name)
+cache: Cache = Cache(
+    s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name
+)
 
 
 origins = [
@@ -64,12 +80,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(
-    SessionMiddleware,
-    secret_key = 'lk23j4l24jk23789098ulkhjljkjlk'
-)
+# app.add_middleware(
+#     SessionMiddleware, secret_key="lk23j4l24jk23789098ulkhjljkjlk"
+# )
 
-app.include_router(saml)
+app.include_router(
+    saml,
+    prefix="/saml",
+)
 
 
 @app.on_event("startup")
@@ -86,7 +104,7 @@ async def startup() -> None:
 
 @app.on_event("shutdown")
 async def shutdown() -> None:
-    await app.state.connection.remove_listener('atbd', index_atbd)
+    await app.state.connection.remove_listener("atbd", index_atbd)
     await app.state.connection.close()
 
 
@@ -102,7 +120,9 @@ def get_cache_key(atbd_doc: Dict) -> str:
     hex_digest: str = checksum_atbd(atbd_doc)
     alias: str = atbd_doc["atbd"]["alias"]
     return (
-        f"{hex_digest}/{alias}.pdf" if alias else f"{hex_digest}/nasa-atbd.pdf"
+        f"{hex_digest}/{alias}.pdf"
+        if alias
+        else f"{hex_digest}/nasa-atbd.pdf"
     )
 
 
@@ -140,7 +160,9 @@ def atbd_pdf_handler(
     tmp_dir: str = tmp_dir_resource.name
     background_tasks.add_task(cleanup_tmp_dir, tmp_dir_resource)
     try:
-        (latex_filename, _) = json_to_latex(atbd_doc=atbd_doc, tmp_dir=tmp_dir)
+        (latex_filename, _) = json_to_latex(
+            atbd_doc=atbd_doc, tmp_dir=tmp_dir
+        )
     except JsonToLatexException as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
     try:
@@ -162,16 +184,33 @@ def atbd_pdf_handler(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
+@app.get("/")
+def index(user: User = Depends(require_user)):
+    return {}
+
+
 @app.get(root_path + "atbds/id/{atbd_id}.pdf")
-def get_atbd_by_id(atbd_id: int, background_tasks: BackgroundTasks, user: User=Depends(require_user)):
+def get_atbd_by_id(
+    atbd_id: int,
+    background_tasks: BackgroundTasks,
+    user: User = Depends(get_user),
+):
     atbd_doc = get_atbd(atbd_id=atbd_id)
-    return atbd_pdf_handler(atbd_doc, background_tasks=background_tasks)
+    return atbd_pdf_handler(
+        atbd_doc, background_tasks=background_tasks
+    )
 
 
 @app.get(root_path + "atbds/alias/{alias}.pdf")
-def get_atbd_pdf_by_alias(alias: str, background_tasks: BackgroundTasks, user: User=Depends(require_user)):
+def get_atbd_pdf_by_alias(
+    alias: str,
+    background_tasks: BackgroundTasks,
+    user: User = Depends(get_user),
+):
     atbd_doc = get_atbd(alias=alias)
-    return atbd_pdf_handler(atbd_doc, background_tasks=background_tasks)
+    return atbd_pdf_handler(
+        atbd_doc, background_tasks=background_tasks
+    )
 
 
 @app.get(root_path)
@@ -199,31 +238,49 @@ def cleanup_tmp_dir(tmp_dir: Type[TemporaryDirectory]):
 
 
 @app.get(root_path + "reindex",)
-async def reindex(request: Request, user: User=Depends(require_user)):
+async def reindex(
+    request: Request, user: User = Depends(require_user)
+):
     """
     Reindex all ATBD's into ElasticSearch
     """
-    logger.info('Reindexing %s', ELASTICURL)
-    results = await update_index(connection=request.app.state.connection)
+    logger.info("Reindexing %s", ELASTICURL)
+    results = await update_index(
+        connection=request.app.state.connection
+    )
     return JSONResponse(content=results)
 
 
 @app.post(root_path + "search",)
-async def search_elastic(request: Request, user: User=Depends(require_user)):
+async def search_elastic(
+    request: Request, user: User = Depends(get_user)
+):
     """
     Proxies POST json to elastic search endpoint
     """
     url = f"{ELASTICURL}/atbd/_search"
-    data = await request.body()
+    data = await request.json()
+    logger.info("User %s", user)
+    logger.info("data: %s", data)
+    if user is None:
+        data['query']['bool']['filter'] = [
+            {
+                "match": {
+                    "status": "published"
+                }
+            }
+        ]
     logger.info("Searching %s %s", url, data)
     auth = aws_auth()
     response = requests.post(
         url,
         auth=auth,
-        data=data,
-        headers={"Content-Type": "application/json"}
+        json=data,
+        headers={"Content-Type": "application/json"},
     )
-    logger.info('status:%s response:%s', response.status_code, response.text)
+    logger.info(
+        "status:%s response:%s", response.status_code, response.text
+    )
     if not response.ok:
         raise HTTPException(
             status_code=response.status_code, detail=response.text
