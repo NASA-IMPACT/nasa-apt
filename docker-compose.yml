@@ -63,6 +63,8 @@ services:
       ELASTICURL: http://elastic:9200
       IDP_METADATA_URL: $IDP_METADATA_URL
       FASTAPI_HOST: http://localhost:8000
+      JWT_SECRET: $JWT_SECRET
+      APT_FRONTEND_URL: $APT_FRONTEND_URL
     depends_on:
       - localstack
       - rest-api

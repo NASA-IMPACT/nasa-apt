@@ -37,11 +37,15 @@ host: str = environ.get("FASTAPI_HOST") or exit(
 host = str.lower(host)
 host_parsed = urlparse(host)
 
+mockauth=False
 idp_metadata_url: str = environ.get("IDP_METADATA_URL") or exit(
     "IDP_METADATA_URL env var required"
 )
-# idp_metadata_url = 'https://dbspatial.us.auth0.com/samlp/metadata/vEJRZ0X6OtSMzkhBqIUMM62KDJhSNyG3'
-idp_metadata_url = 'https://auth.launchpad-sbx.nasa.gov/unauth/metadata/launchpad-sbx.idp.xml'
+if idp_metadata_url == 'mock':
+    # Use Fake Key
+    logger.warning('using mock authentication')
+    mockauth = True
+
 
 default_return: str = environ.get("APT_FRONTEND_URL") or exit(
     "APT_FRONTEND_URL env var required"
@@ -51,16 +55,19 @@ router = APIRouter()
 
 base_path = os.path.dirname(os.path.abspath(__file__))
 
-idp_data = OneLogin_Saml2_IdPMetadataParser.parse_remote(
-    idp_metadata_url
-)
-logger.debug("test debug")
+if not mockauth:
+    idp_data = OneLogin_Saml2_IdPMetadataParser.parse_remote(
+        idp_metadata_url
+    )
 
 
 def url_for_path(path):
     url = urlparse(host)
     return urlunparse(url._replace(path=path))
 
+class MockAuth:
+    def get_errors(self):
+        return []
 
 class SamlAuth:
     def __init__(
@@ -137,6 +144,10 @@ class SamlAuth:
         }
 
     async def get_auth(self):
+        if mockauth:
+            self.auth = MockAuth()
+            return self.auth
+
         self.saml_request = await self.prepare_saml_request()
         init_settings = {
             "strict": True,
@@ -286,20 +297,31 @@ async def get_user(saml: SamlAuth = Depends(SamlAuth)) -> User:
 async def sso(
     saml: SamlAuth = Depends(saml_auth)
 ):
+    if mockauth:
+        return RedirectResponse(url=f"{saml.url_for('acs')}?RelayState={saml.relay_state}")
     return RedirectResponse(url=saml.auth.login(saml.return_to))
 
 
 @router.post("/acs")
+@router.get("/acs")
 async def acs(saml: SamlAuth = Depends(saml_auth),):
     auth = saml.auth
-    auth.process_response()
-    saml.raise_autherror()
-    saml.name_id = auth.get_nameid()
-    saml.name_id_format = auth.get_nameid_format()
-    saml.nq = auth.get_nameid_nq()
-    saml.spnq = auth.get_nameid_spnq()
-    saml.session_index = auth.get_session_index()
-    saml.userdata = auth.get_attributes()
+    if mockauth:
+        saml.name_id = 'nameid'
+        saml.name_id_format = 'format'
+        saml.nq = 'nq'
+        saml.spnq = 'spnq'
+        saml.session_index = 'index'
+        saml.userdata = {"myattribute":1}
+    else:
+        auth.process_response()
+        saml.raise_autherror()
+        saml.name_id = auth.get_nameid()
+        saml.name_id_format = auth.get_nameid_format()
+        saml.nq = auth.get_nameid_nq()
+        saml.spnq = auth.get_nameid_spnq()
+        saml.session_index = auth.get_session_index()
+        saml.userdata = auth.get_attributes()
     logger.warning('acs relay_state: %s', saml.relay_state)
     if saml.relay_state != saml.url_for('sso'):
         relay_state = saml.relay_state
@@ -314,6 +336,9 @@ async def acs(saml: SamlAuth = Depends(saml_auth),):
 async def slo(saml: SamlAuth = Depends(saml_auth)):
     auth = saml.auth
     logger.warning('slo return_to: %s, relay_state: %s', saml.return_to, saml.relay_state)
+    if mockauth:
+        saml.userdata = None
+        saml.redirect(saml.return_to)
     url = auth.logout(
         return_to=saml.return_to,
         name_id=saml.name_id,

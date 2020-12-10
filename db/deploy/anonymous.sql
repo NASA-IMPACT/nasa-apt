@@ -1,7 +1,7 @@
 -- Deploy nasa-apt:anonymous to pg
 
 BEGIN;
---create role if not anonymous noinherit;
+create role anonymous noinherit;
 grant anonymous to masteruser;
 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA apt FROM anonymous;
 REVOKE ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA apt FROM anonymous;
