@@ -190,9 +190,12 @@ def processWYSIWYGElement(node):
             cmd = "\n \n" + wrapImage(imgCommand) + "\n \n"
         return cmd, "image"
     elif node["type"] == "equation":
+        print(node["nodes"][0]["leaves"][0]["text"])
         return (
             " \\begin{equation} "
+            + " \\begin{split} "
             + node["nodes"][0]["leaves"][0]["text"]
+            + " \\end{split} "
             + " \\end{equation} ",
             "equation",
         )
