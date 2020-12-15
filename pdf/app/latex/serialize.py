@@ -50,7 +50,8 @@ def processTable(nodeRows, caption=None):
             for cell in row["nodes"]:
                 # Since we kept each cell in the table as a flexible type, they must be processed as generic WYSIWYG elements
                 tableList[-1].append(processWYSIWYGElement(cell)[0])
-    columnNames = tableList.pop(0)
+
+    columnNames = [" " if not x else x for x in tableList.pop(0)]
     pd.set_option("display.max_colwidth", 1000)
     df = pd.DataFrame(tableList, columns=columnNames)
     # latex default text width = 426 pts
@@ -70,6 +71,7 @@ def processTable(nodeRows, caption=None):
     latexTable = df.to_latex(**to_latex_params)
     # insert [h] for block latex from "floating" the table to the top of the page
     latexTable = latexTable.replace("\\begin{table}", "\\begin{table}[h]")
+    print("Latex Table: ", latexTable)
     return latexTable
 
 
@@ -171,7 +173,7 @@ def processWYSIWYGElement(node):
     if node["type"] == "table":
         return (
             "\n \n"
-            + processTable(node["nodes"], caption=node.get("caption"))
+            + processTable(node["nodes"], caption=node.get("data", {}).get("caption"))
             + "\n \n",
             "table",
         )
@@ -190,7 +192,6 @@ def processWYSIWYGElement(node):
             cmd = "\n \n" + wrapImage(imgCommand) + "\n \n"
         return cmd, "image"
     elif node["type"] == "equation":
-        print(node["nodes"][0]["leaves"][0]["text"])
         return (
             " \\begin{equation} "
             + " \\begin{split} "
@@ -332,8 +333,6 @@ def processVarList(element):
         var["long_name"] = processWYSIWYG(json.loads(var["long_name"])).strip("\\")
         if var["unit"] is None:
             continue
-        print("UNIT: ")
-        print(processWYSIWYG(json.loads(var["unit"])))
         var["unit"] = processWYSIWYG(json.loads(var["unit"])).strip("\\")
 
     pd.set_option("display.max_colwidth", 1000)
@@ -462,7 +461,6 @@ class ATBD:
     # Parse the JSON file into the corresponding sections (variables) enumerated in the ATBD
     def texVariables(self):
         myJson = json.loads(open(self.filepath).read())
-        print("DATA DATA DATA: ", myJson)
         processReferences(myJson.pop("publication_references"))
         commands = processATBD(myJson.pop("atbd"))
         if debug:
