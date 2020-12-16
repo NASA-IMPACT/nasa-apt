@@ -57,8 +57,16 @@ update_fastapi(){
     --region $REGION
 }
 
+apiurl(){
+    get_output FastapiEndpoint
+}
+
 dburl(){
     get_output PGConnection
+}
+
+outputs(){
+    echo $outputs | jq
 }
 
 $command "$@"

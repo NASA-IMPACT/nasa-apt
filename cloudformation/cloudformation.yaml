@@ -389,7 +389,7 @@ Resources:
               Value: !Ref 'JWTSecret'
             -
               Name: PGRST_DB_ANON_ROLE
-              Value: app_user
+              Value: anonymous
           LogConfiguration:
             LogDriver: 'awslogs'
             Options:
@@ -465,11 +465,12 @@ Resources:
             - Name: ELASTICURL
               Value: !Join ['', ['https://', !GetAtt [Elasticsearch, DomainEndpoint]]]
             - Name: APT_FRONTEND_URL
-              Value: 'http://nasa-apt-eltest-application.s3-website-us-east-1.amazonaws.com'
+              Value: 'https://nasa-apt-eltest-application.s3-website-us-east-1.amazonaws.com'
             - Name: IDP_METADATA_URL
               Value: 'https://auth.launchpad-sbx.nasa.gov/unauth/metadata/launchpad-sbx.idp.xml'
             - Name: FASTAPI_HOST
-              Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
+              # Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
+              Value: 'https://apt.ds.io'
             - Name: JWT_SECRET
               Value: !Ref 'JWTSecret'
           LogConfiguration:
