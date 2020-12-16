@@ -47,6 +47,9 @@ def processTable(nodeRows, caption=None):
     for rows in nodeRows:
         tableList.append([])
         for row in rows["nodes"]:
+            if "nodes" not in row:
+                tableList.pop(-1)
+                continue
             for cell in row["nodes"]:
                 # Since we kept each cell in the table as a flexible type, they must be processed as generic WYSIWYG elements
                 tableList[-1].append(processWYSIWYGElement(cell)[0])
@@ -56,22 +59,21 @@ def processTable(nodeRows, caption=None):
     df = pd.DataFrame(tableList, columns=columnNames)
     # latex default text width = 426 pts
     column_format = "|".join(
-        f" p{{{int(426/len(columnNames))}pt}} " for _ in columnNames
+        f" m{{{int(375/len(columnNames))}pt}} " for _ in columnNames
     )
+
     to_latex_params = dict(
-        index=False,
-        escape=False,
-        header=True,
-        column_format=column_format,
-        na_rep=" ",
+        index=False, escape=False, header=True, column_format=f"{column_format}"
     )
+
     if caption:
         to_latex_params["caption"] = caption
 
     latexTable = df.to_latex(**to_latex_params)
     # insert [h] for block latex from "floating" the table to the top of the page
     latexTable = latexTable.replace("\\begin{table}", "\\begin{table}[h]")
-    print("Latex Table: ", latexTable)
+
+    print("Latex table: ", latexTable)
     return latexTable
 
 
@@ -501,6 +503,7 @@ class ATBD:
             modified.write("\n \\fi \n")
             modified.write("\n".join(self.texVars) + " \n" + data)
             fileName = modified.name
+
         with open(os.path.join(os.path.dirname(fileName), "main.bib"), "w") as bibFile:
             bibFile.write("\n".join(references))
         return fileName
