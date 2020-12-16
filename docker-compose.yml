@@ -10,6 +10,20 @@ services:
       POSTGRES_DB: nasadb
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
+    command: postgres -c log_statement=all
+  elastic:
+    # Elastic db for local development only.
+    # For staging/production, add elasticache instance
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+    environment:
+      - discovery.type=single-node
+      - http.port=9200
+      - http.cors.allow-origin=*
+      - http.cors.enabled=true
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - http.cors.allow-credentials=true
+    ports:
+      - "9200:9200"
   # localstack for local development only. AWS S3 used for staging/production
   localstack:
     image: localstack/localstack:latest
@@ -26,17 +40,18 @@ services:
     environment:
       PGRST_DB_URI: postgres://masteruser:password@db:5432/nasadb
       PGRST_DB_SCHEMA: apt
-      PGRST_DB_ANON_ROLE: app_user
+      PGRST_DB_ANON_ROLE: anonymous
+      PGRST_JWT_SECRET: $JWT_SECRET
     depends_on:
       - db
-  pdf-api:
-    build: ./pdf
-    image: nasa-apt/dev/pdf
+  fastapi:
+    build: ./fastapi
+    image: nasa-apt/dev/fastapi
     ports:
-      - "8000:8000"
+      - "8000:80"
     volumes:
       - type: bind
-        source: ./pdf/app
+        source: ./fastapi/app
         target: /app/app
     environment:
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
@@ -46,6 +61,12 @@ services:
       S3_ENDPOINT: $S3_ENDPOINT
       PDFS_S3_BUCKET: $PDFS_S3_BUCKET
       FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
+      DBURL: postgres://masteruser:password@db:5432/nasadb
+      ELASTICURL: http://elastic:9200
+      IDP_METADATA_URL: $IDP_METADATA_URL
+      FASTAPI_HOST: http://localhost:8000
+      JWT_SECRET: $JWT_SECRET
+      APT_FRONTEND_URL: $APT_FRONTEND_URL
     depends_on:
       - localstack
       - rest-api

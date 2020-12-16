@@ -30,7 +30,9 @@ class Cache:
         """
         self.s3_endpoint = urlparse(s3_endpoint)
         self.bucket_name = bucket_name
-        self.s3_client = boto3.client("s3", endpoint_url=self.s3_endpoint.geturl())
+        self.s3_client = boto3.client(
+            "s3", endpoint_url=self.s3_endpoint.geturl()
+        )
 
     def get_file_url(self, key: str) -> Optional[str]:
         """
@@ -44,7 +46,9 @@ class Cache:
         :raises CacheException:
         """
         try:
-            response = self.s3_client.head_object(Key=key, Bucket=self.bucket_name)
+            response = self.s3_client.head_object(
+                Key=key, Bucket=self.bucket_name
+            )
             if response["ContentLength"] > 0:
                 return self.s3_url_for_object(key)
         except UnknownKeyError:
@@ -67,7 +71,10 @@ class Cache:
         """
         try:
             self.s3_client.upload_file(
-                filename, self.bucket_name, key, ExtraArgs={"ACL": "public-read"}
+                filename,
+                self.bucket_name,
+                key,
+                ExtraArgs={"ACL": "public-read"},
             )
         except ClientError as e:
             raise CacheException(str(e)) from e
@@ -86,7 +93,11 @@ class Cache:
 
         scheme = self.s3_endpoint.scheme
         # workaround for local port forwarding in dev environment
-        port = f":{self.s3_endpoint.port}" if self.s3_endpoint.port else ""
+        port = (
+            f":{self.s3_endpoint.port}"
+            if self.s3_endpoint.port
+            else ""
+        )
         hostname = (
             "localhost"
             if self.s3_endpoint.hostname == "localstack"
