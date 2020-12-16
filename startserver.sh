@@ -62,6 +62,9 @@ pushd db
 ./loadTestData.sh
 popd
 
+# Make sure to bootstrap the elastic index
+curl -s -o /dev/null -v http://localhost:8000/reindex
+
 # force postgrest restart to see new schema
 docker-compose restart rest-api
 

@@ -6,3 +6,4 @@ ecs/tex/Misc Test Files
 venv
 .env
 .resources
+.vscode
