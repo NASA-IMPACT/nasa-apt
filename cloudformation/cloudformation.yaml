@@ -102,8 +102,20 @@ Parameters:
     ConstraintDescription: Please choose a valid instance type.
   JWTSecret:
     Type: String
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     Default: lkjlkjslkdjaflkjfsalkjfasdlkfdlkjlkjslkdjaflkjfsalkjfasdlkfdlkjlkjslkdjaflkjfsalkjfasdlkfd
     Description: Secret to use for creating JWT Tokens
+  APTFrontendUrl:
+    Type: String
+    Description: Frontend Url used to set CORS origin for FastAPI
+  IDPMetadataUrl:
+    Type: String
+    Description: Url for SAML IDP metadata
+  FastapiHost:
+    Type: String
+    Description: Url for FastApi
+Conditions:
+  HasFastapiHost: !Not [!Or [!Equals [!Ref 'FastapiHost', ''], !Equals [!Ref 'FastapiHost', 'http://localhost:8000']]]
 Mappings:
   # Hard values for the subnet masks. These masks define
   # the range of internal IP addresses that can be assigned.
@@ -465,12 +477,11 @@ Resources:
             - Name: ELASTICURL
               Value: !Join ['', ['https://', !GetAtt [Elasticsearch, DomainEndpoint]]]
             - Name: APT_FRONTEND_URL
-              Value: 'https://nasa-apt-eltest-application.s3-website-us-east-1.amazonaws.com'
+              Value: !Ref 'APTFrontendUrl'
             - Name: IDP_METADATA_URL
-              Value: 'https://auth.launchpad-sbx.nasa.gov/unauth/metadata/launchpad-sbx.idp.xml'
+              Value: !Ref 'IDPMetadataUrl'
             - Name: FASTAPI_HOST
-              # Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
-              Value: 'https://apt.ds.io'
+              Value: !If [HasFastapiHost, !Ref 'FastapiHost', !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]]
             - Name: JWT_SECRET
               Value: !Ref 'JWTSecret'
           LogConfiguration:
