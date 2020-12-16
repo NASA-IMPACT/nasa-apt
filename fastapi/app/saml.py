@@ -339,7 +339,7 @@ async def slo(saml: SamlAuth = Depends(saml_auth)):
     logger.warning('slo return_to: %s, relay_state: %s', saml.return_to, saml.relay_state)
     if mockauth:
         saml.userdata = None
-        saml.redirect(saml.return_to)
+        return saml.redirect(saml.return_to)
     url = auth.logout(
         return_to=saml.return_to,
         name_id=saml.name_id,
