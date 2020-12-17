@@ -44,9 +44,7 @@ root_path: str = environ.get("API_PREFIX", "/")
 rest_api_endpoint: str = environ.get("REST_API_ENDPOINT") or exit(
     "REST_API_ENDPOINT env var required"
 )
-s3_endpoint: str = environ.get("S3_ENDPOINT") or exit(
-    "S3_ENDPOINT env var required"
-)
+s3_endpoint: str = environ.get("S3_ENDPOINT") or exit("S3_ENDPOINT env var required")
 pdfs_bucket_name: str = environ.get("PDFS_S3_BUCKET") or exit(
     "PDFS_S3_BUCKET env var required"
 )
@@ -60,9 +58,7 @@ frontend_url: str = environ.get("APT_FRONTEND_URL") or exit(
 )
 
 app: FastAPI = FastAPI()
-cache: Cache = Cache(
-    s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name
-)
+cache: Cache = Cache(s3_endpoint=s3_endpoint, bucket_name=pdfs_bucket_name)
 
 
 origins = [
@@ -108,7 +104,7 @@ async def shutdown() -> None:
     await app.state.connection.close()
 
 
-def get_cache_key(atbd_doc: Dict) -> str:
+def get_cache_key(atbd_doc: Dict, journal: bool) -> str:
     """
     Helper function to construct a cache keys from
     the checksum and the alias of the atbd doc.
@@ -119,11 +115,18 @@ def get_cache_key(atbd_doc: Dict) -> str:
     """
     hex_digest: str = checksum_atbd(atbd_doc)
     alias: str = atbd_doc["atbd"]["alias"]
-    return (
-        f"{hex_digest}/{alias}.pdf"
-        if alias
-        else f"{hex_digest}/nasa-atbd.pdf"
-    )
+
+    key_items = [hex_digest]
+    if journal:
+        key_items.append("journal")
+
+    if alias:
+        key_items.append(f"{alias}.pdf")
+    else:
+        key_items.append("nasa-atbd.pdf")
+
+    return "/".join(key_items)
+    # return f"{hex_digest}/{alias}.pdf" if alias else f"{hex_digest}/nasa-atbd.pdf"
 
 
 def atbd_pdf_handler(
@@ -144,7 +147,7 @@ def atbd_pdf_handler(
     :raises HTTPException:
     """
     status: Status = get_status(atbd_doc)
-    cache_key: str = get_cache_key(atbd_doc)
+    cache_key: str = get_cache_key(atbd_doc, journal=journal)
     if status == Status.Published.name:
         # check cache: published atbds may be cached in s3
         try:
@@ -163,6 +166,7 @@ def atbd_pdf_handler(
         (latex_filename, _) = json_to_latex(
             atbd_doc=atbd_doc, tmp_dir=tmp_dir, journal=journal
         )
+
     except JsonToLatexException as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
     try:
@@ -171,9 +175,7 @@ def atbd_pdf_handler(
         )
         if status == Status.Published.name:
             try:
-                cache_url = cache.put_file(
-                    key=cache_key, filename=tmp_pdf_filename
-                )
+                cache_url = cache.put_file(key=cache_key, filename=tmp_pdf_filename)
                 return RedirectResponse(url=cache_url)
             except CacheException as e:
                 logger.error(str(e))
@@ -196,9 +198,7 @@ def get_atbd_by_id(
     user: User = Depends(get_user),
 ):
     atbd_doc = get_atbd(atbd_id=atbd_id)
-    return atbd_pdf_handler(
-        atbd_doc, background_tasks=background_tasks
-    )
+    return atbd_pdf_handler(atbd_doc, background_tasks=background_tasks)
 
 
 @app.get(root_path + "atbds/alias/{alias}.pdf")
@@ -208,9 +208,8 @@ def get_atbd_pdf_by_alias(
     user: User = Depends(get_user),
 ):
     atbd_doc = get_atbd(alias=alias)
-    return atbd_pdf_handler(
-        atbd_doc, background_tasks=background_tasks
-    )
+    return atbd_pdf_handler(atbd_doc, background_tasks=background_tasks)
+
 
 @app.get(root_path + "atbds/journal/id/{atbd_id}.pdf")
 def get_journal_atbd_by_id(
@@ -255,24 +254,23 @@ def cleanup_tmp_dir(tmp_dir: Type[TemporaryDirectory]):
     tmp_dir.cleanup()
     logger.info(f"cleaned up {tmp_dir.name}")
 
-@app.get(root_path + "reindex",)
-async def reindex(
-    request: Request, user: User = Depends(require_user)
-):
+
+@app.get(
+    root_path + "reindex",
+)
+async def reindex(request: Request, user: User = Depends(require_user)):
     """
     Reindex all ATBD's into ElasticSearch
     """
     logger.info("Reindexing %s", ELASTICURL)
-    results = await update_index(
-        connection=request.app.state.connection
-    )
+    results = await update_index(connection=request.app.state.connection)
     return JSONResponse(content=results)
 
 
-@app.post(root_path + "search",)
-async def search_elastic(
-    request: Request, user: User = Depends(get_user)
-):
+@app.post(
+    root_path + "search",
+)
+async def search_elastic(request: Request, user: User = Depends(get_user)):
     """
     Proxies POST json to elastic search endpoint
     """
@@ -280,14 +278,9 @@ async def search_elastic(
     data = await request.json()
     logger.info("User %s", user)
     logger.info("data: %s", data)
+
     if user is None:
-        data['query']['bool']['filter'] = [
-            {
-                "match": {
-                    "status": "published"
-                }
-            }
-        ]
+        data["query"]["bool"]["filter"] = [{"match": {"status": "published"}}]
     logger.info("Searching %s %s", url, data)
     auth = aws_auth()
     response = requests.post(
@@ -296,11 +289,7 @@ async def search_elastic(
         json=data,
         headers={"Content-Type": "application/json"},
     )
-    logger.info(
-        "status:%s response:%s", response.status_code, response.text
-    )
+    logger.info("status:%s response:%s", response.status_code, response.text)
     if not response.ok:
-        raise HTTPException(
-            status_code=response.status_code, detail=response.text
-        )
+        raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()

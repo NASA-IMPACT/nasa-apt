@@ -73,7 +73,6 @@ def processTable(nodeRows, caption=None):
     # insert [h] for block latex from "floating" the table to the top of the page
     latexTable = latexTable.replace("\\begin{table}", "\\begin{table}[h]")
 
-    print("Latex table: ", latexTable)
     return latexTable
 
 

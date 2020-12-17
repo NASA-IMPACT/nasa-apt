@@ -32,8 +32,7 @@ def latex_to_pdf(latex_filename: str, tmp_dir: str) -> str:
         cwd=tmp_dir,
         encoding=encoding,
     )
-    print("LATEX TO PDF OUTPUT: ")
-    print(completed)
+
     if completed.returncode != 0:
         # for debugging purposes, return the stdout in addition to the stderr
         raise LatexToPDFException(

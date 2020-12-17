@@ -1,0 +1,112 @@
+\newcommand{\AlgDesc}{
+Some other text 
+\begin{equation} \int_0^\infty x^2 dx 
+\end{equation} Plus some more text
+}
+
+\providecommand{\ScientificTheory}{}
+\providecommand{\Contacts}{}
+\providecommand{\AlgorithmImplementations}{}
+\providecommand{\AlgorithmUsageConstraints}{}
+\providecommand{\PerformanceAssessmentValidationMethods}{}
+\providecommand{\PerformanceAssessmentValidationUncertainties}{}
+\providecommand{\PerformanceAssessmentValidationErrors}{}
+\providecommand{\JournalDiscussion}{}
+\providecommand{\JournalAcknowledgements}{}
+
+\title{\ATBDTitle}
+\date{\today}
+
+\documentclass[12pt]{article}
+\usepackage{fontspec}
+\usepackage{color}   %May be necessary if you want to color links
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{array}
+
+
+\usepackage{setspace}
+\doublespacing
+
+\usepackage{lineno}
+\linenumbers
+
+\setmainfont{Latin Modern Math} %Using a font with good unicode math symbols
+% coverage to support the use of unicode math symbols in LaTeX text mode
+% See list of symobls here: https://ctan.math.illinois.edu/macros/latex/contrib/unicode-math/unimath-symbols.pdf
+\hypersetup{
+    colorlinks=false, %set true if you want colored links
+    linktoc=all,     %set to all if you want both sections and subsections linked
+    linkcolor=blue,  %choose some color if you want links to stand out
+}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+\Introduction
+
+\section{Historical Perspective}
+\HistoricalPerspective
+
+\section{Algorithm Description}
+
+\subsection{Scientific Theory}
+\ScientificTheory
+
+\subsubsection{Assumptions}
+\ScientificTheoryAssumptions
+
+\subsection{Mathematical Theory}
+\MathematicalTheory
+
+\subsubsection{Assumptions}
+\MathematicalTheoryAssumptions
+
+\subsection{Algorithm Input Variables}
+\AlgorithmInputVariables
+
+\subsection{Algorithm Output Variables}
+\AlgorithmOutputVariables
+
+\section{Algorithm Implementations}
+\AlgorithmImplementations
+
+\section{Algorithm Usage Constraints}
+\AlgorithmUsageConstraints
+
+\section{Performance Assessment Validation Methods}
+\PerformanceAssessmentValidationMethods
+
+\section{Performance Assessment Validation Uncertainties}
+\PerformanceAssessmentValidationUncertainties
+
+\section{Performance Assessment Validation Errors}
+\PerformanceAssessmentValidationErrors
+
+\section{Data Access Input Data}
+\DataAccessInputData
+
+\section{Data Access Output Data}
+\DataAccessOutputData
+
+\section{Data Access Related URLs}
+\DataAccessRelatedUrls
+
+\section{Discussion}
+\JournalDiscussion
+
+\section{Acknowledgements}
+\JournalAcknowledgements
+
+\section{Contacts}
+\Contacts
+
+\bibliographystyle{abbrv}
+\bibliography{main}
+
+\end{document}
