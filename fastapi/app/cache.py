@@ -90,6 +90,7 @@ class Cache:
         :return: s3 url
         :rtype: str
         """
+
         scheme = self.s3_endpoint.scheme
         # workaround for local port forwarding in dev environment
         port = (

@@ -11,6 +11,8 @@ Some other text
 \providecommand{\PerformanceAssessmentValidationMethods}{}
 \providecommand{\PerformanceAssessmentValidationUncertainties}{}
 \providecommand{\PerformanceAssessmentValidationErrors}{}
+\providecommand{\JournalDiscussion}{}
+\providecommand{\JournalAcknowledgements}{}
 
 \title{\ATBDTitle}
 \date{\today}
@@ -27,6 +29,12 @@ Some other text
 \usepackage{array}
 
 
+\usepackage{setspace}
+\doublespacing
+
+\usepackage{lineno}
+\linenumbers
+
 \setmainfont{Latin Modern Math} %Using a font with good unicode math symbols
 % coverage to support the use of unicode math symbols in LaTeX text mode
 % See list of symobls here: https://ctan.math.illinois.edu/macros/latex/contrib/unicode-math/unimath-symbols.pdf
@@ -38,8 +46,6 @@ Some other text
 
 \begin{document}
 \maketitle
-
-\tableofcontents
 
 \section{Introduction}
 \Introduction
@@ -91,6 +97,12 @@ Some other text
 \section{Data Access Related URLs}
 \DataAccessRelatedUrls
 
+\section{Discussion}
+\JournalDiscussion
+
+\section{Acknowledgements}
+\JournalAcknowledgements
+
 \section{Contacts}
 \Contacts
 
@@ -98,4 +110,3 @@ Some other text
 \bibliography{main}
 
 \end{document}
-  

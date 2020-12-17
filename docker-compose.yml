@@ -27,11 +27,12 @@ services:
   # localstack for local development only. AWS S3 used for staging/production
   localstack:
     image: localstack/localstack:latest
-    ports:
-      - 4572:4572 #s3
     environment:
       - SERVICES=s3
       - DATA_DIR=./figures
+    ports:
+      - "4566:4566"
+      - "4572:4572"
   rest-api:
     image: postgrest/postgrest:v6.0.2
     ports:
@@ -69,6 +70,8 @@ services:
     depends_on:
       - localstack
       - rest-api
+    # links:
+    #   - "localstack:localhost"
   swagger:
     image: swaggerapi/swagger-ui
     ports:
@@ -88,4 +91,7 @@ services:
     image: dadarek/wait-for-dependencies
     depends_on:
       - localstack
-    command: localstack:4572
+    command: localstack:4566
+
+
+  
