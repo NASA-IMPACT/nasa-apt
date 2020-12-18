@@ -114,8 +114,12 @@ Parameters:
   FastapiHost:
     Type: String
     Description: Url for FastApi
+  RestApiEndpoint:
+    Type: String
+    Description: Url for FastApi
 Conditions:
   HasFastapiHost: !Not [!Or [!Equals [!Ref 'FastapiHost', ''], !Equals [!Ref 'FastapiHost', 'http://localhost:8000']]]
+  HasRestApiEndpoint: !Not [!Or [!Equals [!Ref 'RestApiEndpoint', ''], !Equals [!Ref 'RestApiEndpoint', 'http://rest-api:3000']]]
 Mappings:
   # Hard values for the subnet masks. These masks define
   # the range of internal IP addresses that can be assigned.
@@ -461,7 +465,7 @@ Resources:
             - Name: API_PREFIX
               Value: !Ref 'FastapiAPIPrefix'
             - Name: REST_API_ENDPOINT
-              Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
+              Value: !If [HasRestApiEndpoint, !Ref 'RestApiEndpoint', !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]]
             - Name: S3_ENDPOINT
               Value: 'http://s3.amazonaws.com'
             - Name: PDFS_S3_BUCKET

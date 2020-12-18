@@ -12,6 +12,7 @@ echo "APT_FRONTEND_URL $APT_FRONTEND_URL"
 echo "IDP_METADATA_URL $IDP_METADATA_URL"
 echo "JWT_SECRET $JWT_SECRET"
 echo "FASTAPI_HOST $FASTAPI_HOST"
+echo "REST_API_ENDPOINT $REST_API_ENDPOINT"
 
 echo
 
@@ -36,5 +37,6 @@ aws cloudformation deploy \
       APTFrontendUrl=$APT_FRONTEND_URL \
       IDPMetadataUrl=$IDP_METADATA_URL \
       FastapiHost=$FASTAPI_HOST \
+      RestApiEndpoint=$REST_API_ENDPOINT \
       ElasticsearchDomainName=nasadb-$stackname \
   --region us-east-1 --capabilities CAPABILITY_IAM
