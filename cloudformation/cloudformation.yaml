@@ -47,30 +47,34 @@ Parameters:
     Description: The priority for the routing rule added to the load balancer.
       This only applies if your have multiple services which are
       assigned to different paths on the load balancer.
-  PDFContainerCpu:
+  FastapiContainerCpu:
     Type: Number
     Default: 512
     Description: How much CPU to give the container. 1024 is 1 CPU
-  PDFContainerMemory:
+  FastapiContainerMemory:
     Type: Number
     Default: 1024
     Description: How much memory in megabytes to give the container
-  PDFPATH:
+  FastapiPATH:
     Type: String
-    Default: "/pdf/*"
+    Default: "/fastapi/*"
     Description: A path on the public load balancer that this service
                  should be connected to. Use * to send all load balancer
                  traffic to this service.
-  PDFAPIPrefix:
+  FastapiAPIPrefix:
     Type: String
-    Default: "/pdf/"
+    Default: "/fastapi/"
     Description: API prefix as used by FastAPI in PDF service (must be consistent with PDFPATH)
-  PDFPriority:
+  FastapiPriority:
     Type: Number
     Default: 2
     Description: The priority for the routing rule added to the load balancer.
                  This only applies if your have multiple services which are
                  assigned to different paths on the load balancer.
+  PostgRESTAPIPrefix:
+    Type: String
+    Default: "/"
+    Description: API prefix as used by PostGrest
   PDFsBucketName:
     Type: String
     Default: pdfs
@@ -96,6 +100,26 @@ Parameters:
     Type: String
     Default: t2.medium
     ConstraintDescription: Please choose a valid instance type.
+  JWTSecret:
+    Type: String
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    Default: lkjlkjslkdjaflkjfsalkjfasdlkfdlkjlkjslkdjaflkjfsalkjfasdlkfdlkjlkjslkdjaflkjfsalkjfasdlkfd
+    Description: Secret to use for creating JWT Tokens
+  APTFrontendUrl:
+    Type: String
+    Description: Frontend Url used to set CORS origin for FastAPI
+  IDPMetadataUrl:
+    Type: String
+    Description: Url for SAML IDP metadata
+  FastapiHost:
+    Type: String
+    Description: Url for FastApi
+  RestApiEndpoint:
+    Type: String
+    Description: Url for FastApi
+Conditions:
+  HasFastapiHost: !Not [!Or [!Equals [!Ref 'FastapiHost', ''], !Equals [!Ref 'FastapiHost', 'http://localhost:8000']]]
+  HasRestApiEndpoint: !Not [!Or [!Equals [!Ref 'RestApiEndpoint', ''], !Equals [!Ref 'RestApiEndpoint', 'http://rest-api:3000']]]
 Mappings:
   # Hard values for the subnet masks. These masks define
   # the range of internal IP addresses that can be assigned.
@@ -202,7 +226,29 @@ Resources:
       PubliclyAccessible: true
       VPCSecurityGroups:
         - !Ref FargateContainerSecurityGroup
-
+  Elasticsearch:
+    Type: AWS::Elasticsearch::Domain
+    Properties:
+      DomainName: !Sub '${AWS::StackName}-elastic'
+      ElasticsearchVersion: "7.7"
+      ElasticsearchClusterConfig:
+        InstanceCount: 1
+        InstanceType: "t2.small.elasticsearch"
+      EBSOptions:
+        EBSEnabled: true
+        Iops: 0
+        VolumeSize: 10
+        VolumeType: "gp2"
+      SnapshotOptions:
+        AutomatedSnapshotStartHour: 0
+      AccessPolicies:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "es:*"
+            Resource: !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${AWS::StackName}-elastic/*"
   # ECS Resources
   ECSCluster:
     Type: AWS::ECS::Cluster
@@ -269,6 +315,7 @@ Resources:
         - !Ref PublicSubnetTwo
       SecurityGroups: [!Ref 'PublicLoadBalancerSG']
 
+
   # A dummy target group is used to setup the ALB to just drop traffic
   # initially, before any real service target groups have been added.
   DummyTargetGroupPublic:
@@ -279,7 +326,7 @@ Resources:
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
-      Name: !Join ['-', [!Ref 'AWS::StackName', 'drop-1']]
+      Name: !Join ['-', [!Ref 'AWS::StackName', 'dummyTarget']]
       Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 2
@@ -354,8 +401,11 @@ Resources:
               Name: PGRST_DB_SCHEMA
               Value: apt
             -
+              Name: PGRST_JWT_SECRET
+              Value: !Ref 'JWTSecret'
+            -
               Name: PGRST_DB_ANON_ROLE
-              Value: app_user
+              Value: anonymous
           LogConfiguration:
             LogDriver: 'awslogs'
             Options:
@@ -376,7 +426,7 @@ Resources:
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
-      DesiredCount: 2
+      DesiredCount: 1
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
@@ -393,56 +443,72 @@ Resources:
 
   # The task definition. This is a simple metadata description of what
   # container to run, and what resource requirements it has.
-  PDFTaskDefinition:
+  FastapiTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: 'pdf'
-      Cpu: !Ref 'PDFContainerCpu'
-      Memory: !Ref 'PDFContainerMemory'
+      Family: 'fastapi'
+      Cpu: !Ref 'FastapiContainerCpu'
+      Memory: !Ref 'FastapiContainerMemory'
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
-      TaskRoleArn: !GetAtt PDFTaskRole.Arn
+      TaskRoleArn: !GetAtt FastapiTaskRole.Arn
       ContainerDefinitions:
-        - Name: !Sub '${AWS::StackName}-ctr-pdf'
-          Cpu: !Ref 'PDFContainerCpu'
-          Memory: !Ref 'PDFContainerMemory'
-          Image: 552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt/prod/pdf:latest
+        - Name: !Sub '${AWS::StackName}-ctr-fastapi'
+          Cpu: !Ref 'FastapiContainerCpu'
+          Memory: !Ref 'FastapiContainerMemory'
+          Image: 552819999234.dkr.ecr.us-east-1.amazonaws.com/nasa-apt/saml/fastapi:latest
           PortMappings:
             - ContainerPort: 80
           Environment:
             - Name: API_PREFIX
-              Value: !Ref 'PDFAPIPrefix'
+              Value: !Ref 'FastapiAPIPrefix'
             - Name: REST_API_ENDPOINT
-              Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
+              Value: !If [HasRestApiEndpoint, !Ref 'RestApiEndpoint', !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]]
             - Name: S3_ENDPOINT
               Value: 'http://s3.amazonaws.com'
             - Name: PDFS_S3_BUCKET
               Value: !Ref 'PDFsBucket'
             - Name: FIGURES_S3_BUCKET
               Value: !Ref 'FiguresBucket'
+            - Name: DBURL
+              Value: !Join ['', ['postgres://', 'masteruser', ':',
+                                  !Ref 'DBPassword', '@',
+                                  !GetAtt [DB, Endpoint.Address],
+                                  ':', !GetAtt [DB, Endpoint.Port], /,
+                                  !Ref 'DBName']]
+            - Name: ELASTICURL
+              Value: !Join ['', ['https://', !GetAtt [Elasticsearch, DomainEndpoint]]]
+            - Name: APT_FRONTEND_URL
+              Value: !Ref 'APTFrontendUrl'
+            - Name: IDP_METADATA_URL
+              Value: !Ref 'IDPMetadataUrl'
+            - Name: FASTAPI_HOST
+              Value: !If [HasFastapiHost, !Ref 'FastapiHost', !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]]
+            - Name: JWT_SECRET
+              Value: !Ref 'JWTSecret'
           LogConfiguration:
             LogDriver: 'awslogs'
             Options:
               'awslogs-group': !Ref 'LogGroup'
               'awslogs-region': !Ref 'AWS::Region'
-              'awslogs-stream-prefix': 'pdf-task'
+              'awslogs-stream-prefix': 'fastapi-task'
 
   # The service. The service is a resource which allows you to run multiple
   # copies of a type of task, and gather up their logs and metrics, as well
   # as monitor the number of running tasks and replace any that have crashed
-  PDFService:
+  FastapiService:
     Type: AWS::ECS::Service
-    DependsOn: PDFLoadBalancerRule
+    DependsOn: FastapiLoadBalancerRule
     Properties:
-      ServiceName: !Sub '${AWS::StackName}-svc-pdf'
+      ServiceName: !Sub '${AWS::StackName}-svc-fastapi'
       Cluster: !Ref ECSCluster
       LaunchType: FARGATE
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
-      DesiredCount: 2
+      DesiredCount: 1
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
@@ -451,11 +517,11 @@ Resources:
           Subnets:
             - !Ref PublicSubnetOne
             - !Ref PublicSubnetTwo
-      TaskDefinition: !Ref 'PDFTaskDefinition'
+      TaskDefinition: !Ref 'FastapiTaskDefinition'
       LoadBalancers:
-        - ContainerName: !Sub '${AWS::StackName}-ctr-pdf'
+        - ContainerName: !Sub '${AWS::StackName}-ctr-fastapi'
           ContainerPort: 80
-          TargetGroupArn: !Ref 'PDFTargetGroup'
+          TargetGroupArn: !Ref 'FastapiTargetGroup'
 
   # A target group. This is used for keeping track of all the tasks, and
   # what IP addresses / port numbers they have. You can query it yourself,
@@ -465,7 +531,7 @@ Resources:
   PostgRESTTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      HealthCheckPath: /
+      HealthCheckPath: !Ref 'PostgRESTAPIPrefix'
       Matcher:
         # if the database has not been migrated yet, then http 400 is expected
         HttpCode: '200,400'
@@ -481,20 +547,34 @@ Resources:
   # to use the addresses yourself, but most often this target group is just
   # connected to an application load balancer, or network load balancer, so
   # it can automatically distribute traffic across all the targets.
-  PDFTargetGroup:
+  FastapiTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      HealthCheckPath: !Ref 'PDFAPIPrefix'
+      HealthCheckPath: !Ref 'FastapiAPIPrefix'
       Matcher:
         HttpCode: '200'
       HealthCheckProtocol: HTTP
       TargetType: ip
-      Name: !Sub '${AWS::StackName}-tg-pdf'
+      Name: !Sub '${AWS::StackName}-tg-fastapi'
       Port: 80
       Protocol: HTTP
       VpcId: !Ref VPC
 
   # Create a rule on the load balancer for routing traffic to the target group
+  AuthLoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'FastapiTargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values:
+              - /saml/*
+      Priority: 1
+      ListenerArn: !Ref PublicLoadBalancerListener
+
   PostgRESTLoadBalancerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
@@ -507,17 +587,17 @@ Resources:
       Priority: !Ref 'PostgRESTPriority'
       ListenerArn: !Ref PublicLoadBalancerListener
 
-  PDFLoadBalancerRule:
+  FastapiLoadBalancerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       Actions:
-        - TargetGroupArn: !Ref 'PDFTargetGroup'
+        - TargetGroupArn: !Ref 'FastapiTargetGroup'
           Type: 'forward'
       Conditions:
         - Field: path-pattern
           PathPatternConfig:
-            Values: [!Ref 'PDFPATH']
-      Priority: !Ref 'PDFPriority'
+            Values: [!Ref 'FastapiPATH']
+      Priority: !Ref 'FastapiPriority'
       ListenerArn: !Ref PublicLoadBalancerListener
 
   # Figures bucket
@@ -555,21 +635,6 @@ Resources:
               - '*'
           Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'FiguresBucketName', '/*']]
 
-  PDFsBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'PDFsBucketName']]
-      PolicyDocument:
-        Statement:
-          Action:
-            - 's3:List*'
-            - 's3:Get*'
-          Effect: Allow
-          Principal:
-            AWS:
-              - '*'
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'PDFsBucketName', '/*']]
-
   PDFsBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -590,8 +655,24 @@ Resources:
             AllowedHeaders:
               - '*'
 
+  PDFsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Join ['', [!Ref 'AWS::StackName', '-', !Ref 'PDFsBucketName']]
+      PolicyDocument:
+        Statement:
+          Action:
+            - 's3:List*'
+            - 's3:Get*'
+          Effect: Allow
+          Principal:
+            AWS:
+              - '*'
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'PDFsBucketName', '/*']]
+
+
   # IAM role for pdf task to have permission on the pdf cache bucket.
-  PDFTaskRole:
+  FastapiTaskRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -608,7 +689,12 @@ Resources:
               - Effect: Allow
                 Action: ['s3:Put*', 's3:List*', 's3:Get*']
                 Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AWS::StackName', '-', !Ref 'PDFsBucketName', '/*']]
-
+        - PolicyName: elasticsearchPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: ['es:*']
+                Resource: !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${AWS::StackName}-elastic/*"
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -733,7 +819,21 @@ Outputs:
     Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName]]
     Export:
       Name: !Sub '${AWS::StackName}-APIEndpoint'
-  PDFEndpoint:
-    Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName, !Ref 'PDFAPIPrefix']]
+  FastapiEndpoint:
+    Value: !Join ['', ['http://', !GetAtt PublicLoadBalancer.DNSName, !Ref 'FastapiAPIPrefix']]
     Export:
-      Name: !Sub '${AWS::StackName}-PDFEndpoint'
+      Name: !Sub '${AWS::StackName}-FastapiEndpoint'
+
+
+  DBURL:
+    Value: !Join ['', ['postgres://', 'masteruser', ':',
+                        !Ref 'DBPassword', '@',
+                        !GetAtt [DB, Endpoint.Address],
+                        ':', !GetAtt [DB, Endpoint.Port], /,
+                        !Ref 'DBName']]
+    Export:
+      Name: !Sub '${AWS::StackName}-DBURL'
+  ELASTICURL:
+    Value: !Join ['', ['https://', !GetAtt [Elasticsearch, DomainEndpoint], ':9200']]
+    Export:
+      Name: !Sub '${AWS::StackName}-ELASTICURL'

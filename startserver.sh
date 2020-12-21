@@ -5,7 +5,7 @@
 set -e
 
 PG_PORT=5432
-S3_PORT=4572
+S3_PORT=4566
 S3=http://localhost:$S3_PORT # localstack
 
 # .env loading in the shell
@@ -36,31 +36,38 @@ then
   exit 1
 fi
 
-docker-compose build
+docker-compose build 
 
 # blocks until given endpoints are accessible over tcp
-docker-compose run --rm localstack-ready
-docker-compose run --rm db-ready
+docker-compose run --rm localstack-ready 
+docker-compose run --rm db-ready 
 
 # start remaining services
-docker-compose up --detach
+docker-compose up --detach 
 
 # all the services are up, now create & populate the s3 buckets and the pg database
 
 # localstack: create s3 bucket for figures
 aws --endpoint-url=${S3} s3 mb s3://"$FIGURES_S3_BUCKET" --no-sign-request
-aws --endpoint-url=${S3} s3api put-bucket-acl --bucket "$FIGURES_S3_BUCKET" --acl public-read-write --no-sign-request
-aws --endpoint-url=${S3} s3 cp ./figures/fullmoon.jpg s3://"$FIGURES_S3_BUCKET" --no-sign-request
+aws --endpoint-url=${S3} s3api put-bucket-acl --bucket "$FIGURES_S3_BUCKET" --acl public-read-write --no-sign-request &>/dev/null
+# Upload all images
+for file in figures/*
+do
+  aws --endpoint-url=${S3} s3 cp ${file} s3://"$FIGURES_S3_BUCKET" --no-sign-request
+done
 
 # localstack: create s3 bucket for pdfs
 aws --endpoint-url=${S3} s3 mb s3://"$PDFS_S3_BUCKET" --no-sign-request
-aws --endpoint-url=${S3} s3api put-bucket-acl --bucket "$PDFS_S3_BUCKET" --acl public-read-write --no-sign-request
+aws --endpoint-url=${S3} s3api put-bucket-acl --bucket "$PDFS_S3_BUCKET" --acl public-read-write --no-sign-request &>/dev/null
 
 # create db with squitch and load mock data
 pushd db
 ./createdb.sh
 ./loadTestData.sh
 popd
+
+# Make sure to bootstrap the elastic index
+curl -s -o /dev/null -v http://localhost:8000/reindex
 
 # force postgrest restart to see new schema
 docker-compose restart rest-api
