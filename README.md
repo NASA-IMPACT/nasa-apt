@@ -1,6 +1,6 @@
 # nasa-apt
 
-**Version:** 0.3.0
+**Version:** 1.0.0
 
 ## Local development
 Code and issues relevant to the NASA APT project
@@ -58,7 +58,7 @@ cd cloudformation
 ```
 
 You will be prompted for a stack name and a master db password.  The current
-stacks are `nasa-aptv2-staging` and `nasa-aptv2-production`.
+stack is `nasa-apt-v5-prod`
 
 After the stack has been successfully deployed you can create the database tables.
 You will need an installation of the `psql` command line client.
@@ -79,8 +79,7 @@ underlying database changes may require a forced redeployment of the PostgREST E
 
 ## Environments
 There are currently 2 environments defined for NASA-APT, which follow specific branches
-- Staging (`develop`): http://nasa-Publi-1UDVJHRLIQD2G-1353740340.us-east-1.elb.amazonaws.com
-- Production (`master`): http://nasa-Publi-1LGW8ZYHL7SF7-1834206210.us-east-1.elb.amazonaws.com
+- Production (`master`): https://apt.ds.io
 
 **Given that deployment is a manual process it is important that the environments are kept up to date after a merge to `master` or `develop`.**
 
