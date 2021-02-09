@@ -131,7 +131,7 @@ def processText(nodes):
         elif node["object"] == "inline" and node["type"] == "reference":
             try:
                 refID = refIDs[node["data"]["id"]]
-                to_return += f"\\cite{{{refID}}}"
+                to_return += f"\\citep{{{refID}}}"
             except KeyError:
                 to_return += ""
     return to_return
@@ -414,6 +414,8 @@ def processReferences(refs):
             this_ref += "NUMBER" + '="{}", \n'.format(ref["issue"])
         if ref["year"] is not None:
             this_ref += "YEAR" + '="{}", \n'.format(ref["year"])
+        if ref["doi"] is not None:
+            this_ref += "DOI" + '="{}", \n'.format(ref["doi"])
         bibtexRef = f"@ARTICLE{{{identifier},{this_ref}}}"
         references.append(bibtexRef)
         refIDs[ref["publication_reference_id"]] = identifier
@@ -463,6 +465,7 @@ class ATBD:
     def texVariables(self):
         myJson = json.loads(open(self.filepath).read())
         processReferences(myJson.pop("publication_references"))
+        print("References: ", references)
         commands = processATBD(myJson.pop("atbd"))
         if debug:
             for item, value in myJson.items():
