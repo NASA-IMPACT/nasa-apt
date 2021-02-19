@@ -3,7 +3,7 @@ services:
   db:
     # Postgres db for local development only.
     # For staging/production, see RDS instance in cloudformation.yaml
-    image: postgres:11.1
+    image: postgres:11.8
     ports:
       - "5432:5432"
     environment:
@@ -11,6 +11,7 @@ services:
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
     command: postgres -c log_statement=all
+
   elastic:
     # Elastic db for local development only.
     # For staging/production, add elasticache instance
@@ -33,25 +34,14 @@ services:
     ports:
       - "4566:4566"
       - "4572:4572"
-  rest-api:
-    image: postgrest/postgrest:v6.0.2
-    ports:
-      - "3000:3000"
-    environment:
-      PGRST_DB_URI: postgres://masteruser:password@db:5432/nasadb
-      PGRST_DB_SCHEMA: apt
-      PGRST_DB_ANON_ROLE: anonymous
-      PGRST_JWT_SECRET: $JWT_SECRET
-    depends_on:
-      - db
-  fastapi:
-    build: ./fastapi
-    image: nasa-apt/dev/fastapi
+  api:
+    build: ./app
+    image: nasa-apt/dev/app
     ports:
       - "8000:80"
     volumes:
       - type: bind
-        source: ./fastapi/app
+        source: ./app
         target: /app/app
     environment:
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
@@ -67,11 +57,11 @@ services:
       FASTAPI_HOST: http://localhost:8000
       JWT_SECRET: $JWT_SECRET
       APT_FRONTEND_URL: $APT_FRONTEND_URL
+      # TODO: unhardcode these from the code
+      # PGRST_DB_SCHEMA: apt
+      # PGRST_DB_ANON_ROLE: anonymous
     depends_on:
       - localstack
-      - rest-api
-    # links:
-    #   - "localstack:localhost"
   swagger:
     image: swaggerapi/swagger-ui
     ports:
@@ -81,7 +71,7 @@ services:
     environment:
       API_URL: http://localhost:3000/
     depends_on:
-      - rest-api
+      - api
   db-ready:
     image: dadarek/wait-for-dependencies
     depends_on:

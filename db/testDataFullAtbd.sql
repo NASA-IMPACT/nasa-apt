@@ -31,11 +31,11 @@ INSERT INTO apt.atbd_contact_groups
 VALUES
     (2, 1);
 INSERT INTO apt.contacts
-    (contact_id, first_name, middle_name, last_name, uuid, url, mechanisms, roles)
+    (id, first_name, middle_name, last_name, uuid, url, mechanisms, roles)
 VALUES
     (3, 'Aaron', '', 'Kaulfus', '', '', '{"(Email,bmf0006@uah.edu)"}', '{"Technical contact",Investigator}');
 INSERT INTO apt.atbd_contacts
-    (atbd_id, contact_id)
+    (atbd_id, id)
 VALUES
     (2, 3);
 INSERT INTO apt.citations
