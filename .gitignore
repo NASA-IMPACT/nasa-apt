@@ -9,3 +9,5 @@ venv
 .resources
 .vscode
 cdk.out/*
+*.pyc
+**/__pycache__/

@@ -27,7 +27,7 @@ inst_reqs = [
     "jq==1.0.2",
     "latex==0.7.0",
     "num2words==0.5.10",
-    "numpy==1.18.4",
+    "numpy==1.20.1",
     "pandas==1.0.3",
     "pipreqs==0.4.10",
     "pydantic==1.5.1",
@@ -62,6 +62,9 @@ extra_reqs = {
         "aws-cdk.aws_apigatewayv2>=1.72.0",
         "aws-cdk.aws_apigatewayv2_integrations>=1.72.0",
         "aws-cdk.aws_iam>=1.72.0",
+        "aws-cdk.aws_rds>=1.72.0",
+        "aws-cdk.aws_ssm>=1.72.0",
+        "aws-cdk.aws_ec2>=1.72.0",
     ],
     "test": [],
 }

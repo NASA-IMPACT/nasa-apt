@@ -13,8 +13,20 @@ BACKEND_CORS_ORIGINS = os.environ.get(
     "BACKEND_CORS_ORIGINS",
     default=f"*,http://localhost:3000,http://localhost:3006,{FRONTEND_URL}",
 )
+POSTGRES_PORT = os.environ.get("POSTGRES_PORT", 5432)
 
-DBURL = os.environ.get("DBURL") or exit("DBURL env var required")
+POSTGRES_DB_NAME = os.environ.get("POSTGRES_DB_NAME") or exit(
+    "POSTGRES_DB_NAME env var required"
+)
+POSTGRES_HOST = os.environ.get("POSTGRES_HOST") or exit(
+    "POSTGRES_HOST env var required"
+)
+POSTGRES_ADMIN_USER = os.environ.get("POSTGRES_ADMIN_USER") or exit(
+    "POSTGRES_ADMIN_USER env var required"
+)
+POSTGRES_ADMIN_PASSWORD = os.environ.get("POSTGRES_ADMIN_PASSWORD") or exit(
+    "POSTGRES_ADMIN_PASSWORD env var required"
+)
 
 ELASTICURL = os.environ.get("ELASTICURL") or exit("ELASTICURL env var required")
 

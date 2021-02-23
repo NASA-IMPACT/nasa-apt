@@ -2,16 +2,18 @@
 
 # from app import version
 from app.api.v1.api import api_router
+
 from app.db.middleware import db_session_middleware
+
 from app import config
 from app.search.searchindex import index_atbd
-
 import asyncpg
 
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 
+DATABASE_CONNECTION_URL = f"postgres://{config.POSTGRES_ADMIN_USER}:{config.POSTGRES_ADMIN_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/{config.POSTGRES_DB_NAME}"
 
 app = FastAPI(
     title=config.PROJECT_NAME,
@@ -44,7 +46,7 @@ async def startup() -> None:
     Add listener to atbd channel on database connection.
     """
     app.state.connection = await asyncpg.connect(
-        config.DBURL, server_settings={"search_path": "apt,public"}
+        DATABASE_CONNECTION_URL, server_settings={"search_path": "apt,public"}
     )
     await app.state.connection.add_listener("atbd", index_atbd())
 
@@ -59,3 +61,7 @@ async def shutdown() -> None:
 def ping():
     """Health check."""
     return {"ping": "pong!"}
+
+
+def app_db_connection():
+    return app.state.connection

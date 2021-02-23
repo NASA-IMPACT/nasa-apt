@@ -8,6 +8,8 @@ STAGE = os.environ.get("STAGE", "dev")
 # Additional environement variable to set in the task/lambda
 TASK_ENV: dict = dict()
 
+VPC_ID = os.environ.get("VPC_ID")
+
 
 ################################################################################
 #                                                                              #

@@ -1,7 +1,11 @@
 from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_lambda, core
+from aws_cdk import aws_rds as rds
+from aws_cdk import aws_ssm as ssm
+from aws_cdk import aws_lambda as _lambda
+from aws_cdk import aws_ec2 as ec2
+from aws_cdk import core
 from typing import Any
 import config
 import os
@@ -30,6 +34,68 @@ class nasaAPTLambdaStack(core.Stack):
         """Define stack."""
         super().__init__(scope, id, **kwargs)
 
+        if config.VPC_ID:
+            vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID)
+        else:
+            vpc = ec2.Vpc(self, id=f"{id}-vpc")
+
+        lambda_function_security_group = ec2.SecurityGroup(
+            self, f"{id}-lambda-sg", vpc=vpc
+        )
+        lambda_function_security_group.add_egress_rule(
+            ec2.Peer.any_ipv4(),
+            connection=ec2.Port(protocol=ec2.Protocol("ALL"), string_representation=""),
+            description="Allow lambda security group all outbound access",
+        )
+
+        rds_security_group = ec2.SecurityGroup(
+            self,
+            f"{id}-rds-sg",
+            vpc=vpc,
+            # allow_all_outbound=True,
+            description=f"Security group for {id}-rds",
+        )
+
+        rds_security_group.add_ingress_rule(
+            peer=lambda_function_security_group,
+            # peer=ec2.Peer.any_ipv4(),
+            connection=ec2.Port.tcp(5432),
+            description="Allow Lambda security group access Postgres",
+        )
+
+        # TODO: change PASSWORD to use secrets manager
+        # TODO: add bootstrapping lambda as a custom resource to be run by cloudformation
+        database = rds.DatabaseInstance(
+            self,
+            f"{id}-postgres-db",
+            credentials=rds.Credentials.from_password(
+                username="masteruser",
+                password=core.SecretValue(
+                    value=core.SecretValue.plain_text("password")
+                ),
+            ),
+            allocated_storage=10,
+            vpc=vpc,
+            # publicly_accessible=True,
+            security_groups=[rds_security_group],
+            engine=rds.DatabaseInstanceEngine.POSTGRES,
+            instance_type=ec2.InstanceType.of(
+                ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL
+            ),
+            database_name="nasadb",
+            deletion_protection=config.STAGE.lower() == "prod",
+            removal_policy=core.RemovalPolicy.SNAPSHOT
+            if config.STAGE.lower() == "prod"
+            else core.RemovalPolicy.DESTROY,
+        )
+
+        # ssm.StringParameter(
+        #     self,
+        #     id=f"{id}-postgres-password",
+        #     # string_value=database.,
+        #     parameter_name=f"/integration_tests/{id}/downloader_rds_secret_arn",
+        # )
+
         logs_access = iam.PolicyStatement(
             actions=[
                 "logs:CreateLogGroup",
@@ -40,33 +106,38 @@ class nasaAPTLambdaStack(core.Stack):
         )
         frontend_url = os.environ["APT_FRONTEND_URL"]
         lambda_env = dict(
-            FRONTEND_URL=frontend_url,
+            APT_FRONTEND_URL=frontend_url,
             BACKEND_CORS_ORIGINS=os.environ.get(
                 "BACKEND_CORS_ORIGINS",
                 f"*,http://localhost:3000,http://localhost:3006,{frontend_url}",
             ),
-            DBURL=os.environ["DBURL"],
+            POSTGRES_HOST=database.instance_endpoint.hostname,
+            POSTGRES_USER="masteruser",
+            POSTGRES_PASSWORD="password",
+            POSTGRES_DB_NAME="nasadb",
             ELASTICURL=os.environ["ELASTICURL"],
             ROOT_PATH=os.environ.get("API_PREFIX", "/"),
             JWT_SECRET=os.environ["JWT_SECRET"],
-            HOST=os.environ["FASTAPI_HOST"],
+            FASTAPI_HOST=os.environ["FASTAPI_HOST"],
             IDP_METADATA_URL=os.environ["IDP_METADATA_URL"],
         )
         lambda_env.update(dict(MODULE_NAME="nasa_apt.main", VARIABLE_NAME="app",))
 
         lambda_function_props = dict(
-            runtime=aws_lambda.Runtime.PYTHON_3_7,
+            runtime=_lambda.Runtime.FROM_IMAGE,
             code=self.create_package(code_dir),
-            handler="handler.handler",
+            handler=_lambda.Handler.FROM_IMAGE,
             memory_size=memory,
             timeout=core.Duration.seconds(timeout),
             environment=lambda_env,
+            security_groups=[lambda_function_security_group],
+            vpc=vpc,
         )
 
         if concurrent:
             lambda_function_props["reserved_concurrent_executions"] = concurrent
 
-        lambda_function = aws_lambda.Function(
+        lambda_function = _lambda.Function(
             self, f"{id}-lambda", **lambda_function_props
         )
 
@@ -81,19 +152,23 @@ class nasaAPTLambdaStack(core.Stack):
             ),
         )
 
-    def create_package(self, code_dir: str) -> aws_lambda.Code:
+    def create_package(self, code_dir: str) -> _lambda.Code:
         """Build docker image and create package."""
-
-        return aws_lambda.Code.from_asset(
-            path=os.path.abspath(code_dir),
-            bundling=core.BundlingOptions(
-                image=core.BundlingDockerImage.from_asset(
-                    path=os.path.abspath(code_dir),
-                    file="dockerfiles/lambda/Dockerfile",
-                ),
-                command=["bash", "-c", "cp -R /var/task/. /asset-output/."],
-            ),
+        return _lambda.Code.from_asset_image(
+            directory=code_dir,
+            file="dockerfiles/lambda/Dockerfile",
+            repository_name="nasa-apt-api-images",
         )
+        # return _lambda.Code.from_asset(
+        #     path=os.path.abspath(code_dir),
+        #     bundling=core.BundlingOptions(
+        #         image=core.BundlingDockerImage.from_asset(
+        #             path=os.path.abspath(code_dir),
+        #             file="dockerfiles/lambda/Dockerfile",
+        #         ),
+        #         command=["bash", "-c", "cp -R /var/task/. /asset-output/."],
+        #     ),
+        # )
 
 
 app = core.App()

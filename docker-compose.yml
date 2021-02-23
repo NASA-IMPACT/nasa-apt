@@ -7,9 +7,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: nasadb
-      POSTGRES_USER: masteruser
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: $POSTGRES_DB_NAME
+      POSTGRES_USER: $POSTGRES_ADMIN_USER
+      POSTGRES_PASSWORD: $POSTGRES_ADMIN_PASSWORD
     command: postgres -c log_statement=all
 
   elastic:
@@ -35,7 +35,9 @@ services:
       - "4566:4566"
       - "4572:4572"
   api:
-    build: ./app
+    build:
+      context: ./
+      dockerfile: dockerfiles/local/Dockerfile
     image: nasa-apt/dev/app
     ports:
       - "8000:80"
@@ -51,15 +53,15 @@ services:
       S3_ENDPOINT: $S3_ENDPOINT
       PDFS_S3_BUCKET: $PDFS_S3_BUCKET
       FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
-      DBURL: postgres://masteruser:password@db:5432/nasadb
+      POSTGRES_HOST: $POSTGRES_HOST
+      POSTGRES_ADMIN_USER: $POSTGRES_ADMIN_USER
+      POSTGRES_ADMIN_PASSWORD: $POSTGRES_ADMIN_PASSWORD
+      POSTGRES_DB_NAME: $POSTGRES_DB_NAME
       ELASTICURL: http://elastic:9200
       IDP_METADATA_URL: $IDP_METADATA_URL
       FASTAPI_HOST: http://localhost:8000
       JWT_SECRET: $JWT_SECRET
       APT_FRONTEND_URL: $APT_FRONTEND_URL
-      # TODO: unhardcode these from the code
-      # PGRST_DB_SCHEMA: apt
-      # PGRST_DB_ANON_ROLE: anonymous
     depends_on:
       - localstack
   swagger:
