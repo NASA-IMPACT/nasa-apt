@@ -37,30 +37,28 @@ class nasaAPTLambdaStack(core.Stack):
         if config.VPC_ID:
             vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID)
         else:
-            vpc = ec2.Vpc(self, id=f"{id}-vpc")
-
-        lambda_function_security_group = ec2.SecurityGroup(
-            self, f"{id}-lambda-sg", vpc=vpc
-        )
-        lambda_function_security_group.add_egress_rule(
-            ec2.Peer.any_ipv4(),
-            connection=ec2.Port(protocol=ec2.Protocol("ALL"), string_representation=""),
-            description="Allow lambda security group all outbound access",
-        )
-
+            vpc = ec2.Vpc(
+                self,
+                id=f"{id}-vpc",
+                nat_gateways=0,
+                subnet_configuration=[
+                    ec2.SubnetConfiguration(
+                        name="PublicSubnet1", subnet_type=ec2.SubnetType.PUBLIC
+                    )
+                ],
+            )
         rds_security_group = ec2.SecurityGroup(
             self,
-            f"{id}-rds-sg",
+            id=f"{id}-rds-security-group",
             vpc=vpc,
-            # allow_all_outbound=True,
-            description=f"Security group for {id}-rds",
+            allow_all_outbound=True,
+            description=f"Security group for {id}-downloader-rds",
         )
 
         rds_security_group.add_ingress_rule(
-            peer=lambda_function_security_group,
-            # peer=ec2.Peer.any_ipv4(),
+            peer=ec2.Peer.any_ipv4(),
             connection=ec2.Port.tcp(5432),
-            description="Allow Lambda security group access Postgres",
+            description="Allow all traffic for Postgres",
         )
 
         # TODO: change PASSWORD to use secrets manager
@@ -76,8 +74,9 @@ class nasaAPTLambdaStack(core.Stack):
             ),
             allocated_storage=10,
             vpc=vpc,
-            # publicly_accessible=True,
+            publicly_accessible=True,
             security_groups=[rds_security_group],
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             engine=rds.DatabaseInstanceEngine.POSTGRES,
             instance_type=ec2.InstanceType.of(
                 ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL
@@ -112,8 +111,8 @@ class nasaAPTLambdaStack(core.Stack):
                 f"*,http://localhost:3000,http://localhost:3006,{frontend_url}",
             ),
             POSTGRES_HOST=database.instance_endpoint.hostname,
-            POSTGRES_USER="masteruser",
-            POSTGRES_PASSWORD="password",
+            POSTGRES_ADMIN_USER="masteruser",
+            POSTGRES_ADMIN_PASSWORD="password",
             POSTGRES_DB_NAME="nasadb",
             ELASTICURL=os.environ["ELASTICURL"],
             ROOT_PATH=os.environ.get("API_PREFIX", "/"),
@@ -130,8 +129,6 @@ class nasaAPTLambdaStack(core.Stack):
             memory_size=memory,
             timeout=core.Duration.seconds(timeout),
             environment=lambda_env,
-            security_groups=[lambda_function_security_group],
-            vpc=vpc,
         )
 
         if concurrent:
@@ -159,16 +156,6 @@ class nasaAPTLambdaStack(core.Stack):
             file="dockerfiles/lambda/Dockerfile",
             repository_name="nasa-apt-api-images",
         )
-        # return _lambda.Code.from_asset(
-        #     path=os.path.abspath(code_dir),
-        #     bundling=core.BundlingOptions(
-        #         image=core.BundlingDockerImage.from_asset(
-        #             path=os.path.abspath(code_dir),
-        #             file="dockerfiles/lambda/Dockerfile",
-        #         ),
-        #         command=["bash", "-c", "cp -R /var/task/. /asset-output/."],
-        #     ),
-        # )
 
 
 app = core.App()

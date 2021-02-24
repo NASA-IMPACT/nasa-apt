@@ -36,7 +36,7 @@ if config.BACKEND_CORS_ORIGINS:
 app.add_middleware(GZipMiddleware, minimum_size=0)
 
 app.include_router(api_router, prefix=config.API_VERSION_STR)
-app.middleware("http")(db_session_middleware)
+# app.middleware("http")(db_session_middleware)
 
 
 @app.on_event("startup")
@@ -45,6 +45,7 @@ async def startup() -> None:
     Create database connection when FastAPI App has started.
     Add listener to atbd channel on database connection.
     """
+    print(f"Attempting to connect to: {DATABASE_CONNECTION_URL}")
     app.state.connection = await asyncpg.connect(
         DATABASE_CONNECTION_URL, server_settings={"search_path": "apt,public"}
     )
@@ -61,7 +62,3 @@ async def shutdown() -> None:
 def ping():
     """Health check."""
     return {"ping": "pong!"}
-
-
-def app_db_connection():
-    return app.state.connection

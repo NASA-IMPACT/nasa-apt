@@ -27,9 +27,6 @@ def list_atbds(fields: str = None, db: DbSession = Depends(get_db)):
     query = db.query(models.Atbds).join(
         models.AtbdVersions, models.Atbds.id == models.AtbdVersions.atbd_id
     )
-    print(
-        db.query(models.Atbds)
-        .join(models.AtbdVersions, models.Atbds.id == models.AtbdVersions.atbd_id)
-        .all()
-    )
+    print(query)
+
     return query.all()

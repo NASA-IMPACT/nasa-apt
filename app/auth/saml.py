@@ -61,7 +61,7 @@ class SamlAuth:
         token: Optional[str] = Cookie(None),
         jwt: Optional[str] = None,
     ):
-        print("JWT: ", jwt)
+        print("SamlAUTH JWT Token: ", jwt)
         self.request = request
         self.response = response
         # self.session = request.session
@@ -219,7 +219,7 @@ class SamlAuth:
         if token_data is None or self.userdata is None:
             token_data = self.parse_token(self.GET_token)
         self.token_data = token_data
-        print("Token data: ", token_data)
+        print("Parsed token data: ", token_data)
         return token_data
 
     def raise_autherror(self):
@@ -267,4 +267,5 @@ async def require_user(saml: SamlAuth = Depends(SamlAuth)) -> User:
 
 
 async def get_user(saml: SamlAuth = Depends(SamlAuth)) -> User:
+    print("Userdata: ", saml.userdata)
     return saml.userdata
