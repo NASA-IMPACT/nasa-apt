@@ -2,11 +2,13 @@ from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_rds as rds
-from aws_cdk import aws_ssm as ssm
+from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_ecs as ecs
 from aws_cdk import core
 from typing import Any
+import json
 import config
 import os
 
@@ -66,12 +68,7 @@ class nasaAPTLambdaStack(core.Stack):
         database = rds.DatabaseInstance(
             self,
             f"{id}-postgres-db",
-            credentials=rds.Credentials.from_password(
-                username="masteruser",
-                password=core.SecretValue(
-                    value=core.SecretValue.plain_text("password")
-                ),
-            ),
+            credentials=rds.Credentials.from_generated_secret(username="masteruser"),
             allocated_storage=10,
             vpc=vpc,
             publicly_accessible=True,
@@ -88,12 +85,12 @@ class nasaAPTLambdaStack(core.Stack):
             else core.RemovalPolicy.DESTROY,
         )
 
-        # ssm.StringParameter(
-        #     self,
-        #     id=f"{id}-postgres-password",
-        #     # string_value=database.,
-        #     parameter_name=f"/integration_tests/{id}/downloader_rds_secret_arn",
-        # )
+        bootstrapper_function = _lambda.Function(
+            self, f"{id}-database-bootstrapper", runtime=_lambda.Runtime.FROM_IMAGE,
+            _lambda.Code.from_asset_image(
+            directory=code_dir, file="app/lambda.Dockerfile"
+        )
+        )
 
         logs_access = iam.PolicyStatement(
             actions=[
@@ -110,10 +107,7 @@ class nasaAPTLambdaStack(core.Stack):
                 "BACKEND_CORS_ORIGINS",
                 f"*,http://localhost:3000,http://localhost:3006,{frontend_url}",
             ),
-            POSTGRES_HOST=database.instance_endpoint.hostname,
-            POSTGRES_ADMIN_USER="masteruser",
-            POSTGRES_ADMIN_PASSWORD="password",
-            POSTGRES_DB_NAME="nasadb",
+            POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             ELASTICURL=os.environ["ELASTICURL"],
             ROOT_PATH=os.environ.get("API_PREFIX", "/"),
             JWT_SECRET=os.environ["JWT_SECRET"],
@@ -124,7 +118,9 @@ class nasaAPTLambdaStack(core.Stack):
 
         lambda_function_props = dict(
             runtime=_lambda.Runtime.FROM_IMAGE,
-            code=self.create_package(code_dir),
+            code=_lambda.Code.from_asset_image(
+                directory=code_dir, file="app/lambda.Dockerfile"
+            ),
             handler=_lambda.Handler.FROM_IMAGE,
             memory_size=memory,
             timeout=core.Duration.seconds(timeout),
@@ -139,22 +135,15 @@ class nasaAPTLambdaStack(core.Stack):
         )
 
         lambda_function.add_to_role_policy(logs_access)
-
+        database.secret.grant_read(lambda_function)
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
+
         apigw.HttpApi(
             self,
             f"{id}-endpoint",
             default_integration=apigw_integrations.LambdaProxyIntegration(
                 handler=lambda_function
             ),
-        )
-
-    def create_package(self, code_dir: str) -> _lambda.Code:
-        """Build docker image and create package."""
-        return _lambda.Code.from_asset_image(
-            directory=code_dir,
-            file="dockerfiles/lambda/Dockerfile",
-            repository_name="nasa-apt-api-images",
         )
 
 

@@ -21,6 +21,7 @@ RUN pip install --upgrade pip
 RUN pip install /app/. "mangum>=0.9.0" -t . --no-binary xmlsec numpy pydantic
 
 
-FROM prod as dev
-CMD ["/start-reload.sh"]
+#FROM prod as dev
+#CMD ["/start-reload.sh"]
+
 

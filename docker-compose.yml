@@ -11,34 +11,63 @@ services:
       POSTGRES_USER: $POSTGRES_ADMIN_USER
       POSTGRES_PASSWORD: $POSTGRES_ADMIN_PASSWORD
     command: postgres -c log_statement=all
+  db-bootstrapper: 
+    build: 
+      context: ./
+      dockerfile: ./db/local.Dockerfile
+    command: > 
+      sh -c "sqitch deploy --verify db:pg://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME &&
+            psql 'postgres://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME?options=--search_path%3dapt' -f /sqitch/testData.sql"
+    volumes: 
+      - type: bind
+        source: ./db
+        target: /sqitch
+    depends_on: 
+      - db-ready
 
-  elastic:
-    # Elastic db for local development only.
-    # For staging/production, add elasticache instance
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
-    environment:
-      - discovery.type=single-node
-      - http.port=9200
-      - http.cors.allow-origin=*
-      - http.cors.enabled=true
-      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
-      - http.cors.allow-credentials=true
-    ports:
-      - "9200:9200"
+  # elastic:
+  #   # Elastic db for local development only.
+  #   # For staging/production, add elasticache instance
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+  #   environment:
+  #     - discovery.type=single-node
+  #     - http.port=9200
+  #     - http.cors.allow-origin=*
+  #     - http.cors.enabled=true
+  #     - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+  #     - http.cors.allow-credentials=true
+  #   ports:
+  #     - "9200:9200"
   # localstack for local development only. AWS S3 used for staging/production
   localstack:
     image: localstack/localstack:latest
     environment:
-      - SERVICES=s3
-      - DATA_DIR=./figures
+      SERVICES: s3,secretsmanager
+      AWS_ACCESS_KEY_ID: stub
+      AWS_SECRET_ACCESS_KEY: stub
+      AWS_DEFAULT_REGION: us-east-1
+      PDFS_S3_BUCKET: $PDFS_S3_BUCKET
+      FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET  
+      POSTGRES_DB: $POSTGRES_DB_NAME
+      POSTGRES_USER: $POSTGRES_ADMIN_USER
+      POSTGRES_PASSWORD: $POSTGRES_ADMIN_PASSWORD
+      POSTGRES_ADMIN_CREDENTIALS_ARN: mockedsecrets
     ports:
       - "4566:4566"
-      - "4572:4572"
+    volumes: 
+      - ./localstack:/docker-entrypoint-initaws.d
+      - ./localstack/figures:/figures
   api:
     build:
       context: ./
-      dockerfile: dockerfiles/local/Dockerfile
+      dockerfile: app/local.Dockerfile
     image: nasa-apt/dev/app
+    # Same as above, I'm sure there's a better way to do this, than sleeping for an 
+    # arbitarty amount of time. All of the `wait-for-dependency` type scripts I've found 
+    # online consider the service to be ready once `nc -z $HOST $PORT` succeeds. However 
+    # in the case of localstack, those services will succeed before all of the necessary
+    # S3 and secretmanager resources have been built - so the API will still fail. 
+    command: sh -c "sleep 30 && uvicorn app.main:app --host 0.0.0.0 --port 80 --reload"
     ports:
       - "8000:80"
     volumes:
@@ -49,21 +78,20 @@ services:
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
+      AWS_DEFAULT_REGION: us-east-1
       REST_API_ENDPOINT: $REST_API_ENDPOINT
-      S3_ENDPOINT: $S3_ENDPOINT
+      AWS_RESOURCES_ENDPOINT: http://localstack:4566
       PDFS_S3_BUCKET: $PDFS_S3_BUCKET
       FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
-      POSTGRES_HOST: $POSTGRES_HOST
-      POSTGRES_ADMIN_USER: $POSTGRES_ADMIN_USER
-      POSTGRES_ADMIN_PASSWORD: $POSTGRES_ADMIN_PASSWORD
-      POSTGRES_DB_NAME: $POSTGRES_DB_NAME
+      POSTGRES_ADMIN_CREDENTIALS_ARN: mockedsecrets
       ELASTICURL: http://elastic:9200
       IDP_METADATA_URL: $IDP_METADATA_URL
       FASTAPI_HOST: http://localhost:8000
       JWT_SECRET: $JWT_SECRET
       APT_FRONTEND_URL: $APT_FRONTEND_URL
     depends_on:
-      - localstack
+      - localstack-ready
+      - db-bootstrapper
   swagger:
     image: swaggerapi/swagger-ui
     ports:
@@ -84,6 +112,5 @@ services:
     depends_on:
       - localstack
     command: localstack:4566
-
 
   

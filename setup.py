@@ -65,6 +65,8 @@ extra_reqs = {
         "aws-cdk.aws_rds>=1.72.0",
         "aws-cdk.aws_ssm>=1.72.0",
         "aws-cdk.aws_ec2>=1.72.0",
+        "aws-cdk.aws_secretsmanager>=1.72.0",
+        "aws-cdk.aws_ecs>=1.72.0",
     ],
     "test": [],
 }

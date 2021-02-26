@@ -1,11 +1,17 @@
 INSERT INTO contacts
     (first_name, last_name, mechanisms, roles)
-VALUES
-    ('Leonardo', 'Davinci', '{ "(\"Email\",\"test@email.com\")" }', '{ "Science contact", "Metadata author" }');
+SELECT 'Leonardo', 'Davinci', '{ "(\"Email\",\"test@email.com\")" }', '{ "Science contact", "Metadata author" }'
+WHERE 
+    NOT EXISTS(
+        SELECT first_name, last_name, mechanisms, roles FROM contacts WHERE first_name = 'Leonardo' AND last_name = 'Davinci'
+    );
 INSERT INTO contacts
     (first_name, last_name)
-VALUES
-    ('Gregor', 'Mendel');
+SELECT 'Gregor', 'Mendel'
+WHERE 
+    NOT EXISTS(
+        SELECT first_name, last_name FROM contacts WHERE first_name = 'Gregor' AND last_name = 'Mendel'
+    );
 INSERT INTO atbds
     (title, alias, created_by)
 VALUES

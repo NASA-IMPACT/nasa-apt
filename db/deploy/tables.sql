@@ -18,7 +18,7 @@ CREATE TYPE apt.e_contact_mechanism_type AS ENUM (
 );
 CREATE TYPE apt.contact_mechanism AS (
  mechanism_type apt.e_contact_mechanism_type,
- mechanism_value VARCHAR (1024)
+ mechanism_value VARCHAR (1024) 
 );
 CREATE TYPE apt.atbd_version_status AS ENUM (
   'Draft',
@@ -39,14 +39,6 @@ CREATE TABLE apt.contacts(
  first_name VARCHAR (1024) NOT NULL,
  middle_name VARCHAR (1024),
  last_name VARCHAR (1024) NOT NULL,
- uuid VARCHAR (1024),
- url VARCHAR (1024),
- mechanisms apt.contact_mechanism[],
- roles apt.e_contact_role_type[]
-);
-CREATE TABLE apt.contact_groups(
- id serial PRIMARY KEY,
- group_name VARCHAR (1024) NOT NULL,
  uuid VARCHAR (1024),
  url VARCHAR (1024),
  mechanisms apt.contact_mechanism[],
