@@ -197,7 +197,8 @@ def get_atbd_by_id(
     background_tasks: BackgroundTasks,
     user: User = Depends(get_user),
 ):
-    atbd_doc = get_atbd(atbd_id=atbd_id)
+    
+    atbd_doc = get_atbd(atbd_id=atbd_id, user=user)
     return atbd_pdf_handler(atbd_doc, background_tasks=background_tasks)
 
 
@@ -217,7 +218,7 @@ def get_journal_atbd_by_id(
     background_tasks: BackgroundTasks,
     user: User = Depends(get_user),
 ):
-    atbd_doc = get_atbd(atbd_id=atbd_id)
+    atbd_doc = get_atbd(atbd_id=atbd_id, user=user)
     return atbd_pdf_handler(atbd_doc, background_tasks=background_tasks, journal=True)
 
 
