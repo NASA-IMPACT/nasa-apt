@@ -9,7 +9,7 @@ import requests
 router = APIRouter()
 
 
-@router.get(config.root_path + "reindex",)
+@router.get("reindex",)
 async def reindex(request: Request, user: User = Depends(require_user)):
     """
     Reindex all ATBD's into ElasticSearch
@@ -19,7 +19,7 @@ async def reindex(request: Request, user: User = Depends(require_user)):
     return responses.JSONResponse(content=results)
 
 
-@router.post(config.root_path + "search",)
+@router.post("search",)
 async def search_elastic(request: Request, user: User = Depends(get_user)):
     """
     Proxies POST json to elastic search endpoint

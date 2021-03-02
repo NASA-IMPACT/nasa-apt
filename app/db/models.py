@@ -8,6 +8,7 @@ from sqlalchemy import (
     types,
     JSON,
     Enum,
+    func,
 )
 from sqlalchemy.orm import relationship
 
@@ -16,7 +17,7 @@ from app.db.types import utcnow
 
 
 class Atbds(Base):
-    id = Column(Integer(), primary_key=True, index=True)
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
     title = Column(String(), nullable=False)
     alias = Column(
         String(),
@@ -51,7 +52,7 @@ class StatusEnum(str, enum.Enum):
 
 
 class AtbdVersions(Base):
-    id = Column(Integer(), primary_key=True)
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
     atbd_id = Column(
         Integer(),
         ForeignKey("atbds.id", onupdate="CASCADE", ondelete="CASCADE"),
@@ -62,6 +63,7 @@ class AtbdVersions(Base):
         CheckConstraint("alias ~ '^[.a-z0-9-]+$'"),
         unique=True,
         nullable=False,
+        server_default="1.0",
     )
     status = Column(
         Enum(StatusEnum), server_default=StatusEnum.Draft.name, nullable=False

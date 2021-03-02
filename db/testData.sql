@@ -18,9 +18,9 @@ VALUES
     ('Test ATBD 1', 'test-atbd-1', 'LeoThomas123');
 
 INSERT INTO atbd_versions
-    (atbd_id, id, alias, document, status)
+    (atbd_id, alias, document, status)
 VALUES
-    (1, 1, 'v1.0', '{
+    (1, 'v1.0', '{
     "scientific_theory": {
         "document": {
             "nodes": [
@@ -695,9 +695,9 @@ VALUES
         'Published');
 
 INSERT INTO atbd_versions
-    (atbd_id, id, alias, document)
+    (atbd_id, alias, document)
 VALUES
-    (1, 2, 'v2.0', '{
+    (1, 'v2.0', '{
     "scientific_theory": {
         "document": {
             "nodes": [

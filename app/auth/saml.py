@@ -267,5 +267,4 @@ async def require_user(saml: SamlAuth = Depends(SamlAuth)) -> User:
 
 
 async def get_user(saml: SamlAuth = Depends(SamlAuth)) -> User:
-    print("Userdata: ", saml.userdata)
     return saml.userdata

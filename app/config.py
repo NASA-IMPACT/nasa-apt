@@ -45,8 +45,6 @@ POSTGRES_HOST = pg_credentials["host"]
 
 ELASTICURL = os.environ.get("ELASTICURL") or exit("ELASTICURL env var required")
 
-ROOT_PATH = os.environ.get("API_PREFIX", "/")
-
 JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
 HOST = os.environ.get("FASTAPI_HOST") or exit("FASTAPI_HOST env var required")
 

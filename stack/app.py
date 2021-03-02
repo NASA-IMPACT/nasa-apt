@@ -109,7 +109,6 @@ class nasaAPTLambdaStack(core.Stack):
             ),
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             ELASTICURL=os.environ["ELASTICURL"],
-            ROOT_PATH=os.environ.get("API_PREFIX", "/"),
             JWT_SECRET=os.environ["JWT_SECRET"],
             FASTAPI_HOST=os.environ["FASTAPI_HOST"],
             IDP_METADATA_URL=os.environ["IDP_METADATA_URL"],

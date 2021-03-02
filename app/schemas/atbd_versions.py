@@ -3,16 +3,19 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class Output(BaseModel):
+class SummaryOutput(BaseModel):
     alias: str
     status: str
     published_by: Optional[str]
     published_at: Optional[datetime]
-    document: dict
 
     class Config:
         title = "Asset"
         orm_mode = True
+
+
+class FullOutput(SummaryOutput):
+    document: dict
 
 
 class Create(BaseModel):

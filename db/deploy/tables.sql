@@ -52,11 +52,11 @@ CREATE TABLE apt.atbds(
   created_at TIMESTAMPTZ default now()
 );
 CREATE TABLE apt.atbd_versions(
-    id INTEGER NOT NULL,
+    id serial,
     atbd_id INTEGER NOT NULL,
     FOREIGN KEY (atbd_id) REFERENCES apt.atbds(id),
     PRIMARY KEY (atbd_id, id), 
-    alias VARCHAR(256) CONSTRAINT alphanum_alias CHECK(alias ~ '^[.a-z0-9-]+$'),
+    alias VARCHAR(256) CONSTRAINT alphanum_alias CHECK(alias ~ '^[.a-z0-9-]+$') default '1.0',
     status apt.atbd_version_status default 'Draft',
     document json,
     published_by VARCHAR(1024),

@@ -34,7 +34,7 @@ async def acs(saml: SamlAuth = Depends(saml_auth),):
         saml.nq = "nq"
         saml.spnq = "spnq"
         saml.session_index = "index"
-        saml.userdata = {"myattribute": 1}
+        saml.userdata = {"user": "mockauth-user"}
     else:
         auth.process_response()
         saml.raise_autherror()
