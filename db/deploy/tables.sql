@@ -47,7 +47,7 @@ CREATE TABLE apt.contacts(
 CREATE TABLE apt.atbds(
   id serial PRIMARY KEY,
   title VARCHAR (1024) NOT NULL,
-  alias VARCHAR(256) UNIQUE CONSTRAINT alphanum_alias CHECK(alias ~ '^[a-z0-9-]+$'),
+  alias VARCHAR(256) UNIQUE CONSTRAINT alphanum_alias CHECK(alias ~ '^[a-z0-9-]+$') DEFAULT NULL,
   created_by VARCHAR (1024),
   created_at TIMESTAMPTZ default now()
 );
@@ -56,8 +56,8 @@ CREATE TABLE apt.atbd_versions(
     atbd_id INTEGER NOT NULL,
     FOREIGN KEY (atbd_id) REFERENCES apt.atbds(id),
     PRIMARY KEY (atbd_id, id), 
-    alias VARCHAR(256) CONSTRAINT alphanum_alias CHECK(alias ~ '^[.a-z0-9-]+$') default '1.0',
-    status apt.atbd_version_status default 'Draft',
+    alias VARCHAR(256) CONSTRAINT alphanum_alias CHECK(alias ~ '^[.a-z0-9-]+$') DEFAULT '1.0',
+    "status" apt.atbd_version_status default 'Draft',
     document json,
     published_by VARCHAR(1024),
     published_at TIMESTAMPTZ 

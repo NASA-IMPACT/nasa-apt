@@ -85,12 +85,12 @@ class nasaAPTLambdaStack(core.Stack):
             else core.RemovalPolicy.DESTROY,
         )
 
-        bootstrapper_function = _lambda.Function(
-            self, f"{id}-database-bootstrapper", runtime=_lambda.Runtime.FROM_IMAGE,
-            _lambda.Code.from_asset_image(
-            directory=code_dir, file="app/lambda.Dockerfile"
-        )
-        )
+        # bootstrapper_function = _lambda.Function(
+        #     self, f"{id}-database-bootstrapper", runtime=_lambda.Runtime.FROM_IMAGE,
+        #     _lambda.Code.from_asset_image(
+        #     directory=code_dir, file="app/lambda.Dockerfile"
+        # )
+        # )
 
         logs_access = iam.PolicyStatement(
             actions=[

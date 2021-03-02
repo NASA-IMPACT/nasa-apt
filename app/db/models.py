@@ -19,12 +19,7 @@ from app.db.types import utcnow
 class Atbds(Base):
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
     title = Column(String(), nullable=False)
-    alias = Column(
-        String(),
-        CheckConstraint("alias ~ '^[a-z0-9-]+$'"),
-        unique=True,
-        nullable=False,
-    )
+    alias = Column(String(), CheckConstraint("alias ~ '^[a-z0-9-]+$'"), unique=True,)
     created_by = Column(String())
     created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
     versions = relationship(
