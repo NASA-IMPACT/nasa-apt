@@ -1,10 +1,15 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 from typing import Optional, List
-from app.schemas import atbd_versions
+from app.schemas import versions
 
 
-class CreateInput(BaseModel):
+class Update(BaseModel):
+    alias: Optional[str]
+    title: Optional[str]
+
+
+class Create(BaseModel):
     title: str
     alias: Optional[str]
 
@@ -14,10 +19,11 @@ class CreateInput(BaseModel):
 
 
 class OutputBase(BaseModel):
+    id: int
     created_at: datetime
     created_by: str
     title: str
-    alias: str
+    alias: Optional[str]
 
     class Config:
         title = "Atbd"
@@ -25,20 +31,13 @@ class OutputBase(BaseModel):
 
 
 class SummaryOutput(OutputBase):
-    versions: List[atbd_versions.SummaryOutput]
+    versions: List[versions.SummaryOutput]
 
 
 class FullOutput(OutputBase):
-    versions: List[atbd_versions.FullOutput]
+    versions: List[versions.FullOutput]
 
 
 class Lookup(BaseModel):
     id: Optional[int]
-    abtd_alias: Optional[str]
-
-
-class Create(BaseModel):
-    atbd_alias: str
-    title: str
-    created_by: str
-
+    alias: Optional[str]

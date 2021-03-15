@@ -1,19 +1,18 @@
 """NASA-APT app."""
 
 # from app import version
-from app.api.v1.api import api_router
-
-from app.db.middleware import db_session_middleware
-
 from app import config
-from app.search.searchindex import index_atbd
-import asyncpg
+from app.api.v1.api import api_router
+from app.db.db_session import DbSession
+from app.db.models import Atbds, AtbdVersions
+from app.search.elasticsearch import index_atbd
 
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
+from sqlalchemy import event
 
-DATABASE_CONNECTION_URL = f"postgres://{config.POSTGRES_ADMIN_USER}:{config.POSTGRES_ADMIN_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/{config.POSTGRES_DB_NAME}"
+# DATABASE_CONNECTION_URL = f"postgres://{config.POSTGRES_ADMIN_USER}:{config.POSTGRES_ADMIN_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/{config.POSTGRES_DB_NAME}"
 
 app = FastAPI(
     title=config.PROJECT_NAME,
@@ -36,26 +35,47 @@ if config.BACKEND_CORS_ORIGINS:
 app.add_middleware(GZipMiddleware, minimum_size=0)
 
 app.include_router(api_router, prefix=config.API_VERSION_STR)
+
+
+# TODO: figure out if we want to use an event listener or directly index
+# after update operations directly in the API
+# TODO: figure out if this should be a separate lambda invocation,
+# or an asynchronous event, or something else
+@event.listens_for(DbSession, "before_commit")
+def atbd_listener(session):
+    # Add all ids to a set, to deduplicate ID from
+    # sessions that update both an ATBD and it's version
+    atbds_to_index = set()
+    for instance in session.dirty:
+        if isinstance(instance, Atbds):
+            atbds_to_index.add(instance.id)
+        if isinstance(instance, AtbdVersions):
+            atbds_to_index.add(instance.atbd_id)
+
+    for atbd_id in atbds_to_index:
+        index_atbd(atbd_id=atbd_id, db=session)
+
+
 # app.middleware("http")(db_session_middleware)
 
 
-@app.on_event("startup")
-async def startup() -> None:
-    """
-    Create database connection when FastAPI App has started.
-    Add listener to atbd channel on database connection.
-    """
-    print(f"Attempting to connect to: {DATABASE_CONNECTION_URL}")
-    app.state.connection = await asyncpg.connect(
-        DATABASE_CONNECTION_URL, server_settings={"search_path": "apt,public"}
-    )
-    await app.state.connection.add_listener("atbd", index_atbd())
+# @app.on_event("startup")
+# async def startup() -> None:
+#     """
+#     Create database connection when FastAPI App has started.
+#     Add listener to atbd channel on database connection.
+#     """
+#     print(f"Attempting to connect to: {DATABASE_CONNECTION_URL}")
+#     app.state.connection = await asyncpg.connect(
+#         DATABASE_CONNECTION_URL, server_settings={"search_path": "apt,public"}
+#     )
+#     await app.state.connection.add_listener("atbd", index_atbd())
 
 
-@app.on_event("shutdown")
-async def shutdown() -> None:
-    await app.state.connection.remove_listener("atbd", index_atbd)
-    await app.state.connection.close()
+# @app.on_event("shutdown")
+# async def shutdown() -> None:
+#     await app.state.connection.remove_listener("atbd", index_atbd)
+#     await app.state.connection.close()
 
 
 @app.get("/ping", description="Health Check")

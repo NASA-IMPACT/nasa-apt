@@ -1,10 +1,19 @@
-FROM public.ecr.aws/lambda/python:3.7
+FROM public.ecr.aws/lambda/python:3.8
 
 RUN yum install -y gcc gcc-c++ make
 
 RUN yum install -y\
-    texlive texlive-latex texlive-xetex texlive-collection-latexrecommended\
-    yum install libxml2-devel xmlsec1-devel xmlsec1-openssl-devel libtool-ltdl-devel
+    texlive-pdftex texlive-latex-bin texlive-texconfig* texlive-latex* texlive-metafont* \
+    texlive-cmap* texlive-ec texlive-fncychap* texlive-pdftex-def texlive-fancyhdr* \
+    texlive-titlesec* texlive-multirow texlive-framed* texlive-wrapfig* texlive-parskip* \
+    texlive-caption texlive-ifluatex* texlive-collection-fontsrecommended texlive-lm* \
+    texlive-collection-latexrecommended texlive-collection-xetex \
+    libxml2-devel xmlsec1-devel xmlsec1-openssl-devel libtool-ltdl-devel \
+    wget
+
+RUN mkdir -p ~/Library/Fonts
+RUN cp -r /usr/share/texlive/texmf-dist/fonts/opentype/public/lm-math/latinmodern-math.otf   ~/Library/Fonts/
+RUN cp -r /usr/share/texlive/texmf-dist/fonts/ /usr/share/fonts/
 
 RUN rm -rf /var/lib/apt/lists/*
 

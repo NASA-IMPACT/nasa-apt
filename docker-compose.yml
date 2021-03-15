@@ -17,7 +17,7 @@ services:
       dockerfile: ./db/local.Dockerfile
     command: > 
       sh -c "sqitch deploy --verify db:pg://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME &&
-            psql 'postgres://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME?options=--search_path%3dapt' -f /sqitch/testData.sql"
+            psql 'postgres://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME?options=--search_path%3dapt' -f /sqitch/testDataLocal.sql"
     volumes: 
       - type: bind
         source: ./db
@@ -25,19 +25,19 @@ services:
     depends_on: 
       - db-ready
 
-  # elastic:
-  #   # Elastic db for local development only.
-  #   # For staging/production, add elasticache instance
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
-  #   environment:
-  #     - discovery.type=single-node
-  #     - http.port=9200
-  #     - http.cors.allow-origin=*
-  #     - http.cors.enabled=true
-  #     - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
-  #     - http.cors.allow-credentials=true
-  #   ports:
-  #     - "9200:9200"
+  elastic:
+    # Elastic db for local development only.
+    # For staging/production, add elasticache instance
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+    environment:
+      - discovery.type=single-node
+      - http.port=9200
+      - http.cors.allow-origin=*
+      - http.cors.enabled=true
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - http.cors.allow-credentials=true
+    ports:
+      - "9200:9200"
   # localstack for local development only. AWS S3 used for staging/production
   localstack:
     image: localstack/localstack:latest
@@ -51,7 +51,7 @@ services:
       POSTGRES_DB: $POSTGRES_DB_NAME
       POSTGRES_USER: $POSTGRES_ADMIN_USER
       POSTGRES_PASSWORD: $POSTGRES_ADMIN_PASSWORD
-      POSTGRES_ADMIN_CREDENTIALS_ARN: mockedsecrets
+      POSTGRES_ADMIN_CREDENTIALS_ARN: $POSTGRES_ADMIN_CREDENTIALS_ARN
     ports:
       - "4566:4566"
     volumes: 
@@ -83,7 +83,7 @@ services:
       AWS_RESOURCES_ENDPOINT: http://localstack:4566
       PDFS_S3_BUCKET: $PDFS_S3_BUCKET
       FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
-      POSTGRES_ADMIN_CREDENTIALS_ARN: mockedsecrets
+      POSTGRES_ADMIN_CREDENTIALS_ARN: $POSTGRES_ADMIN_CREDENTIALS_ARN
       ELASTICURL: http://elastic:9200
       IDP_METADATA_URL: $IDP_METADATA_URL
       FASTAPI_HOST: http://localhost:8000

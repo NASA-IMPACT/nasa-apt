@@ -27,7 +27,7 @@ inst_reqs = [
     "jq==1.0.2",
     "latex==0.7.0",
     "num2words==0.5.10",
-    "numpy==1.20.1",
+    # "numpy==1.20.1",
     "pandas==1.0.3",
     "pipreqs==0.4.10",
     "pydantic==1.5.1",
@@ -52,6 +52,7 @@ inst_reqs = [
     "SQLAlchemy==1.3.23",
     "psycopg2-binary==2.8.6",
     "typing-extensions==3.7.4.3",
+    "aiofiles==0.6.0",
 ]
 extra_reqs = {
     "server": ["uvicorn", "click"],
@@ -67,8 +68,14 @@ extra_reqs = {
         "aws-cdk.aws_ec2>=1.72.0",
         "aws-cdk.aws_secretsmanager>=1.72.0",
         "aws-cdk.aws_ecs>=1.72.0",
+        "aws-cdk.aws_elasticsearch>=1.72.0",
     ],
-    "test": [],
+    "test": [
+        "factory-boy==3.2.0",
+        "pytest==6.2.2",
+        "pytest-sqitch==0.1.1",
+        "testing-postgresql==1.3.0",
+    ],
 }
 
 

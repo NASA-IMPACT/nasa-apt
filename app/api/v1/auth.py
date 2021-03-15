@@ -18,6 +18,7 @@ mockauth = config.IDP_METADATA_URL == "mock"
 @router.get("/sso")
 async def sso(saml: SamlAuth = Depends(saml_auth)):
     if mockauth:
+        print(f"Redirecting to : {saml.url_for('acs')}?RelayState={saml.return_to}")
         return RedirectResponse(
             url=f"{saml.url_for('acs')}?RelayState={saml.return_to}"
         )

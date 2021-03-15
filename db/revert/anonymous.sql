@@ -2,6 +2,7 @@
 
 BEGIN;
 
--- XXX Add DDLs here.
-
+    -- XXX Add DDLs here.
+    DROP OWNED BY anonymous;
+    DROP ROLE anonymous;
 COMMIT;

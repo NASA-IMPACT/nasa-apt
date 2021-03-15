@@ -18,9 +18,9 @@ VALUES
     ('Test ATBD 1', 'test-atbd-1', 'LeoThomas123');
 
 INSERT INTO atbd_versions
-    (atbd_id, alias, document, status)
+    (atbd_id, created_by, major, minor, document, status)
 VALUES
-    (1, 'v1.0', '{
+    (1, 'LeoThomas123', 1, 0, '{
     "scientific_theory": {
         "document": {
             "nodes": [
@@ -597,7 +597,7 @@ VALUES
             }
         }
     ],
-    "algorithm_output_variables": {
+    "algorithm_output_variables": [{
         "name": {
             "object": "value",
             "document": {
@@ -676,14 +676,16 @@ VALUES
                 ]
             }
         }
-    },
+    }],
     "publication_references": [
         {
+            "publication_reference_id": 1,
             "authors": "Charles Dickens,  John Steinbeck",
             "title": "Example Reference",
             "series": "A",
             "edition": "3rd",
             "volume": "42ml",
+            "issue":"ticket",
             "publication_place": "Boston",
             "publisher": "PenguinBooks",
             "pages": "189-198",
@@ -695,9 +697,9 @@ VALUES
         'Published');
 
 INSERT INTO atbd_versions
-    (atbd_id, alias, document)
+    (atbd_id, created_by, major, minor, document)
 VALUES
-    (1, 'v2.0', '{
+    (1, 'LeoThomas123', 2, 0, '{
     "scientific_theory": {
         "document": {
             "nodes": [
@@ -1274,7 +1276,7 @@ VALUES
             }
         }
     ],
-    "algorithm_output_variables": {
+    "algorithm_output_variables":[ {
         "name": {
             "object": "value",
             "document": {
@@ -1353,15 +1355,17 @@ VALUES
                 ]
             }
         }
-    },
+    }],
     "publication_references": [
         {
+            "publication_reference_id": 1,
             "authors": "Charles Dickens,  John Steinbeck",
             "title": "Example Reference",
             "series": "A",
             "edition": "3rd",
             "volume": "42ml",
             "publication_place": "Boston",
+            "issue": "ticket",
             "publisher": "PenguinBooks",
             "pages": "189-198",
             "isbn": 123456789,

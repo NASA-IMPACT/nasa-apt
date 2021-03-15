@@ -48,18 +48,25 @@ CREATE TABLE apt.atbds(
   id serial PRIMARY KEY,
   title VARCHAR (1024) NOT NULL,
   alias VARCHAR(256) UNIQUE CONSTRAINT alphanum_alias CHECK(alias ~ '^[a-z0-9-]+$') DEFAULT NULL,
-  created_by VARCHAR (1024),
+  created_by VARCHAR (1024) NOT NULL,
   created_at TIMESTAMPTZ default now()
 );
+-- Having only major (and not minor) included in the primary key
+-- strictly enforces the fact that all minor version updates get "squashed" and 
+-- that APT only maintains major versions
 CREATE TABLE apt.atbd_versions(
-    id serial,
+    major INTEGER NOT NULL default 1,
+    minor INTEGER NOT NULL default 0,
     atbd_id INTEGER NOT NULL,
     FOREIGN KEY (atbd_id) REFERENCES apt.atbds(id),
-    PRIMARY KEY (atbd_id, id), 
-    alias VARCHAR(256) CONSTRAINT alphanum_alias CHECK(alias ~ '^[.a-z0-9-]+$') DEFAULT '1.0',
+    PRIMARY KEY (atbd_id, major), 
     "status" apt.atbd_version_status default 'Draft',
     document json,
     published_by VARCHAR(1024),
-    published_at TIMESTAMPTZ 
+    published_at TIMESTAMPTZ,
+    created_by VARCHAR(1024),
+    created_at TIMESTAMPTZ default now(),
+    changelog VARCHAR,
+    doi VARCHAR(1024)
 );
 COMMIT;

@@ -16,7 +16,7 @@ VPC_ID = os.environ.get("VPC_ID")
 #                                 LAMBDA                                       #
 #                                                                              #
 ################################################################################
-TIMEOUT: int = 10
+TIMEOUT: int = 60 * 2
 MEMORY: int = 1536
 
 # stack skips setting concurrency if this value is 0

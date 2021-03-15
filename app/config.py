@@ -2,6 +2,7 @@ import os
 import boto3
 import json
 
+
 PROJECT_NAME = "APT API"
 # API_VERSION_STR = "/v1"
 API_VERSION_STR = ""
@@ -20,28 +21,29 @@ POSTGRES_ADMIN_CREDENTIALS_ARN = os.environ.get(
     "POSTGRES_ADMIN_CREDENTIALS_ARN"
 ) or exit("POSTGRES_ADMIN_CREDENTIALS_ARN env var required")
 
-# print(f"AWS_RESOURCES ENDPOINT: {os.environ['SECRETS_MANAGER_URL']}")
-
-
 secrets_manager_client_params = dict(service_name="secretsmanager")
+
+# Allows us to point the APP to the AWS secretsmanager instance
+# running in localstack, when developing locally. This value
+# should be left blank when the APP is deployed in an AWS stack
 if os.environ.get("AWS_RESOURCES_ENDPOINT"):
     secrets_manager_client_params.update(
         dict(endpoint_url=os.environ.get("AWS_RESOURCES_ENDPOINT"))
     )
-# print(f"Boto3 Client inst. params: {secrets_manager_client_params}")
-# print(f"POSTGRES_ADMIN_CREDENTIALS_ARN: {POSTGRES_ADMIN_CREDENTIALS_ARN}")
+
 secrets_manager = boto3.client(**secrets_manager_client_params)
+
 pg_credentials = json.loads(
     secrets_manager.get_secret_value(SecretId=POSTGRES_ADMIN_CREDENTIALS_ARN)[
         "SecretString"
     ]
 )
+
 POSTGRES_ADMIN_USER = pg_credentials["username"]
 POSTGRES_ADMIN_PASSWORD = pg_credentials["password"]
 POSTGRES_PORT = pg_credentials["port"]
 POSTGRES_DB_NAME = pg_credentials["dbname"]
 POSTGRES_HOST = pg_credentials["host"]
-
 
 ELASTICURL = os.environ.get("ELASTICURL") or exit("ELASTICURL env var required")
 

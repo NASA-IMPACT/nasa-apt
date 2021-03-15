@@ -1,14 +1,14 @@
 """ATBD's endpoint."""
-from app.schemas import atbds
-from app.db import models
+from app.schemas import atbds, versions
 from app.db.db_session import DbSession
-from app.api.utils import get_db
-from app.auth.saml import User, get_user
+from app.api.utils import get_db, require_user, get_major_from_version_string
+from app.auth.saml import User
+from app.crud.atbds import crud_atbds
+from app.crud.versions import crud_versions
+from sqlalchemy import exc
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import func, exc, select, column
-
-
 from typing import List
+import datetime
 
 router = APIRouter()
 
@@ -18,99 +18,95 @@ router = APIRouter()
     responses={200: dict(description="Return a list of all available ATBDs")},
     response_model=List[atbds.SummaryOutput],
 )
-def list_atbds(fields: str = None, db: DbSession = Depends(get_db)):
-
-    query = db.query(models.Atbds).join(
-        models.AtbdVersions, models.Atbds.id == models.AtbdVersions.atbd_id
-    )
-
-    return query.all()
+def list_atbds(db: DbSession = Depends(get_db)):
+    return crud_atbds.scan(db=db)
 
 
 @router.get(
-    "/atbds/{id}",
+    "/atbds/{atbd_id}",
     responses={200: dict(description="Return a single ATBD")},
     response_model=atbds.FullOutput,
 )
-def get_atbd(id: str, fields: str = None, db: DbSession = Depends(get_db)):
-
-    query = db.query(models.Atbds).join(
-        models.AtbdVersions, models.Atbds.id == models.AtbdVersions.atbd_id
-    )
-    try:
-        int(id)
-        query = query.filter(models.Atbds.id == id)
-    except ValueError:
-        query = query.filter(models.Atbds.alias == id)
-
-    try:
-        return query.one()
-    except exc.SQLAlchemyError:
-        raise HTTPException(404, f"No document found for id/alias: {id}")
+def get_atbd(atbd_id: str, fields: str = None, db: DbSession = Depends(get_db)):
+    return crud_atbds.get(db=db, atbd_id=atbd_id)
 
 
 @router.post(
     "/atbds",
     responses={200: dict(description="Create a new ATBD")},
-    # response_model=atbds.SummaryOutput,
+    response_model=atbds.SummaryOutput,
 )
 def create_atbd(
-    atbd_input: atbds.CreateInput,
+    atbd_input: atbds.Create,
     db: DbSession = Depends(get_db),
-    user: User = Depends(get_user),
+    user: User = Depends(require_user),
 ):
-    print("User: ", user)
-    if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="User must be authenticated to perform this operation",
-        )
+    output = crud_atbds.create(db, atbd_input, user["user"])
+    return output
 
-    _input = (
-        (atbd_input.title, user["user"])
-        if not atbd_input.alias
-        else (atbd_input.title, user["user"], atbd_input.alias)
-    )
+
+@router.post(
+    "/atbds/{atbd_id}",
+    responses={200: dict(description="Create a new ATBD")},
+    response_model=atbds.SummaryOutput,
+)
+def update_atbd(
+    atbd_id: str,
+    atbd_input: atbds.Update,
+    db: DbSession = Depends(get_db),
+    user: User = Depends(require_user),
+):
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
     try:
-        function_execution_result = db.execute(
-            select(
-                [
-                    column("atbds.id"),
-                    column("atbds.title"),
-                    column("atbds.created_by"),
-                    column("atbds.created_at"),
-                    column("atbd_versions.id"),
-                    column("atbd_versions.atbd_id"),
-                    column("atbd_versions.alias"),
-                    column("atbd_versions.status"),
-                    column("atbd_versions.document"),
-                    column("atbd_versions.published_by"),
-                    column("atbd_versions.published_at"),
-                ]
-            ).select_from(func.apt.create_atbd_version(*_input))
-        )
-
-        db.commit()
-
-    except exc.IntegrityError as e:
-        print(e)
-        db.rollback()
+        atbd = crud_atbds.update(db=db, db_obj=atbd, obj_in=atbd_input)
+    except exc.IntegrityError:
         if atbd_input.alias:
             raise HTTPException(
-                status_code=400,
-                detail=f"An ATBD with alias {atbd_input.alias} already exists",
+                status_code=401,
+                detail=f"Alias {atbd_input.alias} already exists in database",
             )
-    [created_atbd] = function_execution_result
+    return atbd
 
-    output = {
-        k.split(".")[-1]: v
-        for k, v in dict(created_atbd).items()
-        if k.split(".")[0] == "atbds"
-    }
-    output["versions"] = {
-        k.split(".")[-1]: v
-        for k, v in dict(created_atbd).items()
-        if k.split(".")[0] == "atbd_versions"
-    }
 
-    return output
+@router.get("/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput)
+def get_version(atbd_id: str, version: str, db=Depends(get_db)):
+
+    major = get_major_from_version_string(version)
+    return crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+
+
+@router.post("/atbds/{atbd_id}/versions", response_model=atbds.FullOutput)
+def create_new_version(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
+    version = crud_versions.create(db=db, atbd_id=atbd_id, user=user["user"])
+    return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
+
+
+@router.post("/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput)
+def update_atbd_version(
+    atbd_id: str,
+    version: str,
+    version_input: versions.Update,
+    db=Depends(get_db),
+    user=Depends(require_user),
+):
+    major = get_major_from_version_string(version)
+    [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
+    crud_versions.update(db=db, db_obj=version, obj_in=version_input)
+
+    return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
+
+
+@router.post("/atbds/{atbd_id}/publish", response_model=atbds.FullOutput)
+def publish_atbd(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
+    [latest_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1).versions
+    if latest_version.status == "Published":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Latest version of atbd {atbd_id} already has status: `Published`",
+        )
+    latest_version.status = "Published"
+    latest_version.published_by = user["user"]
+    latest_version.published_at = datetime.datetime.now(datetime.timezone.utc)
+    db.commit()
+    db.refresh(latest_version)
+    return crud_atbds.get(db=db, atbd_id=atbd_id, version=latest_version.major)

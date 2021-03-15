@@ -1,17 +1,21 @@
 from app import config
-
-# from app.main import app
-
-from sqlalchemy import create_engine
+from sqlalchemy import engine, create_engine, event
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_CONNECTION_URL = f"postgres://{config.POSTGRES_ADMIN_USER}:{config.POSTGRES_ADMIN_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/{config.POSTGRES_DB_NAME}"
+DATABASE_CONNECTION_URL = engine.url.URL(
+    "postgresql",
+    username=config.POSTGRES_ADMIN_USER,
+    password=config.POSTGRES_ADMIN_PASSWORD,
+    host=config.POSTGRES_HOST,
+    database=config.POSTGRES_DB_NAME,
+)
+
+
 engine = create_engine(
     DATABASE_CONNECTION_URL, pool_pre_ping=True, connect_args={"connect_timeout": 10}
 )
 
 
-# DbSession = sessionmaker(autocommit=False, bind=app.state.connection)
 DbSession = sessionmaker(autocommit=False, bind=engine)
 
 
@@ -24,4 +28,3 @@ async def get_session():
         yield db
     finally:
         db.close()
-

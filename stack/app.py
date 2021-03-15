@@ -2,13 +2,12 @@ from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_rds as rds
-from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_elasticsearch as elasticsearch
 from aws_cdk import core
 from typing import Any
-import json
 import config
 import os
 
@@ -28,7 +27,7 @@ class nasaAPTLambdaStack(core.Stack):
         scope: core.Construct,
         id: str,
         memory: int = 1024,
-        timeout: int = 30,
+        timeout: int = 60 * 2,
         concurrent: int = 100,
         code_dir: str = "./",
         **kwargs: Any,
@@ -63,8 +62,8 @@ class nasaAPTLambdaStack(core.Stack):
             description="Allow all traffic for Postgres",
         )
 
-        # TODO: change PASSWORD to use secrets manager
         # TODO: add bootstrapping lambda as a custom resource to be run by cloudformation
+
         database = rds.DatabaseInstance(
             self,
             f"{id}-postgres-db",
@@ -85,12 +84,44 @@ class nasaAPTLambdaStack(core.Stack):
             else core.RemovalPolicy.DESTROY,
         )
 
-        # bootstrapper_function = _lambda.Function(
-        #     self, f"{id}-database-bootstrapper", runtime=_lambda.Runtime.FROM_IMAGE,
-        #     _lambda.Code.from_asset_image(
-        #     directory=code_dir, file="app/lambda.Dockerfile"
-        # )
-        # )
+        core.CfnOutput(
+            self,
+            f"{id}-database-secret-arn",
+            value=database.secret.secret_arn,
+            description="Arn of the SecretsManager instance holding the connection info for Postgres DB",
+        )
+
+        # TODO: add JWT secret as a `secretsmanager` generated object
+        s3.Bucket(self, f"{id}")
+
+        esdomain = elasticsearch.Domain(
+            self,
+            f"{id}-elasticsearch-domain",
+            version=elasticsearch.ElasticsearchVersion.V7_7,
+            capacity=elasticsearch.CapacityConfig(
+                data_node_instance_type="t2.small.elasticsearch", data_nodes=1,
+            ),
+            domain_name=f"{id}-elastic",
+            ebs=elasticsearch.EbsOptions(
+                enabled=True,
+                iops=0,
+                volume_size=10,
+                volume_type=ec2.EbsDeviceVolumeType.GP2,
+            ),
+            automated_snapshot_start_hour=0,
+            access_policies=[
+                iam.PolicyStatement(
+                    actions=["es:*"],
+                    effect=iam.Effect.ALLOW,
+                    principals=[
+                        iam.ArnPrincipal(f"arn:aws:iam::{core.Aws.ACCOUNT_ID}:root")
+                    ],
+                    resources=[
+                        f"arn:aws:es:${core.Aws.REGION}:${core.Aws.ACCOUNT_ID}:domain/${core.Aws.STACK_NAME}-elastic"
+                    ],
+                )
+            ],
+        )
 
         logs_access = iam.PolicyStatement(
             actions=[
@@ -108,7 +139,7 @@ class nasaAPTLambdaStack(core.Stack):
                 f"*,http://localhost:3000,http://localhost:3006,{frontend_url}",
             ),
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
-            ELASTICURL=os.environ["ELASTICURL"],
+            ELASTICURL=esdomain.domain_endpoint,
             JWT_SECRET=os.environ["JWT_SECRET"],
             FASTAPI_HOST=os.environ["FASTAPI_HOST"],
             IDP_METADATA_URL=os.environ["IDP_METADATA_URL"],
@@ -135,6 +166,7 @@ class nasaAPTLambdaStack(core.Stack):
 
         lambda_function.add_to_role_policy(logs_access)
         database.secret.grant_read(lambda_function)
+        esdomain.grant_read_write(lambda_function)
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
 
         apigw.HttpApi(

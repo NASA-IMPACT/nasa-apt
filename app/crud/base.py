@@ -89,16 +89,16 @@ class CRUDBase(
             db_session.commit()
 
     def update(
-        self, db_session: Session, *, db_obj: ModelType, obj_in: UpdateSchemaType
+        self, db: Session, *, db_obj: ModelType, obj_in: UpdateSchemaType
     ) -> ModelType:
         obj_data = jsonable_encoder(db_obj)
         update_data = obj_in.dict(skip_defaults=True)
         for field in obj_data:
             if field in update_data:
                 setattr(db_obj, field, update_data[field])
-        db_session.add(db_obj)
-        db_session.commit()
-        db_session.refresh(db_obj)
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
         return db_obj
 
     def remove(self, db_session: Session, *, id: int) -> ModelType:
