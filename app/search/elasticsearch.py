@@ -1,7 +1,7 @@
 from app import config
 from app.logs import logger
 from app.crud.atbds import crud_atbds
-from app.schemas.elasticsearch import ElasticSearchAtbdVersion
+from app.schemas.elasticsearch import ElasticsearchAtbdVersion
 from app.schemas.versions import FullOutput as VersionFullOutput
 from app.db.db_session import DbSession
 import requests
@@ -39,18 +39,32 @@ def prep_json(json: Dict) -> Dict:
     Cleans up json document returned from the database to be added
     to Elasticsearch Index
     """
+
     query = """
     def atbddoc:
     del(._id)
     | del(..|.type?)
     | del(..|.object?)
-    | del(.[]|..|.atbd_id?)
-    | del(.[]|..|.atbd_version?)
-    | walk(if type=="object" then
-    with_entries(select(.value != null and .value != ""
-    and .value != [] and .value != {})) else . end)
-    | walk(if type=="object" and has("document")
-    then {document:( .. | select(.text?) )} else . end);
+    | del(.|..|.atbd_id?)
+    | del(.|..|.major?)
+    | del(.|..|.minor?)
+    | del(.|..|.published_at?)
+    | del(.|..|.created_at?)
+    | del(.|..|.version?)
+    | walk(
+        if type=="object"
+        then with_entries(
+            select(
+                .value != null and .value != "" and .value != [] and .value != {})
+            )
+        else . end
+    )
+    | .document 
+    | walk(
+        if type=="object" and has("document")
+        then ( .. | select(.text?) )
+        else . end
+    );
 
     . | {"index": {"_index": "atbd", "_type": "atbd", "_id": ._id}}, atbddoc
     """
@@ -65,6 +79,7 @@ def send_to_elastic(json: Dict):
     url = f"{config.ELASTICURL}/atbd/_bulk"
     auth = aws_auth()
     logger.info("sending %s %s using auth: %s", json, url, auth)
+    print("REQUEST: ", json)
     response = requests.post(
         url, auth=auth, data=json, headers={"Content-Type": "application/json"}
     )
@@ -179,7 +194,8 @@ def index_atbd(atbd_id: str, db: DbSession):
 
         if atbd.alias:
             es_atbd_params["alias"] = atbd.alias
-        es_atbd_version = ElasticSearchAtbdVersion(**es_atbd_params).json(by_alias=True)
+        es_atbd_version = ElasticsearchAtbdVersion(**es_atbd_params).json(by_alias=True)
+
         # TODO: do something with the `result` object
         result = send_to_elastic(es_atbd_version)
     return

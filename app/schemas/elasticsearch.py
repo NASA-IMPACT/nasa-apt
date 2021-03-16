@@ -2,7 +2,7 @@ from typing import Optional
 from app.schemas.versions import FullOutput
 
 
-class ElasticSearchAtbdVersion(FullOutput):
+class ElasticsearchAtbdVersion(FullOutput):
     id: str
     title: str
     alias: Optional[str]
