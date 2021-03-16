@@ -59,7 +59,7 @@ def prep_json(json: Dict) -> Dict:
             )
         else . end
     )
-    | .document 
+    | .document
     | walk(
         if type=="object" and has("document")
         then ( .. | select(.text?) )
@@ -79,7 +79,6 @@ def send_to_elastic(json: Dict):
     url = f"{config.ELASTICURL}/atbd/_bulk"
     auth = aws_auth()
     logger.info("sending %s %s using auth: %s", json, url, auth)
-    print("REQUEST: ", json)
     response = requests.post(
         url, auth=auth, data=json, headers={"Content-Type": "application/json"}
     )
@@ -87,81 +86,6 @@ def send_to_elastic(json: Dict):
     if not response.ok:
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
-
-
-# async def get_index(
-#     connection: asyncpg.connection,
-#     atbd_id: Optional[int] = None,
-#     atbd_version: Optional[int] = None,
-# ) -> Dict:
-#     """
-#     Get data for Index from PostgreSQL Database
-#     """
-#     where = ""
-#     args = ()
-#     if atbd_id is not None:
-#         where = " WHERE atbd_id=$1"
-#         args = (atbd_id,)
-#         if atbd_version is not None:
-#             where = f"{where} AND atbd_version=$2"
-#             args = (
-#                 atbd_id,
-#                 atbd_version,
-#             )
-#     query = f"""
-#     WITH t AS (
-#     SELECT
-#     v.atbd_id *10000 + v.atbd_version as _id,
-#     atbds.title, atbds.alias,
-#     v.*,
-#     (SELECT json_agg(c) FROM (
-#         SELECT * FROM atbd_contacts LEFT JOIN contacts
-#         USING (id) WHERE atbd_id=atbds.id
-#     ) as c ) as contacts,
-#     (SELECT json_agg(c) FROM (
-#         SELECT * FROM atbd_contact_groups LEFT JOIN contact_groups
-#         USING (id) WHERE atbd_id=atbds.id
-#     ) as c ) as contact_groups,
-#     (SELECT json_agg(c) FROM (
-#         SELECT * FROM atbd_contacts LEFT JOIN contacts
-#         USING (id) WHERE atbd_id=atbds.id
-#     ) as c ) as contacts,
-#     (SELECT json_agg(c) FROM (
-#         SELECT * FROM citations WHERE
-#         atbd_id=atbds.id and atbd_version=v.atbd_version
-#     ) as c ) as citations,
-#     (SELECT json_agg(c) FROM (
-#         SELECT * FROM algorithm_input_variables
-#         WHERE atbd_id=atbds.id and atbd_version=v.atbd_version
-#     ) as c ) as algorithm_input_variables,
-#     (SELECT json_agg(c) FROM (
-#         SELECT * FROM algorithm_output_variables
-#         WHERE atbd_id=atbds.id and atbd_version=v.atbd_version
-#     ) as c ) as algorithm_output_variables,
-#     (SELECT json_agg(c) FROM (
-#         SELECT * FROM publication_references
-#         WHERE atbd_id=atbds.id and atbd_version=v.atbd_version
-#     ) as c ) as publication_references,
-#     (SELECT json_agg(c) FROM (
-#         SELECT * FROM data_access_input_data
-#         WHERE atbd_id=atbds.id and atbd_version=v.atbd_version
-#     ) as c ) as data_access_input_data,
-#     (SELECT json_agg(c) FROM (
-#         SELECT * FROM data_access_output_data
-#         WHERE atbd_id=atbds.id and atbd_version=v.atbd_version
-#     ) as c ) as data_access_output_data,
-#     (SELECT json_agg(c) FROM (
-#         SELECT * FROM data_access_related_urls
-#         WHERE atbd_id=atbds.id and atbd_version=v.atbd_version
-#     ) as c ) as data_access_related_urls
-#     FROM
-#     atbds
-#     JOIN atbd_versions v USING (atbd_id)
-#     {where}
-#     )
-#     SELECT json_agg(json_strip_nulls(row_to_json(t))) FROM t;
-#     """
-#     return await connection.fetchval(query, *args)
 
 
 # async def update_index(
@@ -181,7 +105,6 @@ def send_to_elastic(json: Dict):
 
 def index_atbd(atbd_id: str, db: DbSession):
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-
     # This operation appends an ATBD title and alias to an ATBD Verions
     # such that the title and alias remain searchable but will always
     # return a single version as a unit of data
@@ -199,20 +122,3 @@ def index_atbd(atbd_id: str, db: DbSession):
         # TODO: do something with the `result` object
         result = send_to_elastic(es_atbd_version)
     return
-
-
-# def index_atbd(
-#     connection: asyncpg.connection = None,
-#     pid: int = None,
-#     channel: str = None,
-#     payload: str = None,
-# ):
-#     """
-#     Callback function to update index for an ATBD document
-#     """
-
-#     def callback(connection: asyncpg.connection, pid: int, channel: str, payload: str):
-#         logger.info("Listen %s %s %s", pid, channel, payload)
-#         asyncio.ensure_future(update_index(connection=connection, atbd_id=int(payload)))
-
-#     return callback

@@ -1,7 +1,6 @@
 import pytest
 import json
 from typing import List
-from app.db.models import Atbds, AtbdVersions
 
 
 def _create_atbd_with_versions(
@@ -279,7 +278,11 @@ def test_create_atbd_fails_if_missing_title(test_client, atbd_creation_input):
 
 
 def test_update_atbd_by_id(
-    test_client, db_session, atbd_creation_input, authenticated_headers
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
 ):
 
     created = json.loads(
@@ -304,7 +307,11 @@ def test_update_atbd_by_id(
 
 
 def test_update_atbd_by_alias(
-    test_client, db_session, atbd_creation_input, authenticated_headers
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
 ):
 
     created = json.loads(
@@ -329,13 +336,18 @@ def test_update_atbd_by_alias(
 
 
 def test_update_atbd_fails_if_updated_alias_already_exists_in_database(
-    test_client, db_session, atbd_creation_input, authenticated_headers
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
 ):
     atbd1 = json.loads(
         test_client.post(
             "/atbds", json=atbd_creation_input, headers=authenticated_headers
         ).content
     )
+
     # Create another ATBD whose alias will conflict with the
     # alias we try to set for atbd1
     atbd_creation_input["alias"] = "atbd-alias-2"
@@ -354,7 +366,11 @@ def test_update_atbd_fails_if_updated_alias_already_exists_in_database(
 
 
 def test_update_atbd_fails_if_user_is_not_authenticated(
-    test_client, db_session, atbd_creation_input, authenticated_headers
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
 ):
     atbd = json.loads(
         test_client.post(
@@ -369,7 +385,11 @@ def test_update_atbd_fails_if_user_is_not_authenticated(
 
 
 def test_update_atbd_latest_version(
-    test_client, db_session, atbd_creation_input, authenticated_headers
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
 ):
     atbd = json.loads(
         test_client.post(
@@ -418,13 +438,17 @@ def test_update_atbd_latest_version(
 
 
 def test_update_atbd_versions_fails_if_user_is_unauthenticated(
-    test_client, db_session, atbd_creation_input
+    test_client, db_session, atbd_creation_input, mocked_event_listener
 ):
     pass
 
 
 def test_publish_atbd_version(
-    test_client, db_session, atbd_creation_input, authenticated_headers
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
 ):
     atbd = json.loads(
         test_client.post(
@@ -449,7 +473,11 @@ def test_publish_atbd_version_fails_if_latest_versions_is_already_published():
 
 
 def test_create_new_atbd_version(
-    test_client, db_session, atbd_creation_input, authenticated_headers
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
 ):
     atbd = json.loads(
         test_client.post(

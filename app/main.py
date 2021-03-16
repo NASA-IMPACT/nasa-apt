@@ -56,28 +56,6 @@ def atbd_listener(session):
         index_atbd(atbd_id=atbd_id, db=session)
 
 
-# app.middleware("http")(db_session_middleware)
-
-
-# @app.on_event("startup")
-# async def startup() -> None:
-#     """
-#     Create database connection when FastAPI App has started.
-#     Add listener to atbd channel on database connection.
-#     """
-#     print(f"Attempting to connect to: {DATABASE_CONNECTION_URL}")
-#     app.state.connection = await asyncpg.connect(
-#         DATABASE_CONNECTION_URL, server_settings={"search_path": "apt,public"}
-#     )
-#     await app.state.connection.add_listener("atbd", index_atbd())
-
-
-# @app.on_event("shutdown")
-# async def shutdown() -> None:
-#     await app.state.connection.remove_listener("atbd", index_atbd)
-#     await app.state.connection.close()
-
-
 @app.get("/ping", description="Health Check")
 def ping():
     """Health check."""

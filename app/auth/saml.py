@@ -219,7 +219,6 @@ class SamlAuth:
         if token_data is None or self.userdata is None:
             token_data = self.parse_token(self.GET_token)
         self.token_data = token_data
-        print("Parsed token data: ", token_data)
         return token_data
 
     def raise_autherror(self):

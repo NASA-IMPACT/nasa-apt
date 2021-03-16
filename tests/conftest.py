@@ -1,5 +1,5 @@
 from app.db.models import Atbds, AtbdVersions
-
+from unittest.mock import patch
 import pytest
 from sqlalchemy import engine, create_engine, text
 import testing.postgresql
@@ -203,3 +203,9 @@ def atbds_factory(db_session, atbd_versions_factory):
 def atbd_creation_input():
     return {"title": "Test ATBD 1", "alias": "test-atbd-1"}
 
+
+@pytest.fixture(scope="function")
+def mocked_event_listener():
+    with patch("app.main.index_atbd") as mocked_event_listener:
+
+        yield mocked_event_listener
