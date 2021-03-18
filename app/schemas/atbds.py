@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel
 from typing import Optional, List
 from app.schemas import versions
 

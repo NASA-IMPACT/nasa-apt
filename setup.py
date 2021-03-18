@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 inst_reqs = [
     # "aiofiles==0.5.0",
-    "asyncpg==0.20.1",
+    # "asyncpg==0.20.1",
     "boto3==1.13.18",
     "botocore==1.16.18",
     "botostubs==0.12.1.13.18",

@@ -2,20 +2,16 @@ from app import config
 from app.logs import logger
 from app.crud.atbds import crud_atbds
 from app.schemas.elasticsearch import ElasticsearchAtbdVersion
-from app.schemas.versions import FullOutput as VersionFullOutput
 from app.db.db_session import DbSession
 import requests
 from requests_aws4auth import AWS4Auth
 import boto3
 
-from typing import Optional, Dict
-from fastapi import HTTPException, Depends
+from typing import Dict
+from fastapi import HTTPException
 import jq
 
-# import asyncpg
-# import asyncio
-
-logger.info("ELASTICURL %s", config.ELASTICURL)
+logger.info("ELASTICSEARCH_URL %s", config.ELASTICSEARCH_URL)
 
 
 def aws_auth():
@@ -76,7 +72,8 @@ def send_to_elastic(json: Dict):
     POST json to elastic endpoint
     """
     json = prep_json(json).encode("utf-8")
-    url = f"{config.ELASTICURL}/atbd/_bulk"
+    url = f"http://{config.ELASTICSEARCH_URL}/atbd/_bulk"
+
     auth = aws_auth()
     logger.info("sending %s %s using auth: %s", json, url, auth)
     response = requests.post(
@@ -120,5 +117,6 @@ def index_atbd(atbd_id: str, db: DbSession):
         es_atbd_version = ElasticsearchAtbdVersion(**es_atbd_params).json(by_alias=True)
 
         # TODO: do something with the `result` object
-        result = send_to_elastic(es_atbd_version)
+        # result =
+        send_to_elastic(es_atbd_version)
     return

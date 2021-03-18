@@ -12,7 +12,6 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from sqlalchemy import event
 
-# DATABASE_CONNECTION_URL = f"postgres://{config.POSTGRES_ADMIN_USER}:{config.POSTGRES_ADMIN_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/{config.POSTGRES_DB_NAME}"
 
 app = FastAPI(
     title=config.PROJECT_NAME,

@@ -139,7 +139,7 @@ class nasaAPTLambdaStack(core.Stack):
                 f"*,http://localhost:3000,http://localhost:3006,{frontend_url}",
             ),
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
-            ELASTICURL=esdomain.domain_endpoint,
+            ELASTICSEARCH_URL=esdomain.domain_endpoint,
             JWT_SECRET=os.environ["JWT_SECRET"],
             FASTAPI_HOST=os.environ["FASTAPI_HOST"],
             IDP_METADATA_URL=os.environ["IDP_METADATA_URL"],
@@ -169,12 +169,18 @@ class nasaAPTLambdaStack(core.Stack):
         esdomain.grant_read_write(lambda_function)
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
 
-        apigw.HttpApi(
+        api_gateway = apigw.HttpApi(
             self,
             f"{id}-endpoint",
             default_integration=apigw_integrations.LambdaProxyIntegration(
                 handler=lambda_function
             ),
+        )
+        core.CfnOutput(
+            self,
+            f"{id}-endpoint-url",
+            value=api_gateway.api_endpoint,
+            description="API Gateway endpoint for the APT API",
         )
 
 

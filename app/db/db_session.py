@@ -1,5 +1,5 @@
 from app import config
-from sqlalchemy import engine, create_engine, event
+from sqlalchemy import engine, create_engine
 from sqlalchemy.orm import sessionmaker
 
 DATABASE_CONNECTION_URL = engine.url.URL(

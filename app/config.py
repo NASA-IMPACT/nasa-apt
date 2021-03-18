@@ -45,7 +45,9 @@ POSTGRES_PORT = pg_credentials["port"]
 POSTGRES_DB_NAME = pg_credentials["dbname"]
 POSTGRES_HOST = pg_credentials["host"]
 
-ELASTICURL = os.environ.get("ELASTICURL") or exit("ELASTICURL env var required")
+ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL") or exit(
+    "ELASTICSEARCH_URL env var required"
+)
 
 JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
 HOST = os.environ.get("FASTAPI_HOST") or exit("FASTAPI_HOST env var required")
