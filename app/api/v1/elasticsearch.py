@@ -2,6 +2,7 @@ from app import config
 
 from app.logs import logger
 from app.auth.saml import get_user, User
+from app.schemas.versions import StatusEnum
 import requests
 from requests_aws4auth import AWS4Auth
 import boto3
@@ -50,7 +51,7 @@ def search_elastic(request: dict, user: User = Depends(get_user)):
     logger.info("data: %s", request)
 
     if user is None:
-        request["query"]["bool"]["filter"] = [{"match": {"status": "published"}}]
+        request["query"]["bool"]["filter"] = [{"match": {"status": "Published"}}]
     logger.info("Searching %s %s", url, request)
     auth = aws_auth()
     response = requests.post(

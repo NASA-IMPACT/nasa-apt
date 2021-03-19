@@ -40,7 +40,7 @@ services:
       - "9200:9200"
   # localstack for local development only. AWS S3 used for staging/production
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:0.12.7
     environment:
       SERVICES: s3,secretsmanager
       AWS_ACCESS_KEY_ID: stub

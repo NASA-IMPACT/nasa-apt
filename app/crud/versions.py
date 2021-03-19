@@ -1,7 +1,7 @@
 from app.crud.base import CRUDBase
 from app.db.models import AtbdVersions
 from app.db.db_session import DbSession
-from app.schemas.versions import FullOutput, Create, Update
+from app.schemas.versions import FullOutput, Create, Update, StatusEnum
 from app.crud.atbds import crud_atbds
 from sqlalchemy import orm
 
@@ -18,7 +18,7 @@ class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
                 status_code=400,
                 detail=(
                     "A new version can only be created if the latest verison has status: "
-                    "`Published`"
+                    f"`Published`"
                 ),
             )
 
@@ -29,6 +29,7 @@ class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
         latest_version.changelog = None
         latest_version.doi = None
         latest_version.created_by = user
+        # Postgres will auto-populate status with default value ("Draft")
         latest_version.status = None
 
         db.add(latest_version)

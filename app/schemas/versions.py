@@ -1,9 +1,16 @@
 from datetime import datetime
 from pydantic import BaseModel, validator
 from typing import Optional
+import enum
 
 
-# TODO: make status into an enum
+class StatusEnum(enum.Enum):
+    draft = "Draft"
+    review = "Review"
+    published = "Published"
+
+
+# TODO: use enum above
 class OutputBase(BaseModel):
     status: str
     published_by: Optional[str]
@@ -47,3 +54,4 @@ class Update(BaseModel):
     changelog: Optional[str]
     doi: Optional[str]
     status: Optional[str]
+

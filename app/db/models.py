@@ -1,4 +1,3 @@
-import enum
 from sqlalchemy import (
     Column,
     String,
@@ -10,15 +9,14 @@ from sqlalchemy import (
     Enum,
 )
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import ARRAY
 
 from app.db.base import Base
 from app.db.types import utcnow
+from app.schemas.versions import StatusEnum
+from app.schemas.contacts import RolesEnum, ContactMechanismEnum
 
-
-class StatusEnum(str, enum.Enum):
-    Draft = "Draft"
-    Review = "Review"
-    Published = "Published"
+# TODO: break this up into individual files
 
 
 class AtbdVersions(Base):
@@ -30,9 +28,7 @@ class AtbdVersions(Base):
     )
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
-    status = Column(
-        Enum(StatusEnum), server_default=StatusEnum.Draft.name, nullable=False
-    )
+    status = Column(String(), server_default="Draft", nullable=False)
     document = Column(JSON())
     published_by = Column(String())
     published_at = Column(types.DateTime)
@@ -71,4 +67,23 @@ class Atbds(Base):
             f"<Atbds(id={self.id}, title={self.title}, alias={self.alias},"
             f" created_by={self.created_by}, created_at={self.created_at},"
             f" versions={versions})>"
+        )
+
+
+class Contacts(Base):
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    first_name = Column(String(), nullable=False)
+    middle_name = Column(String())
+    last_name = Column(String(), nullable=False)
+    uuid = Column(String())
+    url = Column(String())
+    mechanisms = Column(ARRAY(String()))
+    roles = Column(ARRAY(String()))
+    title = Column(String())
+
+    def __repr__(self):
+        return (
+            f"<Contact(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name},"
+            f" last_name={self.last_name}, uuid={self.uuid}, url={self.url}, title={self.title}, "
+            f" no. mechanisms={len(self.mechanisms)}, no. roles={len(self.roles)}"
         )

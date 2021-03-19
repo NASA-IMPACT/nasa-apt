@@ -297,6 +297,7 @@ def test_update_atbd_by_id(
             headers=authenticated_headers,
         ).content
     )
+    print("UPDATED: ", updated)
 
     [dbobj] = db_session.execute(
         f"SELECT * FROM atbds WHERE atbds.id = '{updated['id']}'"
