@@ -42,6 +42,31 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
                 status_code=404, detail=f"No data found for id/alias: {atbd_id}"
             )
 
+    def exists(self, db: DbSession, atbd_id: str, version: int = None):
+
+        lookup = (
+            db.query(Atbds)
+            .join(AtbdVersions, Atbds.id == AtbdVersions.atbd_id)
+            .options(orm.contains_eager(Atbds.versions))
+        )
+
+        if version == -1:
+            subquery = db.query(func.max(AtbdVersions.major))
+            lookup = lookup.filter(AtbdVersions.major == subquery)
+
+            [subquery] = utils.add_id_or_alias_filter(atbd_id, subquery)
+
+        elif version:
+            lookup = lookup.filter(AtbdVersions.major == version)
+
+        [lookup] = utils.add_id_or_alias_filter(atbd_id, lookup)
+        result = db.query(lookup.exists()).scalar()
+        if not result:
+            raise HTTPException(
+                status_code=404, detail=f"No data found for id/alias: {atbd_id}"
+            )
+        return result
+
     def create(self, db: DbSession, atbd_input: Create, user: str):
         _input = (
             (atbd_input.title, user)

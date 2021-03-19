@@ -1,7 +1,8 @@
 """ATBD's endpoint."""
+from app import config
 from app.schemas import atbds, versions
 from app.db.db_session import DbSession
-from app.api.utils import get_db, require_user, get_major_from_version_string
+from app.api.utils import get_db, require_user, get_major_from_version_string, s3_client
 from app.auth.saml import User
 from app.crud.atbds import crud_atbds
 from app.crud.versions import crud_versions
@@ -22,12 +23,23 @@ def list_atbds(db: DbSession = Depends(get_db)):
     return crud_atbds.scan(db=db)
 
 
+@router.head(
+    "/atbds/{atbd_id}",
+    responses={200: dict(description="Atbd with given ID/alias exists in backend")},
+)
+def atbd_exists(atbd_id: str, db: DbSession = Depends(get_db)):
+    print("ENTERED HEAD METHOD!")
+    result = crud_atbds.exists(db=db, atbd_id=atbd_id)
+    print("RESULT: ", result)
+    return result
+
+
 @router.get(
     "/atbds/{atbd_id}",
     responses={200: dict(description="Return a single ATBD")},
     response_model=atbds.FullOutput,
 )
-def get_atbd(atbd_id: str, fields: str = None, db: DbSession = Depends(get_db)):
+def get_atbd(atbd_id: str, db: DbSession = Depends(get_db)):
     return crud_atbds.get(db=db, atbd_id=atbd_id)
 
 
@@ -66,6 +78,15 @@ def update_atbd(
                 detail=f"Alias {atbd_input.alias} already exists in database",
             )
     return atbd
+
+
+@router.head(
+    "/atbds/{atbd_id}/versions/{version}",
+    responses={200: dict(description="Atbd with given ID/alias exists in backend")},
+)
+def version_exists(atbd_id: str, version: str, db: DbSession = Depends(get_db)):
+    major = get_major_from_version_string(version)
+    return crud_atbds.exists(db=db, atbd_id=atbd_id, version=major)
 
 
 @router.get("/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput)
@@ -110,3 +131,14 @@ def publish_atbd(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
     db.commit()
     db.refresh(latest_version)
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=latest_version.major)
+
+
+@router.get("/atbds/{atbd_id}/images/{image_key}")
+def get_image(atbd_id: str, image_key=str):
+    return responses.RedirectResponse(
+        s3_client().generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": config.Bucket, "Key": image_key},
+            ExpiresIn=3,
+        )
+    )

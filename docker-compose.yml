@@ -79,11 +79,13 @@ services:
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
       AWS_DEFAULT_REGION: us-east-1
-      REST_API_ENDPOINT: $REST_API_ENDPOINT
       AWS_RESOURCES_ENDPOINT: http://localstack:4566
       PDFS_S3_BUCKET: $PDFS_S3_BUCKET
       FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
       POSTGRES_ADMIN_CREDENTIALS_ARN: $POSTGRES_ADMIN_CREDENTIALS_ARN
+      # This URL omits the "http://" in order to remain consistent
+      # with the value of the URL returned by the ElasticSearch Domain 
+      # CDK component
       ELASTICSEARCH_URL: elastic:9200
       IDP_METADATA_URL: $IDP_METADATA_URL
       FASTAPI_HOST: http://localhost:8000
@@ -99,7 +101,7 @@ services:
     expose:
       - "8080"
     environment:
-      API_URL: http://localhost:3000/
+      API_URL: http://localhost:8000/atbds
     depends_on:
       - api
   db-ready:

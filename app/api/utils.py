@@ -1,11 +1,19 @@
 from app.db.db_session import DbSession
-
 from app.auth.saml import get_user, User
 from app.db.db_session import get_session
+from app import config
 from fastapi import Depends, HTTPException
+from boto3 import client
 import re
 
 
+def s3_client():
+    if config.AWS_RESOURCES_ENDPOINT:
+        return client("s3", endpoint_url=config.AWS_RESOURCES_ENDPOINT)
+    return client("s3")
+
+
+# TODO: remove this method in favor of the `require_user` already present in `auth/saml`
 def require_user(user: User = Depends(get_user)):
 
     if not user:

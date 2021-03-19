@@ -21,12 +21,30 @@ POSTGRES_ADMIN_CREDENTIALS_ARN = os.environ.get(
     "POSTGRES_ADMIN_CREDENTIALS_ARN"
 ) or exit("POSTGRES_ADMIN_CREDENTIALS_ARN env var required")
 
+
+ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL") or exit(
+    "ELASTICSEARCH_URL env var required"
+)
+
+JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
+HOST = os.environ.get("FASTAPI_HOST") or exit("FASTAPI_HOST env var required")
+
+IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(
+    "IDP_METADATA_URL env var required"
+)
+
+BUCKET = os.environ.get("FIGURES_S3_BUCKET") or exit(
+    "FIGURES_S3_BUCKET env var required"
+)
+
+AWS_RESOURCES_ENDPOINT = os.environ.get("AWS_RESOURCES_ENDPOINT")
+
 secrets_manager_client_params = dict(service_name="secretsmanager")
 
 # Allows us to point the APP to the AWS secretsmanager instance
 # running in localstack, when developing locally. This value
 # should be left blank when the APP is deployed in an AWS stack
-if os.environ.get("AWS_RESOURCES_ENDPOINT"):
+if AWS_RESOURCES_ENDPOINT:
     secrets_manager_client_params.update(
         dict(endpoint_url=os.environ.get("AWS_RESOURCES_ENDPOINT"))
     )
@@ -44,15 +62,4 @@ POSTGRES_ADMIN_PASSWORD = pg_credentials["password"]
 POSTGRES_PORT = pg_credentials["port"]
 POSTGRES_DB_NAME = pg_credentials["dbname"]
 POSTGRES_HOST = pg_credentials["host"]
-
-ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL") or exit(
-    "ELASTICSEARCH_URL env var required"
-)
-
-JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
-HOST = os.environ.get("FASTAPI_HOST") or exit("FASTAPI_HOST env var required")
-
-IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(
-    "IDP_METADATA_URL env var required"
-)
 
