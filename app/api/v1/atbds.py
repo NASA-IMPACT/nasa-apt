@@ -28,10 +28,7 @@ def list_atbds(db: DbSession = Depends(get_db)):
     responses={200: dict(description="Atbd with given ID/alias exists in backend")},
 )
 def atbd_exists(atbd_id: str, db: DbSession = Depends(get_db)):
-    print("ENTERED HEAD METHOD!")
-    result = crud_atbds.exists(db=db, atbd_id=atbd_id)
-    print("RESULT: ", result)
-    return result
+    return crud_atbds.exists(db=db, atbd_id=atbd_id)
 
 
 @router.get(
@@ -178,11 +175,20 @@ def publish_atbd(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
 
 
 @router.get("/atbds/{atbd_id}/images/{image_key}")
-def get_image(atbd_id: str, image_key=str):
+def get_image_presigned_url(atbd_id: str, image_key: str):
     return responses.RedirectResponse(
         s3_client().generate_presigned_url(
             ClientMethod="get_object",
-            Params={"Bucket": config.Bucket, "Key": image_key},
+            Params={"Bucket": config.BUCKET, "Key": image_key},
             ExpiresIn=3,
         )
+    )
+
+
+# TODO: add response model
+# TODO: verify atbd exists
+@router.post("/atbds/{atbd_id}/images/{image_key}")
+def upload_image_presigned_url(atbd_id: str, image_key: str):
+    return s3_client().generate_presigned_post(
+        Bucket=config.BUCKET, Key=image_key, ExpiresIn=60 * 60
     )
