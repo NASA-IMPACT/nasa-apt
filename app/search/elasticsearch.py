@@ -47,6 +47,7 @@ def prep_json(json: Dict) -> Dict:
     | del(.|..|.published_at?)
     | del(.|..|.created_at?)
     | del(.|..|.version?)
+    | del(.|..|.sections_completed?)
     | walk(
         if type=="object"
         then with_entries(

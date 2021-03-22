@@ -10,6 +10,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.ext.mutable import MutableDict
 
 from app.db.base import Base
 from app.db.types import utcnow
@@ -29,7 +30,8 @@ class AtbdVersions(Base):
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="Draft", nullable=False)
-    document = Column(JSON())
+    document = Column(MutableDict.as_mutable(JSON), server_default="{}")
+    sections_completed = Column(MutableDict.as_mutable(JSON), server_default="{}")
     published_by = Column(String())
     published_at = Column(types.DateTime)
     created_by = Column(String(), nullable=False)
@@ -41,7 +43,8 @@ class AtbdVersions(Base):
 
         return (
             f"<AtbdVersions(atbd_id={self.atbd_id}, version=v{self.major}.{self.minor},"
-            f" status={self.status}, document={self.document}, created_by={self.created_by},"
+            f" status={self.status}, document={self.document},"
+            f" sections_completed={self.sections_completed}, created_by={self.created_by},"
             f" created_at={self.created_at}, published_by={self.published_by},"
             f" published_at={self.published_by}>"
         )

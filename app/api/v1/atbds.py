@@ -117,6 +117,50 @@ def update_atbd_version(
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
 
 
+@router.post(
+    "/atbds/{atbd_id}/versions/{version}/document", response_model=atbds.FullOutput
+)
+def update_atbd_version_document(
+    atbd_id: str,
+    version: str,
+    document_input: versions.JSONFieldUpdate,
+    db=Depends(get_db),
+    user=Depends(require_user),
+):
+    major = get_major_from_version_string(version)
+    [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
+    # https://docs.sqlalchemy.org/en/13/core/type_basics.html?highlight=json#sqlalchemy.types.JSON
+    version.document[document_input.key] = document_input.value
+    db.add(version)
+    db.commit()
+    db.refresh(version)
+    print("VERSION after refresh:", version)
+
+    return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
+
+
+@router.post(
+    "/atbds/{atbd_id}/versions/{version}/sections_completed",
+    response_model=atbds.FullOutput,
+)
+def update_atbd_version_sections_completed(
+    atbd_id: str,
+    version: str,
+    document_input: versions.JSONFieldUpdate,
+    db=Depends(get_db),
+    user=Depends(require_user),
+):
+    major = get_major_from_version_string(version)
+    [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
+
+    version.sections_completed[document_input.key] = document_input.value
+    db.add(version)
+    db.commit()
+    db.refresh(version)
+
+    return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
+
+
 @router.post("/atbds/{atbd_id}/publish", response_model=atbds.FullOutput)
 def publish_atbd(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
     [latest_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1).versions

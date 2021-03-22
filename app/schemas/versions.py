@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, validator
-from typing import Optional
+from typing import Optional, Union
 import enum
 
 
@@ -35,6 +35,7 @@ class SummaryOutput(OutputBase):
 
 class FullOutput(SummaryOutput):
     document: Optional[dict]
+    sections_completed: Optional[dict]
     changelog: Optional[str]
     doi: Optional[str]
 
@@ -51,7 +52,13 @@ class Lookup(BaseModel):
 class Update(BaseModel):
     minor: Optional[int]
     document: Optional[dict]
+    sections_completed: Optional[dict]
     changelog: Optional[str]
     doi: Optional[str]
     status: Optional[str]
+
+
+class JSONFieldUpdate(BaseModel):
+    key: str
+    value: Union[str, dict]
 

@@ -18,7 +18,8 @@ BEGIN;
         OUT "atbd_versions.major" VARCHAR, 
         OUT "atbd_versions.minor" VARCHAR,
         OUT "atbd_versions.status" apt.atbd_version_status, 
-        OUT "atbd_versions.document" VARCHAR, 
+        OUT "atbd_versions.document" JSON, 
+        OUT "atbd_versions.sections_completed" JSON, 
         OUT "atbd_versions.published_by" VARCHAR, 
         OUT "atbd_versions.published_at" TIMESTAMPTZ,
         OUT "atbd_versions.created_by" VARCHAR,
@@ -40,8 +41,8 @@ BEGIN;
             (atbd_id, created_by, major, minor)
         VALUES
             ("atbds.id", created_by, 1, 0)
-        RETURNING atbd_versions.atbd_id, atbd_versions.major, atbd_versions.minor, atbd_versions.status, atbd_versions.document, atbd_versions.published_by, atbd_versions.published_at, atbd_versions.created_by, atbd_versions.created_at, atbd_versions.changelog, atbd_versions.doi 
-        INTO "atbd_versions.atbd_id", "atbd_versions.major", "atbd_versions.minor", "atbd_versions.status", "atbd_versions.document", "atbd_versions.published_by", "atbd_versions.published_at", "atbd_versions.created_by", "atbd_versions.created_at", "atbd_versions.changelog", "atbd_versions.doi";
+        RETURNING atbd_versions.atbd_id, atbd_versions.major, atbd_versions.minor, atbd_versions.status, atbd_versions.document, atbd_versions.sections_completed, atbd_versions.published_by, atbd_versions.published_at, atbd_versions.created_by, atbd_versions.created_at, atbd_versions.changelog, atbd_versions.doi 
+        INTO "atbd_versions.atbd_id", "atbd_versions.major", "atbd_versions.minor", "atbd_versions.status", "atbd_versions.document", "atbd_versions.sections_completed", "atbd_versions.published_by", "atbd_versions.published_at", "atbd_versions.created_by", "atbd_versions.created_at", "atbd_versions.changelog", "atbd_versions.doi";
     END;
     $$ LANGUAGE plpgsql
   VOLATILE;

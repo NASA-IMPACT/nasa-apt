@@ -14,6 +14,7 @@ BEGIN;
         OUT "atbd_versions.minor",
         OUT "atbd_versions.status", 
         OUT "atbd_versions.document", 
+        OUT "atbd_versions.sections_completed",
         OUT "atbd_versions.published_by", 
         OUT "atbd_versions.published_at",
         OUT "atbd_versions.created_by",

@@ -17,8 +17,7 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
 
         return query.all()
 
-    def get(self, db: DbSession, atbd_id: str, version: int = None):
-
+    def _build_lookup_query(self, db: DbSession, atbd_id: str, version: int = None):
         query = (
             db.query(Atbds)
             .join(AtbdVersions, Atbds.id == AtbdVersions.atbd_id)
@@ -35,6 +34,10 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
             query = query.filter(AtbdVersions.major == version)
 
         [query] = utils.add_id_or_alias_filter(atbd_id, query)
+        return query
+
+    def get(self, db: DbSession, atbd_id: str, version: int = None):
+        query = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
         try:
             return query.one()
         except exc.SQLAlchemyError:
@@ -44,22 +47,7 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
 
     def exists(self, db: DbSession, atbd_id: str, version: int = None):
 
-        lookup = (
-            db.query(Atbds)
-            .join(AtbdVersions, Atbds.id == AtbdVersions.atbd_id)
-            .options(orm.contains_eager(Atbds.versions))
-        )
-
-        if version == -1:
-            subquery = db.query(func.max(AtbdVersions.major))
-            lookup = lookup.filter(AtbdVersions.major == subquery)
-
-            [subquery] = utils.add_id_or_alias_filter(atbd_id, subquery)
-
-        elif version:
-            lookup = lookup.filter(AtbdVersions.major == version)
-
-        [lookup] = utils.add_id_or_alias_filter(atbd_id, lookup)
+        lookup = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
         result = db.query(lookup.exists()).scalar()
         if not result:
             raise HTTPException(
@@ -89,6 +77,7 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
                         column("atbd_versions.atbd_id"),
                         column("atbd_versions.status"),
                         column("atbd_versions.document"),
+                        column("atbd_versions.sections_completed"),
                         column("atbd_versions.published_by"),
                         column("atbd_versions.published_at"),
                         column("atbd_versions.created_by"),

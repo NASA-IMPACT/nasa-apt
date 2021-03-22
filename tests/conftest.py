@@ -168,6 +168,7 @@ def atbd_versions_factory(db_session):
             "random_element", elements=["Draft", "Review", "Published"],
         )
         document = faker.Faker().pydict(10, True, "str")
+        sections_completed = faker.Faker().pydict(4, True, "str")
         published_by = factory.Faker("user_name")
         published_at = factory.Faker("date_object")
         created_by = factory.Faker("user_name")

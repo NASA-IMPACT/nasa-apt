@@ -522,7 +522,11 @@ def test_create_new_atbd_version_fails_if_latest_version_is_not_published(
 
 
 def test_update_atbd_specific_version(
-    test_client, db_session, atbd_creation_input, authenticated_headers
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
 ):
     atbd = json.loads(
         test_client.post(
@@ -530,11 +534,141 @@ def test_update_atbd_specific_version(
         ).content
     )
 
-    pass
+    test_client.post(f"/atbds/{atbd['id']}/publish", headers=authenticated_headers)
+
+    new_version = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions", headers=authenticated_headers
+        ).content
+    )
+
+    [req] = db_session.execute(
+        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={atbd['versions'][-1]['major']}"
+    )
+    assert req.doi is None
+    assert req.changelog is None
+
+    updated_atbd = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions/v2.0",
+            json={"doi": "http://doi.org", "changelog": "This is a changelog"},
+            headers=authenticated_headers,
+        ).content
+    )
+    [req] = db_session.execute(
+        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
+    )
+    assert req.doi == updated_atbd["versions"][-1]["doi"]
+    assert req.changelog == updated_atbd["versions"][-1]["changelog"]
+
+    updated_atbd = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions/latest",
+            json={
+                "doi": "http://new-doi.org",
+                "changelog": "This is a NEW and IMPROVED changelog!",
+            },
+            headers=authenticated_headers,
+        ).content
+    )
+
+    [req] = db_session.execute(
+        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
+    )
+    assert req.doi == updated_atbd["versions"][-1]["doi"]
+    assert req.changelog == updated_atbd["versions"][-1]["changelog"]
 
 
-def test_update_atbd_version():
-    pass
+def test_update_document_by_key(
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
+):
+    atbd = json.loads(
+        test_client.post(
+            "/atbds", json=atbd_creation_input, headers=authenticated_headers
+        ).content
+    )
+    updated_atbd = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions/latest/document",
+            json={
+                "key": "new_top_level_key",
+                "value": {"new_sub_level_key_1": "abc", "new_sub_level_key_2": "def"},
+            },
+            headers=authenticated_headers,
+        ).content
+    )
+    [req] = db_session.execute(
+        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
+    )
+    assert req.document is not None
+    assert "new_top_level_key" in req.document
+    assert req.document["new_top_level_key"] == {
+        "new_sub_level_key_1": "abc",
+        "new_sub_level_key_2": "def",
+    }
+    updated_atbd = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions/latest/document",
+            json={"key": "new_top_level_key", "value": "Just a single string"},
+            headers=authenticated_headers,
+        ).content
+    )
+    [req] = db_session.execute(
+        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
+    )
+    assert req.document is not None
+    assert "new_top_level_key" in req.document
+    assert req.document["new_top_level_key"] == "Just a single string"
+
+
+def test_update_sections_completed_by_key(
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
+):
+    atbd = json.loads(
+        test_client.post(
+            "/atbds", json=atbd_creation_input, headers=authenticated_headers
+        ).content
+    )
+    updated_atbd = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions/latest/sections_completed",
+            json={
+                "key": "new_top_level_key",
+                "value": {"new_sub_level_key_1": "abc", "new_sub_level_key_2": "def"},
+            },
+            headers=authenticated_headers,
+        ).content
+    )
+    [req] = db_session.execute(
+        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
+    )
+    assert req.sections_completed is not None
+    assert "new_top_level_key" in req.sections_completed
+    assert req.sections_completed["new_top_level_key"] == {
+        "new_sub_level_key_1": "abc",
+        "new_sub_level_key_2": "def",
+    }
+    updated_atbd = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions/latest/sections_completed",
+            json={"key": "new_top_level_key", "value": "Just a single string"},
+            headers=authenticated_headers,
+        ).content
+    )
+    [req] = db_session.execute(
+        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
+    )
+    assert req.sections_completed is not None
+    assert "new_top_level_key" in req.sections_completed
+    assert req.sections_completed["new_top_level_key"] == "Just a single string"
 
 
 def test_update_atbd_version_fails_if_user_is_unauthenticated(test_client, db_session):
@@ -544,6 +678,3 @@ def test_update_atbd_version_fails_if_user_is_unauthenticated(test_client, db_se
 def get_atbd_version(test_client, db_session):
     pass
 
-
-# def test_create_atbd_version_fails_if_user_is_not_authenticated():
-#     pass
