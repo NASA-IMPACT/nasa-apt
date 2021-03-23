@@ -10,6 +10,7 @@ from sqlalchemy import exc
 from fastapi import APIRouter, Depends, HTTPException, responses
 from typing import List
 import datetime
+import botocore
 
 router = APIRouter()
 
@@ -175,20 +176,48 @@ def publish_atbd(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
 
 
 @router.get("/atbds/{atbd_id}/images/{image_key}")
-def get_image_presigned_url(atbd_id: str, image_key: str):
-    return responses.RedirectResponse(
-        s3_client().generate_presigned_url(
-            ClientMethod="get_object",
-            Params={"Bucket": config.BUCKET, "Key": image_key},
-            ExpiresIn=3,
+def get_image_presigned_url(
+    atbd_id: str, image_key: str, db: DbSession = Depends(get_db)
+):
+    # return responses.RedirectResponse(
+    #     s3_client().generate_presigned_url(
+    #         ClientMethod="get_object",
+    #         Params={"Bucket": config.BUCKET, "Key": image_key},
+    #         ExpiresIn=60 * 60,
+    #     )
+    # )
+    if not crud_atbds.exists(db=db, atbd_id=atbd_id):
+        raise HTTPException(
+            status_code=404, detail=f"ATBD {atbd_id} not found in database",
         )
-    )
+    key = f"{atbd_id}/images/{image_key}"
+    try:
+        return responses.StreamingResponse(
+            s3_client().get_object(Bucket=config.BUCKET, Key=key)["Body"]
+        )
+    except botocore.exceptions.ClientError as error:
+        print(error.response["Error"])
+        if error.response["Error"]["Code"] == "NoSuchKey":
+            raise HTTPException(
+                status_code=404, detail=f"Image {key} not found in database",
+            )
 
 
 # TODO: add response model
 # TODO: verify atbd exists
 @router.post("/atbds/{atbd_id}/images/{image_key}")
-def upload_image_presigned_url(atbd_id: str, image_key: str):
+def upload_image_presigned_url(
+    atbd_id: str,
+    image_key: str,
+    db: DbSession = Depends(get_db),
+    user: User = Depends(require_user),
+):
+
+    if not crud_atbds.exists(db=db, atbd_id=atbd_id):
+        raise HTTPException(
+            status_code=404, detail=f"ATBD {atbd_id} not found in database",
+        )
+    key = f"{atbd_id}/images/{image_key}"
     return s3_client().generate_presigned_post(
-        Bucket=config.BUCKET, Key=image_key, ExpiresIn=60 * 60
+        Bucket=config.BUCKET, Key=key, ExpiresIn=60 * 60
     )
