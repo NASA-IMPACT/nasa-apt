@@ -7,7 +7,7 @@ from app.auth.saml import User
 from app.crud.atbds import crud_atbds
 from app.crud.versions import crud_versions
 from sqlalchemy import exc
-from fastapi import APIRouter, Depends, HTTPException, responses
+from fastapi import APIRouter, Depends, HTTPException, responses, File, UploadFile
 from typing import List
 import datetime
 import botocore
@@ -35,7 +35,7 @@ def atbd_exists(atbd_id: str, db: DbSession = Depends(get_db)):
 @router.get(
     "/atbds/{atbd_id}",
     responses={200: dict(description="Return a single ATBD")},
-    response_model=atbds.FullOutput,
+    response_model=atbds.SummaryOutput,
 )
 def get_atbd(atbd_id: str, db: DbSession = Depends(get_db)):
     return crud_atbds.get(db=db, atbd_id=atbd_id)
@@ -176,16 +176,7 @@ def publish_atbd(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
 
 
 @router.get("/atbds/{atbd_id}/images/{image_key}")
-def get_image_presigned_url(
-    atbd_id: str, image_key: str, db: DbSession = Depends(get_db)
-):
-    # return responses.RedirectResponse(
-    #     s3_client().generate_presigned_url(
-    #         ClientMethod="get_object",
-    #         Params={"Bucket": config.BUCKET, "Key": image_key},
-    #         ExpiresIn=60 * 60,
-    #     )
-    # )
+def get_image(atbd_id: str, image_key: str, db: DbSession = Depends(get_db)):
     if not crud_atbds.exists(db=db, atbd_id=atbd_id):
         raise HTTPException(
             status_code=404, detail=f"ATBD {atbd_id} not found in database",
@@ -203,12 +194,11 @@ def get_image_presigned_url(
             )
 
 
-# TODO: add response model
-# TODO: verify atbd exists
 @router.post("/atbds/{atbd_id}/images/{image_key}")
-def upload_image_presigned_url(
+def upload_iamge(
     atbd_id: str,
     image_key: str,
+    file: UploadFile = File(...),
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
@@ -218,6 +208,50 @@ def upload_image_presigned_url(
             status_code=404, detail=f"ATBD {atbd_id} not found in database",
         )
     key = f"{atbd_id}/images/{image_key}"
-    return s3_client().generate_presigned_post(
-        Bucket=config.BUCKET, Key=key, ExpiresIn=60 * 60
-    )
+
+    return s3_client().upload_fileobj(file.file, Bucket=config.BUCKET, Key=key)
+
+
+# @router.get("/atbds/{atbd_id}/images/{image_key}")
+# def get_image_presigned_url(
+#     atbd_id: str, image_key: str, db: DbSession = Depends(get_db)
+# ):
+#     if not crud_atbds.exists(db=db, atbd_id=atbd_id):
+#         raise HTTPException(
+#             status_code=404, detail=f"ATBD {atbd_id} not found in database",
+#         )
+#         key = f"{atbd_id}/images/{image_key}"
+#     try:
+#         return responses.RedirectResponse(
+#             s3_client().generate_presigned_url(
+#                 ClientMethod="get_object",
+#                 Params={"Bucket": config.BUCKET, "Key": image_key},
+#                 ExpiresIn=60 * 60,
+#             )
+#         )
+#     except botocore.exceptions.ClientError as error:
+#         print(error.response["Error"])
+#         if error.response["Error"]["Code"] == "NoSuchKey":
+#             raise HTTPException(
+#                 status_code=404, detail=f"Image {key} not found in database",
+#             )
+
+
+# # TODO: add response model
+# # TODO: verify atbd exists
+# @router.post("/atbds/{atbd_id}/images/{image_key}")
+# def upload_image_presigned_url(
+#     atbd_id: str,
+#     image_key: str,
+#     db: DbSession = Depends(get_db),
+#     user: User = Depends(require_user),
+# ):
+
+#     if not crud_atbds.exists(db=db, atbd_id=atbd_id):
+#         raise HTTPException(
+#             status_code=404, detail=f"ATBD {atbd_id} not found in database",
+#         )
+#     key = f"{atbd_id}/images/{image_key}"
+#     return s3_client().generate_presigned_post(
+#         Bucket=config.BUCKET, Key=key, ExpiresIn=60 * 60
+#     )

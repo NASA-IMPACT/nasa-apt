@@ -90,7 +90,7 @@ def atbd_pdf_handler(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.get("/atbds/{atbd_id}/versions/{version}.pdf")
+@router.get("/atbds/{atbd_id}/versions/{version}/pdf")
 def generate_pdf(
     atbd_id: str,
     version: str,

@@ -708,33 +708,33 @@ atbd_data = {
         ],
     }
 }
-endpoint = "https://nuo783m1th.execute-api.us-east-1.amazonaws.com"
-es_endpoint = "http://search-nasa-apt-lambda-dev-elastic-ze76i6s5yajg4kqzkanr2orzvy.us-east-1.es.amazonaws.com"
-# endpoint = "http://localhost:8000"
-# es_endpoint = "http://localhost:9200"
+# endpoint = "https://nuo783m1th.execute-api.us-east-1.amazonaws.com"
+# es_endpoint = "http://search-nasa-apt-lambda-dev-elastic-ze76i6s5yajg4kqzkanr2orzvy.us-east-1.es.amazonaws.com"
+endpoint = "http://localhost:8000"
+es_endpoint = "http://localhost:9200"
 
 
-# atbd_alias = "test-atbd-2"
+atbd_alias = "test-atbd-2"
 
-# r = re.post(
-#     f"{endpoint}/atbds",
-#     headers={"Authorization": f"Bearer {create_token()}"},
-#     data=json.dumps({"title": "This is a title", "alias": f"{atbd_alias}"}),
-# )
-# r = re.post(
-#     f"{endpoint}/atbds/{atbd_alias}/versions/v1.0",
-#     headers={"Authorization": f"Bearer {create_token()}"},
-#     data=json.dumps(atbd_data),
-# )
-# print("Create ATBD with empty version: ")
-# print(r.content)
+r = re.post(
+    f"{endpoint}/atbds",
+    headers={"Authorization": f"Bearer {create_token()}"},
+    data=json.dumps({"title": "This is a title", "alias": f"{atbd_alias}"}),
+)
+r = re.post(
+    f"{endpoint}/atbds/{atbd_alias}/versions/v1.0",
+    headers={"Authorization": f"Bearer {create_token()}"},
+    data=json.dumps(atbd_data),
+)
+print("Create ATBD with empty version: ")
+print(r.content)
 
-# r = re.get(
-#     f"{endpoint}/atbds/{atbd_alias}/versions/v1.0",
-#     headers={"Authorization": f"Bearer {create_token()}"},
-# )
-# print("Update version v1.0 with ATBD data")
-# print(r.content)
+r = re.get(
+    f"{endpoint}/atbds/{atbd_alias}/versions/v1.0",
+    headers={"Authorization": f"Bearer {create_token()}"},
+)
+print("Update version v1.0 with ATBD data")
+print(r.content)
 
 r = re.get(
     f"{endpoint}/search",
@@ -751,3 +751,4 @@ print("Search result: ")
 print(r.content)
 
 # print(create_pg_connection_string())
+print(create_token())

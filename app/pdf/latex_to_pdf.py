@@ -32,12 +32,13 @@ def latex_to_pdf(latex_filename: str, tmp_dir: str) -> str:
         cwd=tmp_dir,
         encoding=encoding,
     )
-
+    print("Latex to PDF Output: ", completed)
     if completed.returncode != 0:
         # for debugging purposes, return the stdout in addition to the stderr
         raise LatexToPDFException(
             ({"stderr": completed.stderr, "stdout": completed.stdout})
         )
+
     working_name: Final[str] = Path(latex_filename).stem
     pdf_filename: Final[str] = f"{tmp_dir}/{working_name}.pdf"
     if not Path(pdf_filename).exists():

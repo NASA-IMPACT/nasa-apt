@@ -21,6 +21,8 @@ import pandas as pd
 from latex import build_pdf
 from num2words import num2words
 from functools import reduce
+from app.api.utils import s3_client
+from app import config
 
 debug = False
 pdfImgs = []
@@ -138,13 +140,16 @@ def processText(nodes):
 
 
 def saveImage(imgUrl, img):
-    imgLink = num2words(len(pdfImgs))
-    pdfImgs.append(
-        r'\immediate\write18{wget --timestamping "'
-        + imgUrl
-        + f'"}} \n \\newcommand{{\\{imgLink}}}{{{img}}}'
+    print(
+        "BUCKET CONTENTS: ",
+        [k["Key"] for k in s3_client().list_objects(Bucket=config.BUCKET)["Contents"]],
     )
-    htmlImgs.append(f"\\newcommand{{\\{imgLink}}}{{{imgUrl}}}")
+    print("DOWNLOADING FILE: ", imgUrl)
+    s3_client().download_file(Bucket=config.BUCKET, Key=imgUrl, Filename=img)
+    print("DOWNLOADED FILE")
+    imgLink = num2words(len(pdfImgs))
+    pdfImgs.append(f" \n \\newcommand{{\\{imgLink}}}{{{img}}}")
+    htmlImgs.append(f"\\newcommand{{\\{imgLink}}}{{{img}}}")
     return imgLink
 
 
@@ -184,7 +189,7 @@ def processWYSIWYGElement(node):
         return processList(node["nodes"], node["type"][:-5]), "list"
     elif node["type"] == "image":
         imgUrl = node["data"]["src"]
-        filename = imgUrl.rsplit("/", 1)[1]
+        filename = imgUrl.rsplit("/", 1)[-1]
         imgCommand = saveImage(imgUrl, filename)
         try:
             caption = node["data"]["caption"]

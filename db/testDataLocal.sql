@@ -3,14 +3,18 @@ INSERT INTO contacts
 SELECT 'Leonardo', 'Davinci', '{ "(\"Email\",\"test@email.com\")" }', '{ "Science contact", "Metadata author" }'
 WHERE 
     NOT EXISTS(
-        SELECT first_name, last_name, mechanisms, roles FROM contacts WHERE first_name = 'Leonardo' AND last_name = 'Davinci'
+        SELECT first_name, last_name, mechanisms, roles
+FROM contacts
+WHERE first_name = 'Leonardo' AND last_name = 'Davinci'
     );
 INSERT INTO contacts
     (first_name, last_name)
 SELECT 'Gregor', 'Mendel'
 WHERE 
     NOT EXISTS(
-        SELECT first_name, last_name FROM contacts WHERE first_name = 'Gregor' AND last_name = 'Mendel'
+        SELECT first_name, last_name
+FROM contacts
+WHERE first_name = 'Gregor' AND last_name = 'Mendel'
     );
 INSERT INTO atbds
     (title, alias, created_by)
@@ -56,7 +60,7 @@ VALUES
                     "object": "block",
                     "type": "image",
                     "data": {
-                        "src": "http://localstack:4566/nasa-apt-dev-figures/fullmoon.jpg",
+                        "src": "fullmoon.jpg",
                         "caption": "Image of the full moon - 2019"
                     }
                 }
@@ -735,7 +739,7 @@ VALUES
                     "object": "block",
                     "type": "image",
                     "data": {
-                        "src": "http://localstack:4566/nasa-apt-dev-figures/fullmoon.jpg",
+                        "src": "fullmoon.jpg",
                         "caption": "Image of the full moon - 2019"
                     }
                 }
