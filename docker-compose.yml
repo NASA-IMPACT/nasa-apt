@@ -15,9 +15,11 @@ services:
     build: 
       context: ./
       dockerfile: ./db/local.Dockerfile
-    command: > 
-      sh -c "sqitch deploy --verify db:pg://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME &&
-            psql 'postgres://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME?options=--search_path%3dapt' -f /sqitch/testDataLocal.sql"
+    command: >
+      sh -c "
+        sqitch deploy --verify db:pg://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME &&
+        psql 'postgres://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME?options=--search_path%3dapt' -f /sqitch/testDataLocal.sql
+      "
     volumes: 
       - type: bind
         source: ./db
@@ -69,13 +71,21 @@ services:
     # online consider the service to be ready once `nc -z $HOST $PORT` succeeds. However 
     # in the case of localstack, those services will succeed before all of the necessary
     # S3 and secretmanager resources have been built - so the API will still fail. 
-    command: sh -c "sleep 30 && uvicorn app.main:app --host 0.0.0.0 --port 80 --reload"
+    command: >
+      sh -c "
+        python wait_for_localstack_ready.py &&
+        uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
+      "
     ports:
       - "8000:80"
     volumes:
       - type: bind
         source: ./app
         target: /app/app
+      - type: bind
+        source: ./localstack/wait_for_localstack_ready.py
+        target: /app/wait_for_localstack_ready.py
+
     environment:
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
       AWS_ACCESS_KEY_ID: stub
@@ -116,5 +126,22 @@ services:
     depends_on:
       - localstack
     command: localstack:4566
-
+  # localstack-ready:
+  #   build: 
+  #     context: ./
+  #     dockerfile: ./localstack-ready/Dockerfile
+  #   volumes: 
+  #     - type: bind
+  #       source: ./localstack-ready/
+  #       target: /app
+  #   entrypoint: "python3"
+  #   command: "/app/wait_for_ready.py"
+  #   depends_on: 
+  #     - localstack
+  #   environment: 
+  #     AWS_ACCESS_KEY_ID: stub
+  #     AWS_SECRET_ACCESS_KEY: stub
+  #     AWS_DEFAULT_REGION: us-east-1
+  #     TIMEOUT: 360
+  #     LOCALSTACK_ENDPOINT_URL: http://localstack:4566
   
