@@ -58,11 +58,12 @@ def get_atbd(
         if alias
         else f"{rest_api_endpoint}/atbds?atbd_id=eq.{atbd_id}&select=*,contacts(*),contact_groups(*),atbd_versions(atbd_id,atbd_version,status)&limit=1"
     )
+    
     request_params = {"url": url}
     if user:
         request_params["headers"] = {"Authorization": f"Bearer {create_token(user)}"}
+    
 
-    print(f"Get params: {request_params}")
     response = requests.get(**request_params)
 
     if not response.ok:
@@ -74,6 +75,7 @@ def get_atbd(
 
     [atbd_metadata] = records
     atbd_id = atbd_metadata["atbd_id"]
+    print("ATBD Metdata: ", atbd_metadata)
     [version] = atbd_metadata["atbd_versions"]
     version_id: int = version["atbd_version"]
 
