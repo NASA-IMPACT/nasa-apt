@@ -23,7 +23,7 @@ from app.schemas.contacts import RolesEnum, ContactMechanismEnum
 class AtbdVersions(Base):
     atbd_id = Column(
         Integer(),
-        ForeignKey("atbds.id", onupdate="CASCADE", ondelete="CASCADE"),
+        ForeignKey("atbds.id"),  # onupdate="CASCADE", ondelete="CASCADE"),
         primary_key=True,
         index=True,
     )

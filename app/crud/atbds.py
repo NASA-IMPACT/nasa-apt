@@ -40,7 +40,8 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         query = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
         try:
             return query.one()
-        except exc.SQLAlchemyError:
+        except exc.SQLAlchemyError as e:
+            print(e)
             raise HTTPException(
                 status_code=404, detail=f"No data found for id/alias: {atbd_id}"
             )

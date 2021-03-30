@@ -137,20 +137,15 @@ def delete_atbd_version(
     atbd_id: str, version: str, db=Depends(get_db), user=Depends(require_user),
 ):
     major = get_major_from_version_string(version)
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-    v = [version for version in atbd.versions if version.major != major]
-    atbd.versions = v
-    # db.add(atbd)
+    # TODO: figure how to get the commented out method to work - as executing raw SQL directly
+    # the API code is VERY ugly. This is only intended to be a temporary/stopgap solution
+    db.execute(
+        f"DELETE FROM atbd_versions where atbd_versions.atbd_id={atbd_id} and atbd_versions.major={major}"
+    )
     db.commit()
-    # db.refresh(atbd)
     # [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
     # db.delete(version)
     # db.commit()
-
-    # version = db.query(AtbdVersions).get((atbd_id, major))
-    # db.delete(version)
-    # db.commit()
-
     return {}
 
 
