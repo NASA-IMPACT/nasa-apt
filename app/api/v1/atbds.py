@@ -6,6 +6,7 @@ from app.api.utils import get_db, require_user, get_major_from_version_string, s
 from app.auth.saml import User
 from app.crud.atbds import crud_atbds
 from app.crud.versions import crud_versions
+from app.db.models import AtbdVersions
 from sqlalchemy import exc
 from fastapi import APIRouter, Depends, HTTPException, responses, File, UploadFile
 from typing import List
@@ -136,9 +137,20 @@ def delete_atbd_version(
     atbd_id: str, version: str, db=Depends(get_db), user=Depends(require_user),
 ):
     major = get_major_from_version_string(version)
-    [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
-    db.delete(version)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
+    v = [version for version in atbd.versions if version.major != major]
+    atbd.versions = v
+    # db.add(atbd)
     db.commit()
+    # db.refresh(atbd)
+    # [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
+    # db.delete(version)
+    # db.commit()
+
+    # version = db.query(AtbdVersions).get((atbd_id, major))
+    # db.delete(version)
+    # db.commit()
+
     return {}
 
 

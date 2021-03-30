@@ -23,7 +23,7 @@ from app.schemas.contacts import RolesEnum, ContactMechanismEnum
 class AtbdVersions(Base):
     atbd_id = Column(
         Integer(),
-        ForeignKey("atbds.id", onupdate="CASCADE", ondelete="CASCADE",),
+        ForeignKey("atbds.id", onupdate="CASCADE", ondelete="CASCADE"),
         primary_key=True,
         index=True,
     )
@@ -67,10 +67,9 @@ class Atbds(Base):
         "AtbdVersions",
         primaryjoin="foreign(Atbds.id) == AtbdVersions.atbd_id",
         backref="atbd",
-        # cascade="all,delete,delete-orphan",
-        # single_parent=True,
         uselist=True,
         lazy="joined",
+        order_by="AtbdVersions.created_at",
     )
 
     def __repr__(self):
