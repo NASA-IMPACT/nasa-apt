@@ -65,11 +65,12 @@ class Atbds(Base):
 
     versions = relationship(
         "AtbdVersions",
-        primaryjoin="foreign(Atbds.id) == AtbdVersions.atbd_id",
+        # primaryjoin="foreign(Atbds.id) == AtbdVersions.atbd_id",
         backref="atbd",
         uselist=True,
         lazy="joined",
         order_by="AtbdVersions.created_at",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self):
