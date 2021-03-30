@@ -49,7 +49,9 @@ CREATE TABLE apt.atbds(
   title VARCHAR (1024) NOT NULL,
   alias VARCHAR(256) UNIQUE CONSTRAINT alphanum_alias CHECK(alias ~ '^[a-z0-9-]+$') DEFAULT NULL,
   created_by VARCHAR (1024) NOT NULL,
-  created_at TIMESTAMPTZ default now()
+  created_at TIMESTAMPTZ default now(),
+  last_updated_by VARCHAR(1024), 
+  last_updated_at TIMESTAMPTZ default now()
 );
 -- Having only major (and not minor) included in the primary key
 -- strictly enforces the fact that all minor version updates get "squashed" and 
@@ -58,7 +60,7 @@ CREATE TABLE apt.atbd_versions(
     major INTEGER NOT NULL default 1,
     minor INTEGER NOT NULL default 0,
     atbd_id INTEGER NOT NULL,
-    FOREIGN KEY (atbd_id) REFERENCES apt.atbds(id),
+    FOREIGN KEY (atbd_id) REFERENCES apt.atbds(id) ON DELETE CASCADE,
     PRIMARY KEY (atbd_id, major), 
     "status" apt.atbd_version_status default 'Draft',
     document json default '{}',
@@ -67,7 +69,10 @@ CREATE TABLE apt.atbd_versions(
     published_at TIMESTAMPTZ,
     created_by VARCHAR(1024),
     created_at TIMESTAMPTZ default now(),
+    last_updated_by VARCHAR(1024),
+    last_updated_at TIMESTAMPTZ default now(),
     changelog VARCHAR,
-    doi VARCHAR(1024)
+    doi VARCHAR(1024),
+    citation JSON default '{}'
 );
 COMMIT;

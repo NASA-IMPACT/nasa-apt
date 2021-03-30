@@ -27,7 +27,6 @@ def require_user(user: User = Depends(get_user)):
 def get_db(
     db_session: DbSession = Depends(get_session), user: User = Depends(get_user),
 ) -> DbSession:
-
     if user:
         print("User is authenticated. Elevating session")
         db_session.execute("SET SESSION AUTHORIZATION app_user;")

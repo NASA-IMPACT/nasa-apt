@@ -23,7 +23,7 @@ from app.schemas.contacts import RolesEnum, ContactMechanismEnum
 class AtbdVersions(Base):
     atbd_id = Column(
         Integer(),
-        ForeignKey("atbds.id", onupdate="CASCADE", ondelete="CASCADE"),
+        ForeignKey("atbds.id", onupdate="CASCADE", ondelete="CASCADE",),
         primary_key=True,
         index=True,
     )
@@ -36,8 +36,11 @@ class AtbdVersions(Base):
     published_at = Column(types.DateTime)
     created_by = Column(String(), nullable=False)
     created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    last_updated_by = Column(String(), nullable=False)
+    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
     changelog = Column(String())
     doi = Column(String())
+    citation = Column(MutableDict.as_mutable(JSON), server_default="{}")
 
     def __repr__(self):
 
@@ -46,7 +49,8 @@ class AtbdVersions(Base):
             f" status={self.status}, document={self.document},"
             f" sections_completed={self.sections_completed}, created_by={self.created_by},"
             f" created_at={self.created_at}, published_by={self.published_by},"
-            f" published_at={self.published_by}>"
+            f" published_at={self.published_by}, last_updated_at={self.last_updated_at}>"
+            f" last_updated_by={self.last_updated_by}"
         )
 
 
@@ -56,10 +60,15 @@ class Atbds(Base):
     alias = Column(String(), CheckConstraint("alias ~ '^[a-z0-9-]+$'"), unique=True)
     created_by = Column(String(), nullable=False)
     created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    last_updated_by = Column(String(), nullable=False)
+    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+
     versions = relationship(
         "AtbdVersions",
         primaryjoin="foreign(Atbds.id) == AtbdVersions.atbd_id",
         backref="atbd",
+        # cascade="all,delete,delete-orphan",
+        # single_parent=True,
         uselist=True,
         lazy="joined",
     )
@@ -69,6 +78,7 @@ class Atbds(Base):
         return (
             f"<Atbds(id={self.id}, title={self.title}, alias={self.alias},"
             f" created_by={self.created_by}, created_at={self.created_at},"
+            f" last_updated_by={self.last_updated_by}, last_updated_at={self.last_updated_at}"
             f" versions={versions})>"
         )
 

@@ -14,6 +14,8 @@ BEGIN;
         OUT "atbds.alias" VARCHAR,
         OUT "atbds.created_by" VARCHAR,
         OUT "atbds.created_at" TIMESTAMPTZ,
+        OUT "atbds.last_updated_by" VARCHAR,
+        OUT "atbds.last_updated_at" TIMESTAMPTZ,
         OUT "atbd_versions.atbd_id" INT, 
         OUT "atbd_versions.major" VARCHAR, 
         OUT "atbd_versions.minor" VARCHAR,
@@ -24,25 +26,28 @@ BEGIN;
         OUT "atbd_versions.published_at" TIMESTAMPTZ,
         OUT "atbd_versions.created_by" VARCHAR,
         OUT "atbd_versions.created_at" TIMESTAMPTZ,
+        OUT "atbd_versions.last_updated_by" VARCHAR,
+        OUT "atbd_versions.last_updated_at" TIMESTAMPTZ,
         OUT "atbd_versions.changelog" VARCHAR,
-        OUT "atbd_versions.doi" VARCHAR
+        OUT "atbd_versions.doi" VARCHAR,
+        OUT "atbd_versions.citation" JSON
         )
   AS $$
     DECLARE
     BEGIN
         INSERT INTO apt.atbds
-            (title, created_by, alias)
+            (title, created_by, last_updated_by, alias)
         VALUES
-            (title, created_by, alias)
-        RETURNING atbds.id, atbds.title, atbds.alias, atbds.created_by, atbds.created_at
-        INTO "atbds.id", "atbds.title", "atbds.alias", "atbds.created_by", "atbds.created_at";
+            (title, created_by, created_by, alias)
+        RETURNING atbds.id, atbds.title, atbds.alias, atbds.created_by, atbds.created_at, atbds.last_updated_by, atbds.last_updated_at
+        INTO "atbds.id", "atbds.title", "atbds.alias", "atbds.created_by", "atbds.created_at", "atbds.last_updated_by", "atbds.last_updated_at";
         
         INSERT INTO apt.atbd_versions
-            (atbd_id, created_by, major, minor)
+            (atbd_id, created_by, last_updated_by, major, minor)
         VALUES
-            ("atbds.id", created_by, 1, 0)
-        RETURNING atbd_versions.atbd_id, atbd_versions.major, atbd_versions.minor, atbd_versions.status, atbd_versions.document, atbd_versions.sections_completed, atbd_versions.published_by, atbd_versions.published_at, atbd_versions.created_by, atbd_versions.created_at, atbd_versions.changelog, atbd_versions.doi 
-        INTO "atbd_versions.atbd_id", "atbd_versions.major", "atbd_versions.minor", "atbd_versions.status", "atbd_versions.document", "atbd_versions.sections_completed", "atbd_versions.published_by", "atbd_versions.published_at", "atbd_versions.created_by", "atbd_versions.created_at", "atbd_versions.changelog", "atbd_versions.doi";
+            ("atbds.id", created_by, created_by, 1, 0)
+        RETURNING atbd_versions.atbd_id, atbd_versions.major, atbd_versions.minor, atbd_versions.status, atbd_versions.document, atbd_versions.sections_completed, atbd_versions.published_by, atbd_versions.published_at, atbd_versions.created_by, atbd_versions.created_at, atbd_versions.last_updated_by, atbd_versions.last_updated_at, atbd_versions.changelog, atbd_versions.doi, atbd_versions.citation
+        INTO "atbd_versions.atbd_id", "atbd_versions.major", "atbd_versions.minor", "atbd_versions.status", "atbd_versions.document", "atbd_versions.sections_completed", "atbd_versions.published_by", "atbd_versions.published_at", "atbd_versions.created_by", "atbd_versions.created_at","atbd_versions.last_updated_by", "atbd_versions.last_updated_at", "atbd_versions.changelog", "atbd_versions.doi", "atbd_versions.citation";
     END;
     $$ LANGUAGE plpgsql
   VOLATILE;

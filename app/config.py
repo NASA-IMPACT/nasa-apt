@@ -14,7 +14,7 @@ FRONTEND_URL = os.environ.get("APT_FRONTEND_URL") or exit(
 
 BACKEND_CORS_ORIGINS = os.environ.get(
     "BACKEND_CORS_ORIGINS",
-    default=f"*,http://localhost:3000,http://localhost:3006,{FRONTEND_URL}",
+    default=f"*,http://localhost:9000,http://localhost:3006,{FRONTEND_URL}",
 )
 
 POSTGRES_ADMIN_CREDENTIALS_ARN = os.environ.get(
@@ -33,9 +33,7 @@ IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(
     "IDP_METADATA_URL env var required"
 )
 
-BUCKET = os.environ.get("FIGURES_S3_BUCKET") or exit(
-    "FIGURES_S3_BUCKET env var required"
-)
+BUCKET = os.environ.get("S3_BUCKET") or exit("S3_BUCKET env var required")
 
 AWS_RESOURCES_ENDPOINT = os.environ.get("AWS_RESOURCES_ENDPOINT")
 

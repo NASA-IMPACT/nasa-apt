@@ -56,6 +56,8 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         return result
 
     def create(self, db: DbSession, atbd_input: Create, user: str):
+        # User shows up twice in input parameters, as it sets the value
+
         _input = (
             (atbd_input.title, user)
             if not atbd_input.alias
@@ -72,6 +74,8 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
                         column("atbds.alias"),
                         column("atbds.created_by"),
                         column("atbds.created_at"),
+                        column("atbds.last_updated_by"),
+                        column("atbds.last_updated_at"),
                         column("atbd_versions.major"),
                         column("atbd_versions.minor"),
                         column("atbd_versions.atbd_id"),
@@ -82,8 +86,11 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
                         column("atbd_versions.published_at"),
                         column("atbd_versions.created_by"),
                         column("atbd_versions.created_at"),
+                        column("atbd_versions.last_updated_by"),
+                        column("atbd_versions.last_updated_at"),
                         column("atbd_versions.changelog"),
                         column("atbd_versions.doi"),
+                        column("atbd_versions.citation"),
                     ]
                 ).select_from(func.apt.create_atbd_version(*_input))
             )

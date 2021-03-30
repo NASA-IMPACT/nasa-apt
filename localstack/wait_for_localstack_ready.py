@@ -12,8 +12,7 @@ count = 0
 def aws_resources_ready():
     s3 = boto3.client("s3", endpoint_url=os.environ["AWS_RESOURCES_ENDPOINT"])
     if not (
-        {b["Name"] for b in s3.list_buckets()["Buckets"]}
-        == {"nasa-apt-dev-figures", "nasa-apt-dev-pdfs"}
+        {b["Name"] for b in s3.list_buckets()["Buckets"]} == {os.environ["S3_BUCKET"]}
     ):
         return False
     sm = boto3.client(

@@ -67,6 +67,8 @@ def update_atbd(
     user: User = Depends(require_user),
 ):
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
+    atbd.last_updated_by = user["user"]
+    atbd.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     try:
         atbd = crud_atbds.update(db=db, db_obj=atbd, obj_in=atbd_input)
     except exc.IntegrityError:
@@ -76,6 +78,14 @@ def update_atbd(
                 detail=f"Alias {atbd_input.alias} already exists in database",
             )
     return atbd
+
+
+@router.delete("/atbds/{atbd_id}", responses={204: dict(description="ATBD deleted")})
+def delete_atbd(
+    atbd_id: str, db: DbSession = Depends(get_db), user: User = Depends(require_user),
+):
+    crud_atbds.remove(db_session=db, id=atbd_id)
+    return {}
 
 
 @router.head(
@@ -108,11 +118,28 @@ def update_atbd_version(
     db=Depends(get_db),
     user=Depends(require_user),
 ):
+
     major = get_major_from_version_string(version)
     [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
+    version.last_updated_by = user["user"]
+    version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     crud_versions.update(db=db, db_obj=version, obj_in=version_input)
 
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
+
+
+@router.delete(
+    "/atbds/{atbd_id}/versions/{version}",
+    responses={204: dict(description="ATBD Version deleted")},
+)
+def delete_atbd_version(
+    atbd_id: str, version: str, db=Depends(get_db), user=Depends(require_user),
+):
+    major = get_major_from_version_string(version)
+    [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
+    db.delete(version)
+    db.commit()
+    return {}
 
 
 @router.post(
@@ -129,6 +156,8 @@ def update_atbd_version_document(
     [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
     # https://docs.sqlalchemy.org/en/13/core/type_basics.html?highlight=json#sqlalchemy.types.JSON
     version.document[document_input.key] = document_input.value
+    version.last_updated_by = user["user"]
+    version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     db.add(version)
     db.commit()
     db.refresh(version)
@@ -150,7 +179,9 @@ def update_atbd_version_sections_completed(
 ):
     major = get_major_from_version_string(version)
     [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
-
+    version.last_updated_by = user["user"]
+    version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
+    db.add(version)
     version.sections_completed[document_input.key] = document_input.value
     db.add(version)
     db.commit()

@@ -92,7 +92,7 @@ class nasaAPTLambdaStack(core.Stack):
         )
 
         # TODO: add JWT secret as a `secretsmanager` generated object
-        s3.Bucket(self, f"{id}")
+        bucket = s3.Bucket(self, f"{id}")
 
         esdomain = elasticsearch.Domain(
             self,
@@ -143,6 +143,7 @@ class nasaAPTLambdaStack(core.Stack):
             JWT_SECRET=os.environ["JWT_SECRET"],
             FASTAPI_HOST=os.environ["FASTAPI_HOST"],
             IDP_METADATA_URL=os.environ["IDP_METADATA_URL"],
+            S3_BUCKET=bucket.bucket_name,
         )
         lambda_env.update(dict(MODULE_NAME="nasa_apt.main", VARIABLE_NAME="app",))
 
@@ -167,6 +168,7 @@ class nasaAPTLambdaStack(core.Stack):
         lambda_function.add_to_role_policy(logs_access)
         database.secret.grant_read(lambda_function)
         esdomain.grant_read_write(lambda_function)
+        bucket.grant_read_write(lambda_function)
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
 
         api_gateway = apigw.HttpApi(

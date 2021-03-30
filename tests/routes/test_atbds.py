@@ -403,12 +403,17 @@ def test_update_atbd_latest_version(
         f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={atbd['versions'][0]['major']}"
     )
     assert req.doi is None
+    assert req.citation == {}
     assert req.changelog is None
 
     updated_atbd = json.loads(
         test_client.post(
             f"/atbds/{atbd['id']}/versions/latest",
-            json={"doi": "http://doi.org", "changelog": "This is a changelog"},
+            json={
+                "doi": "http://doi.org",
+                "changelog": "This is a changelog",
+                "citation": {"ping": "pong"},
+            },
             headers=authenticated_headers,
         ).content
     )
@@ -418,6 +423,7 @@ def test_update_atbd_latest_version(
     )
     assert req.doi == updated_atbd["versions"][0]["doi"]
     assert req.changelog == updated_atbd["versions"][0]["changelog"]
+    assert req.citation == updated_atbd["versions"][0]["citation"]
 
     updated_atbd = json.loads(
         test_client.post(
@@ -425,6 +431,7 @@ def test_update_atbd_latest_version(
             json={
                 "doi": "http://new-doi.org",
                 "changelog": "This is a NEW and IMPROVED changelog!",
+                "citation": {"pong ping": "ping pong"},
             },
             headers=authenticated_headers,
         ).content
@@ -435,6 +442,7 @@ def test_update_atbd_latest_version(
         f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][0]['major']}"
     )
     assert req.doi == updated_atbd["versions"][0]["doi"]
+    assert req.citation == updated_atbd["versions"][0]["citation"]
     assert req.changelog == updated_atbd["versions"][0]["changelog"]
 
 

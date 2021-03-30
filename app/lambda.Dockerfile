@@ -7,9 +7,12 @@ RUN yum install -y\
     texlive-cmap* texlive-ec texlive-fncychap* texlive-pdftex-def texlive-fancyhdr* \
     texlive-titlesec* texlive-multirow texlive-framed* texlive-wrapfig* texlive-parskip* \
     texlive-caption texlive-ifluatex* texlive-collection-fontsrecommended texlive-lm* \
-    texlive-collection-latexrecommended texlive-collection-xetex \
+    texlive-collection-latexrecommended texlive-collection-xetex texlinve-lineno\
     libxml2-devel xmlsec1-devel xmlsec1-openssl-devel libtool-ltdl-devel \
     wget
+RUN wget https://download-ib01.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-13.noarch.rpm
+RUN rpm -Uvh epel-release*rpm
+RUN yum install -y texlive-lineno
 
 RUN mkdir -p ~/Library/Fonts
 RUN cp -r /usr/share/texlive/texmf-dist/fonts/opentype/public/lm-math/latinmodern-math.otf   ~/Library/Fonts/

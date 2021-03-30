@@ -17,6 +17,8 @@ class OutputBase(BaseModel):
     published_at: Optional[datetime]
     created_by: str
     created_at: datetime
+    last_updated_by: str
+    last_updated_at: datetime
 
     class Config:
         title = "Atbd"
@@ -38,6 +40,7 @@ class FullOutput(SummaryOutput):
     sections_completed: Optional[dict]
     changelog: Optional[str]
     doi: Optional[str]
+    citation: Optional[dict]
 
 
 class Create(BaseModel):
@@ -55,6 +58,7 @@ class Update(BaseModel):
     sections_completed: Optional[dict]
     changelog: Optional[str]
     doi: Optional[str]
+    citation: Optional[dict]
     status: Optional[str]
 
 

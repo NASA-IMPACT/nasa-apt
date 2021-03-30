@@ -50,8 +50,7 @@ services:
       AWS_DEFAULT_REGION: us-east-1
       HOSTNAME: localhost
       HOSTNAME_EXTERNAL: localhost
-      PDFS_S3_BUCKET: $PDFS_S3_BUCKET
-      FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET  
+      S3_BUCKET: $S3_BUCKET  
       POSTGRES_DB: $POSTGRES_DB_NAME
       POSTGRES_USER: $POSTGRES_ADMIN_USER
       POSTGRES_PASSWORD: $POSTGRES_ADMIN_PASSWORD
@@ -92,8 +91,7 @@ services:
       AWS_SECRET_ACCESS_KEY: stub
       AWS_DEFAULT_REGION: us-east-1
       AWS_RESOURCES_ENDPOINT: http://localstack:4566
-      PDFS_S3_BUCKET: $PDFS_S3_BUCKET
-      FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
+      S3_BUCKET: $S3_BUCKET
       POSTGRES_ADMIN_CREDENTIALS_ARN: $POSTGRES_ADMIN_CREDENTIALS_ARN
       # This URL omits the "http://" in order to remain consistent
       # with the value of the URL returned by the ElasticSearch Domain 

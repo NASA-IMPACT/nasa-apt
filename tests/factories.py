@@ -40,8 +40,11 @@ def atbd_versions_factory(db_session):
         published_at = factory.Faker("date_object")
         created_by = factory.Faker("user_name")
         created_at = factory.Faker("date_object")
+        last_updated_by = factory.Faker("user_name")
+        last_updated_at = factory.Faker("date_object")
         changelog = factory.Faker("pystr")
         doi = factory.Faker("pystr")
+        citation = faker.Faker().pydict(10, True, "str")
 
         class Meta:
             model = AtbdVersions

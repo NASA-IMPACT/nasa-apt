@@ -17,14 +17,14 @@ FROM contacts
 WHERE first_name = 'Gregor' AND last_name = 'Mendel'
     );
 INSERT INTO atbds
-    (title, alias, created_by)
+    (title, alias, created_by, last_updated_by)
 VALUES
-    ('Test ATBD 1', 'test-atbd-1', 'LeoThomas123');
+    ('Test ATBD 1', 'test-atbd-1', 'LeoThomas123', 'LeoThomas123');
 
 INSERT INTO atbd_versions
-    (atbd_id, created_by, major, minor, document, status)
+    (atbd_id, created_by, last_updated_by, major, minor, document, status)
 VALUES
-    (1, 'LeoThomas123', 1, 0, '{
+    (1, 'LeoThomas123', 'LeoThomas123', 1, 0, '{
     "scientific_theory": {
         "document": {
             "nodes": [
@@ -701,9 +701,9 @@ VALUES
         'Published');
 
 INSERT INTO atbd_versions
-    (atbd_id, created_by, major, minor, document)
+    (atbd_id, created_by, last_updated_by, major, minor, document)
 VALUES
-    (1, 'LeoThomas123', 2, 0, '{
+    (1, 'LeoThomas123', 'LeoThomas123', 2, 0, '{
     "scientific_theory": {
         "document": {
             "nodes": [

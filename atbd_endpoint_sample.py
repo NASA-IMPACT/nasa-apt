@@ -5,7 +5,7 @@ from jose import jwt
 import os
 import boto3
 from requests_aws4auth import AWS4Auth
-
+import time
 
 token_life = 60 * 60
 secrets_manager = boto3.Session(profile_name="dev-seed").client("secretsmanager")
@@ -714,41 +714,66 @@ endpoint = "http://localhost:8000"
 es_endpoint = "http://localhost:9200"
 
 
-atbd_alias = "test-atbd-2"
+# atbd_alias = "test-atbd-2"
 
-r = re.post(
-    f"{endpoint}/atbds",
-    headers={"Authorization": f"Bearer {create_token()}"},
-    data=json.dumps({"title": "This is a title", "alias": f"{atbd_alias}"}),
-)
-r = re.post(
-    f"{endpoint}/atbds/{atbd_alias}/versions/v1.0",
-    headers={"Authorization": f"Bearer {create_token()}"},
-    data=json.dumps(atbd_data),
-)
-print("Create ATBD with empty version: ")
-print(r.content)
+# r = re.post(
+#     f"{endpoint}/atbds",
+#     headers={"Authorization": f"Bearer {create_token()}"},
+#     data=json.dumps({"title": "This is a title", "alias": f"{atbd_alias}"}),
+# )
+# r = re.post(
+#     f"{endpoint}/atbds/{atbd_alias}/versions/v1.0",
+#     headers={"Authorization": f"Bearer {create_token()}"},
+#     data=json.dumps(atbd_data),
+# )
 
-r = re.get(
-    f"{endpoint}/atbds/{atbd_alias}/versions/v1.0",
-    headers={"Authorization": f"Bearer {create_token()}"},
-)
-print("Update version v1.0 with ATBD data")
-print(r.content)
 
-r = re.get(
-    f"{endpoint}/search",
-    #    auth=aws_auth(),
-    headers={
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {create_token()}",
-    },
-    data=json.dumps(
-        {"query": {"bool": {"must": [{"multi_match": {"query": "kelvins"}}]}}}
-    ),
-)
-print("Search result: ")
-print(r.content)
+# r = re.get(
+#     f"{endpoint}/atbds/{atbd_alias}",
+#     headers={"Authorization": f"Bearer {create_token()}"},
+# )
+# print("Updated version v1.0 with ATBD data")
+# print(
+#     f"Last Updated AT: {r.json()['last_updated_at']}, Last Updated BY: {r.json()['last_updated_by']}"
+# )
+# r = re.post(
+#     f"{endpoint}/atbds/{atbd_alias}/versions/v1.0",
+#     headers={"Authorization": f"Bearer {create_token()}"},
+#     data=json.dumps({"doi": "http://updated_doi"}),
+# )
+# time.sleep(5)
 
-# print(create_pg_connection_string())
-print(create_token())
+# r = re.post(
+#     f"{endpoint}/atbds/{atbd_alias}",
+#     headers={"Authorization": f"Bearer {create_token()}"},
+#     data=json.dumps({"title": "Updated Title"}),
+# )
+
+# r = re.get(
+#     f"{endpoint}/atbds/{atbd_alias}",
+#     headers={"Authorization": f"Bearer {create_token()}"},
+# )
+
+# print("Updated version v1.0 with")
+
+# print(
+#     f"Last Updated AT: {r.json()['last_updated_at']}, Last Updated BY: {r.json()['last_updated_by']}"
+# )
+
+
+# r = re.get(
+#     f"{endpoint}/search",
+#     #    auth=aws_auth(),
+#     headers={
+#         "Content-Type": "application/json",
+#         "Authorization": f"Bearer {create_token()}",
+#     },
+#     data=json.dumps(
+#         {"query": {"bool": {"must": [{"multi_match": {"query": "kelvins"}}]}}}
+#     ),
+# )
+# print("Search result: ")
+# print(r.content)
+
+print(create_pg_connection_string())
+# print(create_token())

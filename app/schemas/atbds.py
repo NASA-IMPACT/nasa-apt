@@ -20,8 +20,10 @@ class Create(BaseModel):
 
 class OutputBase(BaseModel):
     id: int
-    created_at: datetime
     created_by: str
+    created_at: datetime
+    last_updated_by: str
+    last_updated_at: datetime
     title: str
     alias: Optional[str]
 

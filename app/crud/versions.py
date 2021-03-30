@@ -28,7 +28,10 @@ class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
         latest_version.major = latest_version.major + 1
         latest_version.changelog = None
         latest_version.doi = None
+        latest_version.citation = None
         latest_version.created_by = user
+        latest_version.last_updated_by = user
+
         # Postgres will auto-populate status with default value ("Draft")
         latest_version.status = None
 
