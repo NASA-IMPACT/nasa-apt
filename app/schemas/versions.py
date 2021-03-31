@@ -10,11 +10,12 @@ class StatusEnum(enum.Enum):
     published = "Published"
 
 
-# TODO: use enum above
+# TODO: use status enum above
 class OutputBase(BaseModel):
     status: str
     published_by: Optional[str]
     published_at: Optional[datetime]
+    sections_completed: Optional[dict]
     created_by: str
     created_at: datetime
     last_updated_by: str
