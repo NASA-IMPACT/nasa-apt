@@ -21,9 +21,14 @@ services:
         psql 'postgres://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME?options=--search_path%3dapt' -f /sqitch/testDataLocal.sql
       "
     volumes: 
-      - type: bind
-        source: ./db
-        target: /sqitch
+      - ./db:/sqitch
+      - ./db:/var/lib/postgresql/data
+      # - type: bind
+      #   source: ./db
+      #   target: /sqitch
+      # - type: bind
+      #   source: ./db
+      #   target: /var/lib/postgresql/data
     depends_on: 
       - db-ready
 
@@ -78,12 +83,14 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - type: bind
-        source: ./app
-        target: /app/app
-      - type: bind
-        source: ./localstack/wait_for_localstack_ready.py
-        target: /app/wait_for_localstack_ready.py
+      - ./app:/app/app
+      - ./localstack/wait_for_localstack_ready.py:/app/wait_for_localstack_ready.py
+      # - type: bind
+      #   source: ./app
+      #   target: /app/app
+      # - type: bind
+      #   source: ./localstack/wait_for_localstack_ready.py
+      #   target: /app/wait_for_localstack_ready.py
 
     environment:
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
