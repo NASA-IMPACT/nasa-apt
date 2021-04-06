@@ -1,7 +1,8 @@
 FROM public.ecr.aws/lambda/python:3.8
 
 RUN yum install -y gcc gcc-c++ make
-
+# TODO: see if any of these packages can be removed (since moving to `latexmk` from `xelatex`), 
+# in order to reduced deployment pacakge size as well as install time
 RUN yum install -y\
     texlive-pdftex texlive-latex-bin texlive-texconfig* texlive-latex* texlive-metafont* \
     texlive-cmap* texlive-ec texlive-fncychap* texlive-pdftex-def texlive-fancyhdr* \
@@ -12,7 +13,7 @@ RUN yum install -y\
     wget
 RUN wget https://download-ib01.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-13.noarch.rpm
 RUN rpm -Uvh epel-release*rpm
-RUN yum install -y texlive-lineno
+RUN yum install -y texlive-lineno, latexmk
 
 RUN mkdir -p ~/Library/Fonts
 RUN cp -r /usr/share/texlive/texmf-dist/fonts/opentype/public/lm-math/latinmodern-math.otf   ~/Library/Fonts/

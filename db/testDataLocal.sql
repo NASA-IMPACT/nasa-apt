@@ -26,675 +26,223 @@ INSERT INTO atbd_versions
 VALUES
     (1, 'LeoThomas123', 'LeoThomas123', 1, 0, '{
     "scientific_theory": {
-        "document": {
-            "nodes": [
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "text": "A line of text in a paragraph."
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "equation",
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "text": "\\int_0^\\infty x^2 dx"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "image",
-                    "data": {
-                        "src": "fullmoon.jpg",
-                        "caption": "Image of the full moon - 2019"
+        "children": [
+            {
+                "type": "p",
+                "children": [
+                    {
+                        "text": "The "
+                    },
+                    {
+                        "text": "algorithm",
+                        "bold": true
+                    },
+                    {
+                        "text": " specified in this "
+                    },
+                    {
+                        "text": "document",
+                        "bold": true,
+                        "italic": true
+                    },
+                    {
+                        "type": "ref",
+                        "refId": "1"
+                    },
+                    {
+                        "text": " is designed to derive footprint level canopy cover and vertical "
+                    },
+                    {
+                        "type": "a",
+                        "url": "https://en.wikipedia.org",
+                        "children": [
+                            {
+                                "text": "profile over vegetated areas"
+                            }
+                        ]
+                    },
+                    {
+                        "text": " between ~52°N and ~52°S.\nThe data product includes estimates of total canopy cover and PAI."
                     }
-                }
-            ]
-        }
+                ]
+            },
+            {
+                "type": "p",
+                "children": [
+                    {
+                        "text": "The central "
+                    },
+                    {
+                        "text": "issues",
+                        "superscript": true
+                    },
+                    {
+                        "text": " in the definition are:"
+                    }
+                ]
+            },
+            {
+                "type": "ol",
+                "children": [
+                    {
+                        "type": "li",
+                        "children": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "whether the measurement is acquired at a specific viewing angle (mostly near-nadir) or over the entire hemisphere;"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "type": "li",
+                        "children": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "whether a tree crown is treated as an opaque object including all small within-canopy gaps."
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "equation",
+                "children": [
+                    {
+                        "text": "F_{app}(x) = \\sum_{n=1}^{\\infty} \\sqrt {2^{-n} \\cdot x}"
+                    }
+                ]
+            },
+            {
+                "type": "sub-section",
+                "children": [
+                    {
+                        "text": "Canopy cover types"
+                    }
+                ]
+            },
+            {
+                "type": "img",
+                "objectKey": "fullmoon.jpg",
+                "children": [
+                    {
+                        "text": "Image of the full moon - 2019"
+                    }
+                ]
+            },
+            {
+                "type": "p",
+                "children": [
+                    {
+                        "text": "It is different from two other widely used cover types: "
+                    }
+                ]
+            },
+            {
+                "type": "ul",
+                "children": [
+                    {
+                        "type": "li",
+                        "children": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "canopy closure defined as ''the proportion of the vegetation over a segment of the sky hemisphere at one point on the ground''"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "type": "li",
+                        "children": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "crown cover as ''the percentage of the ground covered by a vertical projection of the outermost perimeter of the natural spread of the foliage of plants''."
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     "introduction": {
-        "object": "value",
-        "document": {
-            "object": "document",
-            "data": {},
-            "nodes": [
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "An introduction.",
-                                    "marks": []
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "",
-                                    "marks": []
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "",
-                                    "marks": []
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "table",
-                    "caption": "A Table containing important data",
-                    "data": {
-                        "headless": true
-                    },
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "table_row",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Table Column 1",
-                                                            "marks": [
-                                                                {
-                                                                    "object": "mark",
-                                                                    "type": "bold",
-                                                                    "data": {}
-                                                                }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Table Column 2",
-                                                            "marks": [
-                                                                {
-                                                                    "object": "mark",
-                                                                    "type": "bold",
-                                                                    "data": {}
-                                                                }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Table Column 3",
-                                                            "marks": [
-                                                                {
-                                                                    "object": "mark",
-                                                                    "type": "bold",
-                                                                    "data": {}
-                                                                }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "object": "block",
-                            "type": "table_row",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (short)",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (long) - This is a super long cell value. It should be wrapped several times, perhaps 2 but although at this point maybe even 3. ",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (short)",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "object": "block",
-                            "type": "table_row",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (short)",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (short)",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (short)",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "",
-                                    "marks": []
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
+        "children": []
     },
     "historical_perspective": {
-        "object": "value",
-        "document": {
-            "object": "document",
-            "data": {},
-            "nodes": [
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "A historical perspective. We are now referencing ",
-                                    "marks": []
-                                }
-                            ]
-                        },
-                        {
-                            "object": "inline",
-                            "type": "reference",
-                            "data": {
-                                "id": 1,
-                                "name": "Example Reference"
-                            },
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "ref",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "",
-                                    "marks": []
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
+        "children": []
     },
-    "algorithm_input_variables": [
+    "algorithm_input_variables": [],
+    "algorithm_output_variables": [
         {
             "name": {
-                "object": "value",
-                "document": {
-                    "object": "document",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "Input Var 1",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
+                "children": [
+                    {
+                        "type": "p",
+                        "children": [
+                            {
+                                "text": "Acc"
+                            }
+                        ]
+                    }
+                ]
             },
             "long_name": {
-                "object": "value",
-                "document": {
-                    "object": "document",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "Input Variable 1",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "name": {
-                "object": "value",
-                "document": {
-                    "object": "document",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "Input Var 2",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            },
-            "long_name": {
-                "object": "value",
-                "document": {
-                    "object": "document",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "Input variable that is quite long and should be wrapped over at least two lines but possible also three",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
+                "children": [
+                    {
+                        "type": "p",
+                        "children": [
+                            {
+                                "text": "Acceleration"
+                            }
+                        ]
+                    }
+                ]
             },
             "unit": {
-                "object": "value",
-                "document": {
-                    "object": "document",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "Kelvins",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
+                "children": [
+                    {
+                        "type": "p",
+                        "children": [
+                            {
+                                "text": "m/s"
+                            },
+                            {
+                                "text": "2",
+                                "superscript": true
+                            }
+                        ]
+                    }
+                ]
             }
         }
     ],
-    "algorithm_output_variables": [{
-        "name": {
-            "object": "value",
-            "document": {
-                "object": "document",
-                "data": {},
-                "nodes": [
-                    {
-                        "object": "block",
-                        "type": "paragraph",
-                        "data": {},
-                        "nodes": [
-                            {
-                                "object": "text",
-                                "leaves": [
-                                    {
-                                        "object": "leaf",
-                                        "text": "Output Var 1",
-                                        "marks": []
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        "long_name": {
-            "object": "value",
-            "document": {
-                "object": "document",
-                "data": {},
-                "nodes": [
-                    {
-                        "object": "block",
-                        "type": "paragraph",
-                        "data": {},
-                        "nodes": [
-                            {
-                                "object": "text",
-                                "leaves": [
-                                    {
-                                        "object": "leaf",
-                                        "text": "Output Variable 1",
-                                        "marks": []
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        "unit": {
-            "object": "value",
-            "document": {
-                "object": "document",
-                "data": {},
-                "nodes": [
-                    {
-                        "object": "block",
-                        "type": "paragraph",
-                        "data": {},
-                        "nodes": [
-                            {
-                                "object": "text",
-                                "leaves": [
-                                    {
-                                        "object": "leaf",
-                                        "text": "Kelvins",
-                                        "marks": []
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
-    }],
     "publication_references": [
         {
             "publication_reference_id": 1,
-            "authors": "Charles Dickens,  John Steinbeck",
+            "authors": "Dickens, Charles and Steinbeck, John",
             "title": "Example Reference",
             "series": "A",
             "edition": "3rd",
             "volume": "42ml",
-            "issue":"ticket",
+            "issue": "ticket",
             "publication_place": "Boston",
             "publisher": "PenguinBooks",
             "pages": "189-198",
             "isbn": 123456789,
-            "year": 1996
+            "year": 1995
         }
     ]
 }',
@@ -705,675 +253,223 @@ INSERT INTO atbd_versions
 VALUES
     (1, 'LeoThomas123', 'LeoThomas123', 2, 0, '{
     "scientific_theory": {
-        "document": {
-            "nodes": [
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "text": "A line of text in a paragraph."
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "equation",
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "text": "\\int_0^\\infty x^2 dx"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "image",
-                    "data": {
-                        "src": "fullmoon.jpg",
-                        "caption": "Image of the full moon - 2019"
+        "children": [
+            {
+                "type": "p",
+                "children": [
+                    {
+                        "text": "The "
+                    },
+                    {
+                        "text": "algorithm",
+                        "bold": true
+                    },
+                    {
+                        "text": " specified in this "
+                    },
+                    {
+                        "text": "document",
+                        "bold": true,
+                        "italic": true
+                    },
+                    {
+                        "type": "ref",
+                        "refId": "1"
+                    },
+                    {
+                        "text": " is designed to derive footprint level canopy cover and vertical "
+                    },
+                    {
+                        "type": "a",
+                        "url": "https://en.wikipedia.org",
+                        "children": [
+                            {
+                                "text": "profile over vegetated areas"
+                            }
+                        ]
+                    },
+                    {
+                        "text": " between ~52°N and ~52°S.\nThe data product includes estimates of total canopy cover and PAI."
                     }
-                }
-            ]
-        }
+                ]
+            },
+            {
+                "type": "p",
+                "children": [
+                    {
+                        "text": "The central "
+                    },
+                    {
+                        "text": "issues",
+                        "superscript": true
+                    },
+                    {
+                        "text": " in the definition are:"
+                    }
+                ]
+            },
+            {
+                "type": "ol",
+                "children": [
+                    {
+                        "type": "li",
+                        "children": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "whether the measurement is acquired at a specific viewing angle (mostly near-nadir) or over the entire hemisphere;"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "type": "li",
+                        "children": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "whether a tree crown is treated as an opaque object including all small within-canopy gaps."
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "equation",
+                "children": [
+                    {
+                        "text": "F_{app}(x) = \\sum_{n=1}^{\\infty} \\sqrt {2^{-n} \\cdot x}"
+                    }
+                ]
+            },
+            {
+                "type": "sub-section",
+                "children": [
+                    {
+                        "text": "Canopy cover types"
+                    }
+                ]
+            },
+            {
+                "type": "img",
+                "objectKey": "fullmoon.jpg",
+                "children": [
+                    {
+                        "text": "Image of the full moon - 2019"
+                    }
+                ]
+            },
+            {
+                "type": "p",
+                "children": [
+                    {
+                        "text": "It is different from two other widely used cover types: "
+                    }
+                ]
+            },
+            {
+                "type": "ul",
+                "children": [
+                    {
+                        "type": "li",
+                        "children": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "canopy closure defined as ''the proportion of the vegetation over a segment of the sky hemisphere at one point on the ground''"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "type": "li",
+                        "children": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {
+                                        "text": "crown cover as ''the percentage of the ground covered by a vertical projection of the outermost perimeter of the natural spread of the foliage of plants''."
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     "introduction": {
-        "object": "value",
-        "document": {
-            "object": "document",
-            "data": {},
-            "nodes": [
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "An introduction.",
-                                    "marks": []
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "",
-                                    "marks": []
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "",
-                                    "marks": []
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "table",
-                    "caption": "A Table containing important data",
-                    "data": {
-                        "headless": true
-                    },
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "table_row",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Table Column 1",
-                                                            "marks": [
-                                                                {
-                                                                    "object": "mark",
-                                                                    "type": "bold",
-                                                                    "data": {}
-                                                                }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Table Column 2",
-                                                            "marks": [
-                                                                {
-                                                                    "object": "mark",
-                                                                    "type": "bold",
-                                                                    "data": {}
-                                                                }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Table Column 3",
-                                                            "marks": [
-                                                                {
-                                                                    "object": "mark",
-                                                                    "type": "bold",
-                                                                    "data": {}
-                                                                }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "object": "block",
-                            "type": "table_row",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (short)",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (long) - This is a super long cell value. It should be wrapped several times, perhaps 2 but although at this point maybe even 3. ",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (short)",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "object": "block",
-                            "type": "table_row",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (short)",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (short)",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "object": "block",
-                                    "type": "table_cell",
-                                    "data": {},
-                                    "nodes": [
-                                        {
-                                            "object": "block",
-                                            "type": "paragraph",
-                                            "data": {},
-                                            "nodes": [
-                                                {
-                                                    "object": "text",
-                                                    "leaves": [
-                                                        {
-                                                            "object": "leaf",
-                                                            "text": "Cell value (short)",
-                                                            "marks": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "",
-                                    "marks": []
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
+        "children": []
     },
     "historical_perspective": {
-        "object": "value",
-        "document": {
-            "object": "document",
-            "data": {},
-            "nodes": [
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "A historical perspective. We are now referencing ",
-                                    "marks": []
-                                }
-                            ]
-                        },
-                        {
-                            "object": "inline",
-                            "type": "reference",
-                            "data": {
-                                "id": 1,
-                                "name": "Example Reference"
-                            },
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "ref",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "object": "text",
-                            "leaves": [
-                                {
-                                    "object": "leaf",
-                                    "text": "",
-                                    "marks": []
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
+        "children": []
     },
-    "algorithm_input_variables": [
+    "algorithm_input_variables": [],
+    "algorithm_output_variables": [
         {
             "name": {
-                "object": "value",
-                "document": {
-                    "object": "document",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "Input Var 1",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
+                "children": [
+                    {
+                        "type": "p",
+                        "children": [
+                            {
+                                "text": "Acc"
+                            }
+                        ]
+                    }
+                ]
             },
             "long_name": {
-                "object": "value",
-                "document": {
-                    "object": "document",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "Input Variable 1",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "name": {
-                "object": "value",
-                "document": {
-                    "object": "document",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "Input Var 2",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            },
-            "long_name": {
-                "object": "value",
-                "document": {
-                    "object": "document",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "Input variable that is quite long and should be wrapped over at least two lines but possible also three",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
+                "children": [
+                    {
+                        "type": "p",
+                        "children": [
+                            {
+                                "text": "Acceleration"
+                            }
+                        ]
+                    }
+                ]
             },
             "unit": {
-                "object": "value",
-                "document": {
-                    "object": "document",
-                    "data": {},
-                    "nodes": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "data": {},
-                            "nodes": [
-                                {
-                                    "object": "text",
-                                    "leaves": [
-                                        {
-                                            "object": "leaf",
-                                            "text": "Kelvins",
-                                            "marks": []
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
+                "children": [
+                    {
+                        "type": "p",
+                        "children": [
+                            {
+                                "text": "m/s"
+                            },
+                            {
+                                "text": "2",
+                                "superscript": true
+                            }
+                        ]
+                    }
+                ]
             }
         }
     ],
-    "algorithm_output_variables":[ {
-        "name": {
-            "object": "value",
-            "document": {
-                "object": "document",
-                "data": {},
-                "nodes": [
-                    {
-                        "object": "block",
-                        "type": "paragraph",
-                        "data": {},
-                        "nodes": [
-                            {
-                                "object": "text",
-                                "leaves": [
-                                    {
-                                        "object": "leaf",
-                                        "text": "Output Var 1",
-                                        "marks": []
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        "long_name": {
-            "object": "value",
-            "document": {
-                "object": "document",
-                "data": {},
-                "nodes": [
-                    {
-                        "object": "block",
-                        "type": "paragraph",
-                        "data": {},
-                        "nodes": [
-                            {
-                                "object": "text",
-                                "leaves": [
-                                    {
-                                        "object": "leaf",
-                                        "text": "Output Variable 1",
-                                        "marks": []
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        "unit": {
-            "object": "value",
-            "document": {
-                "object": "document",
-                "data": {},
-                "nodes": [
-                    {
-                        "object": "block",
-                        "type": "paragraph",
-                        "data": {},
-                        "nodes": [
-                            {
-                                "object": "text",
-                                "leaves": [
-                                    {
-                                        "object": "leaf",
-                                        "text": "Kelvins",
-                                        "marks": []
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
-    }],
     "publication_references": [
         {
             "publication_reference_id": 1,
-            "authors": "Charles Dickens,  John Steinbeck",
+            "authors": "Dickens, Charles and Steinbeck, John",
             "title": "Example Reference",
             "series": "A",
             "edition": "3rd",
             "volume": "42ml",
-            "publication_place": "Boston",
             "issue": "ticket",
+            "publication_place": "Boston",
             "publisher": "PenguinBooks",
             "pages": "189-198",
             "isbn": 123456789,
-            "year": 1995
+            "year": 1996
         }
     ]
 }');

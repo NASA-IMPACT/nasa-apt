@@ -4,6 +4,7 @@ RUN apt-get update \
     locales \
     texlive-latex-recommended \
     texlive-xetex \
+    latexmk\
     wget libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config gcc \
     && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
