@@ -2,7 +2,6 @@ from app import config
 
 from app.logs import logger
 from app.auth.saml import get_user, User
-from app.schemas.versions import StatusEnum
 import requests
 from requests_aws4auth import AWS4Auth
 import boto3

@@ -286,9 +286,7 @@ def generate_latex(atbd: Atbds, filepath: str):
 
 def generate_pdf(atbd: Atbds, journal: bool = False):
     version_id = f"v{atbd.versions[0].major}-{atbd.versions[0].minor}"
-    filename = (
-        f"{atbd.alias}-{version_id}" if atbd.alias else f"atbd-{atbd.id}-{version_id}"
-    )
+    filename = f"atbd-{atbd.id}-{version_id}"
     filepath = os.path.join("/tmp", str(atbd.id), "pdfs", version_id, filename)
 
     # create a folder for the pdf/latex files to be stored in
