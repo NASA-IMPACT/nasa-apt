@@ -106,7 +106,7 @@ def get_pdf(
     print("ATBD: ", atbd)
     # atbd_version = atbds.FullOutput.from_orm(atbd_version).dict()
     pdf_key = generate_pdf(atbd, journal=journal)
-    return FileResponse(path=pdf_key.split("/")[-1], filename=pdf_key.split("/")[-1])
+    return FileResponse(path=pdf_key, filename=pdf_key.split("/")[-1])
     # return atbd_pdf_handler(
     #     atbd_version, background_tasks=background_tasks, journal=journal
     # )

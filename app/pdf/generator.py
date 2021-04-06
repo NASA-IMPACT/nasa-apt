@@ -1,4 +1,5 @@
 import os
+import pathlib
 import pandas as pd
 from pylatex import (
     Document,
@@ -32,8 +33,8 @@ def process_reference(data):
     return f"@BOOK{{{reference_id},\n{reference}}}"
 
 
-def generate_bibliography(references):
-    with open("main.bib", "w") as bib_file:
+def generate_bibliography(references, filepath):
+    with open(filepath, "w") as bib_file:
         bib_file.write("\n".join(process_reference(r) for r in references))
 
 
@@ -153,16 +154,19 @@ def parse(data, doc=None):
 
         if data.get("type") == "img":
             s3_client().download_file(
-                Bucket=BUCKET, Key=data["objectKey"], Filename=f"./{data['objectKey']}",
+                Bucket=BUCKET,
+                Key=data["objectKey"],
+                Filename=f"/tmp/{data['objectKey']}",
             )
 
             with doc.create(Figure(position="H")) as doc:
-                doc.add_image(f"./{data['objectKey']}",)
+                doc.add_image(f"/tmp/{data['objectKey']}",)
                 doc.add_caption(data["children"][0]["text"])
 
 
-def setup_document(atbd: Atbds):
+def setup_document(atbd: Atbds, filepath: str):
     doc = Document(
+        default_filepath=filepath,
         documentclass=Command("documentclass", options=["12pt"], arguments="article",),
         fontenc="T1",
         inputenc="utf8",
@@ -243,11 +247,13 @@ SECTIONS = {
 CONTENT_UNAVAILABLE = {"type": "p", "children": [{"text": "Content Unavailable"}]}
 
 
-def generate_latex(atbd: Atbds):
+def generate_latex(atbd: Atbds, filepath: str):
     atbd_version_data = atbd.versions[0].document
-    doc = setup_document(atbd)
+    doc = setup_document(atbd, filepath)
 
-    generate_bibliography(atbd_version_data.get("publication_references", []))
+    generate_bibliography(
+        atbd_version_data.get("publication_references", []), filepath=f"{filepath}.bib"
+    )
 
     for section, info in SECTIONS.items():
         s = Section(info["title"])
@@ -281,15 +287,17 @@ def generate_latex(atbd: Atbds):
 def generate_pdf(atbd: Atbds, journal: bool = False):
     version_id = f"v{atbd.versions[0].major}-{atbd.versions[0].minor}"
     filename = (
-        f"{atbd.alias}-{version_id}.pdf"
-        if atbd.alias
-        else f"atbd-{atbd.id}-{version_id}"
+        f"{atbd.alias}-{version_id}" if atbd.alias else f"atbd-{atbd.id}-{version_id}"
     )
-    pdf_filepath = os.path.join(str(atbd.id), "pdfs", version_id, filename)
+    filepath = os.path.join("/tmp", str(atbd.id), "pdfs", version_id, filename)
+
+    # create a folder for the pdf/latex files to be stored in
+    pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
+
     # TODO: implement serialize here!
-    latex_document = generate_latex(atbd)
+    latex_document = generate_latex(atbd, filepath)
     latex_document.generate_pdf(
-        filename.replace(".pdf", ""),
+        filepath=filepath,
         clean=True,
         clean_tex=True,
         # automatically performs the multiple runs necessary
@@ -300,5 +308,5 @@ def generate_pdf(atbd: Atbds, journal: bool = False):
         compiler_args=["--pdf"],
     )
 
-    return pdf_filepath
+    return f"{filepath}.pdf"
 
