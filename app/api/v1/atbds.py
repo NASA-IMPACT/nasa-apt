@@ -116,12 +116,33 @@ def update_atbd_version(
     atbd_id: str,
     version: str,
     version_input: versions.Update,
+    overwrite: bool = False,
     db=Depends(get_db),
     user=Depends(require_user),
 ):
 
     major = get_major_from_version_string(version)
     [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
+    if version_input.minor and version.status != "Published":
+        raise HTTPException(
+            status_code=400,
+            detail="ATBD must have status `published` in order to increment the minor version number",
+        )
+
+    if version_input.minor == version.minor + 1:
+        # A new version has been created - generate a cache a PDF.
+        # TODO: generate and cache PDF
+        raise NotImplementedError
+
+    if version_input.document and not overwrite:
+        version_input.document = {**version_input.document, **version_input.document}
+
+    if version_input.sections_completed and not overwrite:
+        version_input.sections_completed = {
+            **version.sections_completed,
+            **version_input.sections_completed,
+        }
+
     version.last_updated_by = user["user"]
     version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     crud_versions.update(db=db, db_obj=version, obj_in=version_input)
@@ -143,54 +164,6 @@ def delete_atbd_version(
     return {}
 
 
-@router.post(
-    "/atbds/{atbd_id}/versions/{version}/document", response_model=atbds.FullOutput
-)
-def update_atbd_version_document(
-    atbd_id: str,
-    version: str,
-    document_input: versions.JSONFieldUpdate,
-    db=Depends(get_db),
-    user=Depends(require_user),
-):
-    major = get_major_from_version_string(version)
-    [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
-    # https://docs.sqlalchemy.org/en/13/core/type_basics.html?highlight=json#sqlalchemy.types.JSON
-    version.document[document_input.key] = document_input.value
-    version.last_updated_by = user["user"]
-    version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
-    db.add(version)
-    db.commit()
-    db.refresh(version)
-    print("VERSION after refresh:", version)
-
-    return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
-
-
-@router.post(
-    "/atbds/{atbd_id}/versions/{version}/sections_completed",
-    response_model=atbds.FullOutput,
-)
-def update_atbd_version_sections_completed(
-    atbd_id: str,
-    version: str,
-    document_input: versions.JSONFieldUpdate,
-    db=Depends(get_db),
-    user=Depends(require_user),
-):
-    major = get_major_from_version_string(version)
-    [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
-    version.last_updated_by = user["user"]
-    version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
-    db.add(version)
-    version.sections_completed[document_input.key] = document_input.value
-    db.add(version)
-    db.commit()
-    db.refresh(version)
-
-    return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
-
-
 @router.post("/atbds/{atbd_id}/publish", response_model=atbds.FullOutput)
 def publish_atbd(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
     [latest_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1).versions
@@ -204,6 +177,7 @@ def publish_atbd(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
     latest_version.published_at = datetime.datetime.now(datetime.timezone.utc)
     db.commit()
     db.refresh(latest_version)
+    # TODO: ATBD has been published, generate and cache v1.0 PDF
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=latest_version.major)
 
 

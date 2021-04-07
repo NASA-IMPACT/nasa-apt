@@ -587,7 +587,7 @@ def test_update_atbd_specific_version(
     assert req.changelog == updated_atbd["versions"][-1]["changelog"]
 
 
-def test_update_document_by_key(
+def test_update_document(
     test_client,
     db_session,
     atbd_creation_input,
@@ -601,10 +601,14 @@ def test_update_document_by_key(
     )
     updated_atbd = json.loads(
         test_client.post(
-            f"/atbds/{atbd['id']}/versions/latest/document",
+            f"/atbds/{atbd['id']}/versions/latest",
             json={
-                "key": "new_top_level_key",
-                "value": {"new_sub_level_key_1": "abc", "new_sub_level_key_2": "def"},
+                "document": {
+                    "new_top_level_key": {
+                        "new_sub_level_key_1": "abc",
+                        "new_sub_level_key_2": "def",
+                    },
+                }
             },
             headers=authenticated_headers,
         ).content
@@ -620,8 +624,13 @@ def test_update_document_by_key(
     }
     updated_atbd = json.loads(
         test_client.post(
-            f"/atbds/{atbd['id']}/versions/latest/document",
-            json={"key": "new_top_level_key", "value": "Just a single string"},
+            f"/atbds/{atbd['id']}/versions/latest",
+            json={
+                "document": {
+                    "new_top_level_key": "Just a single string",
+                    "even_newer_top_level_key": "Just another string",
+                }
+            },
             headers=authenticated_headers,
         ).content
     )
@@ -629,11 +638,26 @@ def test_update_document_by_key(
         f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
     )
     assert req.document is not None
-    assert "new_top_level_key" in req.document
     assert req.document["new_top_level_key"] == "Just a single string"
+    assert req.document["even_newer_top_level_key"] == "Just another string"
+
+    updated_atbd = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions/latest?overwrite=true",
+            json={"document": {"overwritten_top_level_key": "Just another string"}},
+            headers=authenticated_headers,
+        ).content
+    )
+    [req] = db_session.execute(
+        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
+    )
+    assert req.document is not None
+    assert not req.document.get("new_top_level_key")
+    assert not req.document.get("even_newer_top_level_key")
+    assert req.document["overwritten_top_level_key"] == "Just another string"
 
 
-def test_update_sections_completed_by_key(
+def test_update_sections_completed(
     test_client,
     db_session,
     atbd_creation_input,
@@ -647,10 +671,14 @@ def test_update_sections_completed_by_key(
     )
     updated_atbd = json.loads(
         test_client.post(
-            f"/atbds/{atbd['id']}/versions/latest/sections_completed",
+            f"/atbds/{atbd['id']}/versions/latest",
             json={
-                "key": "new_top_level_key",
-                "value": {"new_sub_level_key_1": "abc", "new_sub_level_key_2": "def"},
+                "sections_completed": {
+                    "new_top_level_key": {
+                        "new_sub_level_key_1": "abc",
+                        "new_sub_level_key_2": "def",
+                    },
+                }
             },
             headers=authenticated_headers,
         ).content
@@ -659,15 +687,19 @@ def test_update_sections_completed_by_key(
         f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
     )
     assert req.sections_completed is not None
-    assert "new_top_level_key" in req.sections_completed
     assert req.sections_completed["new_top_level_key"] == {
         "new_sub_level_key_1": "abc",
         "new_sub_level_key_2": "def",
     }
     updated_atbd = json.loads(
         test_client.post(
-            f"/atbds/{atbd['id']}/versions/latest/sections_completed",
-            json={"key": "new_top_level_key", "value": "Just a single string"},
+            f"/atbds/{atbd['id']}/versions/latest",
+            json={
+                "sections_completed": {
+                    "new_top_level_key": "Just a single string",
+                    "even_newer_top_level_key": "Just another string",
+                }
+            },
             headers=authenticated_headers,
         ).content
     )
@@ -675,14 +707,29 @@ def test_update_sections_completed_by_key(
         f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
     )
     assert req.sections_completed is not None
-    assert "new_top_level_key" in req.sections_completed
     assert req.sections_completed["new_top_level_key"] == "Just a single string"
+    assert req.sections_completed["even_newer_top_level_key"] == "Just another string"
+
+    updated_atbd = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions/latest?overwrite=true",
+            json={
+                "sections_completed": {
+                    "overwritten_top_level_key": "Just another string"
+                }
+            },
+            headers=authenticated_headers,
+        ).content
+    )
+    [req] = db_session.execute(
+        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
+    )
+    assert req.sections_completed is not None
+    assert not req.sections_completed.get("new_top_level_key")
+    assert not req.sections_completed.get("even_newer_top_level_key")
+    assert req.sections_completed["overwritten_top_level_key"] == "Just another string"
 
 
-def test_update_atbd_version_fails_if_user_is_unauthenticated(test_client, db_session):
-    pass
-
-
-def get_atbd_version(test_client, db_session):
+def test_update_minor_version_of_draft_atbd_fails():
     pass
 

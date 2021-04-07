@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, validator
-from typing import Optional, Union
+from typing import Optional, Union, Dict, Any
 import enum
 
 
@@ -61,6 +61,17 @@ class Update(BaseModel):
     doi: Optional[str]
     citation: Optional[dict]
     status: Optional[str]
+
+    @validator("document", always=True)
+    def ensure_either_minor_or_document(
+        cls, value: Optional[dict], values: Dict[str, Optional[Any]]
+    ):
+        minor = values.get("minor")
+        if minor is not None and value is not None:
+            raise ValueError(
+                "Document data cannot be updated at the same time as the minor version number"
+            )
+        return value
 
 
 class JSONFieldUpdate(BaseModel):
