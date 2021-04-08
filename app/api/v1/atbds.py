@@ -135,7 +135,7 @@ def update_atbd_version(
         raise NotImplementedError
 
     if version_input.document and not overwrite:
-        version_input.document = {**version_input.document, **version_input.document}
+        version_input.document = {**version.document, **version_input.document}
 
     if version_input.sections_completed and not overwrite:
         version_input.sections_completed = {
