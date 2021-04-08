@@ -47,7 +47,12 @@ VALUES
                     },
                     {
                         "type": "ref",
-                        "refId": "1"
+                        "refId": "1",
+                        "children": [
+                            {
+                                "text": ""
+                            }
+                        ]
                     },
                     {
                         "text": " is designed to derive footprint level canopy cover and vertical "
@@ -178,12 +183,8 @@ VALUES
             }
         ]
     },
-    "introduction": {
-        "children": []
-    },
-    "historical_perspective": {
-        "children": []
-    },
+    "introduction": null,
+    "historical_perspective": null,
     "algorithm_input_variables": [],
     "algorithm_output_variables": [
         {
@@ -274,7 +275,12 @@ VALUES
                     },
                     {
                         "type": "ref",
-                        "refId": "1"
+                        "refId": "1",
+                        "children": [
+                            {
+                                "text": ""
+                            }
+                        ]
                     },
                     {
                         "text": " is designed to derive footprint level canopy cover and vertical "
@@ -405,12 +411,8 @@ VALUES
             }
         ]
     },
-    "introduction": {
-        "children": []
-    },
-    "historical_perspective": {
-        "children": []
-    },
+    "introduction": null,
+    "historical_perspective": null,
     "algorithm_input_variables": [],
     "algorithm_output_variables": [
         {
