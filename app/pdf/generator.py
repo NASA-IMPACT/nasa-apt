@@ -35,6 +35,7 @@ def process_reference(data):
 
 
 def generate_bibliography(references, filepath):
+    print("FILEPATH SAVING BIB TO : ", filepath)
     with open(filepath, "w") as bib_file:
         bib_file.write("\n".join(process_reference(r) for r in references))
 
@@ -284,8 +285,8 @@ def generate_latex(atbd: Atbds, filepath: str):
             parse(atbd_version_data[section], s)
 
     doc.append(Command("bibliographystyle", arguments="abbrv"))
-    # "main" is the name of the bibtex file (main.bib)
-    doc.append(Command("bibliography", arguments="main"))
+    print("BIB LOOKGIN FOR FILE AT: ", f"{filepath}.bib")
+    doc.append(Command("bibliography", arguments=NoEscape(filepath)))
     return doc
 
 
@@ -304,7 +305,7 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     latex_document.generate_pdf(
         filepath=filepath,
         clean=True,
-        clean_tex=True,
+        clean_tex=False,
         # automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
         compiler="latexmk",

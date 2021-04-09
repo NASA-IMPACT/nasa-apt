@@ -36,9 +36,10 @@ def save_pdf_to_s3(atbd: Atbds, journal: bool = False):
     s3_client().upload_file(Filename=local_pdf_key, Bucket=BUCKET, Key=key)
 
 
-def generate_pdf_key(atbd: Atbds, journal: bool = False):
+def generate_pdf_key(atbd: Atbds, minor: int = None, journal: bool = False):
     [version] = atbd.versions
-    version_string = f"v{version.major}-{version.minor}"
+
+    version_string = f"v{version.major}-{minor if minor is not None else version.minor}"
     filename = (
         f"{atbd.alias}-{version_string}"
         if atbd.alias
@@ -64,17 +65,22 @@ def get_pdf(
     major, minor = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
 
-    pdf_key = generate_pdf_key(atbd, journal)
+    pdf_key = generate_pdf_key(atbd, minor=minor, journal=journal)
 
     if minor:
+        print("FETCHING FROM S3")
+        # TODO: pdf_key contains the lastest minor version - which gets set
+        # as the filename, even though a different minor version was requested
         # TODO: add some error handling in case the PDF isn't found
         f = s3_client().get_object(Bucket=BUCKET, Key=pdf_key)["Body"]
         return StreamingResponse(
             f.iter_chunks(),
             media_type="application/pdf",
-            filename=pdf_key.split("/")[-1],
+            headers={
+                "Content-Disposition": f"attachment; filename={pdf_key.split('/')[-1]}"
+            },
         )
-
+    print("GENERATING PDF")
     local_pdf_filepath = generate_pdf(atbd=atbd, filepath=pdf_key, journal=journal)
 
     return FileResponse(path=local_pdf_filepath, filename=pdf_key.split("/")[-1])
