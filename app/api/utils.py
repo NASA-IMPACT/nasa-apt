@@ -4,6 +4,7 @@ from app.db.db_session import get_session
 from app import config
 from fastapi import Depends, HTTPException
 from boto3 import client
+from typing import Tuple
 import re
 
 
@@ -34,13 +35,13 @@ def get_db(
     return db_session
 
 
-def get_major_from_version_string(version: str) -> int:
+def get_major_from_version_string(version: str) -> Tuple[int]:
 
     if version == "latest":
-        return -1
+        return -1, None
 
     try:
-        return int(version)
+        return int(version), None
 
     except ValueError:
 
@@ -53,5 +54,5 @@ def get_major_from_version_string(version: str) -> int:
                     f'v<major:int>.<minor:int>, <major:int>, or "latest"'
                 ),
             )
-        return int(search.group("major"))
+        return int(search.group("major")), int(search.group("minor"))
 

@@ -18,6 +18,7 @@ from pylatex import (
 from app.db.models import Atbds
 from app.api.utils import s3_client
 from app.config import BUCKET
+from app.logs import logger
 
 
 def process_reference(data):
@@ -72,17 +73,22 @@ def process_content(data):
 
 
 def process_algorithm_variables(data, doc):
-
-    for i, d in enumerate(data):
-
-        data[i] = {
-            # TODO: AAAAAAARG
+    #
+    parsed_data = [
+        {
+            # process_text applies any subscript, superscript, bold, etc to the data
+            # before transforming it into a table using latex
+            # TODO: Figure out how to do this without having to fetch children[0][children]
             k: " ".join(process_text(c) for c in v["children"][0]["children"])
             for k, v in d.items()
             if k in ["long_name", "unit"]
         }
+        for d in data
+    ]
 
-    algorithm_variables_dataframe = pd.DataFrame.from_dict(data, orient="columns")
+    algorithm_variables_dataframe = pd.DataFrame.from_dict(
+        parsed_data, orient="columns"
+    )
 
     # TODO: figure out how to apply the WYSIWYG parsing to the algorithm variable list
     # algorithm_variables_dataframe["long_name"] = algorithm_variables_dataframe[
@@ -91,24 +97,22 @@ def process_algorithm_variables(data, doc):
     # algorithm_variables_dataframe["unit"] = algorithm_variables_dataframe["unit"].apply(
     #     process_content
     # )
+    # TODO: make this dynamic, instead of based on the number of pixels in a page
     # page width is 426 pts - divide into 3/4 and 1/4 sections for algorithm name and units
     column_format = f"p{{{int(426/4)*3}pt}} p{{{int(426/4)}pt}}"
-    if not algorithm_variables_dataframe.empty:
-        latex_dataframe = algorithm_variables_dataframe.to_latex(
-            index=False,
-            bold_rows=True,
-            escape=False,
-            column_format=column_format,
-            na_rep=" ",
-            columns=["long_name", "unit"],
-            header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
-        )
+    latex_dataframe = algorithm_variables_dataframe.to_latex(
+        index=False,
+        bold_rows=True,
+        escape=False,
+        column_format=column_format,
+        na_rep=" ",
+        columns=["long_name", "unit"],
+        header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
+    )
     doc.append(NoEscape(latex_dataframe))
 
 
 def parse(data, doc=None):
-    print("DOC: ", doc)
-    print("DATA: ", data)
     if isinstance(data, list):
         for e in data:
             parse(e, doc)
@@ -254,19 +258,20 @@ def generate_latex(atbd: Atbds, filepath: str):
     generate_bibliography(
         atbd_version_data.get("publication_references", []), filepath=f"{filepath}.bib"
     )
-
+    # print("ATBD_VERSION_DATA: ", atbd_version_data)
     for section, info in SECTIONS.items():
         s = Section(info["title"])
         if info.get("subsection"):
             s = Subsection(info["title"])
         with doc.create(s):
 
-            if section in ["algorithm_input_varaibles", "algorithm_output_variables"]:
-                process_algorithm_variables(atbd_version_data.get(section, []), doc)
-                continue
-
             if not atbd_version_data.get(section):
                 parse(CONTENT_UNAVAILABLE, s)
+                continue
+
+            if section in ["algorithm_input_variables", "algorithm_output_variables"]:
+
+                process_algorithm_variables(atbd_version_data[section], doc)
                 continue
 
             if (
@@ -284,16 +289,18 @@ def generate_latex(atbd: Atbds, filepath: str):
     return doc
 
 
-def generate_pdf(atbd: Atbds, journal: bool = False):
-    version_id = f"v{atbd.versions[0].major}-{atbd.versions[0].minor}"
-    filename = f"atbd-{atbd.id}-{version_id}"
-    filepath = os.path.join("/tmp", str(atbd.id), "pdfs", version_id, filename)
+def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
+    # The extension is removed because the latex compiler uses this filepath
+    # to generate a bunch of temporary files (<filepath>.tex, <filepath>.log,
+    # <filepath>.aux, etc), before generating the pdf. Once it generates the
+    # pdf file, it adds the `.pdf` extension.
+    filepath = os.path.join("/tmp", filepath.replace(".pdf", ""))
 
     # create a folder for the pdf/latex files to be stored in
     pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
 
-    # TODO: implement serialize here!
     latex_document = generate_latex(atbd, filepath)
+    # print("GENERATING LATEX, journal? ", journal)
     latex_document.generate_pdf(
         filepath=filepath,
         clean=True,

@@ -2,13 +2,27 @@
 from app import config
 from app.schemas import atbds, versions
 from app.db.db_session import DbSession
-from app.api.utils import get_db, require_user, get_major_from_version_string, s3_client
+from app.api.utils import (
+    get_db,
+    require_user,
+    get_major_from_version_string,
+    s3_client,
+)
+from app.api.v1.pdf import save_pdf_to_s3
 from app.auth.saml import User
 from app.crud.atbds import crud_atbds
 from app.crud.versions import crud_versions
-from app.db.models import AtbdVersions
+from app.db.models import Atbds
 from sqlalchemy import exc
-from fastapi import APIRouter, Depends, HTTPException, responses, File, UploadFile
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    responses,
+    File,
+    UploadFile,
+    BackgroundTasks,
+)
 from typing import List
 import datetime
 import botocore
@@ -94,14 +108,14 @@ def delete_atbd(
     responses={200: dict(description="Atbd with given ID/alias exists in backend")},
 )
 def version_exists(atbd_id: str, version: str, db: DbSession = Depends(get_db)):
-    major = get_major_from_version_string(version)
+    major, _ = get_major_from_version_string(version)
     return crud_atbds.exists(db=db, atbd_id=atbd_id, version=major)
 
 
 @router.get("/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput)
 def get_version(atbd_id: str, version: str, db=Depends(get_db)):
 
-    major = get_major_from_version_string(version)
+    major, _ = get_major_from_version_string(version)
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
 
 
@@ -116,13 +130,15 @@ def update_atbd_version(
     atbd_id: str,
     version: str,
     version_input: versions.Update,
+    background_tasks: BackgroundTasks,
     overwrite: bool = False,
     db=Depends(get_db),
     user=Depends(require_user),
 ):
 
-    major = get_major_from_version_string(version)
-    [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
+    major, _ = get_major_from_version_string(version)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+    [version] = atbd.versions
     if version_input.minor and version.status != "Published":
         raise HTTPException(
             status_code=400,
@@ -130,9 +146,12 @@ def update_atbd_version(
         )
 
     if version_input.minor == version.minor + 1:
-        # A new version has been created - generate a cache a PDF.
-        # TODO: generate and cache PDF
-        raise NotImplementedError
+        # A new version has been created - generate a cache a PDF for both the regular
+        # PDF format, and the journal PDF format
+        print("ADDED PDF generation to background tasks")
+        _add_pdf_generation_to_background_tasks(
+            atbd=atbd, background_tasks=background_tasks
+        )
 
     if version_input.document and not overwrite:
         version_input.document = {**version.document, **version_input.document}
@@ -157,7 +176,7 @@ def update_atbd_version(
 def delete_atbd_version(
     atbd_id: str, version: str, db=Depends(get_db), user=Depends(require_user),
 ):
-    major = get_major_from_version_string(version)
+    major, _ = get_major_from_version_string(version)
     [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
     db.delete(version)
     db.commit()
@@ -165,8 +184,14 @@ def delete_atbd_version(
 
 
 @router.post("/atbds/{atbd_id}/publish", response_model=atbds.FullOutput)
-def publish_atbd(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
-    [latest_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1).versions
+def publish_atbd(
+    atbd_id: str,
+    background_tasks: BackgroundTasks,
+    db=Depends(get_db),
+    user=Depends(require_user),
+):
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1)
+    [latest_version] = atbd.versions
     if latest_version.status == "Published":
         raise HTTPException(
             status_code=400,
@@ -178,6 +203,11 @@ def publish_atbd(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
     db.commit()
     db.refresh(latest_version)
     # TODO: ATBD has been published, generate and cache v1.0 PDF
+
+    _add_pdf_generation_to_background_tasks(
+        atbd=atbd, background_tasks=background_tasks
+    )
+
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=latest_version.major)
 
 
@@ -216,4 +246,12 @@ def upload_iamge(
     key = f"{atbd_id}/images/{image_key}"
 
     return s3_client().upload_fileobj(file.file, Bucket=config.BUCKET, Key=key)
+
+
+def _add_pdf_generation_to_background_tasks(
+    atbd: Atbds, background_tasks: BackgroundTasks
+):
+
+    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
+    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
 
