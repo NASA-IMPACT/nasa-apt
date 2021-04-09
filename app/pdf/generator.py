@@ -35,7 +35,6 @@ def process_reference(data):
 
 
 def generate_bibliography(references, filepath):
-    print("FILEPATH SAVING BIB TO : ", filepath)
     with open(filepath, "w") as bib_file:
         bib_file.write("\n".join(process_reference(r) for r in references))
 
@@ -259,7 +258,6 @@ def generate_latex(atbd: Atbds, filepath: str):
     generate_bibliography(
         atbd_version_data.get("publication_references", []), filepath=f"{filepath}.bib"
     )
-    # print("ATBD_VERSION_DATA: ", atbd_version_data)
     for section, info in SECTIONS.items():
         s = Section(info["title"])
         if info.get("subsection"):
@@ -285,7 +283,6 @@ def generate_latex(atbd: Atbds, filepath: str):
             parse(atbd_version_data[section], s)
 
     doc.append(Command("bibliographystyle", arguments="abbrv"))
-    print("BIB LOOKGIN FOR FILE AT: ", f"{filepath}.bib")
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
     return doc
 
@@ -301,7 +298,6 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
 
     latex_document = generate_latex(atbd, filepath)
-    # print("GENERATING LATEX, journal? ", journal)
     latex_document.generate_pdf(
         filepath=filepath,
         clean=True,
