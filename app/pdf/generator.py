@@ -9,6 +9,7 @@ from pylatex import (
     Section,
     Subsection,
     Subsubsection,
+    section,
     Itemize,
     Enumerate,
     Math,
@@ -18,7 +19,6 @@ from pylatex import (
 from app.db.models import Atbds
 from app.api.utils import s3_client
 from app.config import BUCKET
-from app.logs import logger
 
 
 def process_reference(data):
@@ -51,7 +51,16 @@ def reference(reference_id):
 def process_text(data):
     e = data["text"]
     if data.get("superscript"):
-        e = NoEscape(f"\\textsuperscript{{{e}}}")
+        # e = NoEscape(f"\\textsuperscript{{{e}}}")
+        e = f"\\textsuperscript{{{e}}}"
+    if data.get("subscript"):
+        print("SUBSCRIPTING NOW>>>")
+        # e = NoEscape(f"\\textsubscript{{{e}}}")
+        e = f"\\textsubscript{{{e}}}"
+    if data.get("underline"):
+        print("UNDERLINING>>>")
+        # e = NoEscape(f"\\underline{{{e}}}")
+        e = f"\\underline{{{e}}}"
     if data.get("italic"):
         e = utils.italic(e)
     if data.get("bold"):
@@ -70,6 +79,27 @@ def process_content(data):
         else:
             res.append(process_text(d))
     return res
+
+
+def process_data_access_url(data, doc):
+    for access_url in data:
+
+        with doc.create(Subsection("")):
+
+            with doc.create(
+                section.Paragraph(process_text({"text": "Access url:", "bold": True}))
+            ) as s:
+                s.append(hyperlink(access_url["url"], access_url["url"]))
+
+            with doc.create(
+                section.Paragraph(process_text({"text": "Description:", "bold": True}))
+            ) as s:
+                s.append(
+                    " ".join(
+                        process_text(c)
+                        for c in access_url["description"]["children"][0]["children"]
+                    )
+                )
 
 
 def process_algorithm_variables(data, doc):
@@ -130,9 +160,9 @@ def parse(data, doc=None):
         if data.get("type") == "p":
 
             if doc is None:
-                return " ".join(d for d in process_content(data["children"]))
+                return NoEscape(" ".join(d for d in process_content(data["children"])))
             for c in process_content(data["children"]):
-                doc.append(c)
+                doc.append(NoEscape(c))
             doc.append("\n")
 
         if data.get("type") == "ol":
@@ -144,7 +174,6 @@ def parse(data, doc=None):
                 parse(data["children"], doc)
 
         if data.get("type") == "li":
-
             doc.add_item(parse(data["children"][0], doc=None))
 
         if data.get("type") == "sub-section":
@@ -221,8 +250,8 @@ SECTIONS = {
         "title": "Scientific Theory Assumptions",
         "subsection": True,
     },
-    "mathemtical_theory": {"title": "Mathematical Theory", "subsection": True},
-    "mathemtical_theory_assumptions": {
+    "mathematical_theory": {"title": "Mathematical Theory", "subsection": True},
+    "mathematical_theory_assumptions": {
         "title": "Mathematical Theory Assumptions",
         "subsection": True,
     },
@@ -239,11 +268,17 @@ SECTIONS = {
     "performance_assessment_validation_methods": {
         "title": "Performance Assessment Validation Methods"
     },
+    "performance_assessment_validation_uncertainties": {
+        "title": "Performance Assessment Validation Uncertainties"
+    },
+    "performance_assessment_validation_errors": {
+        "title": "Performance Assessment Validation Errors"
+    },
     "data_access_input_data": {"title": "Data Access Input Data"},
     "data_access_output_data": {"title": "Data Access Output Data"},
     "data_access_related_urls": {"title": "Data Access Related URLs"},
-    "dicsussion": {"title": "Discussion"},
-    "acknowledgements": {"title": "Acknowledgements"},
+    "journal_dicsussion": {"title": "Discussion"},
+    "journal_acknowledgements": {"title": "Acknowledgements"},
     "contacts": {"title": "Contacts"},
 }
 
@@ -258,29 +293,43 @@ def generate_latex(atbd: Atbds, filepath: str):
     generate_bibliography(
         atbd_version_data.get("publication_references", []), filepath=f"{filepath}.bib"
     )
-    for section, info in SECTIONS.items():
+    for section_name, info in SECTIONS.items():
         s = Section(info["title"])
         if info.get("subsection"):
             s = Subsection(info["title"])
         with doc.create(s):
 
-            if not atbd_version_data.get(section):
+            if not atbd_version_data.get(section_name):
                 parse(CONTENT_UNAVAILABLE, s)
                 continue
 
-            if section in ["algorithm_input_variables", "algorithm_output_variables"]:
+            if section_name in [
+                "algorithm_input_variables",
+                "algorithm_output_variables",
+            ]:
 
-                process_algorithm_variables(atbd_version_data[section], doc)
+                process_algorithm_variables(atbd_version_data[section_name], doc)
                 continue
 
-            if (
-                isinstance(atbd_version_data[section], dict)
-                and "children" in atbd_version_data[section]
-            ):
-                parse(atbd_version_data[section]["children"], doc)
+            if section_name in [
+                "algorithm_implementations",
+                "data_access_input_data",
+                "data_access_output_data",
+                "data_access_related_urls",
+            ]:
+                process_data_access_url(atbd_version_data[section_name], doc)
                 continue
 
-            parse(atbd_version_data[section], s)
+            if isinstance(atbd_version_data[section_name], dict):
+                parse(
+                    atbd_version_data[section_name].get(
+                        "children", CONTENT_UNAVAILABLE
+                    ),
+                    s,
+                )
+                continue
+
+            parse(atbd_version_data[section_name], s)
 
     doc.append(Command("bibliographystyle", arguments="abbrv"))
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
