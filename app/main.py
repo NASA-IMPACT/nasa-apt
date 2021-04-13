@@ -38,8 +38,7 @@ app.include_router(api_router, prefix=config.API_VERSION_STR)
 
 # TODO: figure out if we want to use an event listener or directly index
 # after update operations directly in the API
-# TODO: figure out if this should be a separate lambda invocation,
-# or an asynchronous event, or something else
+# TODO: implement this using a background task on the update operation
 @event.listens_for(DbSession, "before_commit")
 def atbd_listener(session):
     # Add all ids to a set, to deduplicate ID from

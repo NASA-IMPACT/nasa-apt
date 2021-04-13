@@ -458,6 +458,7 @@ def test_publish_atbd_version(
     atbd_creation_input,
     authenticated_headers,
     mocked_event_listener,
+    s3_bucket,
 ):
     atbd = json.loads(
         test_client.post(
@@ -487,6 +488,7 @@ def test_create_new_atbd_version(
     atbd_creation_input,
     authenticated_headers,
     mocked_event_listener,
+    s3_bucket,
 ):
     atbd = json.loads(
         test_client.post(
@@ -535,6 +537,7 @@ def test_update_atbd_specific_version(
     atbd_creation_input,
     authenticated_headers,
     mocked_event_listener,
+    s3_bucket,
 ):
     atbd = json.loads(
         test_client.post(
@@ -599,14 +602,74 @@ def test_update_document(
             "/atbds", json=atbd_creation_input, headers=authenticated_headers
         ).content
     )
+    # TODO: test that this requests succeeded
     updated_atbd = json.loads(
         test_client.post(
             f"/atbds/{atbd['id']}/versions/latest",
             json={
                 "document": {
-                    "new_top_level_key": {
-                        "new_sub_level_key_1": "abc",
-                        "new_sub_level_key_2": "def",
+                    "algorithm_implementations": [
+                        {
+                            "url": "https://developmentseed.org",
+                            "description": {
+                                "children": [
+                                    {
+                                        "type": "p",
+                                        "children": [{"text": "This is our website"}],
+                                    }
+                                ]
+                            },
+                        }
+                    ]
+                }
+            },
+            headers=authenticated_headers,
+        ).content
+    )
+    [req] = db_session.execute(
+        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
+    )
+    assert req.document is not None
+
+    assert req.document["algorithm_implementations"] == [
+        {
+            "url": "https://developmentseed.org",
+            "description": {
+                "children": [
+                    {"type": "p", "children": [{"text": "This is our website"}],}
+                ]
+            },
+        }
+    ]
+    updated_atbd = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions/latest",
+            json={
+                "document": {
+                    "algorithm_implementations": [
+                        {
+                            "url": "https://developmentseed.org",
+                            "description": {
+                                "children": [
+                                    {
+                                        "type": "p",
+                                        "children": [{"text": "This is our website"}],
+                                    }
+                                ]
+                            },
+                        }
+                    ],
+                    "mathematical_theory_assumptions": {
+                        "children": [
+                            {
+                                "type": "p",
+                                "children": [
+                                    {"text": "There are no assumptions being made "},
+                                    {"text": "at the moment", "italic": True},
+                                    {"text": "."},
+                                ],
+                            }
+                        ]
                     },
                 }
             },
@@ -617,18 +680,50 @@ def test_update_document(
         f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
     )
     assert req.document is not None
-    assert "new_top_level_key" in req.document
-    assert req.document["new_top_level_key"] == {
-        "new_sub_level_key_1": "abc",
-        "new_sub_level_key_2": "def",
+    assert req.document["algorithm_implementations"] == [
+        {
+            "url": "https://developmentseed.org",
+            "description": {
+                "children": [
+                    {"type": "p", "children": [{"text": "This is our website"}],}
+                ]
+            },
+        }
+    ]
+    assert req.document["mathematical_theory_assumptions"] == {
+        "children": [
+            {
+                "type": "p",
+                "children": [
+                    {"text": "There are no assumptions being made "},
+                    {"text": "at the moment", "italic": True},
+                    {"text": "."},
+                ],
+            }
+        ]
     }
+
     updated_atbd = json.loads(
         test_client.post(
-            f"/atbds/{atbd['id']}/versions/latest",
+            f"/atbds/{atbd['id']}/versions/latest?overwrite=true",
             json={
                 "document": {
-                    "new_top_level_key": "Just a single string",
-                    "even_newer_top_level_key": "Just another string",
+                    "publication_references": [
+                        {
+                            "publication_reference_id": 1,
+                            "authors": "Dickens, Charles and Steinbeck, John",
+                            "title": "Example Reference",
+                            "series": "A",
+                            "edition": "3rd",
+                            "volume": "42ml",
+                            "issue": "ticket",
+                            "publication_place": "Boston",
+                            "publisher": "PenguinBooks",
+                            "pages": "189-198",
+                            "isbn": 123456789,
+                            "year": 1995,
+                        }
+                    ]
                 }
             },
             headers=authenticated_headers,
@@ -638,23 +733,24 @@ def test_update_document(
         f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
     )
     assert req.document is not None
-    assert req.document["new_top_level_key"] == "Just a single string"
-    assert req.document["even_newer_top_level_key"] == "Just another string"
-
-    updated_atbd = json.loads(
-        test_client.post(
-            f"/atbds/{atbd['id']}/versions/latest?overwrite=true",
-            json={"document": {"overwritten_top_level_key": "Just another string"}},
-            headers=authenticated_headers,
-        ).content
-    )
-    [req] = db_session.execute(
-        f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
-    )
-    assert req.document is not None
-    assert not req.document.get("new_top_level_key")
-    assert not req.document.get("even_newer_top_level_key")
-    assert req.document["overwritten_top_level_key"] == "Just another string"
+    assert not req.document.get("algorithm_implementations")
+    assert not req.document.get("mathematical_theory_assumptions")
+    assert req.document["publication_references"] == [
+        {
+            "publication_reference_id": 1,
+            "authors": "Dickens, Charles and Steinbeck, John",
+            "title": "Example Reference",
+            "series": "A",
+            "edition": "3rd",
+            "volume": "42ml",
+            "issue": "ticket",
+            "publication_place": "Boston",
+            "publisher": "PenguinBooks",
+            "pages": "189-198",
+            "isbn": 123456789,
+            "year": 1995,
+        }
+    ]
 
 
 def test_update_sections_completed(

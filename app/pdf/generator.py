@@ -21,6 +21,51 @@ from app.api.utils import s3_client
 from app.config import BUCKET
 
 
+SECTIONS = {
+    "introduction": {"title": "Introduction"},
+    "historical_perspective": {"title": "Historical Perspective"},
+    "algorithm_description": {"title": "Algorithm Description"},
+    "scientific_theory": {"title": "Scientific Theory", "subsection": True},
+    "scientific_theory_assumptions": {
+        "title": "Scientific Theory Assumptions",
+        "subsection": True,
+    },
+    "mathematical_theory": {"title": "Mathematical Theory", "subsection": True},
+    "mathematical_theory_assumptions": {
+        "title": "Mathematical Theory Assumptions",
+        "subsection": True,
+    },
+    "algorithm_input_variables": {
+        "title": "Algorithm Input Variables",
+        "subsection": True,
+    },
+    "algorithm_output_variables": {
+        "title": "Algorithm Output Variables",
+        "subsection": True,
+    },
+    "algorithm_implementations": {"title": "Algorithm Implementations"},
+    "algorithm_usage_constraints": {"title": "Algorithm Usage Constraints"},
+    "performance_assessment_validation_methods": {
+        "title": "Performance Assessment Validation Methods"
+    },
+    "performance_assessment_validation_uncertainties": {
+        "title": "Performance Assessment Validation Uncertainties"
+    },
+    "performance_assessment_validation_errors": {
+        "title": "Performance Assessment Validation Errors"
+    },
+    "data_access_input_data": {"title": "Data Access Input Data"},
+    "data_access_output_data": {"title": "Data Access Output Data"},
+    "data_access_related_urls": {"title": "Data Access Related URLs"},
+    "journal_dicsussion": {"title": "Discussion"},
+    "journal_acknowledgements": {"title": "Acknowledgements"},
+    "contacts": {"title": "Contacts"},
+}
+
+
+CONTENT_UNAVAILABLE = {"type": "p", "children": [{"text": "Content Unavailable"}]}
+
+
 def process_reference(data):
     reference_id = f"ref{data['publication_reference_id']}"
     reference = ""
@@ -41,31 +86,30 @@ def generate_bibliography(references, filepath):
 
 def hyperlink(url, text):
     text = utils.escape_latex(text)
-    return NoEscape(f"\href{{{url}}}{{{text}}} ")
+    return NoEscape(f"\\href{{{url}}}{{{text}}} ")
 
 
 def reference(reference_id):
     return NoEscape(f"\\cite{{ref{reference_id}}}")
 
 
-def process_text(data):
-    e = data["text"]
-    if data.get("superscript"):
-        # e = NoEscape(f"\\textsuperscript{{{e}}}")
-        e = f"\\textsuperscript{{{e}}}"
-    if data.get("subscript"):
-        print("SUBSCRIPTING NOW>>>")
-        # e = NoEscape(f"\\textsubscript{{{e}}}")
-        e = f"\\textsubscript{{{e}}}"
-    if data.get("underline"):
-        print("UNDERLINING>>>")
-        # e = NoEscape(f"\\underline{{{e}}}")
-        e = f"\\underline{{{e}}}"
-    if data.get("italic"):
-        e = utils.italic(e)
-    if data.get("bold"):
-        e = utils.bold(e)
+TEXT_WRAPPERS = {
+    "superscript": lambda e: f"\\textsuperscript{{{e}}}",
+    "subscript": lambda e: f"\\textsubscript{{{e}}}",
+    "underline": lambda e: f"\\underline{{{e}}}",
+    "italic": lambda e: utils.italic(e),
+    "bold": lambda e: utils.bold(e),
+}
 
+
+def process_text(data):
+    # Allows for wrapping text with multiple formatting options
+    # ie:  process_text({"bold": true, "italic": true, "text": ... })
+    # will return latex like `\bold{\italic{text}}`
+    e = data["text"]
+    for option, command in TEXT_WRAPPERS.items():
+        if data.get(option):
+            e = command(e)
     return e
 
 
@@ -81,25 +125,27 @@ def process_content(data):
     return res
 
 
-def process_data_access_url(data, doc):
-    for access_url in data:
+def process_data_access_url(access_url, doc):
+    with doc.create(
+        section.Paragraph(process_text({"text": "Access url:", "bold": True}))
+    ) as s:
+        s.append(hyperlink(access_url["url"], access_url["url"]))
 
-        with doc.create(Subsection("")):
-
-            with doc.create(
-                section.Paragraph(process_text({"text": "Access url:", "bold": True}))
-            ) as s:
-                s.append(hyperlink(access_url["url"], access_url["url"]))
-
-            with doc.create(
-                section.Paragraph(process_text({"text": "Description:", "bold": True}))
-            ) as s:
-                s.append(
-                    " ".join(
-                        process_text(c)
-                        for c in access_url["description"]["children"][0]["children"]
-                    )
+        with doc.create(
+            section.Paragraph(process_text({"text": "Description:", "bold": True}))
+        ) as s:
+            s.append(
+                " ".join(
+                    process_text(c)
+                    for c in access_url["description"]["children"][0]["children"]
                 )
+            )
+
+
+def process_data_access_urls(data, doc):
+    for access_url in data:
+        with doc.create(Subsection("")):
+            process_data_access_url(access_url, doc)
 
 
 def process_algorithm_variables(data, doc):
@@ -157,12 +203,19 @@ def parse(data, doc=None):
         # )
         # To ensure the `p` item is returned and not appended to the doc,
         # pass `None` as the `doc` parameter value when calling `parse()`
+        # The output is wrapped in a NoEscape command, to ensure that when the
+        # output text is appended to the latex document, latex does not interpret
+        # commands as full-text and escape them: (eg: ensure that `\bold{sometext}`
+        # does not become printed as `\textbackslashbol\{sometext\}` in the rendered
+        # pdf)
         if data.get("type") == "p":
 
             if doc is None:
                 return NoEscape(" ".join(d for d in process_content(data["children"])))
+
             for c in process_content(data["children"]):
                 doc.append(NoEscape(c))
+
             doc.append("\n")
 
         if data.get("type") == "ol":
@@ -201,8 +254,10 @@ def setup_document(atbd: Atbds, filepath: str):
     doc = Document(
         default_filepath=filepath,
         documentclass=Command("documentclass", options=["12pt"], arguments="article",),
+        # font-encoding
         fontenc="T1",
         inputenc="utf8",
+        # use Latin-Math Modern pacakge for char support
         lmodern=True,
         textcomp=True,
         page_numbers=True,
@@ -239,51 +294,6 @@ def setup_document(atbd: Atbds, filepath: str):
     doc.append(Command("maketitle"))
     doc.append(Command("tableofcontents"))
     return doc
-
-
-SECTIONS = {
-    "introduction": {"title": "Introduction"},
-    "historical_perspective": {"title": "Historical Perspective"},
-    "algorithm_description": {"title": "Algorithm Description"},
-    "scientific_theory": {"title": "Scientific Theory", "subsection": True},
-    "scientific_theory_assumptions": {
-        "title": "Scientific Theory Assumptions",
-        "subsection": True,
-    },
-    "mathematical_theory": {"title": "Mathematical Theory", "subsection": True},
-    "mathematical_theory_assumptions": {
-        "title": "Mathematical Theory Assumptions",
-        "subsection": True,
-    },
-    "algorithm_input_variables": {
-        "title": "Algorithm Input Variables",
-        "subsection": True,
-    },
-    "algorithm_output_variables": {
-        "title": "Algorithm Output Variables",
-        "subsection": True,
-    },
-    "algorithm_implementations": {"title": "Algorithm Implementations"},
-    "algorithm_usage_constraints": {"title": "Algorithm Usage Constraints"},
-    "performance_assessment_validation_methods": {
-        "title": "Performance Assessment Validation Methods"
-    },
-    "performance_assessment_validation_uncertainties": {
-        "title": "Performance Assessment Validation Uncertainties"
-    },
-    "performance_assessment_validation_errors": {
-        "title": "Performance Assessment Validation Errors"
-    },
-    "data_access_input_data": {"title": "Data Access Input Data"},
-    "data_access_output_data": {"title": "Data Access Output Data"},
-    "data_access_related_urls": {"title": "Data Access Related URLs"},
-    "journal_dicsussion": {"title": "Discussion"},
-    "journal_acknowledgements": {"title": "Acknowledgements"},
-    "contacts": {"title": "Contacts"},
-}
-
-
-CONTENT_UNAVAILABLE = {"type": "p", "children": [{"text": "Content Unavailable"}]}
 
 
 def generate_latex(atbd: Atbds, filepath: str):

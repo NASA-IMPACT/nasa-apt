@@ -2,6 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, validator
 from typing import Optional, Union, Dict, Any
 import enum
+from app.schemas.document import Document
 
 
 class StatusEnum(enum.Enum):
@@ -37,7 +38,7 @@ class SummaryOutput(OutputBase):
 
 
 class FullOutput(SummaryOutput):
-    document: Optional[dict]
+    document: Optional[Document]
     sections_completed: Optional[dict]
     changelog: Optional[str]
     doi: Optional[str]
@@ -55,7 +56,7 @@ class Lookup(BaseModel):
 
 class Update(BaseModel):
     minor: Optional[int]
-    document: Optional[dict]
+    document: Optional[Document]
     sections_completed: Optional[dict]
     changelog: Optional[str]
     doi: Optional[str]
