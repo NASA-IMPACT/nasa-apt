@@ -197,7 +197,7 @@ def parse(data, doc=None):
                 doc.add_caption(data["children"][0]["text"])
 
 
-def setup_document(atbd: Atbds, filepath: str):
+def setup_document(atbd: Atbds, filepath: str, journal: bool = False):
     doc = Document(
         default_filepath=filepath,
         documentclass=Command("documentclass", options=["12pt"], arguments="article",),
@@ -219,17 +219,18 @@ def setup_document(atbd: Atbds, filepath: str):
     ]:
         doc.packages.append(Package(p))
 
-    doc.packages.append(Package("setspace"))
-    doc.preamble.append(Command("doublespacing"))
+    if journal:
+        doc.packages.append(Package("setspace"))
+        doc.preamble.append(Command("doublespacing"))
 
-    doc.packages.append(Package("lineno"))
-    doc.preamble.append(Command("linenumbers"))
+        doc.packages.append(Package("lineno"))
+        doc.preamble.append(Command("linenumbers"))
 
     doc.packages.append(Package("hyperref"))
     doc.preamble.append(
         Command(
             "hypersetup",
-            arguments="colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue",
+            arguments=f"colorlinks={str(journal).lower()},linkcolor=blue,filecolor=magenta,urlcolor=blue",
         )
     )
 
@@ -237,7 +238,10 @@ def setup_document(atbd: Atbds, filepath: str):
     doc.preamble.append(Command("date", arguments=NoEscape("\\today")))
 
     doc.append(Command("maketitle"))
-    doc.append(Command("tableofcontents"))
+
+    if not journal:
+        doc.append(Command("tableofcontents"))
+
     return doc
 
 
@@ -286,9 +290,9 @@ SECTIONS = {
 CONTENT_UNAVAILABLE = {"type": "p", "children": [{"text": "Content Unavailable"}]}
 
 
-def generate_latex(atbd: Atbds, filepath: str):
+def generate_latex(atbd: Atbds, filepath: str, journal: bool = False):
     atbd_version_data = atbd.versions[0].document
-    doc = setup_document(atbd, filepath)
+    doc = setup_document(atbd, filepath, journal=journal)
 
     generate_bibliography(
         atbd_version_data.get("publication_references", []), filepath=f"{filepath}.bib"
@@ -320,6 +324,12 @@ def generate_latex(atbd: Atbds, filepath: str):
                 process_data_access_url(atbd_version_data[section_name], doc)
                 continue
 
+            if (
+                section_name in ["journal_acknowledgements", "journal_dicsussion"]
+                and not journal
+            ):
+                continue
+
             if isinstance(atbd_version_data[section_name], dict):
                 parse(
                     atbd_version_data[section_name].get(
@@ -330,6 +340,8 @@ def generate_latex(atbd: Atbds, filepath: str):
                 continue
 
             parse(atbd_version_data[section_name], s)
+
+            # TODO: process contacts
 
     doc.append(Command("bibliographystyle", arguments="abbrv"))
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
@@ -346,7 +358,7 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     # create a folder for the pdf/latex files to be stored in
     pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
 
-    latex_document = generate_latex(atbd, filepath)
+    latex_document = generate_latex(atbd, filepath, journal=journal)
     latex_document.generate_pdf(
         filepath=filepath,
         clean=True,
