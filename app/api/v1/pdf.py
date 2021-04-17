@@ -1,6 +1,6 @@
 from app.api.utils import get_major_from_version_string, get_db, s3_client
 from app.crud.atbds import crud_atbds
-from app.db.models import Atbds
+from app.db.models import Atbds, AtbdVersionsContactsAssociation, Contacts, AtbdVersions
 from app.pdf.generator import generate_pdf
 from app.config import BUCKET
 import os
@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from tempfile import TemporaryDirectory
 from typing import Type
 from app.logs import logger
+from sqlalchemy import and_
 
 router = APIRouter()
 
@@ -67,7 +68,7 @@ def get_pdf(
 
     pdf_key = generate_pdf_key(atbd, minor=minor, journal=journal)
 
-    if minor:
+    if minor is not None:
         print("FETCHING FROM S3")
         # TODO: pdf_key contains the lastest minor version - which gets set
         # as the filename, even though a different minor version was requested

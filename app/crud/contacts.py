@@ -4,6 +4,7 @@ from app.schemas.contacts import Output, Create, Update
 
 
 class CRUDContacts(CRUDBase[Contacts, Output, Create, Update]):
+
     pass
 
 

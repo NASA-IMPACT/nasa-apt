@@ -16,13 +16,40 @@ from pylatex import (
     Figure,
     utils,
 )
+from collections import OrderedDict
 from app.db.models import Atbds
 from app.api.utils import s3_client
 from app.config import BUCKET
 
 
+def process_contacts(contacts, doc):
+    for contact in contacts:
+        with doc.create(Subsection("Contacts: ")) as s:
+            s.append(
+                NoEscape(
+                    " ".join(
+                        contact.get(k, "")
+                        for k in ["first_name", "middle_name", "last_name"]
+                    )
+                )
+            )
+
+            if contact.get("uuid"):
+                with s.create(section.Paragraph("Uuid:")) as ss:
+                    ss.append(NoEscape(contact["uuid"]))
+
+            if contact.get("url"):
+                with s.create(section.Paragraph("Url:")) as ss:
+                    ss.append(NoEscape(contact["url"]))
+
+            if contact.get("mechanisms"):
+                with s.create(Subsubsection("Contact Mechanisms:")) as ss:
+                    for mechanism in contact["mechanisms"]:
+                        ss.append(NoEscape(mechanism["mechanism_value"]))
+
+
 def process_reference(data):
-    reference_id = f"ref{data['publication_reference_id']}"
+    reference_id = f"ref{data['id']}"
     reference = ""
     for e in ["title", "pages", "publisher", "year", "volume"]:
         if data.get(e):
@@ -41,7 +68,7 @@ def generate_bibliography(references, filepath):
 
 def hyperlink(url, text):
     text = utils.escape_latex(text)
-    return NoEscape(f"\href{{{url}}}{{{text}}} ")
+    return NoEscape(f"\\href{{{url}}}{{{text}}}")
 
 
 def reference(reference_id):
@@ -50,19 +77,20 @@ def reference(reference_id):
 
 def process_text(data):
     e = data["text"]
+
+    # apply all formatting options as needed
     if data.get("superscript"):
-        # e = NoEscape(f"\\textsuperscript{{{e}}}")
         e = f"\\textsuperscript{{{e}}}"
+
     if data.get("subscript"):
-        print("SUBSCRIPTING NOW>>>")
-        # e = NoEscape(f"\\textsubscript{{{e}}}")
         e = f"\\textsubscript{{{e}}}"
+
     if data.get("underline"):
-        print("UNDERLINING>>>")
-        # e = NoEscape(f"\\underline{{{e}}}")
         e = f"\\underline{{{e}}}"
+
     if data.get("italic"):
         e = utils.italic(e)
+
     if data.get("bold"):
         e = utils.bold(e)
 
@@ -81,19 +109,15 @@ def process_content(data):
     return res
 
 
-def process_data_access_url(data, doc):
+def process_data_access_urls(data, doc):
     for access_url in data:
 
         with doc.create(Subsection("")):
 
-            with doc.create(
-                section.Paragraph(process_text({"text": "Access url:", "bold": True}))
-            ) as s:
+            with doc.create(section.Paragraph("Access url:")) as s:
                 s.append(hyperlink(access_url["url"], access_url["url"]))
 
-            with doc.create(
-                section.Paragraph(process_text({"text": "Description:", "bold": True}))
-            ) as s:
+            with doc.create(section.Paragraph("Description:")) as s:
                 s.append(
                     " ".join(
                         process_text(c)
@@ -103,7 +127,6 @@ def process_data_access_url(data, doc):
 
 
 def process_algorithm_variables(data, doc):
-    #
     parsed_data = [
         {
             # process_text applies any subscript, superscript, bold, etc to the data
@@ -120,13 +143,6 @@ def process_algorithm_variables(data, doc):
         parsed_data, orient="columns"
     )
 
-    # TODO: figure out how to apply the WYSIWYG parsing to the algorithm variable list
-    # algorithm_variables_dataframe["long_name"] = algorithm_variables_dataframe[
-    #     "long_name"
-    # ].apply(process_content)
-    # algorithm_variables_dataframe["unit"] = algorithm_variables_dataframe["unit"].apply(
-    #     process_content
-    # )
     # TODO: make this dynamic, instead of based on the number of pixels in a page
     # page width is 426 pts - divide into 3/4 and 1/4 sections for algorithm name and units
     column_format = f"p{{{int(426/4)*3}pt}} p{{{int(426/4)}pt}}"
@@ -165,14 +181,16 @@ def parse(data, doc=None):
                 doc.append(NoEscape(c))
             doc.append("\n")
 
+        # ordered list
         if data.get("type") == "ol":
             with doc.create(Enumerate()) as doc:
                 parse(data["children"], doc)
 
+        # un-ordered list
         if data.get("type") == "ul":
             with doc.create(Itemize()) as doc:
                 parse(data["children"], doc)
-
+        # list item
         if data.get("type") == "li":
             doc.add_item(parse(data["children"][0], doc=None))
 
@@ -186,6 +204,8 @@ def parse(data, doc=None):
             )
 
         if data.get("type") == "img":
+            # lambda execution environment only allows for files to
+            # written to `/tmp` directory
             s3_client().download_file(
                 Bucket=BUCKET,
                 Key=data["objectKey"],
@@ -245,47 +265,53 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False):
     return doc
 
 
-SECTIONS = {
-    "introduction": {"title": "Introduction"},
-    "historical_perspective": {"title": "Historical Perspective"},
-    "algorithm_description": {"title": "Algorithm Description"},
-    "scientific_theory": {"title": "Scientific Theory", "subsection": True},
-    "scientific_theory_assumptions": {
-        "title": "Scientific Theory Assumptions",
-        "subsection": True,
-    },
-    "mathematical_theory": {"title": "Mathematical Theory", "subsection": True},
-    "mathematical_theory_assumptions": {
-        "title": "Mathematical Theory Assumptions",
-        "subsection": True,
-    },
-    "algorithm_input_variables": {
-        "title": "Algorithm Input Variables",
-        "subsection": True,
-    },
-    "algorithm_output_variables": {
-        "title": "Algorithm Output Variables",
-        "subsection": True,
-    },
-    "algorithm_implementations": {"title": "Algorithm Implementations"},
-    "algorithm_usage_constraints": {"title": "Algorithm Usage Constraints"},
-    "performance_assessment_validation_methods": {
-        "title": "Performance Assessment Validation Methods"
-    },
-    "performance_assessment_validation_uncertainties": {
-        "title": "Performance Assessment Validation Uncertainties"
-    },
-    "performance_assessment_validation_errors": {
-        "title": "Performance Assessment Validation Errors"
-    },
-    "data_access_input_data": {"title": "Data Access Input Data"},
-    "data_access_output_data": {"title": "Data Access Output Data"},
-    "data_access_related_urls": {"title": "Data Access Related URLs"},
-    "journal_dicsussion": {"title": "Discussion"},
-    "journal_acknowledgements": {"title": "Acknowledgements"},
-    "contacts": {"title": "Contacts"},
-}
-
+# OrderedDict ensures that the sections will be parsed in the same order
+# they are defined in
+SECTIONS = OrderedDict(
+    [
+        ("introduction", {"title": "Introduction"}),
+        ("historical_perspective", {"title": "Historical Perspective"}),
+        ("algorithm_description", {"title": "Algorithm Description"}),
+        ("scientific_theory", {"title": "Scientific Theory", "subsection": True}),
+        (
+            "scientific_theory_assumptions",
+            {"title": "Scientific Theory Assumptions", "subsubsection": True,},
+        ),
+        ("mathematical_theory", {"title": "Mathematical Theory", "subsection": True}),
+        (
+            "mathematical_theory_assumptions",
+            {"title": "Mathematical Theory Assumptions", "subsubsection": True,},
+        ),
+        (
+            "algorithm_input_variables",
+            {"title": "Algorithm Input Variables", "subsection": True,},
+        ),
+        (
+            "algorithm_output_variables",
+            {"title": "Algorithm Output Variables", "subsection": True,},
+        ),
+        ("algorithm_implementations", {"title": "Algorithm Implementations"}),
+        ("algorithm_usage_constraints", {"title": "Algorithm Usage Constraints"}),
+        (
+            "performance_assessment_validation_methods",
+            {"title": "Performance Assessment Validation Methods"},
+        ),
+        (
+            "performance_assessment_validation_uncertainties",
+            {"title": "Performance Assessment Validation Uncertainties"},
+        ),
+        (
+            "performance_assessment_validation_errors",
+            {"title": "Performance Assessment Validation Errors"},
+        ),
+        ("data_access_input_data", {"title": "Data Access Input Data"}),
+        ("data_access_output_data", {"title": "Data Access Output Data"}),
+        ("data_access_related_urls", {"title": "Data Access Related URLs"}),
+        ("journal_dicsussion", {"title": "Discussion"}),
+        ("journal_acknowledgements", {"title": "Acknowledgements"}),
+        ("contacts", {"title": "Contacts"}),
+    ]
+)
 
 CONTENT_UNAVAILABLE = {"type": "p", "children": [{"text": "Content Unavailable"}]}
 
@@ -297,10 +323,16 @@ def generate_latex(atbd: Atbds, filepath: str, journal: bool = False):
     generate_bibliography(
         atbd_version_data.get("publication_references", []), filepath=f"{filepath}.bib"
     )
+
     for section_name, info in SECTIONS.items():
         s = Section(info["title"])
+
         if info.get("subsection"):
             s = Subsection(info["title"])
+
+        if info.get("subsubsection"):
+            s = Subsubsection(info["title"])
+
         with doc.create(s):
 
             if not atbd_version_data.get(section_name):
@@ -321,9 +353,14 @@ def generate_latex(atbd: Atbds, filepath: str, journal: bool = False):
                 "data_access_output_data",
                 "data_access_related_urls",
             ]:
-                process_data_access_url(atbd_version_data[section_name], doc)
+                process_data_access_urls(atbd_version_data[section_name], doc)
                 continue
 
+            if section_name == "contacts":
+                process_contacts(atbd_version_data[section_name], doc)
+
+            # Journal Acknowledgements and Journal Discussion are only included in
+            # Journal type pdfs
             if (
                 section_name in ["journal_acknowledgements", "journal_dicsussion"]
                 and not journal
@@ -340,8 +377,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal: bool = False):
                 continue
 
             parse(atbd_version_data[section_name], s)
-
-            # TODO: process contacts
 
     doc.append(Command("bibliographystyle", arguments="abbrv"))
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))

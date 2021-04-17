@@ -1,6 +1,6 @@
 from app.crud.base import CRUDBase
 from app.crud import utils
-from app.db.models import Atbds, AtbdVersions
+from app.db.models import Atbds, AtbdVersions, AtbdVersionsContactsAssociation
 from app.db.db_session import DbSession
 from app.schemas.atbds import FullOutput, Create, Update
 from sqlalchemy import exc, column, select, func, orm

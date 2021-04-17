@@ -1,6 +1,7 @@
 from datetime import datetime
+from app.schemas import contacts
 from pydantic import BaseModel, validator
-from typing import Optional, Union, Dict, Any
+from typing import Optional, Union, Dict, Any, List
 import enum
 
 
@@ -22,7 +23,7 @@ class OutputBase(BaseModel):
     last_updated_at: datetime
 
     class Config:
-        title = "Atbd"
+        title = "AtbdVersion"
         orm_mode = True
 
 
@@ -30,18 +31,33 @@ class SummaryOutput(OutputBase):
     major: int
     minor: int
     version: Optional[str]
+    citation: Optional[dict]
+    changelog: Optional[dict]
 
     @validator("version", always=True)
     def generate_semver(cls, v, values) -> str:
         return f"v{values['major']}.{values['minor']}"
 
 
+class ContactLink(BaseModel):
+    contact: contacts.Output
+    roles: str
+
+    @validator("roles")
+    def format_contact_mechanisms(cls, v):
+
+        return [i.strip('\\"(){}') for i in v.split(",")]
+
+    class Config:
+        title = "ContactsLink"
+        orm_mode = True
+
+
 class FullOutput(SummaryOutput):
     document: Optional[dict]
     sections_completed: Optional[dict]
-    changelog: Optional[str]
     doi: Optional[str]
-    citation: Optional[dict]
+    contacts_link: Optional[List[ContactLink]]
 
 
 class Create(BaseModel):
@@ -53,6 +69,17 @@ class Lookup(BaseModel):
     major: int
 
 
+# TODO; role should be enum
+class Contact(BaseModel):
+    id: int
+    roles: List[str]
+
+    @validator("roles")
+    def format_roles(cls, v):
+        s = ",".join(i for i in v)
+        return f"{{{s}}}"
+
+
 class Update(BaseModel):
     minor: Optional[int]
     document: Optional[dict]
@@ -61,6 +88,7 @@ class Update(BaseModel):
     doi: Optional[str]
     citation: Optional[dict]
     status: Optional[str]
+    contacts: Optional[List[Contact]]
 
     @validator("document", always=True)
     def ensure_either_minor_or_document(

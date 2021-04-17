@@ -692,7 +692,7 @@ atbd_data = {
         ],
         "publication_references": [
             {
-                "publication_reference_id": 1,
+                "id": 1,
                 "authors": "Charles Dickens,  John Steinbeck",
                 "title": "Example Reference",
                 "series": "A",

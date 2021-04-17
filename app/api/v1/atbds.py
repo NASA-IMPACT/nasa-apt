@@ -12,7 +12,7 @@ from app.api.v1.pdf import save_pdf_to_s3
 from app.auth.saml import User
 from app.crud.atbds import crud_atbds
 from app.crud.versions import crud_versions
-from app.db.models import Atbds
+from app.db.models import Atbds, AtbdVersionsContactsAssociation
 from sqlalchemy import exc
 from fastapi import (
     APIRouter,
@@ -139,6 +139,24 @@ def update_atbd_version(
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     [version] = atbd.versions
+
+    if version_input.contacts and len(version_input.contacts):
+        for contact in version_input.contacts:
+            db.add(
+                AtbdVersionsContactsAssociation(
+                    atbd_id=atbd.id,
+                    major=version.major,
+                    contact_id=contact.id,
+                    roles=contact.roles,
+                )
+            )
+
+    # # TODO: get this contact info into the PDF
+    # # TODO: make this contact link info updateable (add/remove contact from version)
+    # for c in version.contacts_link:
+    #     print(c.contact_id)
+    #     print(c.roles)
+
     if version_input.minor and version.status != "Published":
         raise HTTPException(
             status_code=400,
@@ -165,6 +183,7 @@ def update_atbd_version(
     version.last_updated_by = user["user"]
     version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     crud_versions.update(db=db, db_obj=version, obj_in=version_input)
+    [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major).versions
 
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
 

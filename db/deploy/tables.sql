@@ -41,8 +41,7 @@ CREATE TABLE apt.contacts(
  last_name VARCHAR (1024) NOT NULL,
  uuid VARCHAR (1024),
  url VARCHAR (1024),
- mechanisms apt.contact_mechanism[],
- roles apt.e_contact_role_type[]
+ mechanisms apt.contact_mechanism []
 );
 CREATE TABLE apt.atbds(
   id serial PRIMARY KEY,
@@ -74,5 +73,13 @@ CREATE TABLE apt.atbd_versions(
     changelog VARCHAR,
     doi VARCHAR(1024),
     citation JSON default '{}'
+);
+CREATE TABLE apt.atbd_versions_contacts(
+  atbd_id INTEGER NOT NULL,
+  major INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, major) REFERENCES apt.atbd_versions(atbd_id, major) ON DELETE CASCADE,
+  contact_id INTEGER NOT NULL,
+  FOREIGN KEY (contact_id) REFERENCES apt.contacts(id),
+  roles apt.e_contact_role_type[] 
 );
 COMMIT;

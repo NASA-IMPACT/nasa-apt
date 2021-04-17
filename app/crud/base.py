@@ -44,6 +44,11 @@ class CRUDBase(
     def get_multi(
         self, db_session: Session, *, filters={}, skip=0, limit=100
     ) -> List[ModelType]:
+        print(
+            "DB QUERY: ",
+            db_session.query(self.model).filter_by(**filters).offset(skip).limit(limit),
+        )
+
         return (
             db_session.query(self.model)
             .filter_by(**filters)
