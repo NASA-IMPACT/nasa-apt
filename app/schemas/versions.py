@@ -3,6 +3,7 @@ from app.schemas import contacts
 from pydantic import BaseModel, validator
 from typing import Optional, Union, Dict, Any, List
 import enum
+from app.schemas.document import Document
 
 
 class StatusEnum(enum.Enum):
@@ -54,7 +55,7 @@ class ContactLink(BaseModel):
 
 
 class FullOutput(SummaryOutput):
-    document: Optional[dict]
+    document: Optional[Document]
     sections_completed: Optional[dict]
     doi: Optional[str]
     contacts_link: Optional[List[ContactLink]]
@@ -82,7 +83,7 @@ class Contact(BaseModel):
 
 class Update(BaseModel):
     minor: Optional[int]
-    document: Optional[dict]
+    document: Optional[Document]
     sections_completed: Optional[dict]
     changelog: Optional[str]
     doi: Optional[str]

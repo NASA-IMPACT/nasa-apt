@@ -166,13 +166,12 @@ def update_atbd_version(
     if version_input.minor == version.minor + 1:
         # A new version has been created - generate a cache a PDF for both the regular
         # PDF format, and the journal PDF format
-        print("ADDED PDF generation to background tasks")
         _add_pdf_generation_to_background_tasks(
             atbd=atbd, background_tasks=background_tasks
         )
 
     if version_input.document and not overwrite:
-        version_input.document = {**version.document, **version_input.document}
+        version_input.document = {**version.document, **version_input.document.dict()}
 
     if version_input.sections_completed and not overwrite:
         version_input.sections_completed = {
@@ -183,7 +182,6 @@ def update_atbd_version(
     version.last_updated_by = user["user"]
     version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     crud_versions.update(db=db, db_obj=version, obj_in=version_input)
-    [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major).versions
 
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
 
@@ -197,6 +195,11 @@ def delete_atbd_version(
 ):
     major, _ = get_major_from_version_string(version)
     [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
+    if version.status == "Published":
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete an atbd version with status `Published`",
+        )
     db.delete(version)
     db.commit()
     return {}

@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import os
 import boto3
 import json
-from moto import mock_secretsmanager
+from moto import mock_secretsmanager, mock_s3
 import factory
 import faker
 import logging
@@ -94,13 +94,26 @@ def db_session(test_db_engine, secrets):
     session.close()
 
 
-@mock_secretsmanager
 @pytest.fixture
 def test_client(db_session):
 
     from app.main import app
 
     yield TestClient(app)
+
+
+@mock_s3
+@pytest.fixture
+def s3_bucket(monkeysession, s3_client):
+    from app.config import BUCKET
+
+    yield s3_client.create_bucket(Bucket=BUCKET)
+
+
+@pytest.fixture
+def s3_client(monkeysession):
+    with mock_s3():
+        yield boto3.client("s3", region_name="us-east-1")
 
 
 @pytest.fixture
