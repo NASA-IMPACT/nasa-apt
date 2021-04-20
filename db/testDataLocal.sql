@@ -428,7 +428,7 @@ VALUES
   },
   "publication_references": [
     {
-      "id": 1,
+      "id": "1",
       "authors": "Dickens, Charles and Steinbeck, John",
       "title": "Example Reference",
       "series": "A",
@@ -438,8 +438,8 @@ VALUES
       "publication_place": "Boston",
       "publisher": "PenguinBooks",
       "pages": "189-198",
-      "isbn": 123456789,
-      "year": 1995
+      "isbn": "123456789",
+      "year": "1995"
     }
   ]
 }', '{
@@ -857,7 +857,7 @@ VALUES
   },
   "publication_references": [
     {
-      "id": 1,
+      "id": "1",
       "authors": "Dickens, Charles and Steinbeck, John",
       "title": "Example Reference",
       "series": "A",
@@ -867,8 +867,8 @@ VALUES
       "publication_place": "Boston",
       "publisher": "PenguinBooks",
       "pages": "189-198",
-      "isbn": 123456789,
-      "year": 1995
+      "isbn": "123456789",
+      "year": "1995"
     }
   ]
 }', '{
