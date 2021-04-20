@@ -22,7 +22,7 @@ from app.config import BUCKET
 
 
 def process_reference(data):
-    reference_id = f"ref{data['publication_reference_id']}"
+    reference_id = f"ref{data['id']}"
     reference = ""
     for e in ["title", "pages", "publisher", "year", "volume"]:
         if data.get(e):
