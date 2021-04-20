@@ -1,9 +1,11 @@
 INSERT INTO contacts
   (first_name, last_name, mechanisms)
 -- SELECT 'Leonardo', 'Davinci', '{ "(\"Email\",\"test@email.com\")" }'
-SELECT 'Leonardo', 'Davinci', ARRAY[row('Email', 'test@email.com'), row('Twitter', '@test_handle')]::contact_mechanism[]
+SELECT 'Leonardo', 'Davinci', ARRAY[row('Email', 'test@email.com'), row('Twitter', '@test_handle')]
+::contact_mechanism[]
 WHERE 
-    NOT EXISTS(
+    NOT EXISTS
+(
         SELECT first_name, last_name, mechanisms
 FROM contacts
 WHERE first_name = 'Leonardo' AND last_name = 'Davinci'
@@ -11,9 +13,11 @@ WHERE first_name = 'Leonardo' AND last_name = 'Davinci'
 INSERT INTO contacts
   (first_name, last_name, mechanisms)
 -- SELECT 'Gregor', 'Mendel', '{ "(\"Mobile\", \"1 (234) 567 - 8910\")" }'
-SELECT 'Gregor', 'Mendel', ARRAY[row('Mobile', '1(234)567-8910')]::contact_mechanism[]
+SELECT 'Gregor', 'Mendel', ARRAY[row('Mobile', '1(234)567-8910')]
+::contact_mechanism[]
 WHERE 
-    NOT EXISTS(
+    NOT EXISTS
+(
         SELECT first_name, last_name, mechanisms
 FROM contacts
 WHERE first_name = 'Gregor' AND last_name = 'Mendel'
@@ -475,19 +479,10 @@ VALUES
 }',
     'Published');
 
--- TODO: 
--- add the following malformed data to the atbd document 
--- and implement gracefull error handling
---  {
---       "url": "https://google.com",
---       "description": {
---         "invalid": "this will be invalid"
---       }
---     }
 INSERT INTO atbd_versions
   (atbd_id, created_by, last_updated_by, major, minor, document, citation)
 VALUES
-  (1, 'LeoThomas123', 'LeoThomas123', 2, 0, '{
+  (1, 'LeoThomas123', 'LeoThomas123', 2, 1, '{
   "introduction": null,
   "historical_perspective": null,
   "mathematical_theory": {
@@ -938,13 +933,13 @@ INSERT INTO atbd_versions_contacts
   (atbd_id, major, contact_id, roles)
 VALUES
   (
---    1, 1, 1, '{ "Science contact", "Metadata author" }'
-    1,1,1, ARRAY['Science contact', 'Metadata author']::e_contact_role_type[]    
+    --    1, 1, 1, '{ "Science contact", "Metadata author" }'
+    1, 1, 1, ARRAY['Science contact', 'Metadata author']::e_contact_role_type[]    
 );
 INSERT INTO atbd_versions_contacts
   (atbd_id, major, contact_id, roles)
 VALUES
   (
---    1, 2, 2, '{ 'Investigator' }'
-    1,2,2, ARRAY['Investigator']::e_contact_role_type[]
+    --    1, 2, 2, '{ 'Investigator' }'
+    1, 2, 2, ARRAY['Investigator']::e_contact_role_type[]
 );
