@@ -222,7 +222,7 @@ Resources:
       AllocatedStorage: '5'
       DBInstanceClass: db.t2.small
       Engine: Postgres
-      EngineVersion: '11.1'
+      EngineVersion: '11.10'
       PubliclyAccessible: true
       VPCSecurityGroups:
         - !Ref FargateContainerSecurityGroup

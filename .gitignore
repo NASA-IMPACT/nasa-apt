@@ -4,7 +4,6 @@
 ecs/tex/Misc Test Files
 .idea
 venv
-.env
 .env*
 .resources
 .vscode
