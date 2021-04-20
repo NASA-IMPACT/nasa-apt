@@ -71,7 +71,7 @@ class WysiwygContent(BaseModel):
 
 
 class PublicationReference(BaseModel):
-    publication_reference_id: int
+    id: int
     authors: Optional[str]
     title: Optional[str]
     series: Optional[str]
