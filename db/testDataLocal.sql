@@ -237,36 +237,14 @@ VALUES
   "algorithm_implementations": [
     {
       "url": "https://developmentseed.org",
-      "description": {
-        "children": [
-          {
-            "type": "p",
-            "children": [
-              {
-                "text": "This is our website"
-              }
-            ]
-          }
-        ]
-      }
+      "description": "This is our website"
     }
   ],
   "data_access_input_data": [],
   "data_access_output_data": [
     {
       "url": "https://youtube.com",
-      "description": {
-        "children": [
-          {
-            "type": "p",
-            "children": [
-              {
-                "text": "This is basically a link to youtube"
-              }
-            ]
-          }
-        ]
-      }
+      "description": "This is basically a link to youtube"
     }
   ],
   "data_access_related_urls": [],
@@ -688,36 +666,14 @@ VALUES
   "algorithm_implementations": [
     {
       "url": "https://developmentseed.org",
-      "description": {
-        "children": [
-          {
-            "type": "p",
-            "children": [
-              {
-                "text": "This is our website"
-              }
-            ]
-          }
-        ]
-      }
+      "description": "This is our website"
     }
   ],
   "data_access_input_data": [],
   "data_access_output_data": [
     {
       "url": "https://youtube.com",
-      "description": {
-        "children": [
-          {
-            "type": "p",
-            "children": [
-              {
-                "text": "This is basically a link to youtube"
-              }
-            ]
-          }
-        ]
-      }
+      "description": "This is basically a link to youtube"
     }
   ],
   "data_access_related_urls": [],

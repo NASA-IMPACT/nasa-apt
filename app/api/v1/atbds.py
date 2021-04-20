@@ -116,11 +116,6 @@ def version_exists(atbd_id: str, version: str, db: DbSession = Depends(get_db)):
 def get_version(atbd_id: str, version: str, db=Depends(get_db)):
 
     major, _ = get_major_from_version_string(version)
-    print(
-        crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
-        .versions[0]
-        .document.keys()
-    )
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
 
 

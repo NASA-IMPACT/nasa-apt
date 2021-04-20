@@ -86,8 +86,8 @@ class PublicationReference(BaseModel):
 
 
 class DataAccessUrl(BaseModel):
-    url: str  # TODO: URL formatting check?
-    description: WysiwygContent
+    url: Optional[str]  # TODO: URL formatting check?
+    description: Optional[str]
 
 
 class Document(BaseModel):
