@@ -428,7 +428,7 @@ VALUES
   },
   "publication_references": [
     {
-      "id": 1,
+      "id": "1",
       "authors": "Dickens, Charles and Steinbeck, John",
       "title": "Example Reference",
       "series": "A",
@@ -857,7 +857,7 @@ VALUES
   },
   "publication_references": [
     {
-      "id": 1,
+      "id": "1",
       "authors": "Dickens, Charles and Steinbeck, John",
       "title": "Example Reference",
       "series": "A",
