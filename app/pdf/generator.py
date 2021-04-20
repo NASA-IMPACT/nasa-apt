@@ -319,9 +319,10 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False):
 
     if not journal:
         doc.append(Command("tableofcontents"))
+    return doc
 
 
-def generate_latex(atbd: Atbds, filepath: str):
+def generate_latex(atbd: Atbds, filepath: str, journal=False):
     atbd_version_data = atbd.versions[0].document
     doc = setup_document(atbd, filepath, journal=journal)
 
@@ -399,6 +400,7 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
 
     latex_document = generate_latex(atbd, filepath, journal=journal)
+
     latex_document.generate_pdf(
         filepath=filepath,
         clean=True,
