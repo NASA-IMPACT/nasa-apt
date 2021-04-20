@@ -438,8 +438,8 @@ VALUES
       "publication_place": "Boston",
       "publisher": "PenguinBooks",
       "pages": "189-198",
-      "isbn": 123456789,
-      "year": 1995
+      "isbn": "123456789",
+      "year": "1995"
     }
   ]
 }', '{
@@ -867,8 +867,8 @@ VALUES
       "publication_place": "Boston",
       "publisher": "PenguinBooks",
       "pages": "189-198",
-      "isbn": 123456789,
-      "year": 1995
+      "isbn": "123456789",
+      "year": "1995"
     }
   ]
 }', '{

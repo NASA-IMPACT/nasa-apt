@@ -81,8 +81,8 @@ class PublicationReference(BaseModel):
     publication_place: Optional[str]
     publisher: Optional[str]
     pages: Optional[str]
-    isbn: Optional[int]
-    year: Optional[int]
+    isbn: Optional[str]
+    year: Optional[str]
 
 
 class DataAccessUrl(BaseModel):
