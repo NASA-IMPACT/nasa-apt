@@ -36,17 +36,7 @@ class SummaryOutput(OutputBase):
     versions: List[versions.SummaryOutput]
 
     @validator("versions")
-    def enfore_version_ordering(cls, versions):
-        print(
-            "SORTED IN SUMMARY OUTPUT: ",
-            [
-                v["created_at"]
-                for v in sorted(
-                    [v.dict() for v in versions], key=lambda d: d["created_at"]
-                )
-            ],
-        )
-
+    def enforce_version_ordering(cls, versions):
         return sorted([v.dict() for v in versions], key=lambda d: d["created_at"])
 
 
@@ -54,17 +44,7 @@ class FullOutput(OutputBase):
     versions: List[versions.FullOutput]
 
     @validator("versions")
-    def enfore_version_ordering(cls, versions):
-        print(
-            "SORTED IN FULL OUTPUT: ",
-            [
-                v["created_at"]
-                for v in sorted(
-                    [v.dict() for v in versions], key=lambda d: d["created_at"]
-                )
-            ],
-        )
-
+    def enforce_version_ordering(cls, versions):
         return sorted([v.dict() for v in versions], key=lambda d: d["created_at"])
 
 

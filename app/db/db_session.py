@@ -12,18 +12,18 @@ DATABASE_CONNECTION_URL = engine.url.URL(
 
 
 engine = create_engine(
-    DATABASE_CONNECTION_URL, pool_pre_ping=True, connect_args={"connect_timeout": 10}
+    DATABASE_CONNECTION_URL, connect_args={"connect_timeout": 10}, pool_pre_ping=True,
 )
 
 
-DbSession = sessionmaker(autocommit=False, bind=engine)
+DbSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 async def get_session():
     try:
         db = DbSession()
         db.execute(
-            "SET SESSION AUTHORIZATION anonymous; SET SEARCH_PATH to apt, public;"
+            "SET SESSION AUTHORIZATION anonymous; SET SEARCH_PATH to apt,public;"
         )
         yield db
     finally:
