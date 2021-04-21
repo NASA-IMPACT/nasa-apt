@@ -31,7 +31,7 @@ VALUES
 INSERT INTO atbd_versions
   (atbd_id, created_by, last_updated_by, major, minor, document, citation, status)
 VALUES
-  (1, 'LeoThomas123', 'LeoThomas123', 1, 0, '{
+  (1, 'LeoThomas123', 'LeoThomas123', 1, 1, '{
   "introduction": null,
   "historical_perspective": null,
   "mathematical_theory": {
@@ -454,13 +454,12 @@ VALUES
   "issue": "alpha2",
   "additional_details": "",
   "online_resource": "http://nasa-apt2-staging.s3-website-us-east-1.amazonaws.com/"
-}',
-    'Published');
+}', 'Published');
 
 INSERT INTO atbd_versions
   (atbd_id, created_by, last_updated_by, major, minor, document, citation)
 VALUES
-  (1, 'LeoThomas123', 'LeoThomas123', 2, 1, '{
+  (1, 'LeoThomas123', 'LeoThomas123', 2, 0, '{
   "introduction": null,
   "historical_perspective": null,
   "mathematical_theory": {
@@ -883,7 +882,10 @@ VALUES
   "issue": "alpha2",
   "additional_details": "",
   "online_resource": "http://nasa-apt2-staging.s3-website-us-east-1.amazonaws.com/"
-}');
+}'
+);
+
+
 
 INSERT INTO atbd_versions_contacts
   (atbd_id, major, contact_id, roles)

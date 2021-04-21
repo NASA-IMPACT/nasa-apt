@@ -1,14 +1,53 @@
 from app.crud.base import CRUDBase
-from app.db.models import AtbdVersions
+from app.db.models import AtbdVersions, AtbdVersionsContactsAssociation
 from app.db.db_session import DbSession
-from app.schemas.versions import FullOutput, Create, Update, StatusEnum
+from app.schemas.versions import FullOutput, Create, Update, Contact
 from app.crud.atbds import crud_atbds
 from sqlalchemy import orm
+from typing import List
 
 from fastapi import HTTPException
 
 
 class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
+    def update_contacts(
+        self,
+        db: DbSession,
+        crt_contacts: List[AtbdVersionsContactsAssociation],
+        input_contacts: List[Contact],
+        atbd_id: int,
+        major: int,
+    ):
+        contacts_to_add = [
+            contact
+            for contact in input_contacts
+            if contact.id in [c.id for c in crt_contacts]
+        ]
+        contacts_to_remove = [
+            contact
+            for contact in crt_contacts
+            if contact.id not in [c.id for c in input_contacts]
+        ]
+        for contact in contacts_to_add:
+            db.add(
+                AtbdVersionsContactsAssociation(
+                    atbd_id=atbd_id,
+                    major=major,
+                    contact_id=contact.id,
+                    roles=contact.roles,
+                )
+            )
+        for contact in contacts_to_remove:
+            contact_link = (
+                db.query(AtbdVersionsContactsAssociation)
+                .filter(atbd_id=atbd_id)
+                .filter(major=major)
+                .filter(contact_id=contact.id)
+                .one()
+            )
+            db.delete(contact_link)
+        db.commit()
+
     def create(self, db: DbSession, atbd_id: str, user: str):
 
         [latest_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1).versions

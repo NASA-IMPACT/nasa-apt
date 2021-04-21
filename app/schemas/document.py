@@ -119,7 +119,6 @@ class Document(BaseModel):
 
     journal_dicsussion: Optional[WysiwygContent]
     journal_acknowledgements: Optional[WysiwygContent]
-    contacts: Optional[Dict]  # TODO: class for contacts
     publication_references: Optional[List[PublicationReference]]
 
     @validator(

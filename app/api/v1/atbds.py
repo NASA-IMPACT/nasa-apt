@@ -141,15 +141,22 @@ def update_atbd_version(
     [version] = atbd.versions
 
     if version_input.contacts and len(version_input.contacts):
-        for contact in version_input.contacts:
-            db.add(
-                AtbdVersionsContactsAssociation(
-                    atbd_id=atbd.id,
-                    major=version.major,
-                    contact_id=contact.id,
-                    roles=contact.roles,
-                )
-            )
+        crud_atbds.update_contact(
+            db=db,
+            crt_contacts=version.contacts,
+            input_contacts=version_input.contacts,
+            atbd_id=atbd.id,
+            major=version.major,
+        )
+        # for contact in version_input.contacts:
+        #     db.add(
+        #         AtbdVersionsContactsAssociation(
+        #             atbd_id=atbd.id,
+        #             major=version.major,
+        #             contact_id=contact.id,
+        #             roles=contact.roles,
+        #         )
+        #     )
 
     # # TODO: get this contact info into the PDF
     # # TODO: make this contact link info updateable (add/remove contact from version)
@@ -171,7 +178,10 @@ def update_atbd_version(
         )
 
     if version_input.document and not overwrite:
-        version_input.document = {**version.document, **version_input.document.dict()}
+        version_input.document = {
+            **version.document,
+            **version_input.document.dict(exclude_unset=True),
+        }
 
     if version_input.sections_completed and not overwrite:
         version_input.sections_completed = {

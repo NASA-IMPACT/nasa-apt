@@ -611,14 +611,7 @@ def test_update_document(
                     "algorithm_implementations": [
                         {
                             "url": "https://developmentseed.org",
-                            "description": {
-                                "children": [
-                                    {
-                                        "type": "p",
-                                        "children": [{"text": "This is our website"}],
-                                    }
-                                ]
-                            },
+                            "description": "This is our website",
                         }
                     ]
                 }
@@ -632,33 +625,13 @@ def test_update_document(
     assert req.document is not None
 
     assert req.document["algorithm_implementations"] == [
-        {
-            "url": "https://developmentseed.org",
-            "description": {
-                "children": [
-                    {"type": "p", "children": [{"text": "This is our website"}],}
-                ]
-            },
-        }
+        {"url": "https://developmentseed.org", "description": "This is our website",}
     ]
     updated_atbd = json.loads(
         test_client.post(
             f"/atbds/{atbd['id']}/versions/latest",
             json={
                 "document": {
-                    "algorithm_implementations": [
-                        {
-                            "url": "https://developmentseed.org",
-                            "description": {
-                                "children": [
-                                    {
-                                        "type": "p",
-                                        "children": [{"text": "This is our website"}],
-                                    }
-                                ]
-                            },
-                        }
-                    ],
                     "mathematical_theory_assumptions": {
                         "children": [
                             {
@@ -681,14 +654,7 @@ def test_update_document(
     )
     assert req.document is not None
     assert req.document["algorithm_implementations"] == [
-        {
-            "url": "https://developmentseed.org",
-            "description": {
-                "children": [
-                    {"type": "p", "children": [{"text": "This is our website"}],}
-                ]
-            },
-        }
+        {"url": "https://developmentseed.org", "description": "This is our website",}
     ]
     assert req.document["mathematical_theory_assumptions"] == {
         "children": [
@@ -710,7 +676,7 @@ def test_update_document(
                 "document": {
                     "publication_references": [
                         {
-                            "publication_reference_id": 1,
+                            "id": 1,
                             "authors": "Dickens, Charles and Steinbeck, John",
                             "title": "Example Reference",
                             "series": "A",
@@ -729,6 +695,7 @@ def test_update_document(
             headers=authenticated_headers,
         ).content
     )
+    print(updated_atbd)
     [req] = db_session.execute(
         f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
     )
@@ -737,7 +704,7 @@ def test_update_document(
     assert not req.document.get("mathematical_theory_assumptions")
     assert req.document["publication_references"] == [
         {
-            "publication_reference_id": 1,
+            "id": 1,
             "authors": "Dickens, Charles and Steinbeck, John",
             "title": "Example Reference",
             "series": "A",

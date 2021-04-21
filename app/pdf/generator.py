@@ -17,35 +17,45 @@ from pylatex import (
     utils,
 )
 from collections import OrderedDict
+from typing import List
 from app.db.models import Atbds
+from app.schemas.versions import ContactLink
+from app.schemas.contacts import Output as Contact
 from app.api.utils import s3_client
 from app.config import BUCKET
 
 
-def process_contacts(contacts, doc):
-    for contact in contacts:
-        with doc.create(Subsection("Contacts: ")) as s:
-            s.append(
-                NoEscape(
-                    " ".join(
-                        contact.get(k, "")
-                        for k in ["first_name", "middle_name", "last_name"]
-                    )
+def process_contacts(contacts: List[ContactLink], doc):
+    contacts = [ContactLink.from_orm(contact) for contact in contacts]
+    for contact_link in contacts:
+        contact = contact_link.contact.dict(exclude_none=True)
+        print(contact_link.contact)
+        # contact = Contact.from_orm(contact_link.contact).dict(exclude_none=True)
+        # print("CONTACT: ", contact)
+        doc.append(
+            NoEscape(
+                " ".join(
+                    contact.get(k, "")
+                    for k in ["first_name", "middle_name", "last_name"]
                 )
             )
+        )
 
-            if contact.get("uuid"):
-                with s.create(section.Paragraph("Uuid:")) as ss:
-                    ss.append(NoEscape(contact["uuid"]))
+        for k in ["uuid", "url"]:
+            if contact.get(k):
+                with doc.create(section.Paragraph(f"{k.title()}:")) as paragraph:
+                    paragraph.append(NoEscape(contact[k]))
 
-            if contact.get("url"):
-                with s.create(section.Paragraph("Url:")) as ss:
-                    ss.append(NoEscape(contact["url"]))
+        if contact.get("mechanisms"):
+            for mechanism in contact["mechanisms"]:
+                with doc.create(
+                    section.Paragraph(f"{mechanism['mechanism_type']}:")
+                ) as paragraph:
+                    paragraph.append(mechanism["mechanism_value"])
 
-            if contact.get("mechanisms"):
-                with s.create(Subsubsection("Contact Mechanisms:")) as ss:
-                    for mechanism in contact["mechanisms"]:
-                        ss.append(NoEscape(mechanism["mechanism_value"]))
+        if contact_link.roles:
+            with doc.create(section.Paragraph("Roles:")) as paragraph:
+                paragraph.append(", ".join(r for r in contact_link.roles))
 
 
 SECTIONS = {
@@ -161,17 +171,12 @@ def process_data_access_url(access_url, doc):
         with doc.create(
             section.Paragraph(process_text({"text": "Description:", "bold": True}))
         ) as s:
-            s.append(
-                " ".join(
-                    process_text(c)
-                    for c in access_url["description"]["children"][0]["children"]
-                )
-            )
+            s.append(access_url["description"])
 
 
 def process_data_access_urls(data, doc):
-    for access_url in data:
-        with doc.create(Subsection("")):
+    for i, access_url in enumerate(data):
+        with doc.create(Subsection(f"Entry #{str(i+1)}")):
             process_data_access_url(access_url, doc)
 
 
@@ -323,11 +328,15 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False):
 
 
 def generate_latex(atbd: Atbds, filepath: str, journal=False):
-    atbd_version_data = atbd.versions[0].document
+    # document_data = atbd.versions[0].document
+    # atbd_version_contacts = atbds
+    [atbd_version] = atbd.versions
+    document_data = atbd_version.document
+    contacts_data = atbd_version.contacts_link
     doc = setup_document(atbd, filepath, journal=journal)
 
     generate_bibliography(
-        atbd_version_data.get("publication_references", []), filepath=f"{filepath}.bib"
+        document_data.get("publication_references", []), filepath=f"{filepath}.bib",
     )
 
     for section_name, info in SECTIONS.items():
@@ -341,7 +350,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
 
         with doc.create(s):
 
-            if not atbd_version_data.get(section_name):
+            if not document_data.get(section_name) and section_name != "contacts":
                 parse(CONTENT_UNAVAILABLE, s)
                 continue
 
@@ -350,7 +359,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
                 "algorithm_output_variables",
             ]:
 
-                process_algorithm_variables(atbd_version_data[section_name], doc)
+                process_algorithm_variables(document_data[section_name], doc)
                 continue
 
             if section_name in [
@@ -359,11 +368,12 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
                 "data_access_output_data",
                 "data_access_related_urls",
             ]:
-                process_data_access_urls(atbd_version_data[section_name], doc)
+                process_data_access_urls(document_data[section_name], doc)
                 continue
 
             if section_name == "contacts":
-                process_contacts(atbd_version_data[section_name], doc)
+                process_contacts(contacts_data, doc)
+                continue
 
             # Journal Acknowledgements and Journal Discussion are only included in
             # Journal type pdfs
@@ -373,16 +383,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             ):
                 continue
 
-            if isinstance(atbd_version_data[section_name], dict):
+            if isinstance(document_data[section_name], dict):
                 parse(
-                    atbd_version_data[section_name].get(
-                        "children", CONTENT_UNAVAILABLE
-                    ),
-                    s,
+                    document_data[section_name].get("children", CONTENT_UNAVAILABLE), s,
                 )
                 continue
 
-            parse(atbd_version_data[section_name], s)
+            parse(document_data[section_name], s)
 
     doc.append(Command("bibliographystyle", arguments="abbrv"))
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
