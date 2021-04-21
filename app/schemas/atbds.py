@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional, List
 from app.schemas import versions
 
@@ -35,9 +35,37 @@ class OutputBase(BaseModel):
 class SummaryOutput(OutputBase):
     versions: List[versions.SummaryOutput]
 
+    @validator("versions")
+    def enfore_version_ordering(cls, versions):
+        print(
+            "SORTED IN SUMMARY OUTPUT: ",
+            [
+                v["created_at"]
+                for v in sorted(
+                    [v.dict() for v in versions], key=lambda d: d["created_at"]
+                )
+            ],
+        )
+
+        return sorted([v.dict() for v in versions], key=lambda d: d["created_at"])
+
 
 class FullOutput(OutputBase):
     versions: List[versions.FullOutput]
+
+    @validator("versions")
+    def enfore_version_ordering(cls, versions):
+        print(
+            "SORTED IN FULL OUTPUT: ",
+            [
+                v["created_at"]
+                for v in sorted(
+                    [v.dict() for v in versions], key=lambda d: d["created_at"]
+                )
+            ],
+        )
+
+        return sorted([v.dict() for v in versions], key=lambda d: d["created_at"])
 
 
 class Lookup(BaseModel):

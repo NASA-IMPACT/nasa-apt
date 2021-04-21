@@ -1,6 +1,7 @@
 import pytest
 import json
 from typing import List
+from datetime import datetime
 
 
 def _create_atbd_with_versions(
@@ -297,7 +298,6 @@ def test_update_atbd_by_id(
             headers=authenticated_headers,
         ).content
     )
-    print("UPDATED: ", updated)
 
     [dbobj] = db_session.execute(
         f"SELECT * FROM atbds WHERE atbds.id = '{updated['id']}'"
@@ -519,6 +519,46 @@ def test_create_new_atbd_version(
     assert v2.document == v1.document
 
 
+def test_atbd_versions_returned_in_chronological_order(
+    test_client,
+    db_session,
+    atbd_creation_input,
+    authenticated_headers,
+    mocked_event_listener,
+    s3_bucket,
+):
+    atbd = json.loads(
+        test_client.post(
+            "/atbds", json=atbd_creation_input, headers=authenticated_headers
+        ).content
+    )
+
+    test_client.post(f"/atbds/{atbd['id']}/publish", headers=authenticated_headers)
+
+    new_version = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions", headers=authenticated_headers
+        ).content
+    )
+    test_client.post(f"/atbds/{atbd['id']}/publish", headers=authenticated_headers)
+
+    new_version = json.loads(
+        test_client.post(
+            f"/atbds/{atbd['id']}/versions", headers=authenticated_headers
+        ).content
+    )
+
+    versions = json.loads(
+        test_client.get(f"/atbds/{atbd['id']}", headers=authenticated_headers).content
+    )["versions"]
+
+    timestamps = [
+        datetime.strptime(version["created_at"], "%Y-%m-%dT%H:%M:%S.%f%z")
+        for version in versions
+    ]
+    assert sorted(timestamps) == timestamps
+
+
 def test_create_new_atbd_version_fails_if_user_is_unauthenticated(
     test_client, db_session
 ):
@@ -695,7 +735,6 @@ def test_update_document(
             headers=authenticated_headers,
         ).content
     )
-    print(updated_atbd)
     [req] = db_session.execute(
         f"SELECT * FROM atbd_versions WHERE atbd_id='{atbd['id']}' AND major={updated_atbd['versions'][-1]['major']}"
     )
