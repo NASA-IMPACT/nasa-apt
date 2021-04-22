@@ -18,16 +18,13 @@ engine = create_engine(
 )
 
 
-# DbSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-DbSession = sessionmaker(bind=engine)
+DbSession = sessionmaker(autocommit=False, bind=engine)
 
 
 async def get_session():
     try:
         db = DbSession()
-        db.execute(
-            "SET SESSION AUTHORIZATION anonymous;"  # SET SEARCH_PATH to apt,public;"
-        )
+        db.execute("SET SESSION AUTHORIZATION anonymous;")
         yield db
     finally:
         db.rollback()
