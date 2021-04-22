@@ -1,4 +1,4 @@
-from app.db.models import Atbds, AtbdVersions
+from app.db.models import Atbds, AtbdVersions, Contacts
 from unittest.mock import patch
 import pytest
 from sqlalchemy import engine, create_engine, text, MetaData
@@ -12,6 +12,7 @@ import boto3
 import json
 from moto import mock_secretsmanager, mock_s3
 import factory
+from factory import fuzzy
 import faker
 import logging
 
@@ -200,13 +201,11 @@ def atbd_versions_factory(db_session):
 
 
 @pytest.fixture
-def atbds_factory(db_session, atbd_versions_factory):
+def atbds_factory(db_session):
     class AtbdsFactory(factory.alchemy.SQLAlchemyModelFactory):
         title = factory.Faker("pystr")
-        alias = factory.Faker(
-            "pystr_format",
-            string_format="?#-###{{random_int}}{{random_letter}}",
-            letters="qwertyuiopasdfghjklzxcvbnm",
+        alias = fuzzy.FuzzyText(
+            length=15, prefix="x9-", chars="qwertyuiopasdfghjklzxcvbnm",
         )
         created_by = factory.Faker("pystr")
         last_updated_by = factory.Faker("pystr")
@@ -219,8 +218,31 @@ def atbds_factory(db_session, atbd_versions_factory):
 
 
 @pytest.fixture
-def atbd_creation_input():
-    yield {"title": "Test ATBD 1", "alias": "test-atbd-1"}
+def contacts_factory(db_session):
+    class ContactsFactory(factory.alchemy.SQLAlchemyModelFactory):
+
+        first_name = fuzzy.FuzzyText(length=10)
+        middle_name = fuzzy.FuzzyText(length=10)
+        last_name = fuzzy.FuzzyText(length=10)
+        uuid = fuzzy.FuzzyText(length=10)
+        url = fuzzy.FuzzyText(length=10, prefix="http://")
+
+        # mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
+        mechanisms = [
+            {"mechanism_type": "Email", "mechanism_value": "test@email.com"},
+            {"mechanism_type": "Twitter", "mechanism_value": "@test_handle"},
+        ]
+
+        class Meta:
+            model = Contacts
+            sqlalchemy_session = db_session
+
+    yield ContactsFactory
+
+
+# @pytest.fixture
+# def atbd_creation_input():
+#     yield {"title": "Test ATBD 1", "alias": "test-atbd-1"}
 
 
 @pytest.fixture

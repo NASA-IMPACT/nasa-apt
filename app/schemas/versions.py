@@ -33,7 +33,7 @@ class SummaryOutput(OutputBase):
     minor: int
     version: Optional[str]
     citation: Optional[dict]
-    changelog: Optional[dict]
+    changelog: Optional[str]
 
     @validator("version", always=True)
     def generate_semver(cls, v, values) -> str:

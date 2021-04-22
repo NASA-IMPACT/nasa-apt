@@ -108,4 +108,3 @@ class ListFilters(BaseModel):
     last_name: Optional[str]
     uuid: Optional[str]
     url: Optional[str]
-    # title: Optional[str]
