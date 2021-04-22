@@ -98,9 +98,7 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
 
             db.commit()
 
-        except exc.IntegrityError as e:
-            print(e)
-            db.rollback()
+        except exc.IntegrityError:
             if atbd_input.alias:
                 raise HTTPException(
                     status_code=400,

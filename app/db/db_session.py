@@ -27,4 +27,5 @@ async def get_session():
         )
         yield db
     finally:
+        db.rollback()
         db.close()
