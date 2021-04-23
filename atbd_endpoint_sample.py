@@ -775,5 +775,10 @@ es_endpoint = "http://localhost:9200"
 # print("Search result: ")
 # print(r.content)
 
-print(create_pg_connection_string())
+# print(create_pg_connection_string())
 # print(create_token())
+r = re.get(
+    f"{endpoint}/atbds/1/versions/2/pdf",
+    headers={"Authorization": f"Bearer {create_token()}"},
+)
+print(r.content)

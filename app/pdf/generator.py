@@ -104,7 +104,7 @@ CONTENT_UNAVAILABLE = {"type": "p", "children": [{"text": "Content Unavailable"}
 
 
 def process_reference(data):
-    reference_id = f"ref{data['id']}"
+    reference_id = generate_ref_name(data["id"])
     reference = ""
     for e in ["title", "pages", "publisher", "year", "volume"]:
         if data.get(e):
@@ -112,7 +112,8 @@ def process_reference(data):
     if data.get("authors"):
         reference += f"author=\"{data['authors']}\",\n"
     # Can't use both VOLUME and NUMBER fields in bibtex
-
+    print("REFERENCE: ", reference)
+    print("REFERENCE_ID: ", reference_id)
     return f"@BOOK{{{reference_id},\n{reference}}}"
 
 
@@ -126,8 +127,13 @@ def hyperlink(url, text):
     return NoEscape(f"\\href{{{url}}}{{{text}}}")
 
 
+def generate_ref_name(reference_id):
+    return f"ref{reference_id}"
+
+
 def reference(reference_id):
-    return NoEscape(f"\\cite{{ref{reference_id}}}")
+
+    return NoEscape(f"\\cite{{{generate_ref_name(reference_id)}}}")
 
 
 TEXT_WRAPPERS = {
@@ -144,6 +150,8 @@ def process_text(data):
     # ie:  process_text({"bold": true, "italic": true, "text": ... })
     # will return latex like `\bold{\italic{text}}`
     e = data["text"]
+    if e == "":
+        return None
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option):
             e = command(e)
@@ -156,6 +164,8 @@ def process_content(data):
         if d.get("type") == "a":
             res.append(hyperlink(d["url"], d["children"][0]["text"]))
         elif d.get("type") == "ref":
+            print("REF BEING APPENDED: ", reference(d["refId"]))
+
             res.append(reference(d["refId"]))
         else:
             res.append(process_text(d))
@@ -384,6 +394,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
                 continue
 
             if isinstance(document_data[section_name], dict):
+
                 parse(
                     document_data[section_name].get("children", CONTENT_UNAVAILABLE), s,
                 )

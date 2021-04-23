@@ -38,6 +38,7 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
 
     def get(self, db: DbSession, atbd_id: str, version: int = None):
         query = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
+        print("QUERY: ", query)
         try:
             return query.one()
         except exc.SQLAlchemyError as e:

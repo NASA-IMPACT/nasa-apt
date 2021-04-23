@@ -32,7 +32,7 @@ def monkeysession(request):
     mpatch.undo()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def database_connection():
     """
     yields a dict of connection details to a Test DB
@@ -42,8 +42,8 @@ def database_connection():
         yield postgresql.dsn()
 
 
-@pytest.fixture
-def test_db_engine(database_connection):
+@pytest.fixture(scope="session")
+def empty_db(database_connection):
     """ Bind DB engine for application user to TestSession """
     url = engine.url.URL(
         "postgresql",
@@ -54,7 +54,9 @@ def test_db_engine(database_connection):
         port=database_connection["port"],
     )
     test_db_engine = create_engine(
-        url, pool_pre_ping=True, connect_args={"connect_timeout": 1}
+        url,
+        pool_pre_ping=True,
+        connect_args={"connect_timeout": 10, "options": "-csearch_path=apt,public"},
     )
 
     with test_db_engine.connect() as conn:
@@ -69,13 +71,19 @@ def test_db_engine(database_connection):
                         .replace("masteruser", "postgres").replace("nasadb", "test")
                     )
                 )
-        conn.execute(
-            # "SET SESSION AUTHORIZATION anonymous; SET SEARCH_PATH to apt, public;"
-            "SET SEARCH_PATH to apt,public;"
-        )
+
         logging.basicConfig()
         logging.getLogger("sqlalchemy.engine").setLevel(logging.CRITICAL)
     yield test_db_engine
+
+
+@pytest.fixture(scope="function")
+def test_db_engine(empty_db):
+
+    yield empty_db
+    empty_db.execute(
+        "DELETE FROM atbd_versions_contacts; DELETE FROM atbd_versions; DELETE FROM contacts; DELETE FROM atbds; "
+    )
 
 
 @pytest.fixture

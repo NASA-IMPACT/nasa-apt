@@ -64,12 +64,13 @@ def get_pdf(
 ):
 
     major, minor = get_major_from_version_string(version)
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
 
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+    [version] = atbd.versions
     pdf_key = generate_pdf_key(atbd, minor=minor, journal=journal)
 
-    if minor is not None:
-        print("FETCHING FROM S3")
+    if minor or version.status == "Published":
+        print("FETCHING FROM S3: ", pdf_key)
         # TODO: pdf_key contains the lastest minor version - which gets set
         # as the filename, even though a different minor version was requested
         # TODO: add some error handling in case the PDF isn't found

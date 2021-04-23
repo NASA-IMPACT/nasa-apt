@@ -73,6 +73,23 @@ def update_contact(
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
-    contact = crud_contacts.get(db_session=db, contact_id=contact_id)
+    contact = crud_contacts.get(db_session=db, obj_in=contacts.Lookup(id=contact_id))
 
     return crud_contacts.update(db=db, db_obj=contact, obj_in=update_contact_input)
+
+
+@router.delete(
+    "/contacts/{contact_id}",
+    responses={
+        200: dict(
+            description="Delete the contact corresponding to the given contact id"
+        )
+    },
+)
+def delete_contact(
+    contact_id: int, db: DbSession = Depends(get_db), user: User = Depends(require_user)
+):
+    contact = crud_contacts.get(db_session=db, obj_in=contacts.Lookup(id=contact_id))
+    db.delete(contact)
+    db.commit()
+    return []
