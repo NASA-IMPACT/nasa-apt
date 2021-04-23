@@ -205,11 +205,15 @@ class SamlAuth:
 
     def get_auth_from_header(self):
         auth_header = self.request.headers.get("Authorization", None)
-        if auth_header is None:
-            return None
-        scheme, _, token = auth_header.partition(" ")
-        if scheme.lower() != "bearer":
-            return None
+        if auth_header:
+            scheme, _, token = auth_header.partition(" ")
+            if scheme.lower() != "bearer":
+                return None
+        else:
+            token = self.request.query_params.get("token", None)
+            if not token:
+                return None
+
         self.parse_token(token)
 
     def get_token_data(self):
