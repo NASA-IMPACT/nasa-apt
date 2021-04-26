@@ -25,7 +25,9 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         )
 
         if version == -1:
-            subquery = db.query(func.max(AtbdVersions.major))
+            subquery = db.query(func.max(AtbdVersions.major)).filter(
+                AtbdVersions.atbd_id == atbd_id
+            )
             query = query.filter(AtbdVersions.major == subquery)
 
             [subquery] = utils.add_id_or_alias_filter(atbd_id, subquery)

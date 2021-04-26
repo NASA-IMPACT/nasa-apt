@@ -65,6 +65,7 @@ class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
         orm.make_transient(latest_version)
 
         latest_version.major = latest_version.major + 1
+        latest_version.minor = 0
         latest_version.changelog = None
         latest_version.doi = None
         latest_version.citation = None

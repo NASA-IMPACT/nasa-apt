@@ -170,7 +170,13 @@ def update_atbd_version(
             detail="ATBD must have status `published` in order to increment the minor version number",
         )
 
-    if version_input.minor == version.minor + 1:
+    if version_input.minor != version.minor + 1:
+        raise HTTPException(
+            status_code=400,
+            detail="New version number must be exactly 1 greater than previous",
+        )
+
+    if version_input.minor:
         # A new version has been created - generate a cache a PDF for both the regular
         # PDF format, and the journal PDF format
         _add_pdf_generation_to_background_tasks(
