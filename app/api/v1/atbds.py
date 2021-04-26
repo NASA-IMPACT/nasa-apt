@@ -224,6 +224,7 @@ def delete_atbd_version(
 @router.post("/atbds/{atbd_id}/publish", response_model=atbds.FullOutput)
 def publish_atbd(
     atbd_id: str,
+    publish_input: atbds.PublishInput,
     background_tasks: BackgroundTasks,
     db=Depends(get_db),
     user=Depends(require_user),
@@ -235,12 +236,21 @@ def publish_atbd(
             status_code=400,
             detail=f"Latest version of atbd {atbd_id} already has status: `Published`",
         )
+    now = datetime.datetime.now(datetime.timezone.utc)
     latest_version.status = "Published"
     latest_version.published_by = user["user"]
-    latest_version.published_at = datetime.datetime.now(datetime.timezone.utc)
+    latest_version.published_at = now
+
+    # Publishing a version counts as updating it, so we
+    # update the timestamp and user
+    latest_version.last_updated_by = user["user"]
+    latest_version.last_updated_at = now
+
+    if publish_input.changelog is not None and publish_input.changelog != "":
+        latest_version.changelog = publish_input.changelog
+
     db.commit()
     db.refresh(latest_version)
-    # TODO: ATBD has been published, generate and cache v1.0 PDF
 
     _add_pdf_generation_to_background_tasks(
         atbd=atbd, background_tasks=background_tasks

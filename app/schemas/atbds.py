@@ -4,6 +4,10 @@ from typing import Optional, List
 from app.schemas import versions
 
 
+class PublishInput(BaseModel):
+    changelog: Optional[str]
+
+
 class Update(BaseModel):
     alias: Optional[str]
     title: Optional[str]
