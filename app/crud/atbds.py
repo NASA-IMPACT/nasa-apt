@@ -1,5 +1,4 @@
 from app.crud.base import CRUDBase
-from app.crud import utils
 from app.db.models import Atbds, AtbdVersions, AtbdVersionsContactsAssociation
 from app.db.db_session import DbSession
 from app.schemas.atbds import FullOutput, Create, Update
@@ -18,6 +17,12 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         return query.all()
 
     def _build_lookup_query(self, db: DbSession, atbd_id: str, version: int = None):
+        try:
+            int(atbd_id)
+            alias = None
+        except ValueError:
+            alias = atbd_id
+
         query = (
             db.query(Atbds)
             .join(AtbdVersions, Atbds.id == AtbdVersions.atbd_id)
@@ -25,22 +30,31 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         )
 
         if version == -1:
-            subquery = db.query(func.max(AtbdVersions.major)).filter(
-                AtbdVersions.atbd_id == atbd_id
-            )
-            query = query.filter(AtbdVersions.major == subquery)
 
-            [subquery] = utils.add_id_or_alias_filter(atbd_id, subquery)
+            subquery = db.query(func.max(AtbdVersions.major)).filter(
+                AtbdVersions.atbd_id
+                == (
+                    db.query(Atbds.id).filter(Atbds.alias == alias)
+                    if alias
+                    else atbd_id
+                )
+            )
+
+            query = query.filter(AtbdVersions.major == subquery)
 
         elif version:
             query = query.filter(AtbdVersions.major == version)
 
-        [query] = utils.add_id_or_alias_filter(atbd_id, query)
+        query = (
+            query.filter(Atbds.alias == alias)
+            if alias
+            else query.filter(Atbds.id == atbd_id)
+        )
+
         return query
 
     def get(self, db: DbSession, atbd_id: str, version: int = None):
         query = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
-        print("QUERY: ", query)
         try:
             return query.one()
         except exc.SQLAlchemyError as e:

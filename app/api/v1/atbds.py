@@ -1,6 +1,6 @@
 """ATBD's endpoint."""
 from app import config
-from app.schemas import atbds, versions
+from app.schemas import atbds, versions, contacts
 from app.db.db_session import DbSession
 from app.api.utils import (
     get_db,
@@ -12,6 +12,7 @@ from app.api.v1.pdf import save_pdf_to_s3
 from app.auth.saml import User
 from app.crud.atbds import crud_atbds
 from app.crud.versions import crud_versions
+from app.crud.contacts import crud_contacts_associations
 from app.db.models import Atbds, AtbdVersionsContactsAssociation
 from sqlalchemy import exc
 from fastapi import (
@@ -141,28 +142,25 @@ def update_atbd_version(
     [version] = atbd.versions
 
     if version_input.contacts and len(version_input.contacts):
-        crud_atbds.update_contact(
-            db=db,
-            crt_contacts=version.contacts,
-            input_contacts=version_input.contacts,
-            atbd_id=atbd.id,
-            major=version.major,
-        )
-        # for contact in version_input.contacts:
-        #     db.add(
-        #         AtbdVersionsContactsAssociation(
-        #             atbd_id=atbd.id,
-        #             major=version.major,
-        #             contact_id=contact.id,
-        #             roles=contact.roles,
-        #         )
-        #     )
 
-    # # TODO: get this contact info into the PDF
-    # # TODO: make this contact link info updateable (add/remove contact from version)
-    # for c in version.contacts_link:
-    #     print(c.contact_id)
-    #     print(c.roles)
+        for contact in version_input.contacts:
+
+            crud_contacts_associations.upsert(
+                db_session=db,
+                obj_in=contacts.ContactsAssociation(
+                    contact_id=contact.id,
+                    atbd_id=atbd_id,
+                    major=major,
+                    roles=contact.roles,
+                ),
+            )
+
+        for contact in version.contacts_link:
+            if contact.contact_id in [c.id for c in version_input.contacts]:
+                continue
+            crud_contacts_associations.remove(
+                db_session=db, id=(atbd_id, major, contact.contact_id)
+            )
 
     if version_input.minor and version.status != "Published":
         raise HTTPException(
@@ -170,7 +168,7 @@ def update_atbd_version(
             detail="ATBD must have status `published` in order to increment the minor version number",
         )
 
-    if version_input.minor != version.minor + 1:
+    if version_input.minor and version_input.minor != version.minor + 1:
         raise HTTPException(
             status_code=400,
             detail="New version number must be exactly 1 greater than previous",

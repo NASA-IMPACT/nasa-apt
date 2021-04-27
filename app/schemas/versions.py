@@ -40,25 +40,11 @@ class SummaryOutput(OutputBase):
         return f"v{values['major']}.{values['minor']}"
 
 
-class ContactLink(BaseModel):
-    contact: contacts.Output
-    roles: str
-
-    @validator("roles")
-    def format_contact_mechanisms(cls, v):
-
-        return [i.strip('\\"(){}') for i in v.split(",")]
-
-    class Config:
-        title = "ContactsLink"
-        orm_mode = True
-
-
 class FullOutput(SummaryOutput):
     document: Optional[Document]
     sections_completed: Optional[dict]
     doi: Optional[str]
-    contacts_link: Optional[List[ContactLink]]
+    contacts_link: Optional[List[contacts.ContactsLinkOutput]]
 
 
 class Create(BaseModel):
@@ -70,17 +56,6 @@ class Lookup(BaseModel):
     major: int
 
 
-# TODO; role should be enum
-class Contact(BaseModel):
-    id: int
-    roles: List[str]
-
-    @validator("roles")
-    def format_roles(cls, v):
-        s = ",".join(i for i in v)
-        return f"{{{s}}}"
-
-
 class Update(BaseModel):
     minor: Optional[int]
     document: Optional[Document]
@@ -89,7 +64,7 @@ class Update(BaseModel):
     doi: Optional[str]
     citation: Optional[dict]
     status: Optional[str]
-    contacts: Optional[List[Contact]]
+    contacts: Optional[List[contacts.ContactsLinkInput]]
 
     @validator("document", always=True)
     def ensure_either_minor_or_document(

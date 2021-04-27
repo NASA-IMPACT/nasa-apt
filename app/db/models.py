@@ -149,6 +149,6 @@ class AtbdVersionsContactsAssociation(Base):
         return (
             f"<AtbdVersionContact(atbd_id={self.atbd_id}), major={self.major}, "
             f"contact_id={self.contact_id}, roles={self.roles}, "
-            f"atbd_versions={self.atbd_versions}, contacts={self.contacts}>"
+            f"atbd_versions={self.atbd_version}, contacts={self.contact}>"
         )
 

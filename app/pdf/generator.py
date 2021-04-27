@@ -19,14 +19,14 @@ from pylatex import (
 from collections import OrderedDict
 from typing import List
 from app.db.models import Atbds
-from app.schemas.versions import ContactLink
+from app.schemas.contacts import ContactsLinkOutput
 from app.schemas.contacts import Output as Contact
 from app.api.utils import s3_client
 from app.config import BUCKET
 
 
-def process_contacts(contacts: List[ContactLink], doc):
-    contacts = [ContactLink.from_orm(contact) for contact in contacts]
+def process_contacts(contacts: List[ContactsLinkOutput], doc):
+    contacts = [ContactsLinkOutput.from_orm(contact) for contact in contacts]
     for contact_link in contacts:
         contact = contact_link.contact.dict(exclude_none=True)
         print(contact_link.contact)

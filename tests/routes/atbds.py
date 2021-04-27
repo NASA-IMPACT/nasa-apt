@@ -4,6 +4,8 @@ from typing import List
 from datetime import datetime
 from fastapi import HTTPException
 
+# TODO: add test that elasticsearch indexing get's added to background tasks
+
 
 def test_list_atbds_unauthenticated(
     test_client, db_session, atbds_factory, atbd_versions_factory, mocked_event_listener
@@ -29,7 +31,7 @@ def test_list_atbds_unauthenticated(
         db_session.add(version)
     db_session.commit()
     db_session.flush()
-    #
+
     result = json.loads(test_client.get("/atbds").content)
 
     assert len(result) == 2

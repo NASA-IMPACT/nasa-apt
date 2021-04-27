@@ -56,7 +56,6 @@ def create_contact(
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
-
     return crud_contacts.create(db_session=db, obj_in=create_contact_input)
 
 

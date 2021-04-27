@@ -108,3 +108,38 @@ class ListFilters(BaseModel):
     last_name: Optional[str]
     uuid: Optional[str]
     url: Optional[str]
+
+
+class ContactsLinkOutput(BaseModel):
+    contact: Output
+    roles: str
+
+    @validator("roles")
+    def format_contact_mechanisms(cls, v):
+
+        return [i.strip('\\"(){}') for i in v.split(",")]
+
+    class Config:
+        title = "ContactsLink"
+        orm_mode = True
+
+
+# TODO; role should be enum
+class ContactsLinkInput(BaseModel):
+    id: int
+    roles: List[str]
+
+    @validator("roles")
+    def format_roles(cls, v):
+        s = ",".join(i for i in v)
+        return f"{{{s}}}"
+
+
+class ContactsAssociationLookup(BaseModel):
+    contact_id: int
+    atbd_id: int
+    major: int
+
+
+class ContactsAssociation(ContactsAssociationLookup):
+    roles: str
