@@ -1,15 +1,12 @@
 import pytest
 import json
-from typing import List
-from datetime import datetime
-from fastapi import HTTPException
-from app.schemas.contacts import Output as Contacts
-from app.db.models import Contacts as ContactsModel
+from app.db.models import Contacts
 
 
 def test_list_contacts(test_client, db_session, contacts_factory):
 
     assert json.loads(test_client.get("/contacts").content) == []
+
     contact = contacts_factory.create()
     contact.mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
     db_session.add(contact)
@@ -23,6 +20,14 @@ def test_list_contacts(test_client, db_session, contacts_factory):
         {"mechanism_type": "Email", "mechanism_value": "test@email.com"},
         {"mechanism_type": "Twitter", "mechanism_value": "@test_handle"},
     ]
+
+    contact = contacts_factory.create()
+    contact.mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
+    db_session.add(contact)
+    db_session.commit()
+    db_session.refresh(contact)
+    result = json.loads(test_client.get("/contacts").content)
+    assert len(result) == 2
 
 
 def test_get_contact_by_id(test_client, db_session, contacts_factory):
@@ -40,20 +45,14 @@ def test_get_contact_by_id(test_client, db_session, contacts_factory):
     ]
 
 
-def test_create_contact_fails_if_unauthenticated(
+def test_create_contact(
     test_client, db_session, contacts_factory, authenticated_headers
 ):
-
     with pytest.raises(Exception):
         contact = contacts_factory.create()
         del contact["_sa_instance_state"]
         result = test_client.post("/contacts", data=json.dumps(contact))
         result.raise_for_status()
-
-
-def test_create_contact_fails_if_missing_fiels(
-    test_client, db_session, contacts_factory, authenticated_headers
-):
 
     with pytest.raises(Exception):
         contact = contacts_factory.create().__dict__
@@ -64,21 +63,19 @@ def test_create_contact_fails_if_missing_fiels(
         )
         result.raise_for_status()
 
-
-def test_create_contact(
-    test_client, db_session, contacts_factory, authenticated_headers
-):
-
     contact = contacts_factory.create().__dict__
     del contact["_sa_instance_state"]
     result = test_client.post(
         "/contacts", headers=authenticated_headers, data=json.dumps(contact),
     )
 
-    # TODO: fix this
+    # Autoflush was causing the query to fail as it
+    # was trying to insert an object with
     with db_session.no_autoflush:
-        contacts_from_db = db_session.query(ContactsModel).all()
+        contacts_from_db = db_session.query(Contacts).all()
         assert len(contacts_from_db) > 0
+        assert contacts_from_db[0].first_name == contact["first_name"]
+        assert contacts_from_db[0].last_name == contact["last_name"]
         assert (
             contacts_from_db[0].mechanisms
             == '{"(Email,test@email.com)","(Twitter,@test_handle)"}'
@@ -132,7 +129,7 @@ def test_delete_contact(
         f"/contacts/{contact.id}", headers=authenticated_headers,
     )
     result.raise_for_status()
-    assert db_session.query(ContactsModel).all() == []
+    assert db_session.query(Contacts).all() == []
 
 
 def test_update_contacts_in_atbds_version(
