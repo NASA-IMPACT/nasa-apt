@@ -3,36 +3,14 @@ services:
   db:
     # Postgres db for local development only.
     # For staging/production, see RDS instance in cloudformation.yaml
-    image: postgres:11.8
+    image: postgres:11.1
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: $POSTGRES_DB_NAME
-      POSTGRES_USER: $POSTGRES_ADMIN_USER
-      POSTGRES_PASSWORD: $POSTGRES_ADMIN_PASSWORD
+      POSTGRES_DB: nasadb
+      POSTGRES_USER: masteruser
+      POSTGRES_PASSWORD: password
     command: postgres -c log_statement=all
-  db-bootstrapper: 
-    build: 
-      context: ./
-      dockerfile: ./db/local.Dockerfile
-    command: >
-      sh -c "
-        sqitch deploy --verify db:pg://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME &&
-        psql 'postgres://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME?options=--search_path%3dapt' -f /sqitch/testDataLocal.sql
-      "
-    volumes: 
-      - ./db:/sqitch
-      - ./db:/var/lib/postgresql/data
-      # - type: bind
-      #   source: ./db
-      #   target: /sqitch
-      # - type: bind
-      #   source: ./db
-      #   target: /var/lib/postgresql/data
-    depends_on: 
-      - db-ready
-      
-      
   elastic:
     # Elastic db for local development only.
     # For staging/production, add elasticache instance
@@ -48,65 +26,52 @@ services:
       - "9200:9200"
   # localstack for local development only. AWS S3 used for staging/production
   localstack:
-    image: localstack/localstack:0.12.7
+    image: localstack/localstack:latest
     environment:
-      SERVICES: s3,secretsmanager
-      AWS_ACCESS_KEY_ID: stub
-      AWS_SECRET_ACCESS_KEY: stub
-      AWS_DEFAULT_REGION: us-east-1
-      HOSTNAME: localhost
-      HOSTNAME_EXTERNAL: localhost
-      S3_BUCKET: $S3_BUCKET  
-      POSTGRES_DB: $POSTGRES_DB_NAME
-      POSTGRES_USER: $POSTGRES_ADMIN_USER
-      POSTGRES_PASSWORD: $POSTGRES_ADMIN_PASSWORD
-      POSTGRES_ADMIN_CREDENTIALS_ARN: $POSTGRES_ADMIN_CREDENTIALS_ARN
+      - SERVICES=s3
+      - DATA_DIR=./figures
     ports:
       - "4566:4566"
-    volumes: 
-      - ./localstack/setup.sh:/docker-entrypoint-initaws.d/setup.sh
-      - ./localstack/figures:/figures
-      
-  api:
-    build:
-      context: ./
-      dockerfile: app/local.Dockerfile
-    image: nasa-apt/dev/app
-    # Same as above, I'm sure there's a better way to do this, than sleeping for an 
-    # arbitarty amount of time. All of the `wait-for-dependency` type scripts I've found 
-    # online consider the service to be ready once `nc -z $HOST $PORT` succeeds. However 
-    # in the case of localstack, those services will succeed before all of the necessary
-    # S3 and secretmanager resources have been built - so the API will still fail. 
-    command: >
-      sh -c "
-        python wait_for_localstack_ready.py &&
-        uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
-      "
+      - "4572:4572"
+  rest-api:
+    image: postgrest/postgrest:v6.0.2
+    ports:
+      - "3000:3000"
+    environment:
+      PGRST_DB_URI: postgres://masteruser:password@db:5432/nasadb
+      PGRST_DB_SCHEMA: apt
+      PGRST_DB_ANON_ROLE: anonymous
+      PGRST_JWT_SECRET: $JWT_SECRET
+    depends_on:
+      - db
+  fastapi:
+    build: ./fastapi
+    image: nasa-apt/dev/fastapi
     ports:
       - "8000:80"
     volumes:
-      - ./app:/app/app
-      - ./localstack/wait_for_localstack_ready.py:/app/wait_for_localstack_ready.py
-
+      - type: bind
+        source: ./fastapi/app
+        target: /app/app
     environment:
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
-      AWS_DEFAULT_REGION: us-east-1
-      AWS_RESOURCES_ENDPOINT: http://localstack:4566
-      S3_BUCKET: $S3_BUCKET
-      POSTGRES_ADMIN_CREDENTIALS_ARN: $POSTGRES_ADMIN_CREDENTIALS_ARN
-      # This URL omits the "http://" in order to remain consistent
-      # with the value of the URL returned by the ElasticSearch Domain 
-      # CDK component
-      ELASTICSEARCH_URL: elastic:9200
+      REST_API_ENDPOINT: $REST_API_ENDPOINT
+      S3_ENDPOINT: $S3_ENDPOINT
+      PDFS_S3_BUCKET: $PDFS_S3_BUCKET
+      FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
+      DBURL: postgres://masteruser:password@db:5432/nasadb
+      ELASTICURL: http://elastic:9200
       IDP_METADATA_URL: $IDP_METADATA_URL
       FASTAPI_HOST: http://localhost:8000
       JWT_SECRET: $JWT_SECRET
       APT_FRONTEND_URL: $APT_FRONTEND_URL
     depends_on:
-      - localstack-ready
-      - db-bootstrapper
+      - localstack
+      - rest-api
+    # links:
+    #   - "localstack:localhost"
   swagger:
     image: swaggerapi/swagger-ui
     ports:
@@ -114,9 +79,9 @@ services:
     expose:
       - "8080"
     environment:
-      API_URL: http://localhost:8000/atbds
+      API_URL: http://localhost:3000/
     depends_on:
-      - api
+      - rest-api
   db-ready:
     image: dadarek/wait-for-dependencies
     depends_on:
@@ -127,4 +92,6 @@ services:
     depends_on:
       - localstack
     command: localstack:4566
+
+
   

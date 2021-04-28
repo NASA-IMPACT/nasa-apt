@@ -1,4 +1,4 @@
--- Revert nasa-apt:anonymous from pg
+-- Revert nasa-apt:triggerfix from pg
 
 BEGIN;
 
