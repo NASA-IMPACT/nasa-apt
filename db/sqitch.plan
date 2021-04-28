@@ -2,18 +2,7 @@
 %project=nasa-apt
 %uri=https://github.com/developmentseed/nasa-apt
 
-appschema 2019-07-09T15:13:53Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add schema for nasa-apt.
-tables [appschema] 2019-07-09T17:16:54Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add tables for nasa-apt.
-functions [tables] 2019-07-09T17:47:01Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add functions for nasa-apt.
-atbdConstraint [tables] 2019-07-12T15:33:30Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add cascade constraint to atbd_versions
-contactsContraints [tables] 2019-07-15T16:09:04Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add cascade delete behavior for contacts and groups.
-referenceyear [tables] 2019-07-18T16:06:36Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add year to publication_references
-textsearch [atbdConstraint tables] 2019-09-04T17:10:13Z Sean Harkins <seanharkins@Seans-MacBook-Pro-2.local> # Add full text search for nested properties
-copyATBD [tables] 2019-10-18T14:14:13Z Alyssa Harris <alyssaharris@Alyssas-MacBook-Pro.local> # Add function to copy entire ATBD
-atbdAlias [tables] 2020-05-07T14:34:43Z Daniel da Silva <daniel@hystericalhamster> # Add alias field to atbd
-copyATBDAlias [copyATBD] 2020-05-08T15:56:26Z Daniel da Silva <daniel@hystericalhamster> # Creates a unique alias when copying atbd
-textsearchAlias [textsearch] 2020-05-08T15:57:18Z Daniel da Silva <daniel@hystericalhamster> # Includes the atbs alias when searching
-notifytriggers 2020-07-30T16:31:36Z David Bitner <bitner@bitner-desktop> # Add triggers to send notify to be used for updating elastic
-anonymous 2020-12-10T13:24:06Z David Bitner <bitner@bitner-desktop> # add row level security for anonymous users
-triggerfix 2020-12-10T14:01:42Z David Bitner <bitner@bitner-desktop> # fix trigger for notifications
-journalDetails [tables] 2020-12-03T11:03:09Z Daniel da Silva <daniel@hystericalhamster> # Add fields for journal details
+appschema 2021-02-15T17:57:47Z Leo Thomas <leo@MacBook-Pro> # Add appschema for NASA-APT
+tables 2021-02-15T18:07:13Z Leo Thomas <leo@MacBook-Pro> # Add tables for NASA-APT
+anonymous 2021-02-17T03:12:13Z Leo Thomas <leo@MacBook-Pro> # Add role for unauthenticated user
+functions 2021-03-01T21:04:22Z Leo Thomas <leo@MacBook-Pro.local> # Adds functions for NASA-APT

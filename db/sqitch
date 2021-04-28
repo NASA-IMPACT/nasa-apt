@@ -54,6 +54,13 @@ fi
 # Set HOME, since the user ID likely won't be the same as for the sqitch user.
 passopt+=(-e "HOME=${homedst}")
 
+
+echo "HOME: $HOME"
+echo "homedst: $homedst"
+echo "passopt: ${passopt[@]}"
+echo "SQITCH_IMAGE: $SQITCH_IMAGE"
+echo "@: $@"
+
 # Run the container with the current and home directories mounted.
 docker run -it --rm --network host \
     --mount "type=bind,src=$(pwd),dst=/repo" \

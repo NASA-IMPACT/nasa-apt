@@ -31,11 +31,11 @@ INSERT INTO apt.atbd_contact_groups
 VALUES
     (2, 1);
 INSERT INTO apt.contacts
-    (contact_id, first_name, middle_name, last_name, uuid, url, mechanisms, roles)
+    (id, first_name, middle_name, last_name, uuid, url, mechanisms, roles)
 VALUES
     (3, 'Aaron', '', 'Kaulfus', '', '', '{"(Email,bmf0006@uah.edu)"}', '{"Technical contact",Investigator}');
 INSERT INTO apt.atbd_contacts
-    (atbd_id, contact_id)
+    (atbd_id, id)
 VALUES
     (2, 3);
 INSERT INTO apt.citations
@@ -51,7 +51,7 @@ INSERT INTO apt.data_access_output_data
 VALUES
     (1, 1, 2, 'https://sentinel.esa.int/web/sentinel/sentinel-data-access', '{"object":"value","document":{"object":"document","data":{},"nodes":[{"object":"block","type":"paragraph","data":{},"nodes":[{"object":"text","leaves":[{"object":"leaf","text":"Conditions for data access","marks":[]}]}]}]}}');
 INSERT INTO apt.publication_references
-    (publication_reference_id, atbd_version, atbd_id, authors, publication_date, title, series, edition, volume, issue, report_number, publication_place, publisher, pages, isbn, doi, online_resource, other_reference_details, year)
+    (id, atbd_version, atbd_id, authors, publication_date, title, series, edition, volume, issue, report_number, publication_place, publisher, pages, isbn, doi, online_resource, other_reference_details, year)
 VALUES
     (2, 1, 2, 'Charles Dickens,  John Steinbeck', NULL, 'Example Reference', 'A', '3rd', '42ml', NULL, NULL, 'Boston', 'Penguin Books', '189-198', '123456789', NULL, NULL, NULL, 1995);
 

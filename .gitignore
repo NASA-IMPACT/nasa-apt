@@ -4,7 +4,9 @@
 ecs/tex/Misc Test Files
 .idea
 venv
-.env
-.envrc
+.env*
 .resources
 .vscode
+cdk.out/*
+*.pyc
+**/__pycache__/

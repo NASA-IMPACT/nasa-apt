@@ -18,10 +18,11 @@ CREATE TYPE apt.e_contact_mechanism_type AS ENUM (
 );
 CREATE TYPE apt.contact_mechanism AS (
  mechanism_type apt.e_contact_mechanism_type,
- mechanism_value VARCHAR (1024)
+ mechanism_value VARCHAR (1024) 
 );
-CREATE TYPE apt.atbd_status AS ENUM (
+CREATE TYPE apt.atbd_version_status AS ENUM (
   'Draft',
+  'Review',
   'Published'
 );
 CREATE TYPE apt.e_contact_role_type AS ENUM (
@@ -34,144 +35,52 @@ CREATE TYPE apt.e_contact_role_type AS ENUM (
  'Science software development'
 );
 CREATE TABLE apt.contacts(
- contact_id serial PRIMARY KEY,
+ id serial PRIMARY KEY,
  first_name VARCHAR (1024) NOT NULL,
  middle_name VARCHAR (1024),
  last_name VARCHAR (1024) NOT NULL,
  uuid VARCHAR (1024),
  url VARCHAR (1024),
- mechanisms apt.contact_mechanism[],
- roles apt.e_contact_role_type[]
-);
-CREATE TABLE apt.contact_groups(
- contact_group_id serial PRIMARY KEY,
- group_name VARCHAR (1024) NOT NULL,
- uuid VARCHAR (1024),
- url VARCHAR (1024),
- mechanisms apt.contact_mechanism[],
- roles apt.e_contact_role_type[]
+ mechanisms apt.contact_mechanism []
 );
 CREATE TABLE apt.atbds(
-  atbd_id serial PRIMARY KEY,
-  title VARCHAR (1024)
+  id serial PRIMARY KEY,
+  title VARCHAR (1024) NOT NULL,
+  alias VARCHAR(256) UNIQUE CONSTRAINT alphanum_alias CHECK(alias ~ '^[a-z0-9-]+$') DEFAULT NULL,
+  created_by VARCHAR (1024) NOT NULL,
+  created_at TIMESTAMPTZ default now(),
+  last_updated_by VARCHAR(1024), 
+  last_updated_at TIMESTAMPTZ default now()
 );
-CREATE TABLE apt.atbd_contacts(
-  atbd_id INTEGER NOT NULL,
-  contact_id INTEGER NOT NULL,
-  PRIMARY KEY (atbd_id, contact_id),
-  FOREIGN KEY (atbd_id) REFERENCES apt.atbds(atbd_id),
-  FOREIGN KEY (contact_id) REFERENCES apt.contacts(contact_id)
-);
-CREATE TABLE apt.atbd_contact_groups(
-  atbd_id INTEGER NOT NULL,
-  contact_group_id INTEGER NOT NULL,
-  PRIMARY KEY (atbd_id, contact_group_id),
-  FOREIGN KEY (atbd_id) REFERENCES apt.atbds(atbd_id),
-  FOREIGN KEY (contact_group_id) REFERENCES apt.contact_groups(contact_group_id)
-);
+-- Having only major (and not minor) included in the primary key
+-- strictly enforces the fact that all minor version updates get "squashed" and 
+-- that APT only maintains major versions
 CREATE TABLE apt.atbd_versions(
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id) REFERENCES apt.atbds(atbd_id),
-  PRIMARY KEY (atbd_id, atbd_version),
-  scientific_theory json,
-  scientific_theory_assumptions json,
-  mathematical_theory json,
-  mathematical_theory_assumptions json,
-  introduction json,
-  historical_perspective json,
-  performance_assessment_validation_methods json,
-  performance_assessment_validation_uncertainties json,
-  performance_assessment_validation_errors json,
-  algorithm_usage_constraints json,
-  status apt.atbd_status default 'Draft'
+    major INTEGER NOT NULL default 1,
+    minor INTEGER NOT NULL default 0,
+    atbd_id INTEGER NOT NULL,
+    FOREIGN KEY (atbd_id) REFERENCES apt.atbds(id) ON DELETE CASCADE,
+    PRIMARY KEY (atbd_id, major), 
+    "status" apt.atbd_version_status default 'Draft',
+    document json default '{}',
+    sections_completed json default '{}',
+    published_by VARCHAR(1024),
+    published_at TIMESTAMPTZ,
+    created_by VARCHAR(1024),
+    created_at TIMESTAMPTZ default now(),
+    last_updated_by VARCHAR(1024),
+    last_updated_at TIMESTAMPTZ default now(),
+    changelog VARCHAR,
+    doi VARCHAR(1024),
+    citation JSON default '{}'
 );
-CREATE TABLE apt.citations(
-  citation_id serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
+CREATE TABLE apt.atbd_versions_contacts(
   atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES apt.atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  creators VARCHAR (1024),
-  editors VARCHAR (1024),
-  title VARCHAR (1024),
-  series_name VARCHAR (1024),
-  release_date VARCHAR (1024),
-  release_place VARCHAR (1024),
-  publisher VARCHAR (1024),
-  version VARCHAR (1024),
-  issue VARCHAR (1024),
-  additional_details VARCHAR (1024),
-  online_resource VARCHAR (1024)
-);
-CREATE TABLE apt.algorithm_input_variables(
-  algorithm_input_variable_id serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES apt.atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  name VARCHAR (1024),
-  long_name VARCHAR (1024),
-  unit VARCHAR (1024)
-);
-CREATE TABLE apt.algorithm_output_variables(
-  algorithm_output_variable_id serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES apt.atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  name VARCHAR (1024),
-  long_name VARCHAR (1024),
-  unit VARCHAR (1024)
-);
-CREATE TABLE apt.algorithm_implementations(
-  algorithm_implementation_id serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES apt.atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  access_url VARCHAR (1024),
-  execution_description json NOT NULL
-);
-CREATE TABLE apt.publication_references(
-  publication_reference_id serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES apt.atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  authors VARCHAR (1024),
-  publication_date DATE,
-  title VARCHAR (1024),
-  series VARCHAR (1024),
-  edition VARCHAR (1024),
-  volume VARCHAR (1024),
-  issue VARCHAR (1024),
-  report_number VARCHAR (1024),
-  publication_place VARCHAR (1024),
-  publisher VARCHAR (1024),
-  pages VARCHAR (1024),
-  isbn VARCHAR (1024),
-  doi VARCHAR (1024),
-  online_resource VARCHAR (1024),
-  other_reference_details VARCHAR (1024)
-);
-CREATE TABLE apt.data_access_input_data(
-  data_access_input_data_id serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES apt.atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  access_url VARCHAR (1024),
-  description json
-);
-CREATE TABLE apt.data_access_output_data(
-  data_access_output_data_id serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES apt.atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  access_url VARCHAR (1024),
-  description json
-);
-CREATE TABLE apt.data_access_related_urls(
-  data_access_related_url_id serial PRIMARY KEY,
-  atbd_version INTEGER NOT NULL,
-  atbd_id INTEGER NOT NULL,
-  FOREIGN KEY (atbd_id, atbd_version) REFERENCES apt.atbd_versions(atbd_id, atbd_version) ON DELETE CASCADE,
-  url VARCHAR (1024),
-  description json
+  major INTEGER NOT NULL,
+  FOREIGN KEY (atbd_id, major) REFERENCES apt.atbd_versions(atbd_id, major) ON DELETE CASCADE,
+  contact_id INTEGER NOT NULL,
+  FOREIGN KEY (contact_id) REFERENCES apt.contacts(id),
+  PRIMARY KEY (atbd_id, major, contact_id),
+  roles apt.e_contact_role_type[] 
 );
 COMMIT;
