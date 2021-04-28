@@ -1,4 +1,4 @@
-from app.db.models import Atbds, AtbdVersions
+from app.db.models import Atbds, AtbdVersions, Contacts
 from unittest.mock import patch
 import pytest
 from sqlalchemy import engine, create_engine, text, MetaData
@@ -10,8 +10,9 @@ from datetime import datetime, timedelta
 import os
 import boto3
 import json
-from moto import mock_secretsmanager
+from moto import mock_secretsmanager, mock_s3
 import factory
+from factory import fuzzy
 import faker
 import logging
 
@@ -31,7 +32,7 @@ def monkeysession(request):
     mpatch.undo()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def database_connection():
     """
     yields a dict of connection details to a Test DB
@@ -41,8 +42,8 @@ def database_connection():
         yield postgresql.dsn()
 
 
-@pytest.fixture
-def test_db_engine(database_connection):
+@pytest.fixture(scope="session")
+def empty_db(database_connection):
     """ Bind DB engine for application user to TestSession """
     url = engine.url.URL(
         "postgresql",
@@ -53,7 +54,9 @@ def test_db_engine(database_connection):
         port=database_connection["port"],
     )
     test_db_engine = create_engine(
-        url, pool_pre_ping=True, connect_args={"connect_timeout": 1}
+        url,
+        pool_pre_ping=True,
+        connect_args={"connect_timeout": 10, "options": "-csearch_path=apt,public"},
     )
 
     with test_db_engine.connect() as conn:
@@ -68,13 +71,19 @@ def test_db_engine(database_connection):
                         .replace("masteruser", "postgres").replace("nasadb", "test")
                     )
                 )
-        conn.execute(
-            # "SET SESSION AUTHORIZATION anonymous; SET SEARCH_PATH to apt, public;"
-            "SET SEARCH_PATH to apt,public;"
-        )
+
         logging.basicConfig()
         logging.getLogger("sqlalchemy.engine").setLevel(logging.CRITICAL)
     yield test_db_engine
+
+
+@pytest.fixture(scope="function")
+def test_db_engine(empty_db):
+
+    yield empty_db
+    empty_db.execute(
+        "DELETE FROM atbd_versions_contacts; DELETE FROM atbd_versions; DELETE FROM contacts; DELETE FROM atbds; "
+    )
 
 
 @pytest.fixture
@@ -94,13 +103,26 @@ def db_session(test_db_engine, secrets):
     session.close()
 
 
-@mock_secretsmanager
 @pytest.fixture
 def test_client(db_session):
 
     from app.main import app
 
     yield TestClient(app)
+
+
+@mock_s3
+@pytest.fixture
+def s3_bucket(monkeysession, s3_client):
+    from app.config import BUCKET
+
+    yield s3_client.create_bucket(Bucket=BUCKET)
+
+
+@pytest.fixture
+def s3_client(monkeysession):
+    with mock_s3():
+        yield boto3.client("s3", region_name="us-east-1")
 
 
 @pytest.fixture
@@ -187,13 +209,11 @@ def atbd_versions_factory(db_session):
 
 
 @pytest.fixture
-def atbds_factory(db_session, atbd_versions_factory):
+def atbds_factory(db_session):
     class AtbdsFactory(factory.alchemy.SQLAlchemyModelFactory):
         title = factory.Faker("pystr")
-        alias = factory.Faker(
-            "pystr_format",
-            string_format="?#-###{{random_int}}{{random_letter}}",
-            letters="qwertyuiopasdfghjklzxcvbnm",
+        alias = fuzzy.FuzzyText(
+            length=15, prefix="x9-", chars="qwertyuiopasdfghjklzxcvbnm",
         )
         created_by = factory.Faker("pystr")
         last_updated_by = factory.Faker("pystr")
@@ -206,8 +226,31 @@ def atbds_factory(db_session, atbd_versions_factory):
 
 
 @pytest.fixture
-def atbd_creation_input():
-    yield {"title": "Test ATBD 1", "alias": "test-atbd-1"}
+def contacts_factory(db_session):
+    class ContactsFactory(factory.alchemy.SQLAlchemyModelFactory):
+
+        first_name = fuzzy.FuzzyText(length=10)
+        middle_name = fuzzy.FuzzyText(length=10)
+        last_name = fuzzy.FuzzyText(length=10)
+        uuid = fuzzy.FuzzyText(length=10)
+        url = fuzzy.FuzzyText(length=10, prefix="http://")
+
+        # mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
+        mechanisms = [
+            {"mechanism_type": "Email", "mechanism_value": "test@email.com"},
+            {"mechanism_type": "Twitter", "mechanism_value": "@test_handle"},
+        ]
+
+        class Meta:
+            model = Contacts
+            sqlalchemy_session = db_session
+
+    yield ContactsFactory
+
+
+# @pytest.fixture
+# def atbd_creation_input():
+#     yield {"title": "Test ATBD 1", "alias": "test-atbd-1"}
 
 
 @pytest.fixture

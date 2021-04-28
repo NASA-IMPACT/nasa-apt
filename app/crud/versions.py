@@ -1,9 +1,10 @@
 from app.crud.base import CRUDBase
-from app.db.models import AtbdVersions
+from app.db.models import AtbdVersions, AtbdVersionsContactsAssociation
 from app.db.db_session import DbSession
-from app.schemas.versions import FullOutput, Create, Update, StatusEnum
+from app.schemas.versions import FullOutput, Create, Update
 from app.crud.atbds import crud_atbds
 from sqlalchemy import orm
+from typing import List
 
 from fastapi import HTTPException
 
@@ -26,12 +27,19 @@ class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
         orm.make_transient(latest_version)
 
         latest_version.major = latest_version.major + 1
+        latest_version.minor = 0
         latest_version.changelog = None
         latest_version.doi = None
         latest_version.citation = None
-        latest_version.created_by = user
-        latest_version.last_updated_by = user
 
+        latest_version.created_by = user
+        latest_version.created_at = None
+
+        latest_version.last_updated_by = user
+        latest_version.last_updated_at = None
+
+        latest_version.published_at = None
+        latest_version.published_by = None
         # Postgres will auto-populate status with default value ("Draft")
         latest_version.status = None
 

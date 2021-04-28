@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, validator
+from typing import Optional, List, Any
 import enum
+import re
 
 
 class ContactMechanismEnum(str, enum.Enum):
@@ -28,32 +29,58 @@ class RolesEnum(str, enum.Enum):
     science_software_development = "Science software development"
 
 
-class Mechanisms(BaseModel):
+class Mechanism(BaseModel):
     # TODO: use enum from above
-    contact_mechanism_type: Optional[str]
+    mechanism_type: Optional[str]
     mechanism_value: Optional[str]
-    pass
 
 
 class Roles(BaseModel):
     # TODO: use enum from above
     role: Optional[str]
-    pass
 
 
-class Create(BaseModel):
+class ContactsBase(BaseModel):
     first_name: str
     middle_name: Optional[str]
     last_name: str
     uuid: Optional[str]
     url: Optional[str]
-    mechanisms: List[Mechanisms]
-    roles: List[Roles]
-    title: Optional[str]
+
+    class Config:
+        title = "Contacts"
+        orm_mode = True
 
 
-class Output(Create):
+class Create(ContactsBase):
+
+    mechanisms: Optional[List[Mechanism]]
+
+    @validator("mechanisms")
+    def format_contact_mechanisms(cls, v):
+
+        s = ",".join(f'"({m.mechanism_type},{m.mechanism_value})"' for m in v)
+        return f"{{{s}}}"
+
+
+class Output(ContactsBase):
     id: int
+    mechanisms: Optional[str]
+
+    # TODO: I couldn't get the SQLAlchemy model working with
+    # composite array and composite type, so I've left them
+    # as a string representation in the datamodel and then
+    # converted them to a list of Mechanism objects here.
+    # This is not ideal, and this kind of formatting should happen
+    # at the model level
+    @validator("mechanisms")
+    def format_contact_mechanisms(cls, v):
+        v = [i.strip('\\"(){}') for i in v.split(",")]
+
+        return [
+            Mechanism(mechanism_type=v[i], mechanism_value=v[i + 1])
+            for i in range(0, len(v) - 1, 2)
+        ]
 
 
 class Update(BaseModel):
@@ -62,20 +89,57 @@ class Update(BaseModel):
     last_name: Optional[str]
     uuid: Optional[str]
     url: Optional[str]
-    mechanisms: Optional[List[Mechanisms]]
-    roles: Optional[List[Roles]]
-    title: Optional[Optional[str]]
+    mechanisms: Optional[List[Mechanism]]
+
+    @validator("mechanisms")
+    def format_contact_mechanisms(cls, v):
+
+        s = ",".join(f'"({m.mechanism_type},{m.mechanism_value})"' for m in v)
+        return f"{{{s}}}"
 
 
 class Lookup(BaseModel):
     id: int
 
 
-# TODO: implement filtering based on _mechanism in Contact.mechanisms: []
-# TODO: implement filtering based on _role in Contact.roles: []
+# TODO: implement filtering
 class ListFilters(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
     uuid: Optional[str]
     url: Optional[str]
-    title: Optional[str]
+
+
+class ContactsLinkOutput(BaseModel):
+    contact: Output
+    roles: str
+
+    @validator("roles")
+    def format_contact_mechanisms(cls, v):
+
+        return [i.strip('\\"(){}') for i in v.split(",")]
+
+    class Config:
+        title = "ContactsLink"
+        orm_mode = True
+
+
+# TODO; role should be enum
+class ContactsLinkInput(BaseModel):
+    id: int
+    roles: List[str]
+
+    @validator("roles")
+    def format_roles(cls, v):
+        s = ",".join(i for i in v)
+        return f"{{{s}}}"
+
+
+class ContactsAssociationLookup(BaseModel):
+    contact_id: int
+    atbd_id: int
+    major: int
+
+
+class ContactsAssociation(ContactsAssociationLookup):
+    roles: str

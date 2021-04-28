@@ -54,6 +54,7 @@ inst_reqs = [
     "typing-extensions==3.7.4.3",
     "aiofiles==0.6.0",
     "pylatex==1.4.1",
+    "SQLAlchemy-Utils==0.37.0",
 ]
 extra_reqs = {
     "server": ["uvicorn", "click"],

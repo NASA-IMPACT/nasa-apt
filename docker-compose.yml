@@ -31,7 +31,8 @@ services:
       #   target: /var/lib/postgresql/data
     depends_on: 
       - db-ready
-
+      
+      
   elastic:
     # Elastic db for local development only.
     # For staging/production, add elasticache instance
@@ -63,8 +64,9 @@ services:
     ports:
       - "4566:4566"
     volumes: 
-      - ./localstack:/docker-entrypoint-initaws.d
+      - ./localstack/setup.sh:/docker-entrypoint-initaws.d/setup.sh
       - ./localstack/figures:/figures
+      
   api:
     build:
       context: ./
@@ -85,12 +87,6 @@ services:
     volumes:
       - ./app:/app/app
       - ./localstack/wait_for_localstack_ready.py:/app/wait_for_localstack_ready.py
-      # - type: bind
-      #   source: ./app
-      #   target: /app/app
-      # - type: bind
-      #   source: ./localstack/wait_for_localstack_ready.py
-      #   target: /app/wait_for_localstack_ready.py
 
     environment:
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
@@ -131,22 +127,4 @@ services:
     depends_on:
       - localstack
     command: localstack:4566
-  # localstack-ready:
-  #   build: 
-  #     context: ./
-  #     dockerfile: ./localstack-ready/Dockerfile
-  #   volumes: 
-  #     - type: bind
-  #       source: ./localstack-ready/
-  #       target: /app
-  #   entrypoint: "python3"
-  #   command: "/app/wait_for_ready.py"
-  #   depends_on: 
-  #     - localstack
-  #   environment: 
-  #     AWS_ACCESS_KEY_ID: stub
-  #     AWS_SECRET_ACCESS_KEY: stub
-  #     AWS_DEFAULT_REGION: us-east-1
-  #     TIMEOUT: 360
-  #     LOCALSTACK_ENDPOINT_URL: http://localstack:4566
   

@@ -3,30 +3,32 @@ from sqlalchemy import (
     String,
     Integer,
     ForeignKey,
+    ForeignKeyConstraint,
     CheckConstraint,
     types,
     JSON,
     Enum,
+    Table,
+    Text,
+    cast,
 )
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.ext.associationproxy import association_proxy
+import sqlalchemy.types as types
+from sqlalchemy_utils import CompositeArray, CompositeType
 
 from app.db.base import Base
 from app.db.types import utcnow
 from app.schemas.versions import StatusEnum
 from app.schemas.contacts import RolesEnum, ContactMechanismEnum
-
-# TODO: break this up into individual files
+import re
 
 
 class AtbdVersions(Base):
-    atbd_id = Column(
-        Integer(),
-        ForeignKey("atbds.id"),  # onupdate="CASCADE", ondelete="CASCADE"),
-        primary_key=True,
-        index=True,
-    )
+    __tablename__ = "atbd_versions"
+    atbd_id = Column(Integer(), ForeignKey("atbds.id"), primary_key=True, index=True,)
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="Draft", nullable=False)
@@ -50,11 +52,12 @@ class AtbdVersions(Base):
             f" sections_completed={self.sections_completed}, created_by={self.created_by},"
             f" created_at={self.created_at}, published_by={self.published_by},"
             f" published_at={self.published_by}, last_updated_at={self.last_updated_at}>"
-            f" last_updated_by={self.last_updated_by}"
+            f" last_updated_by={self.last_updated_by}"  # ", contacts={self.contacts}"
         )
 
 
 class Atbds(Base):
+    __tablename__ = "atbds"
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
     title = Column(String(), nullable=False)
     alias = Column(String(), CheckConstraint("alias ~ '^[a-z0-9-]+$'"), unique=True)
@@ -65,7 +68,6 @@ class Atbds(Base):
 
     versions = relationship(
         "AtbdVersions",
-        # primaryjoin="foreign(Atbds.id) == AtbdVersions.atbd_id",
         backref="atbd",
         uselist=True,
         lazy="joined",
@@ -83,20 +85,70 @@ class Atbds(Base):
         )
 
 
+class MechanismArray(postgresql.ARRAY):
+    def bind_expression(self, bindvalue):
+        return cast(bindvalue, self)
+
+    def result_processor(self, dialect, coltype):
+        super_rp = super(MechanismArray, self).result_processor(dialect, coltype)
+
+        def handle_raw_string(value):
+
+            return re.findall(r"([\"'])(?:(?=(\\?))\2.)*?\1", value)
+
+        def process(value):
+            return super_rp(handle_raw_string(value))
+
+        return process
+
+
 class Contacts(Base):
+    __tablename__ = "contacts"
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
     first_name = Column(String(), nullable=False)
     middle_name = Column(String())
     last_name = Column(String(), nullable=False)
     uuid = Column(String())
     url = Column(String())
-    mechanisms = Column(ARRAY(String()))
-    roles = Column(ARRAY(String()))
-    title = Column(String())
+    mechanisms = Column(String())
 
     def __repr__(self):
         return (
             f"<Contact(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name},"
-            f" last_name={self.last_name}, uuid={self.uuid}, url={self.url}, title={self.title}, "
-            f" no. mechanisms={len(self.mechanisms)}, no. roles={len(self.roles)}"
+            f" last_name={self.last_name}, uuid={self.uuid}, url={self.url}, "
+            f" mechanisms={self.mechanisms}"
         )
+
+
+class AtbdVersionsContactsAssociation(Base):
+    __tablename__ = "atbd_versions_contacts"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["atbd_id", "major"],
+            ["atbd_versions.atbd_id", "atbd_versions.major"],
+            name="atbd_version_fk_constraint",
+        ),
+    )
+
+    atbd_id = Column(Integer(), nullable=False, primary_key=True,)
+    major = Column(Integer(), nullable=False, primary_key=True,)
+
+    contact_id = Column(
+        Integer(), ForeignKey("contacts.id"), nullable=False, primary_key=True
+    )
+    roles = Column(String())
+
+    atbd_version = relationship(
+        "AtbdVersions", backref="contacts_link", lazy="joined"  # uselist=True
+    )
+    contact = relationship(
+        "Contacts", backref="atbd_versions_link", lazy="joined"  # uselist=True
+    )
+
+    def __repr__(self):
+        return (
+            f"<AtbdVersionContact(atbd_id={self.atbd_id}), major={self.major}, "
+            f"contact_id={self.contact_id}, roles={self.roles}, "
+            f"atbd_versions={self.atbd_version}, contacts={self.contact}>"
+        )
+

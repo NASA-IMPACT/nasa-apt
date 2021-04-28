@@ -78,6 +78,7 @@ class nasaAPTLambdaStack(core.Stack):
                 ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL
             ),
             database_name="nasadb",
+            backup_retention=core.Duration.days(7),
             deletion_protection=config.STAGE.lower() == "prod",
             removal_policy=core.RemovalPolicy.SNAPSHOT
             if config.STAGE.lower() == "prod"
@@ -141,7 +142,6 @@ class nasaAPTLambdaStack(core.Stack):
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             ELASTICSEARCH_URL=esdomain.domain_endpoint,
             JWT_SECRET=os.environ["JWT_SECRET"],
-            FASTAPI_HOST=os.environ["FASTAPI_HOST"],
             IDP_METADATA_URL=os.environ["IDP_METADATA_URL"],
             S3_BUCKET=bucket.bucket_name,
         )
@@ -183,6 +183,12 @@ class nasaAPTLambdaStack(core.Stack):
             f"{id}-endpoint-url",
             value=api_gateway.api_endpoint,
             description="API Gateway endpoint for the APT API",
+        )
+
+        # Adds the "host" to the lambda function environment variables
+        # This is necessary for the saml authentication logic
+        lambda_function.add_environment(
+            key="FASTAPI_HOST", value=api_gateway.api_endpoint,
         )
 
 

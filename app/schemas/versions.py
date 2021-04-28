@@ -1,7 +1,9 @@
 from datetime import datetime
+from app.schemas import contacts
 from pydantic import BaseModel, validator
-from typing import Optional, Union, Dict, Any
+from typing import Optional, Union, Dict, Any, List
 import enum
+from app.schemas.document import Document
 
 
 class StatusEnum(enum.Enum):
@@ -22,7 +24,7 @@ class OutputBase(BaseModel):
     last_updated_at: datetime
 
     class Config:
-        title = "Atbd"
+        title = "AtbdVersion"
         orm_mode = True
 
 
@@ -30,6 +32,8 @@ class SummaryOutput(OutputBase):
     major: int
     minor: int
     version: Optional[str]
+    citation: Optional[dict]
+    changelog: Optional[str]
 
     @validator("version", always=True)
     def generate_semver(cls, v, values) -> str:
@@ -37,11 +41,10 @@ class SummaryOutput(OutputBase):
 
 
 class FullOutput(SummaryOutput):
-    document: Optional[dict]
+    document: Optional[Document]
     sections_completed: Optional[dict]
-    changelog: Optional[str]
     doi: Optional[str]
-    citation: Optional[dict]
+    contacts_link: Optional[List[contacts.ContactsLinkOutput]]
 
 
 class Create(BaseModel):
@@ -55,12 +58,13 @@ class Lookup(BaseModel):
 
 class Update(BaseModel):
     minor: Optional[int]
-    document: Optional[dict]
+    document: Optional[Document]
     sections_completed: Optional[dict]
     changelog: Optional[str]
     doi: Optional[str]
     citation: Optional[dict]
     status: Optional[str]
+    contacts: Optional[List[contacts.ContactsLinkInput]]
 
     @validator("document", always=True)
     def ensure_either_minor_or_document(

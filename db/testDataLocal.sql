@@ -1,18 +1,24 @@
 INSERT INTO contacts
-  (first_name, last_name, mechanisms, roles)
-SELECT 'Leonardo', 'Davinci', '{ "(\"Email\",\"test@email.com\")" }', '{ "Science contact", "Metadata author" }'
+  (first_name, last_name, mechanisms)
+-- SELECT 'Leonardo', 'Davinci', '{ "(\"Email\",\"test@email.com\")" }'
+SELECT 'Leonardo', 'Davinci', ARRAY[row('Email', 'test@email.com'), row('Twitter', '@test_handle')]
+::contact_mechanism[]
 WHERE 
-    NOT EXISTS(
-        SELECT first_name, last_name, mechanisms, roles
+    NOT EXISTS
+(
+        SELECT first_name, last_name, mechanisms
 FROM contacts
 WHERE first_name = 'Leonardo' AND last_name = 'Davinci'
     );
 INSERT INTO contacts
-  (first_name, last_name)
-SELECT 'Gregor', 'Mendel'
+  (first_name, last_name, mechanisms)
+-- SELECT 'Gregor', 'Mendel', '{ "(\"Mobile\", \"1 (234) 567 - 8910\")" }'
+SELECT 'Gregor', 'Mendel', ARRAY[row('Mobile', '1(234)567-8910')]
+::contact_mechanism[]
 WHERE 
-    NOT EXISTS(
-        SELECT first_name, last_name
+    NOT EXISTS
+(
+        SELECT first_name, last_name, mechanisms
 FROM contacts
 WHERE first_name = 'Gregor' AND last_name = 'Mendel'
     );
@@ -21,10 +27,11 @@ INSERT INTO atbds
 VALUES
   ('Test ATBD 1', 'test-atbd-1', 'LeoThomas123', 'LeoThomas123');
 
+
 INSERT INTO atbd_versions
   (atbd_id, created_by, last_updated_by, major, minor, document, citation, status)
 VALUES
-  (1, 'LeoThomas123', 'LeoThomas123', 1, 0, '{
+  (1, 'LeoThomas123', 'LeoThomas123', 1, 1, '{
   "introduction": null,
   "historical_perspective": null,
   "mathematical_theory": {
@@ -230,36 +237,14 @@ VALUES
   "algorithm_implementations": [
     {
       "url": "https://developmentseed.org",
-      "description": {
-        "children": [
-          {
-            "type": "p",
-            "children": [
-              {
-                "text": "This is our website"
-              }
-            ]
-          }
-        ]
-      }
+      "description": "This is our website"
     }
   ],
   "data_access_input_data": [],
   "data_access_output_data": [
     {
       "url": "https://youtube.com",
-      "description": {
-        "children": [
-          {
-            "type": "p",
-            "children": [
-              {
-                "text": "This is basically a link to youtube"
-              }
-            ]
-          }
-        ]
-      }
+      "description": "This is basically a link to youtube"
     }
   ],
   "data_access_related_urls": [],
@@ -443,7 +428,7 @@ VALUES
   },
   "publication_references": [
     {
-      "id": 1,
+      "id": "1",
       "authors": "Dickens, Charles and Steinbeck, John",
       "title": "Example Reference",
       "series": "A",
@@ -453,8 +438,8 @@ VALUES
       "publication_place": "Boston",
       "publisher": "PenguinBooks",
       "pages": "189-198",
-      "isbn": 123456789,
-      "year": 1995
+      "isbn": "123456789",
+      "year": "1995"
     }
   ]
 }', '{
@@ -469,13 +454,12 @@ VALUES
   "issue": "alpha2",
   "additional_details": "",
   "online_resource": "http://nasa-apt2-staging.s3-website-us-east-1.amazonaws.com/"
-}',
-    'Published');
+}', 'Published');
 
 INSERT INTO atbd_versions
   (atbd_id, created_by, last_updated_by, major, minor, document, citation)
 VALUES
-  (1, 'LeoThomas123', 'LeoThomas123', 2, 1, '{
+  (1, 'LeoThomas123', 'LeoThomas123', 2, 0, '{
   "introduction": null,
   "historical_perspective": null,
   "mathematical_theory": {
@@ -681,36 +665,14 @@ VALUES
   "algorithm_implementations": [
     {
       "url": "https://developmentseed.org",
-      "description": {
-        "children": [
-          {
-            "type": "p",
-            "children": [
-              {
-                "text": "This is our website"
-              }
-            ]
-          }
-        ]
-      }
+      "description": "This is our website"
     }
   ],
   "data_access_input_data": [],
   "data_access_output_data": [
     {
       "url": "https://youtube.com",
-      "description": {
-        "children": [
-          {
-            "type": "p",
-            "children": [
-              {
-                "text": "This is basically a link to youtube"
-              }
-            ]
-          }
-        ]
-      }
+      "description": "This is basically a link to youtube"
     }
   ],
   "data_access_related_urls": [],
@@ -894,7 +856,7 @@ VALUES
   },
   "publication_references": [
     {
-      "id": 1,
+      "id": "1",
       "authors": "Dickens, Charles and Steinbeck, John",
       "title": "Example Reference",
       "series": "A",
@@ -904,8 +866,8 @@ VALUES
       "publication_place": "Boston",
       "publisher": "PenguinBooks",
       "pages": "189-198",
-      "isbn": 123456789,
-      "year": 1995
+      "isbn": "123456789",
+      "year": "1995"
     }
   ]
 }', '{
@@ -920,4 +882,22 @@ VALUES
   "issue": "alpha2",
   "additional_details": "",
   "online_resource": "http://nasa-apt2-staging.s3-website-us-east-1.amazonaws.com/"
-}');
+}'
+);
+
+
+
+INSERT INTO atbd_versions_contacts
+  (atbd_id, major, contact_id, roles)
+VALUES
+  (
+    --    1, 1, 1, '{ "Science contact", "Metadata author" }'
+    1, 1, 1, ARRAY['Science contact', 'Metadata author']::e_contact_role_type[]    
+);
+INSERT INTO atbd_versions_contacts
+  (atbd_id, major, contact_id, roles)
+VALUES
+  (
+    --    1, 2, 2, '{ 'Investigator' }'
+    1, 2, 2, ARRAY['Investigator']::e_contact_role_type[]
+);

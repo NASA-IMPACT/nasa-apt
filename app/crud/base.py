@@ -1,4 +1,4 @@
-from typing import List, Generic, TypeVar, Type
+from typing import List, Generic, TypeVar, Type, Union, Tuple
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
@@ -44,6 +44,7 @@ class CRUDBase(
     def get_multi(
         self, db_session: Session, *, filters={}, skip=0, limit=100
     ) -> List[ModelType]:
+
         return (
             db_session.query(self.model)
             .filter_by(**filters)
@@ -99,10 +100,9 @@ class CRUDBase(
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
-
         return db_obj
 
-    def remove(self, db_session: Session, *, id: int) -> ModelType:
+    def remove(self, db_session: Session, *, id: Union[int, Tuple[int]]) -> ModelType:
         obj = db_session.query(self.model).get(id)
         db_session.delete(obj)
         db_session.commit()

@@ -7,7 +7,7 @@ import boto3
 from requests_aws4auth import AWS4Auth
 import time
 
-token_life = 60 * 60
+token_life = 60 * 60 * 24
 secrets_manager = boto3.Session(profile_name="dev-seed").client("secretsmanager")
 cloudformation = boto3.Session(profile_name="dev-seed").client("cloudformation")
 credentials = boto3.Session(profile_name="dev-seed").get_credentials()
@@ -776,4 +776,11 @@ es_endpoint = "http://localhost:9200"
 # print(r.content)
 
 print(create_pg_connection_string())
-# print(create_token())
+print(create_token())
+# r = re.get(
+#     f"{endpoint}/atbds/1/versions/2/pdf?token={create_token()}",
+#     # headers={"Authorization": f"Bearer {create_token()}"},
+# )
+# print(r.content)
+# for chunk in r.iter_content()
+

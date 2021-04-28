@@ -1,6 +1,6 @@
 """ATBD's endpoint."""
 from app import config
-from app.schemas import atbds, versions
+from app.schemas import atbds, versions, contacts
 from app.db.db_session import DbSession
 from app.api.utils import (
     get_db,
@@ -12,7 +12,8 @@ from app.api.v1.pdf import save_pdf_to_s3
 from app.auth.saml import User
 from app.crud.atbds import crud_atbds
 from app.crud.versions import crud_versions
-from app.db.models import Atbds
+from app.crud.contacts import crud_contacts_associations
+from app.db.models import Atbds, AtbdVersionsContactsAssociation
 from sqlalchemy import exc
 from fastapi import (
     APIRouter,
@@ -139,22 +140,52 @@ def update_atbd_version(
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     [version] = atbd.versions
+
+    if version_input.contacts and len(version_input.contacts):
+
+        for contact in version_input.contacts:
+
+            crud_contacts_associations.upsert(
+                db_session=db,
+                obj_in=contacts.ContactsAssociation(
+                    contact_id=contact.id,
+                    atbd_id=atbd_id,
+                    major=major,
+                    roles=contact.roles,
+                ),
+            )
+
+        for contact in version.contacts_link:
+            if contact.contact_id in [c.id for c in version_input.contacts]:
+                continue
+            crud_contacts_associations.remove(
+                db_session=db, id=(atbd_id, major, contact.contact_id)
+            )
+
     if version_input.minor and version.status != "Published":
         raise HTTPException(
             status_code=400,
             detail="ATBD must have status `published` in order to increment the minor version number",
         )
 
-    if version_input.minor == version.minor + 1:
+    if version_input.minor and version_input.minor != version.minor + 1:
+        raise HTTPException(
+            status_code=400,
+            detail="New version number must be exactly 1 greater than previous",
+        )
+
+    if version_input.minor:
         # A new version has been created - generate a cache a PDF for both the regular
         # PDF format, and the journal PDF format
-        print("ADDED PDF generation to background tasks")
         _add_pdf_generation_to_background_tasks(
             atbd=atbd, background_tasks=background_tasks
         )
 
     if version_input.document and not overwrite:
-        version_input.document = {**version.document, **version_input.document}
+        version_input.document = {
+            **version.document,
+            **version_input.document.dict(exclude_unset=True),
+        }
 
     if version_input.sections_completed and not overwrite:
         version_input.sections_completed = {
@@ -178,6 +209,11 @@ def delete_atbd_version(
 ):
     major, _ = get_major_from_version_string(version)
     [version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
+    if version.status == "Published":
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete an atbd version with status `Published`",
+        )
     db.delete(version)
     db.commit()
     return {}
@@ -186,6 +222,7 @@ def delete_atbd_version(
 @router.post("/atbds/{atbd_id}/publish", response_model=atbds.FullOutput)
 def publish_atbd(
     atbd_id: str,
+    publish_input: atbds.PublishInput,
     background_tasks: BackgroundTasks,
     db=Depends(get_db),
     user=Depends(require_user),
@@ -197,12 +234,21 @@ def publish_atbd(
             status_code=400,
             detail=f"Latest version of atbd {atbd_id} already has status: `Published`",
         )
+    now = datetime.datetime.now(datetime.timezone.utc)
     latest_version.status = "Published"
     latest_version.published_by = user["user"]
-    latest_version.published_at = datetime.datetime.now(datetime.timezone.utc)
+    latest_version.published_at = now
+
+    # Publishing a version counts as updating it, so we
+    # update the timestamp and user
+    latest_version.last_updated_by = user["user"]
+    latest_version.last_updated_at = now
+
+    if publish_input.changelog is not None and publish_input.changelog != "":
+        latest_version.changelog = publish_input.changelog
+
     db.commit()
     db.refresh(latest_version)
-    # TODO: ATBD has been published, generate and cache v1.0 PDF
 
     _add_pdf_generation_to_background_tasks(
         atbd=atbd, background_tasks=background_tasks
