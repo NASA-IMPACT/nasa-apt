@@ -32,6 +32,7 @@ class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
         latest_version.doi = None
         latest_version.citation = None
         latest_version.created_by = user
+        latest_version.created_at = None
         latest_version.last_updated_by = user
         latest_version.published_at = None
         latest_version.published_by = None
