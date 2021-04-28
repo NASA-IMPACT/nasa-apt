@@ -4,14 +4,11 @@ with open("README.md") as f:
     long_description = f.read()
 
 inst_reqs = [
-    # "aiofiles==0.5.0",
-    # "asyncpg==0.20.1",
     "boto3==1.13.18",
     "botocore==1.16.18",
     "botostubs==0.12.1.13.18",
     "certifi==2020.4.5.1",
     "chardet==3.0.4",
-    # "click==7.1.1",
     "data==0.4",
     "decorator==4.4.2",
     "docopt==0.6.2",
@@ -27,7 +24,6 @@ inst_reqs = [
     "jq==1.0.2",
     "latex==0.7.0",
     "num2words==0.5.10",
-    # "numpy==1.20.1",
     "pandas==1.0.3",
     "pipreqs==0.4.10",
     "pydantic==1.5.1",
