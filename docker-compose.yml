@@ -31,7 +31,8 @@ services:
       #   target: /var/lib/postgresql/data
     depends_on: 
       - db-ready
-
+      
+      
   elastic:
     # Elastic db for local development only.
     # For staging/production, add elasticache instance

@@ -1,7 +1,7 @@
 -- Revert nasa-apt:tables from pg
 
 BEGIN;
-DROP TABE apt.atbd_versions_contacts;
+DROP TABLE apt.atbd_versions_contacts;
 DROP TABLE apt.atbd_versions CASCADE;
 DROP TABLE apt.atbds CASCADE;
 DROP TABLE apt.contacts CASCADE;

@@ -309,6 +309,7 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False):
         "float",
         "amsmath",
         "array",
+        "fixltx2e",
     ]:
         doc.packages.append(Package(p))
 
