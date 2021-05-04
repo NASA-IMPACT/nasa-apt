@@ -1,7 +1,8 @@
 from pydantic import BaseModel, validator
-from typing import Optional, List, Any
+from typing import Optional, List
 import enum
-import re
+
+from app.schemas.versions_contacts import ContactsBase
 
 
 class ContactMechanismEnum(str, enum.Enum):
@@ -38,18 +39,6 @@ class Mechanism(BaseModel):
 class Roles(BaseModel):
     # TODO: use enum from above
     role: Optional[str]
-
-
-class ContactsBase(BaseModel):
-    first_name: str
-    middle_name: Optional[str]
-    last_name: str
-    uuid: Optional[str]
-    url: Optional[str]
-
-    class Config:
-        title = "Contacts"
-        orm_mode = True
 
 
 class Create(ContactsBase):
@@ -108,38 +97,3 @@ class ListFilters(BaseModel):
     last_name: Optional[str]
     uuid: Optional[str]
     url: Optional[str]
-
-
-class ContactsLinkOutput(BaseModel):
-    contact: Output
-    roles: str
-
-    @validator("roles")
-    def format_contact_mechanisms(cls, v):
-
-        return [i.strip('\\"(){}') for i in v.split(",")]
-
-    class Config:
-        title = "ContactsLink"
-        orm_mode = True
-
-
-# TODO; role should be enum
-class ContactsLinkInput(BaseModel):
-    id: int
-    roles: List[str]
-
-    @validator("roles")
-    def format_roles(cls, v):
-        s = ",".join(i for i in v)
-        return f"{{{s}}}"
-
-
-class ContactsAssociationLookup(BaseModel):
-    contact_id: int
-    atbd_id: int
-    major: int
-
-
-class ContactsAssociation(ContactsAssociationLookup):
-    roles: str

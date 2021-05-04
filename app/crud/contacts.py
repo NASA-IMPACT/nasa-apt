@@ -4,6 +4,8 @@ from app.schemas.contacts import (
     Output,
     Create,
     Update,
+)
+from app.schemas.versions_contacts import (
     ContactsAssociation,
     ContactsAssociationLookup,
 )

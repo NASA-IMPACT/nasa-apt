@@ -118,6 +118,7 @@ def s3_bucket(monkeysession, s3_resource):
 
     bucket = s3_resource.Bucket(name=BUCKET)
     bucket.create()
+    bucket.put_object(Key="fullmoon.jpg", Body=b"test")
     yield bucket
 
 
@@ -183,6 +184,10 @@ class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
         yield model
 
 
+with open("./tests/document_test_fixture.json") as f:
+    DOCUMENT = json.loads(f.read())
+
+
 @pytest.fixture
 def atbd_versions_factory(db_session):
     class AtbdVersionsFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -192,7 +197,8 @@ def atbd_versions_factory(db_session):
             "random_element",
             elements=["Draft", "Review", "Published"],
         )
-        document = faker.Faker().pydict(10, True, "str")
+        document = DOCUMENT
+        # document = faker.Faker().pydict(10, True, "str")
 
         sections_completed = faker.Faker().pydict(4, True, "str")
         published_by = factory.Faker("user_name")

@@ -25,11 +25,6 @@ def list_contacts(
 ):
     if filters:
         return crud_contacts.get_multi(db_session=db, filters=filters)
-    # res = db.execute("select mechanisms[].* from apt.contacts mechanisms;")
-    # for r in res:
-    #     print(r.mechanism_type)
-    #     print(r.mechanism_value)
-    print("GET CONTACTS: ", crud_contacts.get_multi(db_session=db))
     return crud_contacts.get_multi(db_session=db)
 
 

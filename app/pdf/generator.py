@@ -16,11 +16,9 @@ from pylatex import (
     Figure,
     utils,
 )
-from collections import OrderedDict
 from typing import List
 from app.db.models import Atbds
-from app.schemas.contacts import ContactsLinkOutput
-from app.schemas.contacts import Output as Contact
+from app.schemas.versions_contacts import ContactsLinkOutput
 from app.api.utils import s3_client
 from app.config import BUCKET
 

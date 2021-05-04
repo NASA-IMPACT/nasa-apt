@@ -1,9 +1,10 @@
-from datetime import datetime
-from app.schemas import contacts
 from pydantic import BaseModel, validator
 from typing import Optional, Union, Dict, Any, List
 import enum
+
+
 from app.schemas.document import Document
+from app.schemas import versions_contacts
 
 
 class StatusEnum(enum.Enum):
@@ -12,23 +13,7 @@ class StatusEnum(enum.Enum):
     published = "Published"
 
 
-# TODO: use status enum above
-class OutputBase(BaseModel):
-    status: str
-    published_by: Optional[str]
-    published_at: Optional[datetime]
-    sections_completed: Optional[dict]
-    created_by: str
-    created_at: datetime
-    last_updated_by: str
-    last_updated_at: datetime
-
-    class Config:
-        title = "AtbdVersion"
-        orm_mode = True
-
-
-class SummaryOutput(OutputBase):
+class SummaryOutput(versions_contacts.AtbdVersionsBase):
     major: int
     minor: int
     version: Optional[str]
@@ -44,7 +29,7 @@ class FullOutput(SummaryOutput):
     document: Optional[Document]
     sections_completed: Optional[dict]
     doi: Optional[str]
-    contacts_link: Optional[List[contacts.ContactsLinkOutput]]
+    contacts_link: Optional[List[versions_contacts.ContactsLinkOutput]]
 
 
 class Create(BaseModel):
@@ -106,7 +91,7 @@ class Update(BaseModel):
     doi: Optional[str]
     citation: Optional[Citation]
     status: Optional[str]
-    contacts: Optional[List[contacts.ContactsLinkInput]]
+    contacts: Optional[List[versions_contacts.ContactsLinkInput]]
 
     @validator("document", always=True)
     def ensure_either_minor_or_document(

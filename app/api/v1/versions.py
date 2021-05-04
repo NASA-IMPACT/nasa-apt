@@ -1,5 +1,5 @@
 """ATBD Versions endpoint."""
-from app.schemas import atbds, versions, contacts
+from app.schemas import atbds, versions, contacts, versions_contacts
 from app.db.db_session import DbSession
 from app.api.utils import (
     get_db,
@@ -65,7 +65,7 @@ def update_atbd_version(
 
             crud_contacts_associations.upsert(
                 db_session=db,
-                obj_in=contacts.ContactsAssociation(
+                obj_in=versions_contacts.ContactsAssociation(
                     contact_id=contact.id,
                     atbd_id=atbd_id,
                     major=major,

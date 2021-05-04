@@ -56,8 +56,8 @@ class AtbdVersions(Base):
             f" status={self.status}, document={self.document},"
             f" sections_completed={self.sections_completed}, created_by={self.created_by},"
             f" created_at={self.created_at}, published_by={self.published_by},"
-            f" published_at={self.published_by}, last_updated_at={self.last_updated_at}>"
-            f" last_updated_by={self.last_updated_by}"  # ", contacts={self.contacts}"
+            f" published_at={self.published_by}, last_updated_at={self.last_updated_at}"
+            f" last_updated_by={self.last_updated_by})>"
         )
 
 
@@ -121,7 +121,7 @@ class Contacts(Base):
         return (
             f"<Contact(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name},"
             f" last_name={self.last_name}, uuid={self.uuid}, url={self.url}, "
-            f" mechanisms={self.mechanisms}"
+            f" mechanisms={self.mechanisms})>"
         )
 
 
@@ -170,5 +170,5 @@ class AtbdVersionsContactsAssociation(Base):
         return (
             f"<AtbdVersionContact(atbd_id={self.atbd_id}), major={self.major}, "
             f"contact_id={self.contact_id}, roles={self.roles}, "
-            f"atbd_versions={self.atbd_version}, contacts={self.contact}>"
+            f"atbd_versions={self.atbd_version}, contacts={self.contact})>"
         )
