@@ -1,73 +1,168 @@
-from pydantic import BaseModel, validator
-from typing import Optional, List, Dict, Any, Union, ForwardRef
+from __future__ import annotations
+from pydantic import BaseModel, validator, root_validator, AnyUrl, Field
+from typing import Optional, List, Dict, Any, Union
 from enum import Enum
 
 
-class WysiwygText(BaseModel):
+class TextLeaf(BaseModel):
     text: str
-    underline: Optional[Any]
-    italic: Optional[Any]
-    bold: Optional[Any]
-    subscript: Optional[Any]
-    superscript: Optional[Any]
+    underline: Optional[Union[str, bool]]
+    italic: Optional[Union[str, bool]]
+    bold: Optional[Union[str, bool]]
+    subscript: Optional[Union[str, bool]]
+    superscript: Optional[Union[str, bool]]
+
+    @root_validator()
+    def validate(cls, values: Dict[str, Union[str, bool]]):
+        for v in ["underline", "italic", "bold", "subscript", "superscript"]:
+            if isinstance(values.get(v), str):
+                values[v] = values[v].lower() == "true"
+        return values
 
 
-class WysiwygElementTypes(str, Enum):
-    div: str = "p"
-    link: str = "a"
-    reference: str = "ref"
-    equation: str = "equation"
-    subsection: str = "sub-section"
-    image: str = "img"
+class TypesEnum(str, Enum):
+    link = "a"
+    reference = "ref"
+    div = "p"
+    list_item = "li"
+    ordered_list = "ol"
+    unordered_list = "ul"
+    subsection = "sub-section"
+    equation = "equation"
+    image = "img"
+    image_block = "image-block"
+    table_cell = "td"
+    table_row = "tr"
+    table = "table"
+    table_block = "table-block"
+    caption = "caption"
 
 
-WysiwygElement = ForwardRef("WysiwygElement")
+class BaseNode(BaseModel):
+    type: str
+    children: List[TextLeaf]
 
 
-class WysiwygElement(BaseModel):
+class LinkNode(BaseNode):
+    type: TypesEnum
+    url: AnyUrl
+    children: List[TextLeaf]
 
-    refId: Optional[str]
-    url: Optional[str]
-    objectKey: Optional[str]  # TODO: S3 format object key check?
-    type: WysiwygElementTypes
-    children: List[Union[WysiwygElement, WysiwygText]]
 
-    @validator("type",)
-    def validate(cls, v, values, **kwargs):
-        if v == "ref" and values.get("refId") is None:
+class ReferenceNode(BaseNode):
+    type: TypesEnum
+    refId: str
+    children: List[TextLeaf]
+
+
+class DivNode(BaseNode):
+    type: TypesEnum
+    children: List[Union[TextLeaf, LinkNode, ReferenceNode]]
+
+
+class OrderedListNode(BaseNode):
+    type: TypesEnum
+    children: List[ListItemNode]
+
+
+class UnorderedListNode(BaseNode):
+    type: TypesEnum
+    children: List[ListItemNode]
+
+
+class ListItemNode(BaseNode):
+    type: TypesEnum
+    children: List[Union[DivNode, OrderedListNode, UnorderedListNode]]
+
+
+OrderedListNode.update_forward_refs()
+
+UnorderedListNode.update_forward_refs()
+
+
+class SubsectionNode(BaseNode):
+    type: TypesEnum
+
+
+class EquationNode(BaseNode):
+    type: TypesEnum
+
+
+class ImageNode(BaseNode):
+    type: TypesEnum
+    objectKey: str
+
+
+class CaptionNode(BaseNode):
+    type: TypesEnum
+
+
+class ImageBlockNode(BaseNode):
+    type: TypesEnum
+    children: List[Union[ImageNode, CaptionNode]]
+
+    @validator("children")
+    def validate_children(cls, v):
+        if len(v) != 2:
             raise ValueError(
-                "WYSIWYG Element with type `ref` must contain a field `refId"
+                "`Children` field of `Image-Block` type must contain one `Image` model and one `Caption` model"
             )
-        if v == "a" and values.get("url") is None:
-            raise ValueError("WYSIWYG Element with type `a` must contain a field `url`")
-        if v == "img" and values.get("objectKey") is None:
+        if not (
+            all([isinstance(v[0], ImageNode), isinstance(v[0], CaptionNode)])
+            or all([isinstance(v[0], CaptionNode), isinstance(v[0], ImageNode)])
+        ):
             raise ValueError(
-                "WYSIWYG Element with type `img` must contain a field `objectKey`"
+                "`Children` field of `Image-Block` type must contain one `Image` model and one `Caption` model"
             )
-        return v
 
 
-# Allows us to use WysiwygElement as a type within itself
-WysiwygElement.update_forward_refs()
+class TableCellNode(BaseNode):
+    type: TypesEnum
+    children: List[DivNode]
 
 
-class WysiwygListTypes(str, Enum):
-    ordered_list: str = "ol"
-    unordered_list: str = "ul"
+class TableRowNode(BaseNode):
+    type: TypesEnum
+    children: List[TableCellNode]
 
 
-class WysiwygListItems(BaseModel):
-    type: str = "li"
-    children: List[WysiwygElement]
+class TableNode(BaseNode):
+    type: TypesEnum
+    children: List[TableRowNode]
 
 
-class WysiwygList(BaseModel):
-    type: WysiwygListTypes
-    children: List
+class TableBlockNode(BaseNode):
+    type: TypesEnum
+    children: List[Union[TableNode, CaptionNode]]
+
+    @validator("children")
+    def validate_children(cls, v):
+        if len(v) != 2:
+            raise ValueError(
+                "`Children` field of `Image-Block` type must contain one `Image` model and one `Caption` model"
+            )
+        if not (
+            all([isinstance(v[0], TableNode), isinstance(v[0], CaptionNode)])
+            or all([isinstance(v[0], CaptionNode), isinstance(v[0], TableNode)])
+        ):
+            raise ValueError(
+                "`Children` field of `Image-Block` type must contain one `Image` model and one `Caption` model"
+            )
 
 
-class WysiwygContent(BaseModel):
-    children: Optional[List[Union[WysiwygList, WysiwygElement]]]
+class DataAccessUrl(BaseModel):
+    url: AnyUrl
+    description: str
+
+
+class DivWrapperNode(BaseModel):
+    children: List[DivNode]
+
+
+class AlgorithmVariable(BaseModel):
+    name: DivWrapperNode
+    long_name: DivWrapperNode
+    unit: DivWrapperNode
 
 
 class PublicationReference(BaseModel):
@@ -85,40 +180,40 @@ class PublicationReference(BaseModel):
     year: Optional[str]
 
 
-class DataAccessUrl(BaseModel):
-    url: Optional[str]  # TODO: URL formatting check?
-    description: Optional[str]
+class SectionWrapper(BaseModel):
+    children: List[
+        Union[
+            ImageBlockNode,
+            TableBlockNode,
+            DivNode,
+            OrderedListNode,
+            UnorderedListNode,
+            SubsectionNode,
+            EquationNode,
+        ]
+    ]
 
 
 class Document(BaseModel):
-
-    introduction: Optional[WysiwygContent]
-    historical_perspective: Optional[WysiwygContent]
-    algorithm_description: Optional[WysiwygContent]
-    scientific_theory: Optional[WysiwygContent]
-    scientific_theory_assumptions: Optional[WysiwygContent]
-
-    mathematical_theory: Optional[WysiwygContent]
-    mathematical_theory_assumptions: Optional[WysiwygContent]
-
-    algorithm_input_variables: Optional[List]
-
-    algorithm_output_variables: Optional[List]
-
+    introduction: Optional[SectionWrapper]
+    historical_perspective: Optional[SectionWrapper]
+    algorithm_description: Optional[SectionWrapper]
+    scientific_theory: Optional[SectionWrapper]
+    scientific_theory_assumptions: Optional[SectionWrapper]
+    mathematical_theory: Optional[SectionWrapper]
+    mathematical_theory_assumptions: Optional[SectionWrapper]
+    algorithm_input_variables: Optional[List[AlgorithmVariable]]
+    algorithm_output_variables: Optional[List[AlgorithmVariable]]
     algorithm_implementations: Optional[List[DataAccessUrl]]
-
-    algorithm_usage_constraints: Optional[WysiwygContent]
-
-    performance_assessment_validation_methods: Optional[WysiwygContent]
-    performance_assessment_validation_uncertainties: Optional[WysiwygContent]
-    performance_assessment_validation_errors: Optional[WysiwygContent]
-
+    algorithm_usage_constraints: Optional[SectionWrapper]
+    performance_assessment_validation_methods: Optional[SectionWrapper]
+    performance_assessment_validation_uncertainties: Optional[SectionWrapper]
+    performance_assessment_validation_errors: Optional[SectionWrapper]
     data_access_input_data: Optional[List[DataAccessUrl]]
     data_access_output_data: Optional[List[DataAccessUrl]]
     data_access_related_urls: Optional[List[DataAccessUrl]]
-
-    journal_dicsussion: Optional[WysiwygContent]
-    journal_acknowledgements: Optional[WysiwygContent]
+    journal_dicsussion: Optional[SectionWrapper]
+    journal_acknowledgements: Optional[SectionWrapper]
     publication_references: Optional[List[PublicationReference]]
 
     @validator(

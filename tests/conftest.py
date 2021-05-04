@@ -113,16 +113,18 @@ def test_client(db_session):
 
 @mock_s3
 @pytest.fixture
-def s3_bucket(monkeysession, s3_client):
+def s3_bucket(monkeysession, s3_resource):
     from app.config import BUCKET
 
-    yield s3_client.create_bucket(Bucket=BUCKET)
+    bucket = s3_resource.Bucket(name=BUCKET)
+    bucket.create()
+    yield bucket
 
 
 @pytest.fixture
-def s3_client(monkeysession):
+def s3_resource(monkeysession):
     with mock_s3():
-        yield boto3.client("s3", region_name="us-east-1")
+        yield boto3.resource("s3", region_name="us-east-1")
 
 
 @pytest.fixture
@@ -187,16 +189,16 @@ def atbd_versions_factory(db_session):
         major = factory.Faker("pyint")
         minor = factory.Faker("pyint")
         status = factory.Faker(
-            "random_element", elements=["Draft", "Review", "Published"],
+            "random_element",
+            elements=["Draft", "Review", "Published"],
         )
         document = faker.Faker().pydict(10, True, "str")
+
         sections_completed = faker.Faker().pydict(4, True, "str")
         published_by = factory.Faker("user_name")
         published_at = factory.Faker("date_object")
         created_by = factory.Faker("user_name")
-        created_at = factory.Faker("date_object")
         last_updated_by = factory.Faker("user_name")
-        last_updated_at = factory.Faker("date_object")
         changelog = factory.Faker("pystr")
         doi = factory.Faker("pystr")
         citation = faker.Faker().pydict(10, True, "str")
@@ -213,7 +215,9 @@ def atbds_factory(db_session):
     class AtbdsFactory(factory.alchemy.SQLAlchemyModelFactory):
         title = factory.Faker("pystr")
         alias = fuzzy.FuzzyText(
-            length=15, prefix="x9-", chars="qwertyuiopasdfghjklzxcvbnm",
+            length=15,
+            prefix="x9-",
+            chars="qwertyuiopasdfghjklzxcvbnm",
         )
         created_by = factory.Faker("pystr")
         last_updated_by = factory.Faker("pystr")

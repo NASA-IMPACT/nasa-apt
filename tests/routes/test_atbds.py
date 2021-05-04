@@ -1,9 +1,8 @@
 import pytest
 import json
-from typing import List
-from datetime import datetime
-from fastapi import HTTPException
-from app.db.models import Atbds, AtbdVersions
+from app.db.models import Atbds
+from sqlalchemy.exc import InvalidRequestError
+
 
 # TODO: add test that elasticsearch indexing get's added to background tasks
 # TODO: add test to ensure that verisons are returned in the correct order (unsure if it's
@@ -416,138 +415,329 @@ def test_update_atbd_by_id(
     assert atbd.last_updated_at > atbd.created_at
 
 
-# def test_create_atbd_with_non_unique_alias_fail(
-#     test_client, db_session, atbd_creation_input, authenticated_headers
-# ):
-#     _ = json.loads(
-#         test_client.post(
-#             "/atbds", json=atbd_creation_input, headers=authenticated_headers
-#         ).content
-#     )
+def test_update_atbd_by_alias(
+    test_client,
+    db_session,
+    atbds_factory,
+    atbd_versions_factory,
+    authenticated_headers,
+    mocked_event_listener,
+):
 
-#     with pytest.raises(Exception) as e:
-#         duplicated_item_request = test_client.post(
-#             "/atbds", json=atbd_creation_input, headers=authenticated_headers
-#         )
-#         duplicated_item_request.raise_for_status()
-#     assert str(e.value).startswith("400")
+    with pytest.raises(Exception):
+        result = test_client.post(
+            "/atbds/non-existent-alias", data=json.dumps({"title": "New Test ATBD"})
+        )
+        result.raise_for_status()
 
+    atbd = atbds_factory.create()
+    atbd.alias = atbd.alias.lower()
+    db_session.add(atbd)
+    db_session.commit()
 
-# def test_create_atbd_fails_if_missing_title(test_client, atbd_creation_input):
-#     del atbd_creation_input["title"]
-#     with pytest.raises(Exception) as e:
-#         unauthenticated_request = test_client.post("/atbds", json=atbd_creation_input)
-#         unauthenticated_request.raise_for_status()
+    # create a version to go along with the atbd
+    # otherwise the atbd will fail to retrieve since
+    # it mandatorily joins versions on ATBDSs
+    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    db_session.add(version)
+    db_session.commit()
 
-#     assert str(e.value).startswith("401")
+    with pytest.raises(Exception):
+        result = test_client.post(
+            f"/atbds/{atbd.alias}",
+            data=json.dumps(
+                {"title": "New Test ATBD", "alias": "Non conforming alias"}
+            ),
+        )
+        result.raise_for_status()
 
+    with pytest.raises(Exception):
+        atbd2 = atbds_factory.create()
+        atbd2.alias = atbd2.alias.lower()
+        db_session.add(atbd2)
+        db_session.commit()
 
-# def test_update_atbd_by_id(
-#     test_client,
-#     db_session,
-#     atbd_creation_input,
-#     authenticated_headers,
-#     mocked_event_listener,
-# ):
+        version = atbd_versions_factory.create(atbd_id=atbd.id)
+        db_session.add(version)
+        db_session.commit()
 
-#     created = json.loads(
-#         test_client.post(
-#             "/atbds", json=atbd_creation_input, headers=authenticated_headers
-#         ).content
-#     )
-#     updated = json.loads(
-#         test_client.post(
-#             f"/atbds/{created['id']}",
-#             json={"title": "New and improved!"},
-#             headers=authenticated_headers,
-#         ).content
-#     )
+        # ensure that updating alias to an already existing alias
+        # fails
+        result = test_client.post(
+            f"/atbds/{atbd.alias}",
+            data=json.dumps({"title": "New Test ATBD", "alias": atbd2.alias}),
+        )
+        result.raise_for_status()
 
-#     [dbobj] = db_session.execute(
-#         f"SELECT * FROM atbds WHERE atbds.id = '{updated['id']}'"
-#     )
-#     assert created["title"] != dbobj.title
-#     assert dbobj.title == "New and improved!"
-#     assert created["alias"] == dbobj.alias
+    result = test_client.post(
+        f"/atbds/{atbd.alias}",
+        data=json.dumps({"title": "New (Updated) Test ATBD", "alias": "new-alias"}),
+        headers=authenticated_headers,
+    )
+    result.raise_for_status()
 
+    # Refresh to reload changes made by the above POST
+    db_session.refresh(atbd)
+    assert atbd.title == "New (Updated) Test ATBD"
+    assert atbd.alias == "new-alias"
+    assert atbd.last_updated_at is not None
+    assert atbd.last_updated_by is not None
+    assert atbd.last_updated_at > atbd.created_at
 
-# def test_update_atbd_by_alias(
-#     test_client,
-#     db_session,
-#     atbd_creation_input,
-#     authenticated_headers,
-#     mocked_event_listener,
-# ):
-
-#     created = json.loads(
-#         test_client.post(
-#             "/atbds", json=atbd_creation_input, headers=authenticated_headers
-#         ).content
-#     )
-#     updated = json.loads(
-#         test_client.post(
-#             f"/atbds/{created['alias']}",
-#             json={"title": "New and improved!"},
-#             headers=authenticated_headers,
-#         ).content
-#     )
-
-#     [dbobj] = db_session.execute(
-#         f"SELECT * FROM atbds WHERE atbds.id = '{updated['id']}'"
-#     )
-#     assert created["title"] != dbobj.title
-#     assert dbobj.title == "New and improved!"
-#     assert created["alias"] == dbobj.alias
+    result = test_client.get("/atbds/new-alias", headers=authenticated_headers)
+    result.raise_for_status()
 
 
-# def test_update_atbd_fails_if_updated_alias_already_exists_in_database(
-#     test_client,
-#     db_session,
-#     atbd_creation_input,
-#     authenticated_headers,
-#     mocked_event_listener,
-# ):
-#     atbd1 = json.loads(
-#         test_client.post(
-#             "/atbds", json=atbd_creation_input, headers=authenticated_headers
-#         ).content
-#     )
+def test_delete_atbd_by_id(
+    test_client,
+    db_session,
+    atbds_factory,
+    atbd_versions_factory,
+    authenticated_headers,
+    mocked_event_listener,
+):
+    with pytest.raises(Exception):
+        result = test_client.delete("/atbds/1", headers=authenticated_headers)
+        result.raise_for_status()
 
-#     # Create another ATBD whose alias will conflict with the
-#     # alias we try to set for atbd1
-#     atbd_creation_input["alias"] = "atbd-alias-2"
-#     test_client.post("/atbds", json=atbd_creation_input, headers=authenticated_headers)
+    atbd = atbds_factory.create()
+    atbd.alias = None
+    db_session.add(atbd)
+    db_session.commit()
 
-#     with pytest.raises(Exception) as e:
-#         # update atbd1 with an alias that already belongs to atbd2
-#         req = test_client.post(
-#             f"/atbds/{atbd1['id']}",
-#             json={"alias": "atbd-alias-2"},
-#             headers=authenticated_headers,
-#         )
-#         req.raise_for_status()
+    # create a version to go along with the atbd
+    # otherwise the atbd will fail to retrieve since
+    # it mandatorily joins versions on ATBDSs
+    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    db_session.add(version)
+    db_session.commit()
 
-#     assert str(e.value).startswith("401")
+    with pytest.raises(Exception):
+        result = test_client.delete(f"/atbds/{atbd.id}")
+        result.raise_for_status()
 
-
-# def test_update_atbd_fails_if_user_is_not_authenticated(
-#     test_client,
-#     db_session,
-#     atbd_creation_input,
-#     authenticated_headers,
-#     mocked_event_listener,
-# ):
-#     atbd = json.loads(
-#         test_client.post(
-#             "/atbds", json=atbd_creation_input, headers=authenticated_headers
-#         ).content
-#     )
-#     with pytest.raises(Exception) as e:
-#         req = test_client.post(f"/atbds/{atbd['id']}", json={"alias": "atbd-alias-2"},)
-#         req.raise_for_status()
-
-#     assert str(e.value).startswith("401")
+    result = test_client.delete(f"/atbds/{atbd.id}", headers=authenticated_headers)
+    result.raise_for_status()
+    with pytest.raises(InvalidRequestError):
+        db_session.refresh(atbd)
+        assert atbd is None
 
 
-# def test_index_atbd_is_called():
-#     pass
+def test_delete_atbd_by_alias(
+    test_client,
+    db_session,
+    atbds_factory,
+    atbd_versions_factory,
+    authenticated_headers,
+    mocked_event_listener,
+):
+    with pytest.raises(Exception):
+        result = test_client.delete(
+            "/atbds/non-existent-alias", headers=authenticated_headers
+        )
+        result.raise_for_status()
+
+    atbd = atbds_factory.create()
+    atbd.alias = atbd.alias.lower()
+    db_session.add(atbd)
+    db_session.commit()
+
+    # create a version to go along with the atbd
+    # otherwise the atbd will fail to retrieve since
+    # it mandatorily joins versions on ATBDSs
+    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    db_session.add(version)
+    db_session.commit()
+
+    with pytest.raises(Exception):
+        result = test_client.delete(f"/atbds/{atbd.alias}")
+        result.raise_for_status()
+
+    result = test_client.delete(f"/atbds/{atbd.alias}", headers=authenticated_headers)
+    result.raise_for_status()
+    with pytest.raises(InvalidRequestError):
+        db_session.refresh(atbd)
+        assert atbd is None
+
+
+def test_atbd_existence_check_by_id(
+    test_client,
+    db_session,
+    atbds_factory,
+    atbd_versions_factory,
+    authenticated_headers,
+    mocked_event_listener,
+):
+
+    with pytest.raises(Exception):
+        result = test_client.head("/atbds/1", headers=authenticated_headers)
+        result.raise_for_status()
+
+    atbd = atbds_factory.create()
+    atbd.alias = atbd.alias.lower()
+    db_session.add(atbd)
+    db_session.commit()
+
+    # create a version to go along with the atbd
+    # otherwise the atbd will fail to retrieve since
+    # it mandatorily joins versions on ATBDSs
+    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    db_session.add(version)
+    db_session.commit()
+
+    with pytest.raises(Exception):
+        result = test_client.delete(f"/atbds/{atbd.id}")
+        result.raise_for_status()
+
+    result = test_client.delete(f"/atbds/{atbd.id}", headers=authenticated_headers)
+    result.raise_for_status()
+
+
+def test_atbd_existence_check_by_alias(
+    test_client,
+    db_session,
+    atbds_factory,
+    atbd_versions_factory,
+    authenticated_headers,
+    mocked_event_listener,
+):
+
+    with pytest.raises(Exception):
+        result = test_client.head(
+            "/atbds/non-existent-alias", headers=authenticated_headers
+        )
+        result.raise_for_status()
+
+    atbd = atbds_factory.create()
+    atbd.alias = atbd.alias.lower()
+    db_session.add(atbd)
+    db_session.commit()
+
+    # create a version to go along with the atbd
+    # otherwise the atbd will fail to retrieve since
+    # it mandatorily joins versions on ATBDSs
+    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    db_session.add(version)
+    db_session.commit()
+
+    with pytest.raises(Exception):
+        result = test_client.delete(f"/atbds/{atbd.alias}")
+        result.raise_for_status()
+
+    result = test_client.delete(f"/atbds/{atbd.alias}", headers=authenticated_headers)
+    result.raise_for_status()
+
+
+def test_publish_atbd_by_id(
+    test_client,
+    db_session,
+    atbds_factory,
+    atbd_versions_factory,
+    authenticated_headers,
+    mocked_event_listener,
+    s3_bucket,
+):
+
+    with pytest.raises(Exception):
+        result = test_client.post("/atbds/1/publish", headers=authenticated_headers)
+        result.raise_for_status()
+
+    atbd = atbds_factory.create()
+    atbd.alias = atbd.alias.lower()
+    db_session.add(atbd)
+    db_session.commit()
+
+    # create a version to go along with the atbd
+    # otherwise the atbd will fail to retrieve since
+    # it mandatorily joins versions on ATBDSs
+    version = atbd_versions_factory.create(atbd_id=atbd.id, status="Published")
+    db_session.add(version)
+    db_session.commit()
+
+    with pytest.raises(Exception):
+        result = test_client.post(f"/atbds/{atbd.id}/publish")
+        result.raise_for_status()
+
+    with pytest.raises(Exception):
+
+        result = test_client.post(
+            f"/atbds/{atbd.id}/publish", headers=authenticated_headers
+        )
+        result.raise_for_status()
+
+    version.status = "Draft"
+    db_session.add(version)
+    db_session.commit()
+
+    with pytest.raises(Exception):
+
+        result = test_client.post(
+            f"/atbds/{atbd.id}/publish", headers=authenticated_headers
+        )
+        result.raise_for_status()
+
+    result = test_client.post(
+        f"/atbds/{atbd.id}/publish", data=json.dumps({}), headers=authenticated_headers
+    )
+    result.raise_for_status()
+
+    db_session.refresh(atbd)
+    db_session.refresh(version)
+    assert version.status == "Published"
+    assert version.published_at is not None
+    assert version.published_at > version.created_at
+    assert version.last_updated_at > version.created_at
+
+    assert (
+        s3_bucket.Object(
+            f"{atbd.id}/pdf/{atbd.alias}-v{version.major}-{version.minor}-journal.pdf"
+        ).get()["ContentLength"]
+        > 100
+    )
+    assert (
+        s3_bucket.Object(
+            f"{atbd.id}/pdf/{atbd.alias}-v{version.major}-{version.minor}.pdf"
+        ).get()["ContentLength"]
+        > 100
+    )
+
+
+def test_atbd_timestamps(
+    test_client,
+    db_session,
+    atbds_factory,
+    atbd_versions_factory,
+    authenticated_headers,
+    mocked_event_listener,
+):
+
+    result = test_client.post(
+        "/atbds",
+        data=json.dumps({"alias": "test-alias", "title": "Test ATBD"}),
+        headers=authenticated_headers,
+    )
+    result.raise_for_status()
+    result = json.loads(result.content)
+
+    atbd = db_session.query(Atbds).get(result["id"])
+
+    assert atbd.created_at is not None
+    assert atbd.last_updated_at is not None
+    assert atbd.created_at == atbd.last_updated_at
+
+    prev_updated_at = atbd.last_updated_at
+    prev_created_at = atbd.created_at
+
+    result = test_client.post(
+        f"/atbds/{result['id']}",
+        data=json.dumps({"title": "NEW Test ATBD"}),
+        headers=authenticated_headers,
+    )
+    result.raise_for_status()
+    result = json.loads(result.content)
+
+    db_session.refresh(atbd)
+
+    assert atbd.last_updated_at is not None
+    assert atbd.last_updated_at > prev_updated_at
+    assert atbd.created_at == prev_created_at

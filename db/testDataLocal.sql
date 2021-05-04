@@ -117,6 +117,28 @@ VALUES
                 ]
               }
             ]
+          }, 
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "ul",
+                "children": [
+                  {
+                    "type":"li",
+                    "children":[ {"type":"p", "children": [{"text": "This is an example"} ]}]
+                  },
+                  {
+                    "type":"li",
+                    "children":[ {"type":"p", "children": [{"text": "Of a list within a list!"} ]}]
+                  },
+                  {
+                    "type":"li",
+                    "children":[ {"type":"p", "children": [{"text": "Pretty neat, no?!"} ]}]
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -231,9 +253,7 @@ VALUES
     ]
   },
   "performance_assessment_validation_uncertainties": null,
-  "performance_assessment_validation_errors": {
-    "invalid": "this will be invalid"
-  },
+  "performance_assessment_validation_errors": null ,
   "algorithm_implementations": [
     {
       "url": "https://developmentseed.org",
@@ -358,6 +378,14 @@ VALUES
         ]
       },
       {
+        "type": "sub-section",
+        "children": [
+          {
+            "text": "Equation Example"
+          }
+        ]
+      },
+      {
         "type": "equation",
         "children": [
           {
@@ -369,16 +397,202 @@ VALUES
         "type": "sub-section",
         "children": [
           {
-            "text": "Canopy cover types"
+            "text": "Image Example"
           }
         ]
       },
       {
-        "type": "img",
-        "objectKey": "fullmoon.jpg",
+        "type": "image-block",
+        "children": [
+          { 
+            "type": "img",
+            "objectKey": "fullmoon.jpg",
+            "children": [ {"text": ""}]
+          },
+          {
+            "type": "caption",
+            "children": [ {"text": "This is an image caption"}]
+          }
+        ]
+      },
+      {
+        "type": "sub-section",
         "children": [
           {
-            "text": "Image of the full moon - 2019"
+            "text": "Table Example"
+          }
+        ]
+      },
+      {
+        "type": "table-block",
+        "children": [
+          {
+            "type": "table",
+            "children": [
+              {
+                "type": "tr",
+                "children": [
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Name",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Result",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  }, 
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Date",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "tr",
+                "children": [
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Lincoln"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Inconclusive"
+                          }
+                        ]
+                      }
+                    ]
+                  }, 
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "2020-01-01T00:00:00"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "tr",
+                "children": [
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Bridge-water"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Pass"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "2020-01-01T00:00:00"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "caption",
+            "children": [
+              {
+                "text": "Test results by "
+              },
+              {
+                "type": "a",
+                "url": "http://google.com",
+                "children": [
+                  {
+                    "text": "different"
+                  }
+                ]
+              },
+              {
+                "text": " entities"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "sub-section",
+        "children": [
+          {
+            "text": "Canopy cover types"
           }
         ]
       },
@@ -423,9 +637,7 @@ VALUES
       }
     ]
   },
-  "scientific_theory_assumptions": {
-    "invalid": "this will be invalid"
-  },
+  "scientific_theory_assumptions": null,
   "publication_references": [
     {
       "id": "1",
@@ -545,6 +757,28 @@ VALUES
                 ]
               }
             ]
+          }, 
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "ul",
+                "children": [
+                  {
+                    "type":"li",
+                    "children":[ {"type":"p", "children": [{"text": "This is an example"} ]}]
+                  },
+                  {
+                    "type":"li",
+                    "children":[ {"type":"p", "children": [{"text": "Of a list within a list!"} ]}]
+                  },
+                  {
+                    "type":"li",
+                    "children":[ {"type":"p", "children": [{"text": "Pretty neat, no?!"} ]}]
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -659,9 +893,7 @@ VALUES
     ]
   },
   "performance_assessment_validation_uncertainties": null,
-  "performance_assessment_validation_errors": {
-    "invalid": "this will be invalid"
-  },
+  "performance_assessment_validation_errors": null,
   "algorithm_implementations": [
     {
       "url": "https://developmentseed.org",
@@ -786,6 +1018,14 @@ VALUES
         ]
       },
       {
+        "type": "sub-section",
+        "children": [
+          {
+            "text": "Equation Example"
+          }
+        ]
+      },
+      {
         "type": "equation",
         "children": [
           {
@@ -797,16 +1037,202 @@ VALUES
         "type": "sub-section",
         "children": [
           {
-            "text": "Canopy cover types"
+            "text": "Image Example"
           }
         ]
       },
       {
-        "type": "img",
-        "objectKey": "fullmoon.jpg",
+        "type": "image-block",
+        "children": [
+          { 
+            "type": "img",
+            "objectKey": "fullmoon.jpg",
+            "children": [ {"text": ""}]
+          },
+          {
+            "type": "caption",
+            "children": [ {"text": "This is an image caption"}]
+          }
+        ]
+      },
+      {
+        "type": "sub-section",
         "children": [
           {
-            "text": "Image of the full moon - 2019"
+            "text": "Table Example"
+          }
+        ]
+      },
+      {
+        "type": "table-block",
+        "children": [
+          {
+            "type": "table",
+            "children": [
+              {
+                "type": "tr",
+                "children": [
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Name",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Result",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  }, 
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Date",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "tr",
+                "children": [
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Lincoln"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Inconclusive"
+                          }
+                        ]
+                      }
+                    ]
+                  }, 
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "2020-01-01T00:00:00"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "tr",
+                "children": [
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Bridge-water"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "Pass"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "td",
+                    "children": [
+                      {
+                        "type": "p",
+                        "children": [
+                          {
+                            "text": "2020-01-01T00:00:00"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "caption",
+            "children": [
+              {
+                "text": "Test results by "
+              },
+              {
+                "type": "a",
+                "url": "http://google.com",
+                "children": [
+                  {
+                    "text": "different"
+                  }
+                ]
+              },
+              {
+                "text": " entities"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "sub-section",
+        "children": [
+          {
+            "text": "Canopy cover types"
           }
         ]
       },
@@ -851,9 +1277,7 @@ VALUES
       }
     ]
   },
-  "scientific_theory_assumptions": {
-    "invalid": "this will be invalid"
-  },
+  "scientific_theory_assumptions": null,
   "publication_references": [
     {
       "id": "1",
@@ -892,12 +1316,14 @@ INSERT INTO atbd_versions_contacts
 VALUES
   (
     --    1, 1, 1, '{ "Science contact", "Metadata author" }'
-    1, 1, 1, ARRAY['Science contact', 'Metadata author']::e_contact_role_type[]    
+    1, 1, 1, ARRAY
+['Science contact', 'Metadata author']::e_contact_role_type[]    
 );
 INSERT INTO atbd_versions_contacts
   (atbd_id, major, contact_id, roles)
 VALUES
   (
     --    1, 2, 2, '{ 'Investigator' }'
-    1, 2, 2, ARRAY['Investigator']::e_contact_role_type[]
+    1, 2, 2, ARRAY
+['Investigator']::e_contact_role_type[]
 );

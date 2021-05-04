@@ -4,8 +4,8 @@ from app.crud.contacts import crud_contacts
 from app.db.models import Contacts
 from app.api.utils import get_db, require_user
 from app.auth.saml import User
-from sqlalchemy import func
-from fastapi import APIRouter, Depends
+from sqlalchemy import func, orm
+from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 
 router = APIRouter()
@@ -43,7 +43,12 @@ def list_contacts(
     response_model=contacts.Output,
 )
 def get_contact(contact_id: str, db: DbSession = Depends(get_db)):
-    return crud_contacts.get(db_session=db, obj_in=contacts.Lookup(id=contact_id))
+    try:
+        return crud_contacts.get(db_session=db, obj_in=contacts.Lookup(id=contact_id))
+    except orm.exc.NoResultFound:
+        raise HTTPException(
+            status_code=404, detail=f"No contact found for id {contact_id}"
+        )
 
 
 @router.post(

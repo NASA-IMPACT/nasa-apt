@@ -24,7 +24,7 @@ inst_reqs = [
     "jq==1.0.2",
     "latex==0.7.0",
     "num2words==0.5.10",
-    "pandas==1.0.3",
+    "pandas==1.2.0",
     "pipreqs==0.4.10",
     "pydantic==1.5.1",
     "python-dateutil==2.8.1",

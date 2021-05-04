@@ -33,7 +33,6 @@ router = APIRouter()
 def save_pdf_to_s3(atbd: Atbds, journal: bool = False):
     key = generate_pdf_key(atbd=atbd, journal=journal)
     local_pdf_key = generate_pdf(atbd=atbd, filepath=key, journal=journal)
-    # print("UPLOADING FILE TO BUCKET: ", BUCKET)
     s3_client().upload_file(Filename=local_pdf_key, Bucket=BUCKET, Key=key)
 
 
@@ -54,6 +53,14 @@ def generate_pdf_key(atbd: Atbds, minor: int = None, journal: bool = False):
     return os.path.join(str(atbd.id), "pdf", filename)
 
 
+def add_pdf_generation_to_background_tasks(
+    atbd: Atbds, background_tasks: BackgroundTasks
+):
+
+    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
+    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
+
+
 @router.get("/atbds/{atbd_id}/versions/{version}/pdf")
 def get_pdf(
     atbd_id: str,
@@ -69,19 +76,19 @@ def get_pdf(
     [version] = atbd.versions
     pdf_key = generate_pdf_key(atbd, minor=minor, journal=journal)
 
-    if minor or version.status == "Published":
-        print("FETCHING FROM S3: ", pdf_key)
-        # TODO: pdf_key contains the lastest minor version - which gets set
-        # as the filename, even though a different minor version was requested
-        # TODO: add some error handling in case the PDF isn't found
-        f = s3_client().get_object(Bucket=BUCKET, Key=pdf_key)["Body"]
-        return StreamingResponse(
-            f.iter_chunks(),
-            media_type="application/pdf",
-            headers={
-                "Content-Disposition": f"attachment; filename={pdf_key.split('/')[-1]}"
-            },
-        )
+    # if minor or version.status == "Published":
+    #     print("FETCHING FROM S3: ", pdf_key)
+    #     # TODO: pdf_key contains the lastest minor version - which gets set
+    #     # as the filename, even though a different minor version was requested
+    #     # TODO: add some error handling in case the PDF isn't found
+    #     f = s3_client().get_object(Bucket=BUCKET, Key=pdf_key)["Body"]
+    #     return StreamingResponse(
+    #         f.iter_chunks(),
+    #         media_type="application/pdf",
+    #         headers={
+    #             "Content-Disposition": f"attachment; filename={pdf_key.split('/')[-1]}"
+    #         },
+    #     )
     print("GENERATING PDF")
     local_pdf_filepath = generate_pdf(atbd=atbd, filepath=pdf_key, journal=journal)
 

@@ -56,13 +56,55 @@ class Lookup(BaseModel):
     major: int
 
 
+class Citation(BaseModel):
+    creators: Optional[str]
+    editors: Optional[str]
+    title: Optional[str]
+    series_name: Optional[str]
+    release_date: Optional[str]
+    release_place: Optional[str]
+    publisher: Optional[str]
+    version: Optional[str]
+    issue: Optional[str]
+    additional_details: Optional[str]
+    online_resource: Optional[str]
+
+
+class CompletednessEnum(str, enum.Enum):
+    incomplete = "incomplete"
+    complete = "complete"
+
+
+class SectionsCompleted(BaseModel):
+    introduction: CompletednessEnum
+    historical_perspective: CompletednessEnum
+    algorithm_description: CompletednessEnum
+    scientific_theory: CompletednessEnum
+    scientific_theory_assumptions: CompletednessEnum
+    mathematical_theory: CompletednessEnum
+    mathematical_theory_assumptions: CompletednessEnum
+    algorithm_input_variables: CompletednessEnum
+    algorithm_output_variables: CompletednessEnum
+    algorithm_implementations: CompletednessEnum
+    algorithm_usage_constraints: CompletednessEnum
+    performance_assessment_validation_methods: CompletednessEnum
+    performance_assessment_validation_uncertainties: CompletednessEnum
+    performance_assessment_validation_errors: CompletednessEnum
+    data_access_input_data: CompletednessEnum
+    data_access_output_data: CompletednessEnum
+    data_access_related_urls: CompletednessEnum
+    journal_dicsussion: CompletednessEnum
+    journal_acknowledgements: CompletednessEnum
+    publication_references: CompletednessEnum
+
+
 class Update(BaseModel):
     minor: Optional[int]
     document: Optional[Document]
     sections_completed: Optional[dict]
     changelog: Optional[str]
     doi: Optional[str]
-    citation: Optional[dict]
+    citation: Optional[Citation]
     status: Optional[str]
     contacts: Optional[List[contacts.ContactsLinkInput]]
 
@@ -81,4 +123,3 @@ class Update(BaseModel):
 class JSONFieldUpdate(BaseModel):
     key: str
     value: Union[str, dict]
-

@@ -137,5 +137,11 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         ]
         return output
 
+    def remove(self, db: DbSession, atbd_id: str):
+        atbd = self.get(db=db, atbd_id=atbd_id)
+        db.delete(atbd)
+        db.commit()
+        return atbd
+
 
 crud_atbds = CRUDAtbds(Atbds)

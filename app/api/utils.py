@@ -1,8 +1,9 @@
 from app.db.db_session import DbSession
+from app.db.models import Atbds
 from app.auth.saml import get_user, User
 from app.db.db_session import get_session
 from app import config
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, BackgroundTasks
 from boto3 import client
 from typing import Tuple
 import re
@@ -26,7 +27,8 @@ def require_user(user: User = Depends(get_user)):
 
 
 def get_db(
-    db_session: DbSession = Depends(get_session), user: User = Depends(get_user),
+    db_session: DbSession = Depends(get_session),
+    user: User = Depends(get_user),
 ) -> DbSession:
     if user:
         print("User is authenticated. Elevating session")
@@ -55,4 +57,3 @@ def get_major_from_version_string(version: str) -> Tuple[int]:
                 ),
             )
         return int(search.group("major")), int(search.group("minor"))
-

@@ -25,39 +25,6 @@ from app.api.utils import s3_client
 from app.config import BUCKET
 
 
-def process_contacts(contacts: List[ContactsLinkOutput], doc):
-    contacts = [ContactsLinkOutput.from_orm(contact) for contact in contacts]
-    for contact_link in contacts:
-        contact = contact_link.contact.dict(exclude_none=True)
-        print(contact_link.contact)
-        # contact = Contact.from_orm(contact_link.contact).dict(exclude_none=True)
-        # print("CONTACT: ", contact)
-        doc.append(
-            NoEscape(
-                " ".join(
-                    contact.get(k, "")
-                    for k in ["first_name", "middle_name", "last_name"]
-                )
-            )
-        )
-
-        for k in ["uuid", "url"]:
-            if contact.get(k):
-                with doc.create(section.Paragraph(f"{k.title()}:")) as paragraph:
-                    paragraph.append(NoEscape(contact[k]))
-
-        if contact.get("mechanisms"):
-            for mechanism in contact["mechanisms"]:
-                with doc.create(
-                    section.Paragraph(f"{mechanism['mechanism_type']}:")
-                ) as paragraph:
-                    paragraph.append(mechanism["mechanism_value"])
-
-        if contact_link.roles:
-            with doc.create(section.Paragraph("Roles:")) as paragraph:
-                paragraph.append(", ".join(r for r in contact_link.roles))
-
-
 SECTIONS = {
     "introduction": {"title": "Introduction"},
     "historical_perspective": {"title": "Historical Perspective"},
@@ -103,23 +70,44 @@ SECTIONS = {
 CONTENT_UNAVAILABLE = {"type": "p", "children": [{"text": "Content Unavailable"}]}
 
 
-def process_reference(data):
-    reference_id = generate_ref_name(data["id"])
-    reference = ""
-    for e in ["title", "pages", "publisher", "year", "volume"]:
-        if data.get(e):
-            reference += f'{e}="{data[e]}",\n'
-    if data.get("authors"):
-        reference += f"author=\"{data['authors']}\",\n"
-    # Can't use both VOLUME and NUMBER fields in bibtex
-    print("REFERENCE: ", reference)
-    print("REFERENCE_ID: ", reference_id)
-    return f"@BOOK{{{reference_id},\n{reference}}}"
+def generate_contact(contact_link: ContactsLinkOutput) -> List:
+    contact = contact_link.contact.dict(exclude_none=True)
+
+    latex_contact = [
+        NoEscape(
+            " ".join(
+                contact.get(k, "") for k in ["first_name", "middle_name", "last_name"]
+            )
+        )
+    ]
+
+    for k in ["uuid", "url"]:
+        if contact.get(k):
+            paragraph = section.Package(f"{k.title()}:")
+            paragraph.append(NoEscape(contact[k]))
+            latex_contact.append(paragraph)
+
+    if contact.get("mechanisms"):
+        for mechanism in contact["mechanisms"]:
+            paragraph = section.Paragraph(f"{mechanism['mechanism_type']}:")
+            paragraph.append(mechanism["mechanism_value"])
+            latex_contact.append(paragraph)
+
+    if contact_link.roles:
+        paragraph = section.Paragraph("Roles:")
+        paragraph.append(", ".join(r for r in contact_link.roles))
+        latex_contact.append(paragraph)
+    return latex_contact
 
 
-def generate_bibliography(references, filepath):
-    with open(filepath, "w") as bib_file:
-        bib_file.write("\n".join(process_reference(r) for r in references))
+def process_contacts(contacts: List[ContactsLinkOutput]) -> List:
+    contact_links = [ContactsLinkOutput.from_orm(contact) for contact in contacts]
+
+    return [
+        item
+        for contact_link in contact_links
+        for item in generate_contact(contact_link)
+    ]
 
 
 def hyperlink(url, text):
@@ -127,13 +115,9 @@ def hyperlink(url, text):
     return NoEscape(f"\\href{{{url}}}{{{text}}}")
 
 
-def generate_ref_name(reference_id):
-    return f"ref{reference_id}"
-
-
 def reference(reference_id):
 
-    return NoEscape(f"\\cite{{{generate_ref_name(reference_id)}}}")
+    return NoEscape(f"\\cite{{{bib_reference_name(reference_id)}}}")
 
 
 TEXT_WRAPPERS = {
@@ -145,7 +129,7 @@ TEXT_WRAPPERS = {
 }
 
 
-def process_text(data):
+def wrap_text(data):
     # Allows for wrapping text with multiple formatting options
     # ie:  process_text({"bold": true, "italic": true, "text": ... })
     # will return latex like `\bold{\italic{text}}`
@@ -158,50 +142,54 @@ def process_text(data):
     return e
 
 
-def process_content(data):
+def process_text_content(data):
     res = []
     for d in data:
         if d.get("type") == "a":
             res.append(hyperlink(d["url"], d["children"][0]["text"]))
         elif d.get("type") == "ref":
-            print("REF BEING APPENDED: ", reference(d["refId"]))
-
             res.append(reference(d["refId"]))
         else:
-            res.append(process_text(d))
+            res.append(wrap_text(d))
+
     return res
 
 
-def process_data_access_url(access_url, doc):
-    with doc.create(
-        section.Paragraph(process_text({"text": "Access url:", "bold": True}))
-    ) as s:
-        s.append(hyperlink(access_url["url"], access_url["url"]))
+def process_data_access_url(access_url):
+    p1 = section.Paragraph(wrap_text({"text": "Access url:", "bold": True}))
+    p1.append(hyperlink(access_url["url"], access_url["url"]))
 
-        with doc.create(
-            section.Paragraph(process_text({"text": "Description:", "bold": True}))
-        ) as s:
-            s.append(access_url["description"])
+    p2 = section.Paragraph(wrap_text({"text": "Description:", "bold": True}))
+    p2.append(access_url["description"])
+    return [p1, p2]
 
 
-def process_data_access_urls(data, doc):
+def process_data_access_urls(data):
+    urls = []
     for i, access_url in enumerate(data):
-        with doc.create(Subsection(f"Entry #{str(i+1)}")):
-            process_data_access_url(access_url, doc)
+        s = Subsection(f"Entry #{str(i+1)}")
+        for url in process_data_access_url(access_url):
+            s.append(url)
+        urls.append(s)
+    print("URLS", urls)
+    return urls
 
 
-def process_algorithm_variables(data, doc):
+def process_algorithm_variables(data):
+
     parsed_data = [
         {
             # process_text applies any subscript, superscript, bold, etc to the data
             # before transforming it into a table using latex
             # TODO: Figure out how to do this without having to fetch children[0][children]
-            k: " ".join(process_text(c) for c in v["children"][0]["children"])
+            k: " ".join(process(c) for c in v["children"])
             for k, v in d.items()
             if k in ["long_name", "unit"]
         }
         for d in data
     ]
+
+    print("PARSED DATA: ", parsed_data)
 
     algorithm_variables_dataframe = pd.DataFrame.from_dict(
         parsed_data, orient="columns"
@@ -210,89 +198,193 @@ def process_algorithm_variables(data, doc):
     # TODO: make this dynamic, instead of based on the number of pixels in a page
     # page width is 426 pts - divide into 3/4 and 1/4 sections for algorithm name and units
     column_format = f"p{{{int(426/4)*3}pt}} p{{{int(426/4)}pt}}"
-    latex_dataframe = algorithm_variables_dataframe.to_latex(
+    latex_table = algorithm_variables_dataframe.to_latex(
         index=False,
-        bold_rows=True,
         escape=False,
         column_format=column_format,
         na_rep=" ",
         columns=["long_name", "unit"],
         header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
     )
-    doc.append(NoEscape(latex_dataframe))
+    return NoEscape(latex_table)
 
 
-def parse(data, doc=None):
-    if isinstance(data, list):
-        for e in data:
-            parse(e, doc)
+def process_table(data, caption: str):
 
-    if isinstance(data, dict):
-        # When a `p` element is encountered at the root/section level,
-        # it must be appended directly to the document. However, `p` elements
-        # also appear within other elements (eg: list items). In those
-        # cases the contents of the processed `p` element, should be returned
-        # as a string, for the parent element to handle it (eg:
-        #     list.append(process_p_item)
-        # )
-        # To ensure the `p` item is returned and not appended to the doc,
-        # pass `None` as the `doc` parameter value when calling `parse()`
-        # The output is wrapped in a NoEscape command, to ensure that when the
-        # output text is appended to the latex document, latex does not interpret
-        # commands as full-text and escape them: (eg: ensure that `\bold{sometext}`
-        # does not become printed as `\textbackslashbol\{sometext\}` in the rendered
-        # pdf)
-        if data.get("type") == "p":
+    rows = [
+        tuple(
+            " ".join(process(c) for c in table_cell["children"])
+            for table_cell in table_row["children"]
+        )
+        for table_row in data["children"]
+    ]
 
-            if doc is None:
-                return NoEscape(" ".join(d for d in process_content(data["children"])))
+    dataframe = pd.DataFrame(rows[1:], columns=rows[0])
+    latex_table = dataframe.to_latex(
+        index=False,
+        escape=False,
+        na_rep=" ",
+        columns=rows[0],
+        caption=caption,
+        position="H",
+    )
 
-            for c in process_content(data["children"]):
-                doc.append(NoEscape(c))
+    return NoEscape(latex_table)
 
-            doc.append("\n")
 
-        # ordered list
-        if data.get("type") == "ol":
-            with doc.create(Enumerate()) as doc:
-                parse(data["children"], doc)
+def bib_reference_name(reference_id):
+    return f"ref{reference_id}"
 
-        # un-ordered list
-        if data.get("type") == "ul":
-            with doc.create(Itemize()) as doc:
-                parse(data["children"], doc)
-        # list item
-        if data.get("type") == "li":
-            doc.add_item(parse(data["children"][0], doc=None))
 
-        if data.get("type") == "sub-section":
-            with doc.create(Subsubsection(data["children"][0]["text"])) as doc:
-                doc.append("")
+def generate_bib_reference(data):
+    reference_id = bib_reference_name(data["id"])
+    reference = ""
+    for e in ["title", "pages", "publisher", "year", "volume"]:
+        if data.get(e):
+            reference += f'{e}="{data[e]}",\n'
+    if data.get("authors"):
+        reference += f"author=\"{data['authors']}\",\n"
+    # Can't use both VOLUME and NUMBER fields in bibtex
 
-        if data.get("type") == "equation":
-            doc.append(
-                Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
-            )
+    return f"@BOOK{{{reference_id},\n{reference}}}"
 
-        if data.get("type") == "img":
-            # lambda execution environment only allows for files to
-            # written to `/tmp` directory
-            s3_client().download_file(
-                Bucket=BUCKET,
-                Key=data["objectKey"],
-                Filename=f"/tmp/{data['objectKey']}",
-            )
 
-            with doc.create(Figure(position="H")) as doc:
-                doc.add_image(f"/tmp/{data['objectKey']}",)
-                doc.add_caption(data["children"][0]["text"])
+def generate_bib_file(references, filepath):
+    with open(filepath, "w") as bib_file:
+        bib_file.write("\n".join(generate_bib_reference(r) for r in references))
+
+
+def process(data):
+    if data.get("type") in ["p", "caption"]:
+        return NoEscape(" ".join(d for d in process_text_content(data["children"])))
+
+    if data.get("type") in ["ul", "ol"]:
+        latex_list = Itemize() if data["type"] == "ul" else Enumerate()
+        for child in data["children"]:
+
+            latex_list.add_item(process(child))
+        return latex_list
+
+    if data.get("type") == "li":
+        # TODO: confirm the `li` elements can only have 1 child element
+        # If not, figure out how to handle a list item with different
+        # kinds of children elements (paragraph / other list types)
+        return process(data["children"][0])
+
+    if data.get("type") == "sub-section":
+        section_title = NoEscape(
+            " ".join(d for d in process_text_content(data["children"]))
+        )
+        return Subsubsection(section_title)
+
+    if data.get("type") == "equation":
+        return Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
+
+    if data.get("type") == "image-block":
+        [img] = filter(lambda d: d["type"] == "img", data["children"])
+        [caption] = filter(lambda d: d["type"] == "caption", data["children"])
+
+        # lambda execution environment only allows for files to
+        # written to `/tmp` directory
+        s3_client().download_file(
+            Bucket=BUCKET,
+            Key=img["objectKey"],
+            Filename=f"/tmp/{img['objectKey']}",
+        )
+
+        figure = Figure(position="H")
+        figure.add_image(f"/tmp/{img['objectKey']}")
+
+        figure.add_caption(
+            NoEscape(" ".join(d for d in process_text_content(caption["children"])))
+        )
+        return figure
+
+    if data.get("type") == "table-block":
+        [table] = filter(lambda d: d["type"] == "table", data["children"])
+        [caption] = filter(lambda d: d["type"] == "caption", data["children"])
+        caption = NoEscape(
+            " ".join(d for d in process_text_content(caption["children"]))
+        )
+        return process_table(table, caption=caption)
+
+
+def generate_latex(atbd: Atbds, filepath: str, journal=False):
+
+    [atbd_version] = atbd.versions
+    document_data = atbd_version.document
+    contacts_data = atbd_version.contacts_link
+    doc = setup_document(atbd, filepath, journal=journal)
+
+    generate_bib_file(
+        document_data.get("publication_references", []),
+        filepath=f"{filepath}.bib",
+    )
+
+    for section_name, info in SECTIONS.items():
+        # Journal Acknowledgements and Journal Discussion are only included in
+        # Journal type pdfs
+        if (
+            section_name in ["journal_acknowledgements", "journal_dicsussion"]
+            and not journal
+        ):
+            continue
+
+        s = Section(info["title"])
+
+        if info.get("subsection"):
+            s = Subsection(info["title"])
+
+        if info.get("subsubsection"):
+            s = Subsubsection(info["title"])
+
+        doc.append(s)
+
+        if section_name == "contacts":
+            for contact in process_contacts(contacts_data):
+                doc.append(contact)
+            continue
+
+        if not document_data.get(section_name):
+            doc.append(process(CONTENT_UNAVAILABLE))
+            continue
+
+        if section_name in [
+            "algorithm_input_variables",
+            "algorithm_output_variables",
+        ]:
+
+            doc.append(process_algorithm_variables(document_data[section_name]))
+            continue
+
+        if section_name in [
+            "algorithm_implementations",
+            "data_access_input_data",
+            "data_access_output_data",
+            "data_access_related_urls",
+        ]:
+            for url in process_data_access_urls(document_data[section_name]):
+                doc.append(url)
+            continue
+
+        for item in document_data[section_name].get("children", [CONTENT_UNAVAILABLE]):
+            doc.append(process(item))
+            continue
+
+    doc.append(Command("bibliographystyle", arguments="abbrv"))
+    doc.append(Command("bibliography", arguments=NoEscape(filepath)))
+
+    return doc
 
 
 def setup_document(atbd: Atbds, filepath: str, journal: bool = False):
     doc = Document(
         default_filepath=filepath,
-        documentclass=Command("documentclass", options=["12pt"], arguments="article",),
-        # font-encoding
+        documentclass=Command(
+            "documentclass",
+            options=["12pt"],
+            arguments="article",
+        ),
         fontenc="T1",
         inputenc="utf8",
         # use Latin-Math Modern pacakge for char support
@@ -338,76 +430,6 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False):
     return doc
 
 
-def generate_latex(atbd: Atbds, filepath: str, journal=False):
-    # document_data = atbd.versions[0].document
-    # atbd_version_contacts = atbds
-    [atbd_version] = atbd.versions
-    document_data = atbd_version.document
-    contacts_data = atbd_version.contacts_link
-    doc = setup_document(atbd, filepath, journal=journal)
-
-    generate_bibliography(
-        document_data.get("publication_references", []), filepath=f"{filepath}.bib",
-    )
-
-    for section_name, info in SECTIONS.items():
-        s = Section(info["title"])
-
-        if info.get("subsection"):
-            s = Subsection(info["title"])
-
-        if info.get("subsubsection"):
-            s = Subsubsection(info["title"])
-
-        with doc.create(s):
-
-            if not document_data.get(section_name) and section_name != "contacts":
-                parse(CONTENT_UNAVAILABLE, s)
-                continue
-
-            if section_name in [
-                "algorithm_input_variables",
-                "algorithm_output_variables",
-            ]:
-
-                process_algorithm_variables(document_data[section_name], doc)
-                continue
-
-            if section_name in [
-                "algorithm_implementations",
-                "data_access_input_data",
-                "data_access_output_data",
-                "data_access_related_urls",
-            ]:
-                process_data_access_urls(document_data[section_name], doc)
-                continue
-
-            if section_name == "contacts":
-                process_contacts(contacts_data, doc)
-                continue
-
-            # Journal Acknowledgements and Journal Discussion are only included in
-            # Journal type pdfs
-            if (
-                section_name in ["journal_acknowledgements", "journal_dicsussion"]
-                and not journal
-            ):
-                continue
-
-            if isinstance(document_data[section_name], dict):
-
-                parse(
-                    document_data[section_name].get("children", CONTENT_UNAVAILABLE), s,
-                )
-                continue
-
-            parse(document_data[section_name], s)
-
-    doc.append(Command("bibliographystyle", arguments="abbrv"))
-    doc.append(Command("bibliography", arguments=NoEscape(filepath)))
-    return doc
-
-
 def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     # The extension is removed because the latex compiler uses this filepath
     # to generate a bunch of temporary files (<filepath>.tex, <filepath>.log,
@@ -433,4 +455,3 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     )
 
     return f"{filepath}.pdf"
-
