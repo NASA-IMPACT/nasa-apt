@@ -1,4 +1,4 @@
-from app.db.models import Atbds, AtbdVersions, Contacts
+from app.db.models import Atbds, AtbdVersions, Contacts, AtbdVersionsContactsAssociation
 from unittest.mock import patch
 import pytest
 from sqlalchemy import engine, create_engine, text, MetaData
@@ -250,6 +250,21 @@ def contacts_factory(db_session):
             sqlalchemy_session = db_session
 
     yield ContactsFactory
+
+
+@pytest.fixture
+def versions_contacts_association_factory(db_session):
+    class VersionsContactsAssociationFactory(factory.alchemy.SQLAlchemyModelFactory):
+        atbd_id = factory.Faker("pyint")
+        major = factory.Faker("pyint")
+        contact_id = factory.Faker("pyint")
+        roles = '{{"Investigator", "Science contact"}}'
+
+        class Meta:
+            model = AtbdVersionsContactsAssociation
+            sqlalchemy_session = db_session
+
+    yield VersionsContactsAssociationFactory
 
 
 # @pytest.fixture

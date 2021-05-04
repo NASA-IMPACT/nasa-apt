@@ -28,7 +28,12 @@ import re
 
 class AtbdVersions(Base):
     __tablename__ = "atbd_versions"
-    atbd_id = Column(Integer(), ForeignKey("atbds.id"), primary_key=True, index=True,)
+    atbd_id = Column(
+        Integer(),
+        ForeignKey("atbds.id"),
+        primary_key=True,
+        index=True,
+    )
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="Draft", nullable=False)
@@ -85,21 +90,21 @@ class Atbds(Base):
         )
 
 
-class MechanismArray(postgresql.ARRAY):
-    def bind_expression(self, bindvalue):
-        return cast(bindvalue, self)
+# class MechanismArray(postgresql.ARRAY):
+#     def bind_expression(self, bindvalue):
+#         return cast(bindvalue, self)
 
-    def result_processor(self, dialect, coltype):
-        super_rp = super(MechanismArray, self).result_processor(dialect, coltype)
+#     def result_processor(self, dialect, coltype):
+#         super_rp = super(MechanismArray, self).result_processor(dialect, coltype)
 
-        def handle_raw_string(value):
+#         def handle_raw_string(value):
 
-            return re.findall(r"([\"'])(?:(?=(\\?))\2.)*?\1", value)
+#             return re.findall(r"([\"'])(?:(?=(\\?))\2.)*?\1", value)
 
-        def process(value):
-            return super_rp(handle_raw_string(value))
+#         def process(value):
+#             return super_rp(handle_raw_string(value))
 
-        return process
+#         return process
 
 
 class Contacts(Base):
@@ -122,6 +127,9 @@ class Contacts(Base):
 
 class AtbdVersionsContactsAssociation(Base):
     __tablename__ = "atbd_versions_contacts"
+    # Foreign keys are defined up here in order
+    # to use a composite foreign key. The FK constraint
+    # for contact_id is declared further.
     __table_args__ = (
         ForeignKeyConstraint(
             ["atbd_id", "major"],
@@ -130,8 +138,16 @@ class AtbdVersionsContactsAssociation(Base):
         ),
     )
 
-    atbd_id = Column(Integer(), nullable=False, primary_key=True,)
-    major = Column(Integer(), nullable=False, primary_key=True,)
+    atbd_id = Column(
+        Integer(),
+        nullable=False,
+        primary_key=True,
+    )
+    major = Column(
+        Integer(),
+        nullable=False,
+        primary_key=True,
+    )
 
     contact_id = Column(
         Integer(), ForeignKey("contacts.id"), nullable=False, primary_key=True
@@ -139,10 +155,15 @@ class AtbdVersionsContactsAssociation(Base):
     roles = Column(String())
 
     atbd_version = relationship(
-        "AtbdVersions", backref="contacts_link", lazy="joined"  # uselist=True
+        "AtbdVersions",
+        backref=backref("contacts_link", cascade="all, delete-orphan"),
+        lazy="joined",
     )
+
     contact = relationship(
-        "Contacts", backref="atbd_versions_link", lazy="joined"  # uselist=True
+        "Contacts",
+        backref=backref("atbd_versions_link", cascade="all, delete-orphan"),
+        lazy="joined",
     )
 
     def __repr__(self):
@@ -151,4 +172,3 @@ class AtbdVersionsContactsAssociation(Base):
             f"contact_id={self.contact_id}, roles={self.roles}, "
             f"atbd_versions={self.atbd_version}, contacts={self.contact}>"
         )
-

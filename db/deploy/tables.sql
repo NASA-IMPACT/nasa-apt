@@ -79,7 +79,7 @@ CREATE TABLE apt.atbd_versions_contacts(
   major INTEGER NOT NULL,
   FOREIGN KEY (atbd_id, major) REFERENCES apt.atbd_versions(atbd_id, major) ON DELETE CASCADE,
   contact_id INTEGER NOT NULL,
-  FOREIGN KEY (contact_id) REFERENCES apt.contacts(id),
+  FOREIGN KEY (contact_id) REFERENCES apt.contacts(id) ON DELETE CASCADE,
   PRIMARY KEY (atbd_id, major, contact_id),
   roles apt.e_contact_role_type[] 
 );

@@ -30,7 +30,14 @@ def test_list_contacts(test_client, db_session, contacts_factory):
     assert len(result) == 2
 
 
-def test_get_contact_by_id(test_client, db_session, contacts_factory):
+def test_get_contact_by_id(
+    test_client,
+    atbds_factory,
+    atbd_versions_factory,
+    versions_contacts_association_factory,
+    db_session,
+    contacts_factory,
+):
     contact = contacts_factory.create()
     contact.mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
     db_session.add(contact)
@@ -43,6 +50,35 @@ def test_get_contact_by_id(test_client, db_session, contacts_factory):
         {"mechanism_type": "Email", "mechanism_value": "test@email.com"},
         {"mechanism_type": "Twitter", "mechanism_value": "@test_handle"},
     ]
+    contact = contacts_factory.create()
+    contact.mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
+    db_session.add(contact)
+    db_session.commit()
+
+    atbd = atbds_factory.create()
+    atbd.alias = atbd.alias.lower()
+    db_session.add(atbd)
+    db_session.commit()
+
+    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    db_session.add(version)
+    db_session.commit()
+
+    version_contact_association = versions_contacts_association_factory.create(
+        atbd_id=atbd.id,
+        major=version.major,
+        contact_id=contact.id,
+        roles='{{"Investigator", "Science contact"}}',
+    )
+    db_session.add(version_contact_association)
+    db_session.commit()
+
+    db_session.refresh(version)
+    db_session.refresh(contact)
+    assert len(version.contacts_link) > 0
+    assert version.contacts_link[0].contact.id == contact.id
+    assert len(contact.atbd_versions_link) > 0
+    assert contact.atbd_versions_link[0].atbd_version.major == version.major
 
 
 def test_create_contact(
@@ -59,14 +95,18 @@ def test_create_contact(
         del contact["first_name"]
         del contact["_sa_instance_state"]
         result = test_client.post(
-            "/contacts", headers=authenticated_headers, data=json.dumps(contact),
+            "/contacts",
+            headers=authenticated_headers,
+            data=json.dumps(contact),
         )
         result.raise_for_status()
 
     contact = contacts_factory.create().__dict__
     del contact["_sa_instance_state"]
     result = test_client.post(
-        "/contacts", headers=authenticated_headers, data=json.dumps(contact),
+        "/contacts",
+        headers=authenticated_headers,
+        data=json.dumps(contact),
     )
 
     # Autoflush was causing the query to fail as it
@@ -114,7 +154,13 @@ def test_update_contact(
 
 
 def test_delete_contact(
-    test_client, db_session, contacts_factory, authenticated_headers
+    test_client,
+    db_session,
+    contacts_factory,
+    atbds_factory,
+    atbd_versions_factory,
+    versions_contacts_association_factory,
+    authenticated_headers,
 ):
     contact = contacts_factory.create()
     contact.mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
@@ -126,10 +172,43 @@ def test_delete_contact(
         result.raise_for_status()
 
     result = test_client.delete(
-        f"/contacts/{contact.id}", headers=authenticated_headers,
+        f"/contacts/{contact.id}",
+        headers=authenticated_headers,
     )
     result.raise_for_status()
     assert db_session.query(Contacts).all() == []
+
+    contact = contacts_factory.create()
+    contact.mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
+    db_session.add(contact)
+    db_session.commit()
+
+    atbd = atbds_factory.create()
+    atbd.alias = atbd.alias.lower()
+    db_session.add(atbd)
+    db_session.commit()
+
+    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    db_session.add(version)
+    db_session.commit()
+
+    version_contact_association = versions_contacts_association_factory.create(
+        atbd_id=atbd.id,
+        major=version.major,
+        contact_id=contact.id,
+        roles='{{"Investigator", "Science contact"}}',
+    )
+    db_session.add(version_contact_association)
+    db_session.commit()
+
+    db_session.refresh(version)
+    db_session.refresh(contact)
+    assert len(version.contacts_link) > 0
+    assert version.contacts_link[0].contact.id == contact.id
+
+    test_client.delete(f"/contacts/{contact.id}", headers=authenticated_headers)
+    db_session.refresh(version)
+    assert len(version.contacts_link) == 0
 
 
 def test_update_contacts_in_atbds_version(
@@ -141,7 +220,6 @@ def test_update_contacts_in_atbds_version(
     authenticated_headers,
     mocked_event_listener,
 ):
-    # TODO: implement test for adding and removing a contact from an atbd
 
     contact = contacts_factory.create()
     contact.mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
@@ -168,6 +246,8 @@ def test_update_contacts_in_atbds_version(
             ),
         )
         result.raise_for_status()
+
+    db_session.refresh(version)
 
     assert version.contacts_link == []
 
@@ -221,20 +301,3 @@ def test_update_contacts_in_atbds_version(
     assert version.contacts_link[1].major == version.major
     assert version.contacts_link[1].contact == contact2
     assert version.contacts_link[1].atbd_version == version
-
-    result = test_client.post(
-        f"/atbds/{atbd.id}/versions/{version.major}",
-        data=json.dumps(
-            {
-                "contacts": [
-                    {"id": contact.id, "roles": ["Science contact", "Investigator"]},
-                ]
-            }
-        ),
-        headers=authenticated_headers,
-    )
-    result.raise_for_status()
-    db_session.refresh(version)
-    assert len(version.contacts_link) == 1
-    assert version.contacts_link[0].contact == contact
-
