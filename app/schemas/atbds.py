@@ -1,6 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, validator
 from typing import Optional, List
+from app.schemas import versions_contacts
 from app.schemas import versions
 
 
@@ -37,7 +38,7 @@ class OutputBase(BaseModel):
 
 
 class SummaryOutput(OutputBase):
-    versions: List[versions.SummaryOutput]
+    versions: List[versions_contacts.AtbdVersionSummaryOutput]
 
     @validator("versions")
     def enforce_version_ordering(cls, versions):

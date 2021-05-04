@@ -2,7 +2,6 @@ from datetime import datetime
 from pydantic import validator, BaseModel
 from typing import List, Optional
 
-
 # TODO: use status enum above
 class AtbdVersionsBase(BaseModel):
     status: str
@@ -19,10 +18,22 @@ class AtbdVersionsBase(BaseModel):
         orm_mode = True
 
 
+class AtbdVersionSummaryOutput(AtbdVersionsBase):
+    major: int
+    minor: int
+    version: Optional[str]
+    citation: Optional[dict]
+    changelog: Optional[str]
+
+    @validator("version", always=True)
+    def generate_semver(cls, v, values) -> str:
+        return f"v{values['major']}.{values['minor']}"
+
+
 class AtbdVersionsLink(BaseModel):
 
     roles: str
-    atbd_version: AtbdVersionsBase
+    atbd_version: AtbdVersionSummaryOutput
 
     @validator("roles")
     def format_roles(cls, v):
@@ -40,7 +51,7 @@ class ContactsBase(BaseModel):
     last_name: str
     uuid: Optional[str]
     url: Optional[str]
-    # atbd_versions_link: Optional[AtbdVersionsLink]
+    atbd_versions_link: Optional[List[AtbdVersionsLink]]
 
     class Config:
         title = "Contacts"
