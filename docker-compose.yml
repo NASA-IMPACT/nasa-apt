@@ -23,12 +23,7 @@ services:
     volumes: 
       - ./db:/sqitch
       - ./db:/var/lib/postgresql/data
-      # - type: bind
-      #   source: ./db
-      #   target: /sqitch
-      # - type: bind
-      #   source: ./db
-      #   target: /var/lib/postgresql/data
+     
     depends_on: 
       - db-ready
       

@@ -58,8 +58,37 @@ class ContactsBase(BaseModel):
         orm_mode = True
 
 
+class ContactsMechanism(BaseModel):
+    # TODO: use enum from above
+    mechanism_type: Optional[str]
+    mechanism_value: Optional[str]
+
+
+class ContactsSummary(ContactsBase):
+    id: int
+    mechanisms: Optional[str]
+    # TODO: I couldn't get the SQLAlchemy model working with
+    # composite array and composite type, so I've left them
+    # as a string representation in the datamodel and then
+    # converted them to a list of Mechanism objects here.
+    # This is not ideal, and this kind of formatting should happen
+    # at the model level
+
+    @validator("mechanisms")
+    def format_contact_mechanisms(cls, v):
+        if v is None:
+            return []
+
+        v = [i.strip('\\"(){}') for i in v.split(",")]
+
+        return [
+            ContactsMechanism(mechanism_type=v[i], mechanism_value=v[i + 1])
+            for i in range(0, len(v) - 1, 2)
+        ]
+
+
 class ContactsLinkOutput(BaseModel):
-    contact: ContactsBase
+    contact: ContactsSummary
     roles: str
 
     @validator("roles")

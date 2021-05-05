@@ -2,7 +2,12 @@ from pydantic import BaseModel, validator
 from typing import Optional, List
 import enum
 
-from app.schemas.versions_contacts import ContactsBase, AtbdVersionsLink
+from app.schemas.versions_contacts import (
+    ContactsBase,
+    ContactsSummary,
+    ContactsMechanism,
+    AtbdVersionsLink,
+)
 
 
 class ContactMechanismEnum(str, enum.Enum):
@@ -30,12 +35,6 @@ class RolesEnum(str, enum.Enum):
     science_software_development = "Science software development"
 
 
-class Mechanism(BaseModel):
-    # TODO: use enum from above
-    mechanism_type: Optional[str]
-    mechanism_value: Optional[str]
-
-
 class Roles(BaseModel):
     # TODO: use enum from above
     role: Optional[str]
@@ -43,7 +42,7 @@ class Roles(BaseModel):
 
 class Create(ContactsBase):
 
-    mechanisms: Optional[List[Mechanism]]
+    mechanisms: Optional[List[ContactsMechanism]]
 
     @validator("mechanisms")
     def format_contact_mechanisms(cls, v):
@@ -54,28 +53,9 @@ class Create(ContactsBase):
         return f"{{{s}}}"
 
 
-class Output(ContactsBase):
-    id: int
-    mechanisms: Optional[str]
+class Output(ContactsSummary):
+
     atbd_versions_link: Optional[List[AtbdVersionsLink]]
-
-    # TODO: I couldn't get the SQLAlchemy model working with
-    # composite array and composite type, so I've left them
-    # as a string representation in the datamodel and then
-    # converted them to a list of Mechanism objects here.
-    # This is not ideal, and this kind of formatting should happen
-    # at the model level
-    @validator("mechanisms")
-    def format_contact_mechanisms(cls, v):
-        if v is None:
-            return []
-
-        v = [i.strip('\\"(){}') for i in v.split(",")]
-
-        return [
-            Mechanism(mechanism_type=v[i], mechanism_value=v[i + 1])
-            for i in range(0, len(v) - 1, 2)
-        ]
 
 
 class Update(BaseModel):
@@ -84,7 +64,7 @@ class Update(BaseModel):
     last_name: Optional[str]
     uuid: Optional[str]
     url: Optional[str]
-    mechanisms: Optional[List[Mechanism]]
+    mechanisms: Optional[List[ContactsMechanism]]
 
     @validator("mechanisms")
     def format_contact_mechanisms(cls, v):
