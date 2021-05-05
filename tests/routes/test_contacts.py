@@ -38,6 +38,18 @@ def test_get_contact_by_id(
     db_session,
     contacts_factory,
 ):
+    # Test contact without mechanisms
+    contact = contacts_factory.create()
+    contact.mechanisms = None
+    db_session.add(contact)
+    db_session.commit()
+    db_session.refresh(contact)
+
+    result = json.loads(test_client.get(f"/contacts/{contact.id}").content)
+    assert result["first_name"] == contact.first_name
+    assert result["mechanisms"] == []
+
+    # Test contact with mechanisms
     contact = contacts_factory.create()
     contact.mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
     db_session.add(contact)
@@ -120,6 +132,37 @@ def test_create_contact(
             contacts_from_db[0].mechanisms
             == '{"(Email,test@email.com)","(Twitter,@test_handle)"}'
         )
+
+    # Test that mechansism values with parentheses are handled
+    contact = contacts_factory.create()
+    contact.mechanisms = [
+        {"mechanism_type": "Mobile", "mechanism_value": "+0 (123) 456 7891"}
+    ]
+    contact = contact.__dict__
+    del contact["_sa_instance_state"]
+
+    result = test_client.post(
+        "/contacts",
+        headers=authenticated_headers,
+        data=json.dumps(contact),
+    )
+    result.raise_for_status()
+
+    # Autoflush was causing the query to fail as it
+    # was trying to insert an object with
+    with db_session.no_autoflush:
+        contacts_from_db = db_session.query(Contacts).all()
+        assert len(contacts_from_db) > 0
+        assert contacts_from_db[1].first_name == contact["first_name"]
+        assert contacts_from_db[1].last_name == contact["last_name"]
+        assert contacts_from_db[1].mechanisms == '{"(Mobile,\\"+0 (123) 456 7891\\")"}'
+
+    result = test_client.get("/contacts", headers=authenticated_headers)
+    result.raise_for_status()
+    returned_contact = json.loads(result.content)[1]
+    assert returned_contact["mechanisms"] == [
+        {"mechanism_type": "Mobile", "mechanism_value": "+0 (123) 456 7891"}
+    ]
 
 
 def test_update_contact(

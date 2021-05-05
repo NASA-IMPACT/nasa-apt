@@ -47,8 +47,15 @@ class Create(ContactsBase):
 
     @validator("mechanisms")
     def format_contact_mechanisms(cls, v):
+        # for m in v:
+        #     m.mechanism_type = m.mechanism_type.replace(")", "\\)").replace("(", "\\(")
+        #     m.mechanism_value = m.mechanism_value.replace(")", "\\)").replace(
+        #         "(", "\\("
+        #     )
 
-        s = ",".join(f'"({m.mechanism_type},{m.mechanism_value})"' for m in v)
+        s = ",".join(
+            f'"(\\"{m.mechanism_type}\\",\\"{m.mechanism_value}\\")"' for m in v
+        )
         return f"{{{s}}}"
 
 
@@ -65,6 +72,9 @@ class Output(ContactsBase):
     # at the model level
     @validator("mechanisms")
     def format_contact_mechanisms(cls, v):
+        if v is None:
+            return []
+
         v = [i.strip('\\"(){}') for i in v.split(",")]
 
         return [
