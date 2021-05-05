@@ -47,11 +47,6 @@ class Create(ContactsBase):
 
     @validator("mechanisms")
     def format_contact_mechanisms(cls, v):
-        # for m in v:
-        #     m.mechanism_type = m.mechanism_type.replace(")", "\\)").replace("(", "\\(")
-        #     m.mechanism_value = m.mechanism_value.replace(")", "\\)").replace(
-        #         "(", "\\("
-        #     )
 
         s = ",".join(
             f'"(\\"{m.mechanism_type}\\",\\"{m.mechanism_value}\\")"' for m in v
@@ -94,7 +89,9 @@ class Update(BaseModel):
     @validator("mechanisms")
     def format_contact_mechanisms(cls, v):
 
-        s = ",".join(f'"({m.mechanism_type},{m.mechanism_value})"' for m in v)
+        s = ",".join(
+            f'"(\\"{m.mechanism_type}\\",\\"{m.mechanism_value}\\")"' for m in v
+        )
         return f"{{{s}}}"
 
 
