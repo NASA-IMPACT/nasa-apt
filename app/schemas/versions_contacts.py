@@ -2,6 +2,7 @@ from datetime import datetime
 from pydantic import validator, BaseModel
 from typing import List, Optional
 
+
 # TODO: use status enum above
 class AtbdVersionsBase(BaseModel):
     status: str
@@ -51,7 +52,6 @@ class ContactsBase(BaseModel):
     last_name: str
     uuid: Optional[str]
     url: Optional[str]
-    atbd_versions_link: Optional[List[AtbdVersionsLink]]
 
     class Config:
         title = "Contacts"

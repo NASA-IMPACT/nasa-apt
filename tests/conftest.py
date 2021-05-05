@@ -118,7 +118,8 @@ def s3_bucket(monkeysession, s3_resource):
 
     bucket = s3_resource.Bucket(name=BUCKET)
     bucket.create()
-    bucket.put_object(Key="fullmoon.jpg", Body=b"test")
+    with open("./tests/fullmoon.jpg", "rb") as f:
+        bucket.put_object(Key="fullmoon.jpg", Body=f.read())
     yield bucket
 
 
@@ -245,7 +246,6 @@ def contacts_factory(db_session):
         uuid = fuzzy.FuzzyText(length=10)
         url = fuzzy.FuzzyText(length=10, prefix="http://")
 
-        # mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
         mechanisms = [
             {"mechanism_type": "Email", "mechanism_value": "test@email.com"},
             {"mechanism_type": "Twitter", "mechanism_value": "@test_handle"},
@@ -271,11 +271,6 @@ def versions_contacts_association_factory(db_session):
             sqlalchemy_session = db_session
 
     yield VersionsContactsAssociationFactory
-
-
-# @pytest.fixture
-# def atbd_creation_input():
-#     yield {"title": "Test ATBD 1", "alias": "test-atbd-1"}
 
 
 @pytest.fixture

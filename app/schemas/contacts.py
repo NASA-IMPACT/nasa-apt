@@ -2,7 +2,7 @@ from pydantic import BaseModel, validator
 from typing import Optional, List
 import enum
 
-from app.schemas.versions_contacts import ContactsBase
+from app.schemas.versions_contacts import ContactsBase, AtbdVersionsLink
 
 
 class ContactMechanismEnum(str, enum.Enum):
@@ -55,6 +55,7 @@ class Create(ContactsBase):
 class Output(ContactsBase):
     id: int
     mechanisms: Optional[str]
+    atbd_versions_link: Optional[List[AtbdVersionsLink]]
 
     # TODO: I couldn't get the SQLAlchemy model working with
     # composite array and composite type, so I've left them
