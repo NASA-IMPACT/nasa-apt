@@ -39,7 +39,7 @@ class AtbdVersionsLink(BaseModel):
     @validator("roles")
     def format_roles(cls, v):
 
-        return [i.strip('\\"(){}') for i in v.split(",")]
+        return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
 
     class Config:
         title = "AtbdVersionsLink"
@@ -78,6 +78,7 @@ class ContactsSummary(ContactsBase):
     def format_contact_mechanisms(cls, v):
         if v is None:
             return []
+        print("MECHANSISM VALUE: ", v)
 
         v = [i.strip('\\"(){}') for i in v.split(",")]
 
@@ -94,7 +95,7 @@ class ContactsLinkOutput(BaseModel):
     @validator("roles")
     def format_roles(cls, v):
 
-        return [i.strip('\\"(){}') for i in v.split(",")]
+        return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
 
     class Config:
         title = "ContactsLink"
@@ -108,6 +109,7 @@ class ContactsLinkInput(BaseModel):
 
     @validator("roles")
     def format_roles(cls, v):
+
         s = ",".join(i for i in v)
         return f"{{{s}}}"
 

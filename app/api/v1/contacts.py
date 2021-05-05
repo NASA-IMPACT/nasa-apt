@@ -39,6 +39,11 @@ def list_contacts(
 )
 def get_contact(contact_id: str, db: DbSession = Depends(get_db)):
     try:
+        print(
+            crud_contacts.get(
+                db_session=db, obj_in=contacts.Lookup(id=contact_id)
+            ).atbd_versions_link
+        )
         return crud_contacts.get(db_session=db, obj_in=contacts.Lookup(id=contact_id))
     except orm.exc.NoResultFound:
         raise HTTPException(

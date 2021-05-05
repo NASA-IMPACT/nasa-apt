@@ -344,3 +344,25 @@ def test_update_contacts_in_atbds_version(
     assert version.contacts_link[1].major == version.major
     assert version.contacts_link[1].contact == contact2
     assert version.contacts_link[1].atbd_version == version
+
+    result = test_client.post(
+        f"/atbds/{atbd.id}/versions/{version.major}",
+        data=json.dumps({"contacts": [{"id": contact.id, "roles": []}]}),
+        headers=authenticated_headers,
+    )
+    result.raise_for_status()
+    db_session.refresh(version)
+    db_session.refresh(atbd)
+    assert len(version.contacts_link) == 1
+    assert version.contacts_link[0].roles == "{}"
+
+    # This should be moved to the `atbd_versions` unit tests
+    result = test_client.get(
+        f"/atbds/{atbd.id}/versions/{version.major}",
+        data=json.dumps({"contacts": [{"id": contact.id, "roles": []}]}),
+        headers=authenticated_headers,
+    )
+
+    result.raise_for_status()
+    result = json.loads(result.content)
+    assert result["versions"][0]["contacts_link"][0]["roles"] == []

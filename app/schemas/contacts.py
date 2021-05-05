@@ -2,12 +2,7 @@ from pydantic import BaseModel, validator
 from typing import Optional, List
 import enum
 
-from app.schemas.versions_contacts import (
-    ContactsBase,
-    ContactsSummary,
-    ContactsMechanism,
-    AtbdVersionsLink,
-)
+from app.schemas import versions_contacts
 
 
 class ContactMechanismEnum(str, enum.Enum):
@@ -40,9 +35,9 @@ class Roles(BaseModel):
     role: Optional[str]
 
 
-class Create(ContactsBase):
+class Create(versions_contacts.ContactsBase):
 
-    mechanisms: Optional[List[ContactsMechanism]]
+    mechanisms: Optional[List[versions_contacts.ContactsMechanism]]
 
     @validator("mechanisms")
     def format_contact_mechanisms(cls, v):
@@ -53,9 +48,9 @@ class Create(ContactsBase):
         return f"{{{s}}}"
 
 
-class Output(ContactsSummary):
+class Output(versions_contacts.ContactsSummary):
 
-    atbd_versions_link: Optional[List[AtbdVersionsLink]]
+    atbd_versions_link: Optional[List[versions_contacts.AtbdVersionsLink]]
 
 
 class Update(BaseModel):
@@ -64,7 +59,7 @@ class Update(BaseModel):
     last_name: Optional[str]
     uuid: Optional[str]
     url: Optional[str]
-    mechanisms: Optional[List[ContactsMechanism]]
+    mechanisms: Optional[List[versions_contacts.ContactsMechanism]]
 
     @validator("mechanisms")
     def format_contact_mechanisms(cls, v):
