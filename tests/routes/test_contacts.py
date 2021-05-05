@@ -136,7 +136,7 @@ def test_create_contact(
     # Test that mechansism values with parentheses are handled
     contact = contacts_factory.create()
     contact.mechanisms = [
-        {"mechanism_type": "Mobile", "mechanism_value": "+0 (123) 456 7891"}
+        {"mechanism_type": "Mobile", "mechanism_value": "(123) 456 7891"}
     ]
     contact = contact.__dict__
     del contact["_sa_instance_state"]
@@ -155,13 +155,13 @@ def test_create_contact(
         assert len(contacts_from_db) > 0
         assert contacts_from_db[1].first_name == contact["first_name"]
         assert contacts_from_db[1].last_name == contact["last_name"]
-        assert contacts_from_db[1].mechanisms == '{"(Mobile,\\"+0 (123) 456 7891\\")"}'
+        assert contacts_from_db[1].mechanisms == '{"(Mobile,\\"(123) 456 7891\\")"}'
 
     result = test_client.get("/contacts", headers=authenticated_headers)
     result.raise_for_status()
     returned_contact = json.loads(result.content)[1]
     assert returned_contact["mechanisms"] == [
-        {"mechanism_type": "Mobile", "mechanism_value": "+0 (123) 456 7891"}
+        {"mechanism_type": "Mobile", "mechanism_value": "(123) 456 7891"}
     ]
 
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 from pydantic import validator, BaseModel
 from typing import List, Optional
-
+import re
 
 # TODO: use status enum above
 class AtbdVersionsBase(BaseModel):
@@ -78,14 +78,15 @@ class ContactsSummary(ContactsBase):
     def format_contact_mechanisms(cls, v):
         if v is None:
             return []
-        print("MECHANSISM VALUE: ", v)
+        mechanisms = []
 
-        v = [i.strip('\\"(){}') for i in v.split(",")]
+        for result in re.findall(r"(\"\()(.*?),(.*?)(\)\")", v.strip("{}")):
+            mtype, mvalue = result[1].strip('\\"'), result[2].strip('\\"')
 
-        return [
-            ContactsMechanism(mechanism_type=v[i], mechanism_value=v[i + 1])
-            for i in range(0, len(v) - 1, 2)
-        ]
+            mechanisms.append(
+                ContactsMechanism(mechanism_type=mtype, mechanism_value=mvalue)
+            )
+        return mechanisms
 
 
 class ContactsLinkOutput(BaseModel):
