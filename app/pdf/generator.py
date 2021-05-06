@@ -132,8 +132,6 @@ def wrap_text(data):
     # ie:  process_text({"bold": true, "italic": true, "text": ... })
     # will return latex like `\bold{\italic{text}}`
     e = data["text"]
-    if e == "":
-        return None
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option):
             e = command(e)
@@ -252,7 +250,7 @@ def generate_bib_file(references, filepath):
         bib_file.write("\n".join(generate_bib_reference(r) for r in references))
 
 
-def process(data):
+def process(data, atbd_id: int = None):
     if data.get("type") in ["p", "caption"]:
         return NoEscape(" ".join(d for d in process_text_content(data["children"])))
 
@@ -286,7 +284,7 @@ def process(data):
         # written to `/tmp` directory
         s3_client().download_file(
             Bucket=BUCKET,
-            Key=img["objectKey"],
+            Key=f"{atbd_id}/images/{img['objectKey']}",
             Filename=f"/tmp/{img['objectKey']}",
         )
 
@@ -366,7 +364,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             continue
 
         for item in document_data[section_name].get("children", [CONTENT_UNAVAILABLE]):
-            doc.append(process(item))
+            doc.append(process(item, atbd_id=atbd.id))
             continue
 
     doc.append(Command("bibliographystyle", arguments="abbrv"))

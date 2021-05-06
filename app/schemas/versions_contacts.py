@@ -3,6 +3,7 @@ from pydantic import validator, BaseModel
 from typing import List, Optional
 import re
 
+
 # TODO: use status enum above
 class AtbdVersionsBase(BaseModel):
     status: str
@@ -78,6 +79,7 @@ class ContactsSummary(ContactsBase):
     def format_contact_mechanisms(cls, v):
         if v is None:
             return []
+
         mechanisms = []
 
         for result in re.findall(r"(\"\()(.*?),(.*?)(\)\")", v.strip("{}")):

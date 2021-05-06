@@ -16,7 +16,12 @@ class TextLeaf(BaseModel):
     def validate(cls, values: Dict[str, Union[str, bool]]):
         for v in ["underline", "italic", "bold", "subscript", "superscript"]:
             if isinstance(values.get(v), str):
+                if values["text"] == "":
+                    raise ValueError(
+                        f"Text formatting option {v} cannot be applied to empty text"
+                    )
                 values[v] = values[v].lower() == "true"
+
         return values
 
 
@@ -81,6 +86,7 @@ UnorderedListNode.update_forward_refs()
 
 
 class SubsectionNode(BaseNode):
+    id: str
     type: TypesEnum
 
 
