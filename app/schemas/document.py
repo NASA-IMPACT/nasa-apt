@@ -44,38 +44,45 @@ class TypesEnum(str, Enum):
 
 
 class BaseNode(BaseModel):
+
     type: str
     children: List[TextLeaf]
 
 
 class LinkNode(BaseNode):
+
     type: TypesEnum
     url: AnyUrl
     children: List[TextLeaf]
 
 
 class ReferenceNode(BaseNode):
+
     type: TypesEnum
     refId: str
     children: List[TextLeaf]
 
 
 class DivNode(BaseNode):
+
     type: TypesEnum
     children: List[Union[TextLeaf, LinkNode, ReferenceNode]]
 
 
 class OrderedListNode(BaseNode):
+
     type: TypesEnum
     children: List[ListItemNode]
 
 
 class UnorderedListNode(BaseNode):
+
     type: TypesEnum
     children: List[ListItemNode]
 
 
 class ListItemNode(BaseNode):
+
     type: TypesEnum
     children: List[Union[DivNode, OrderedListNode, UnorderedListNode]]
 
@@ -86,24 +93,29 @@ UnorderedListNode.update_forward_refs()
 
 
 class SubsectionNode(BaseNode):
+
     id: str
     type: TypesEnum
 
 
 class EquationNode(BaseNode):
+
     type: TypesEnum
 
 
 class ImageNode(BaseNode):
+
     type: TypesEnum
     objectKey: str
 
 
 class CaptionNode(BaseNode):
+
     type: TypesEnum
 
 
 class ImageBlockNode(BaseNode):
+
     type: TypesEnum
     children: List[Union[ImageNode, CaptionNode]]
 
@@ -123,21 +135,25 @@ class ImageBlockNode(BaseNode):
 
 
 class TableCellNode(BaseNode):
+
     type: TypesEnum
     children: List[DivNode]
 
 
 class TableRowNode(BaseNode):
+
     type: TypesEnum
     children: List[TableCellNode]
 
 
 class TableNode(BaseNode):
+
     type: TypesEnum
     children: List[TableRowNode]
 
 
 class TableBlockNode(BaseNode):
+
     type: TypesEnum
     children: List[Union[TableNode, CaptionNode]]
 
@@ -162,6 +178,7 @@ class DataAccessUrl(BaseModel):
 
 
 class DivWrapperNode(BaseModel):
+
     children: List[DivNode]
 
 
@@ -189,12 +206,12 @@ class PublicationReference(BaseModel):
 class SectionWrapper(BaseModel):
     children: List[
         Union[
+            SubsectionNode,
             ImageBlockNode,
             TableBlockNode,
             DivNode,
             OrderedListNode,
             UnorderedListNode,
-            SubsectionNode,
             EquationNode,
         ]
     ]

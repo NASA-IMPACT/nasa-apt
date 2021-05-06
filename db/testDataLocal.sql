@@ -383,7 +383,8 @@ VALUES
           {
             "text": "Equation Example"
           }
-        ]
+        ], 
+        "id": "equation-example"
       },
       {
         "type": "equation",
@@ -399,7 +400,8 @@ VALUES
           {
             "text": "Image Example"
           }
-        ]
+        ],
+        "id":"image-example"
       },
       {
         "type": "image-block",
@@ -421,7 +423,8 @@ VALUES
           {
             "text": "Table Example"
           }
-        ]
+        ],
+        "id":"table-example"
       },
       {
         "type": "table-block",
@@ -594,7 +597,8 @@ VALUES
           {
             "text": "Canopy cover types"
           }
-        ]
+        ],
+        "id":"canopy-cover-types"
       },
       {
         "type": "p",
@@ -1023,7 +1027,8 @@ VALUES
           {
             "text": "Equation Example"
           }
-        ]
+        ],
+        "id":"equation-example"
       },
       {
         "type": "equation",
@@ -1039,7 +1044,8 @@ VALUES
           {
             "text": "Image Example"
           }
-        ]
+        ],
+        "id":"image-example"
       },
       {
         "type": "image-block",
@@ -1061,7 +1067,8 @@ VALUES
           {
             "text": "Table Example"
           }
-        ]
+        ],
+        "id": "table-example" 
       },
       {
         "type": "table-block",
@@ -1234,7 +1241,8 @@ VALUES
           {
             "text": "Canopy cover types"
           }
-        ]
+        ], 
+        "id": "canopy-cover-types"
       },
       {
         "type": "p",
