@@ -1315,7 +1315,6 @@ INSERT INTO atbd_versions_contacts
   (atbd_id, major, contact_id, roles)
 VALUES
   (
-    --    1, 1, 1, '{ "Science contact", "Metadata author" }'
     1, 1, 1, ARRAY
 ['Science contact', 'Metadata author']::e_contact_role_type[]    
 );
@@ -1323,7 +1322,13 @@ INSERT INTO atbd_versions_contacts
   (atbd_id, major, contact_id, roles)
 VALUES
   (
-    --    1, 2, 2, '{ 'Investigator' }'
+    1, 1, 2, ARRAY
+['Investigator']::e_contact_role_type[]    
+);
+INSERT INTO atbd_versions_contacts
+  (atbd_id, major, contact_id, roles)
+VALUES
+  (
     1, 2, 2, ARRAY
 ['Investigator']::e_contact_role_type[]
 );

@@ -72,7 +72,7 @@ def generate_contact(contact_link: ContactsLinkOutput) -> List:
     contact = contact_link.contact.dict(exclude_none=True)
 
     latex_contact = [
-        NoEscape(
+        Subsubsection(
             " ".join(
                 contact.get(k, "") for k in ["first_name", "middle_name", "last_name"]
             )
@@ -95,6 +95,7 @@ def generate_contact(contact_link: ContactsLinkOutput) -> List:
         paragraph = section.Paragraph("Roles:")
         paragraph.append(", ".join(r for r in contact_link.roles))
         latex_contact.append(paragraph)
+
     return latex_contact
 
 
