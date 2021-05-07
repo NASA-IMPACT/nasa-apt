@@ -4,33 +4,26 @@ from typing import List, Optional
 import re
 
 
-# TODO: use status enum above
-class AtbdVersionsBase(BaseModel):
-    status: str
-    published_by: Optional[str]
-    published_at: Optional[datetime]
-    sections_completed: Optional[dict]
-    created_by: str
-    created_at: datetime
-    last_updated_by: str
-    last_updated_at: datetime
-
-    class Config:
-        title = "AtbdVersion"
-        orm_mode = True
-
-
 class AtbdLinkOutput(BaseModel):
     id: int
     title: str
     alias: Optional[str]
 
+    class Config:
+        title = "AtbdLinkOutput"
+        orm_mode = True
 
-class AtbdVersionsLinkOutput(AtbdVersionsBase):
+
+class AtbdVersionsLinkOutput(BaseModel):
     major: int
     minor: int
     version: Optional[str]
+    status: str
     atbd: AtbdLinkOutput
+
+    class Config:
+        title = "AtbdVersionsLinkOutput"
+        orm_mode = True
 
 
 class AtbdVersionsLink(BaseModel):

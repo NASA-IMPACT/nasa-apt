@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, validator
 from typing import Optional, Union, Dict, Any, List
 import enum
@@ -13,17 +14,30 @@ class StatusEnum(enum.Enum):
     published = "Published"
 
 
-class AtbdVersionSummaryOutput(versions_contacts.AtbdVersionsBase):
+# TODO: use status enum above
+class AtbdVersionSummaryOutput(BaseModel):
 
     major: int
     minor: int
     version: Optional[str]
+    status: str
+    published_by: Optional[str]
+    published_at: Optional[datetime]
+    sections_completed: Optional[dict]
+    created_by: str
+    created_at: datetime
+    last_updated_by: str
+    last_updated_at: datetime
     citation: Optional[dict]
     changelog: Optional[str]
 
     @validator("version", always=True)
     def generate_semver(cls, v, values) -> str:
         return f"v{values['major']}.{values['minor']}"
+
+    class Config:
+        title = "AtbdVersion"
+        orm_mode = True
 
 
 class FullOutput(AtbdVersionSummaryOutput):
