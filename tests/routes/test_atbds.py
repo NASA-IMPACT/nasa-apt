@@ -646,6 +646,10 @@ def test_publish_atbd_by_id(
     atbd.alias = atbd.alias.lower()
     db_session.add(atbd)
     db_session.commit()
+    db_session.refresh(atbd)
+
+    with open("./tests/fullmoon.jpg", "rb") as f:
+        s3_bucket.put_object(Key=f"{atbd.id}/images/fullmoon.jpg", Body=f.read())
 
     # create a version to go along with the atbd
     # otherwise the atbd will fail to retrieve since

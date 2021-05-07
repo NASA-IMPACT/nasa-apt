@@ -13,7 +13,20 @@ class StatusEnum(enum.Enum):
     published = "Published"
 
 
-class FullOutput(versions_contacts.AtbdVersionSummaryOutput):
+class AtbdVersionSummaryOutput(versions_contacts.AtbdVersionsBase):
+
+    major: int
+    minor: int
+    version: Optional[str]
+    citation: Optional[dict]
+    changelog: Optional[str]
+
+    @validator("version", always=True)
+    def generate_semver(cls, v, values) -> str:
+        return f"v{values['major']}.{values['minor']}"
+
+
+class FullOutput(AtbdVersionSummaryOutput):
     document: Optional[Document]
     sections_completed: Optional[dict]
     doi: Optional[str]

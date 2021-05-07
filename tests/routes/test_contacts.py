@@ -3,9 +3,9 @@ import json
 from app.db.models import Contacts
 
 
-def test_list_contacts(test_client, db_session, contacts_factory):
-
-    assert json.loads(test_client.get("/contacts").content) == []
+def test_list_contacts(
+    test_client, db_session, contacts_factory, authenticated_headers
+):
 
     contact = contacts_factory.create()
     contact.mechanisms = '{"(Email,test@email.com)", "(Twitter,@test_handle)"}'
@@ -13,7 +13,13 @@ def test_list_contacts(test_client, db_session, contacts_factory):
     db_session.commit()
     db_session.refresh(contact)
 
-    result = json.loads(test_client.get("/contacts").content)
+    with pytest.raises(Exception):
+        result = test_client.get("/contacts")
+        result.raise_for_status()
+
+    result = json.loads(
+        test_client.get("/contacts", headers=authenticated_headers).content
+    )
     assert len(result) == 1
     assert result[0]["first_name"] == contact.first_name
     assert result[0]["mechanisms"] == [
@@ -26,7 +32,9 @@ def test_list_contacts(test_client, db_session, contacts_factory):
     db_session.add(contact)
     db_session.commit()
     db_session.refresh(contact)
-    result = json.loads(test_client.get("/contacts").content)
+    result = json.loads(
+        test_client.get("/contacts", headers=authenticated_headers).content
+    )
     assert len(result) == 2
 
 
@@ -35,6 +43,7 @@ def test_get_contact_by_id(
     atbds_factory,
     atbd_versions_factory,
     versions_contacts_association_factory,
+    authenticated_headers,
     db_session,
     contacts_factory,
 ):
@@ -45,7 +54,15 @@ def test_get_contact_by_id(
     db_session.commit()
     db_session.refresh(contact)
 
-    result = json.loads(test_client.get(f"/contacts/{contact.id}").content)
+    with pytest.raises(Exception):
+        result = test_client.get(f"/contacts/{contact.id}")
+        result.raise_for_status()
+
+    result = json.loads(
+        test_client.get(
+            f"/contacts/{contact.id}", headers=authenticated_headers
+        ).content
+    )
     assert result["first_name"] == contact.first_name
     assert result["mechanisms"] == []
 
@@ -56,7 +73,11 @@ def test_get_contact_by_id(
     db_session.commit()
     db_session.refresh(contact)
 
-    result = json.loads(test_client.get(f"/contacts/{contact.id}").content)
+    result = json.loads(
+        test_client.get(
+            f"/contacts/{contact.id}", headers=authenticated_headers
+        ).content
+    )
     assert result["first_name"] == contact.first_name
     assert result["mechanisms"] == [
         {"mechanism_type": "Email", "mechanism_value": "test@email.com"},
@@ -85,12 +106,17 @@ def test_get_contact_by_id(
     db_session.add(version_contact_association)
     db_session.commit()
 
+    db_session.refresh(atbd)
     db_session.refresh(version)
     db_session.refresh(contact)
+
     assert len(version.contacts_link) > 0
     assert version.contacts_link[0].contact.id == contact.id
     assert len(contact.atbd_versions_link) > 0
     assert contact.atbd_versions_link[0].atbd_version.major == version.major
+    assert contact.atbd_versions_link[0].atbd_version.atbd.title == atbd.title
+    assert contact.atbd_versions_link[0].atbd_version.atbd.id == atbd.id
+    assert contact.atbd_versions_link[0].atbd_version.atbd.alias == atbd.alias
 
 
 def test_create_contact(
@@ -359,7 +385,6 @@ def test_update_contacts_in_atbds_version(
     # This should be moved to the `atbd_versions` unit tests
     result = test_client.get(
         f"/atbds/{atbd.id}/versions/{version.major}",
-        data=json.dumps({"contacts": [{"id": contact.id, "roles": []}]}),
         headers=authenticated_headers,
     )
 

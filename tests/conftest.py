@@ -118,8 +118,7 @@ def s3_bucket(monkeysession, s3_resource):
 
     bucket = s3_resource.Bucket(name=BUCKET)
     bucket.create()
-    with open("./tests/fullmoon.jpg", "rb") as f:
-        bucket.put_object(Key="fullmoon.jpg", Body=f.read())
+
     yield bucket
 
 

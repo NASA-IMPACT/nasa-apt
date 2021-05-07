@@ -90,23 +90,6 @@ class Atbds(Base):
         )
 
 
-# class MechanismArray(postgresql.ARRAY):
-#     def bind_expression(self, bindvalue):
-#         return cast(bindvalue, self)
-
-#     def result_processor(self, dialect, coltype):
-#         super_rp = super(MechanismArray, self).result_processor(dialect, coltype)
-
-#         def handle_raw_string(value):
-
-#             return re.findall(r"([\"'])(?:(?=(\\?))\2.)*?\1", value)
-
-#         def process(value):
-#             return super_rp(handle_raw_string(value))
-
-#         return process
-
-
 class Contacts(Base):
     __tablename__ = "contacts"
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)

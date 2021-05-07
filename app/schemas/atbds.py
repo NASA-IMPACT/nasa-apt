@@ -38,7 +38,7 @@ class OutputBase(BaseModel):
 
 
 class SummaryOutput(OutputBase):
-    versions: List[versions_contacts.AtbdVersionSummaryOutput]
+    versions: List[versions.AtbdVersionSummaryOutput]
 
     @validator("versions")
     def enforce_version_ordering(cls, versions):

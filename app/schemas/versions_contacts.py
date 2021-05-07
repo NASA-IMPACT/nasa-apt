@@ -20,22 +20,23 @@ class AtbdVersionsBase(BaseModel):
         orm_mode = True
 
 
-class AtbdVersionSummaryOutput(AtbdVersionsBase):
+class AtbdLinkOutput(BaseModel):
+    id: int
+    title: str
+    alias: Optional[str]
+
+
+class AtbdVersionsLinkOutput(AtbdVersionsBase):
     major: int
     minor: int
     version: Optional[str]
-    citation: Optional[dict]
-    changelog: Optional[str]
-
-    @validator("version", always=True)
-    def generate_semver(cls, v, values) -> str:
-        return f"v{values['major']}.{values['minor']}"
+    atbd: AtbdLinkOutput
 
 
 class AtbdVersionsLink(BaseModel):
 
     roles: str
-    atbd_version: AtbdVersionSummaryOutput
+    atbd_version: AtbdVersionsLinkOutput
 
     @validator("roles")
     def format_roles(cls, v):

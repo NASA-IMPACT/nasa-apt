@@ -21,7 +21,9 @@ router = APIRouter()
     response_model=List[contacts.Output],
 )
 def list_contacts(
-    filters: contacts.ListFilters = None, db: DbSession = Depends(get_db)
+    filters: contacts.ListFilters = None,
+    db: DbSession = Depends(get_db),
+    user: User = Depends(require_user),
 ):
     if filters:
         return crud_contacts.get_multi(db_session=db, filters=filters)
@@ -37,7 +39,9 @@ def list_contacts(
     },
     response_model=contacts.Output,
 )
-def get_contact(contact_id: str, db: DbSession = Depends(get_db)):
+def get_contact(
+    contact_id: str, db: DbSession = Depends(get_db), user: User = Depends(require_user)
+):
     try:
         print(
             crud_contacts.get(
