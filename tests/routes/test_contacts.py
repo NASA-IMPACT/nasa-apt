@@ -110,13 +110,19 @@ def test_get_contact_by_id(
     db_session.refresh(version)
     db_session.refresh(contact)
 
-    assert len(version.contacts_link) > 0
-    assert version.contacts_link[0].contact.id == contact.id
-    assert len(contact.atbd_versions_link) > 0
-    assert contact.atbd_versions_link[0].atbd_version.major == version.major
-    assert contact.atbd_versions_link[0].atbd_version.atbd.title == atbd.title
-    assert contact.atbd_versions_link[0].atbd_version.atbd.id == atbd.id
-    assert contact.atbd_versions_link[0].atbd_version.atbd.alias == atbd.alias
+    result = test_client.get(f"/contacts/{contact.id}", headers=authenticated_headers)
+    result.raise_for_status()
+    result = json.loads(result.content)
+
+    assert len(result["atbd_versions_link"]) > 0
+    assert result["atbd_versions_link"][0]["atbd_version"]["major"] == version.major
+    assert (
+        result["atbd_versions_link"][0]["atbd_version"]["atbd"]["title"] == atbd.title
+    )
+    assert result["atbd_versions_link"][0]["atbd_version"]["atbd"]["id"] == atbd.id
+    assert (
+        result["atbd_versions_link"][0]["atbd_version"]["atbd"]["alias"] == atbd.alias
+    )
 
 
 def test_create_contact(
