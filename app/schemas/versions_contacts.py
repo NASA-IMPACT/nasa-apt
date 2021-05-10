@@ -21,6 +21,10 @@ class AtbdVersionsLinkOutput(BaseModel):
     status: str
     atbd: AtbdLinkOutput
 
+    @validator("version", always=True)
+    def generate_semver(cls, v, values) -> str:
+        return f"v{values['major']}.{values['minor']}"
+
     class Config:
         title = "AtbdVersionsLinkOutput"
         orm_mode = True
