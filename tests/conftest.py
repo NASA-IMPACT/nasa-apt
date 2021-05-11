@@ -274,6 +274,6 @@ def versions_contacts_association_factory(db_session):
 
 @pytest.fixture
 def mocked_event_listener():
-    with patch("app.main.index_atbd") as mocked_event_listener:
+    with patch("app.main.atbd_to_index") as mocked_event_listener:
 
         yield mocked_event_listener

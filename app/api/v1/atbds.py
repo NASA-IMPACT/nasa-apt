@@ -1,27 +1,16 @@
 """ATBD's endpoint."""
-from app import config
-from app.schemas import atbds, versions, contacts
+from app.schemas import atbds
 from app.db.db_session import DbSession
-from app.api.utils import (
-    get_db,
-    require_user,
-    get_major_from_version_string,
-    s3_client,
-)
-from app.api.v1.pdf import add_pdf_generation_to_background_tasks
+from app.api.utils import get_db, require_user
+from app.api.v1.pdf import save_pdf_to_s3
+from app.search.elasticsearch import remove_atbd_from_index, add_atbd_to_index
 from app.auth.saml import User
 from app.crud.atbds import crud_atbds
-from app.crud.versions import crud_versions
-from app.crud.contacts import crud_contacts_associations
-from app.db.models import Atbds, AtbdVersionsContactsAssociation
 from sqlalchemy import exc
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
-    responses,
-    File,
-    UploadFile,
     BackgroundTasks,
 )
 from typing import List
@@ -79,6 +68,7 @@ def create_atbd(
 def update_atbd(
     atbd_id: str,
     atbd_input: atbds.Update,
+    background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
@@ -93,6 +83,8 @@ def update_atbd(
                 status_code=401,
                 detail=f"Alias {atbd_input.alias} already exists in database",
             )
+
+    background_tasks.add_task(add_atbd_to_index, atbd)
     return atbd
 
 
@@ -127,7 +119,8 @@ def publish_atbd(
     db.commit()
     db.refresh(latest_version)
 
-    add_pdf_generation_to_background_tasks(atbd=atbd, background_tasks=background_tasks)
+    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
+    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
 
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=latest_version.major)
 
@@ -135,8 +128,12 @@ def publish_atbd(
 @router.delete("/atbds/{atbd_id}", responses={204: dict(description="ATBD deleted")})
 def delete_atbd(
     atbd_id: str,
+    background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
-    crud_atbds.remove(db=db, atbd_id=atbd_id)
+    atbd = crud_atbds.remove(db=db, atbd_id=atbd_id)
+
+    background_tasks.add_task(remove_atbd_from_index, atbd=atbd)
+
     return {}

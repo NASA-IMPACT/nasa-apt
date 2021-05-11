@@ -50,7 +50,8 @@ def search_elastic(request: dict, user: User = Depends(get_user)):
     logger.info("data: %s", request)
 
     if user is None:
-        request["query"]["bool"]["filter"] = [{"match": {"status": "Published"}}]
+        # Apllies filter after the request operation returns the results
+        request["post_filter"] = {"match": {"version.status": "Published"}}
 
     logger.info("Searching %s %s", url, request)
     auth = aws_auth()
@@ -63,4 +64,5 @@ def search_elastic(request: dict, user: User = Depends(get_user)):
     logger.info("status:%s response:%s", response.status_code, response.text)
     if not response.ok:
         raise HTTPException(status_code=response.status_code, detail=response.text)
+
     return response.json()

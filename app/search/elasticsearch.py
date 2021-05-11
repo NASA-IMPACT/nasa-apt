@@ -3,12 +3,13 @@ from app import config
 from app.logs import logger
 from app.crud.atbds import crud_atbds
 from app.schemas.elasticsearch import ElasticsearchAtbd
+from app.db.models import Atbds, AtbdVersions
 from app.db.db_session import DbSession
 import requests
 from requests_aws4auth import AWS4Auth
 import boto3
 
-from typing import Dict
+from typing import Dict, List
 from fastapi import HTTPException
 
 
@@ -30,10 +31,12 @@ def aws_auth():
     return awsauth
 
 
-def send_to_elastic(data: str):
+def send_to_elastic(data: List[Dict]):
     """
     POST json to elastic endpoint
     """
+    # bulk commands must end with newline
+    data = "\n".join(data) + "\n"
 
     url = f"http://{config.ELASTICSEARCH_URL}/atbd/_bulk"
 
@@ -42,14 +45,18 @@ def send_to_elastic(data: str):
     response = requests.post(
         url,
         auth=auth,
-        data=data,
+        data=data.encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
     logger.info("%s %s %s", url, response.status_code, response.text)
     if not response.ok:
+        logger.error(response.content)
         raise HTTPException(status_code=response.status_code, detail=response.text)
+
     return response.json()
 
+
+# TODO: re-implement this method
 
 # async def update_index(
 #     connection: asyncpg.connection,
@@ -66,30 +73,62 @@ def send_to_elastic(data: str):
 #     return results
 
 
-def index_atbd(atbd_id: str, db: DbSession):
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
+def remove_atbd_from_index(atbd: Atbds = None, version: AtbdVersions = None):
 
+    if version:
+        return send_to_elastic(
+            [
+                json.dumps(
+                    {
+                        "delete": {
+                            "_index": "atbd",
+                            "_id": f"{version.atbd_id}_v{version.major}",
+                        }
+                    }
+                )
+            ]
+        )
+    if not atbd:
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to delete ATBD/ATBDVersion from ElasticSearch",
+        )
+    return send_to_elastic(
+        [
+            json.dumps(
+                {"delete": {"_index": "atbd", "_id": f"{atbd.id}_v{version.major}"}}
+            )
+            for version in atbd.versions
+        ]
+    )
+
+
+def add_atbd_to_index(atbd: Atbds):
     # If the atbd itself (title, alias, etc) has been updated
     # then all of the versions will be re-index, otherwise
     # if only one version was updated the `atbd.versions` object
     # will only contain 1 version, which should be updated
+    es_commands = []
     for version in atbd.versions:
 
         atbd.version = version
-        es_atbd_version = ElasticsearchAtbd.from_orm(atbd).json(
-            by_alias=True,
-            exclude_none=True,
+
+        es_commands.append(
+            json.dumps(
+                {
+                    "index": {
+                        "_index": "atbd",
+                        "_type": "atbd",
+                        "_id": f"{atbd.id}_v{version.major}",
+                    }
+                }
+            )
+        )
+        es_commands.append(
+            ElasticsearchAtbd.from_orm(atbd).json(
+                by_alias=True,
+                exclude_none=True,
+            )
         )
 
-        index_command = json.dumps(
-            {
-                "index": {
-                    "_index": "atbd",
-                    "_type": "atbd",
-                    "_id": f"{atbd.id}_v{version.major}",
-                }
-            }
-        )
-        print("DATA TO INDEX: ", es_atbd_version)
-        send_to_elastic(f"{index_command}\n{es_atbd_version}\n".encode("utf-8"))
-    return
+    return send_to_elastic(es_commands)

@@ -6,7 +6,8 @@ from app.api.utils import (
     require_user,
     get_major_from_version_string,
 )
-from app.api.v1.pdf import add_pdf_generation_to_background_tasks
+from app.api.v1.pdf import save_pdf_to_s3
+from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
 from app.crud.atbds import crud_atbds
 from app.crud.versions import crud_versions
 from app.crud.contacts import crud_contacts_associations
@@ -95,9 +96,8 @@ def update_atbd_version(
     if version_input.minor:
         # A new version has been created - generate a cache a PDF for both the regular
         # PDF format, and the journal PDF format
-        add_pdf_generation_to_background_tasks(
-            atbd=atbd, background_tasks=background_tasks
-        )
+        background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
+        background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
 
     if version_input.document and not overwrite:
         version_input.document = {
@@ -115,7 +115,13 @@ def update_atbd_version(
     version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     crud_versions.update(db=db, db_obj=version, obj_in=version_input)
 
-    return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
+
+    # Indexes the updated vesion as well as atbd info
+    # (title, alias, etc)
+    background_tasks.add_task(add_atbd_to_index, atbd)
+
+    return atbd
 
 
 @router.delete(
@@ -125,6 +131,7 @@ def update_atbd_version(
 def delete_atbd_version(
     atbd_id: str,
     version: str,
+    background_tasks: BackgroundTasks,
     db=Depends(get_db),
     user=Depends(require_user),
 ):
@@ -137,4 +144,5 @@ def delete_atbd_version(
         )
     db.delete(version)
     db.commit()
+    background_tasks.add_task(remove_atbd_from_index, version=version)
     return {}
