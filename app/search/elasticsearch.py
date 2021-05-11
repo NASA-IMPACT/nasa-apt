@@ -78,7 +78,6 @@ def index_atbd(atbd_id: str, db: DbSession):
         atbd.version = version
         es_atbd_version = ElasticsearchAtbd.from_orm(atbd).json(
             by_alias=True,
-            exclude_unset=True,
             exclude_none=True,
         )
 
