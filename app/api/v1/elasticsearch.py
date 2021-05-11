@@ -39,7 +39,7 @@ def aws_auth():
 #     return JSONResponse(content=results)
 
 
-@router.get("/search")
+@router.post("/search")
 def search_elastic(request: dict, user: User = Depends(get_user)):
     """
     Proxies POST json to elastic search endpoint
