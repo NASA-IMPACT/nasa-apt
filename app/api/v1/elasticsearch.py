@@ -51,6 +51,7 @@ def search_elastic(request: dict, user: User = Depends(get_user)):
 
     if user is None:
         request["query"]["bool"]["filter"] = [{"match": {"status": "Published"}}]
+
     logger.info("Searching %s %s", url, request)
     auth = aws_auth()
     response = requests.post(

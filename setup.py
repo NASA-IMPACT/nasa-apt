@@ -21,7 +21,6 @@ inst_reqs = [
     "httptools==0.1.1",
     "idna==2.9",
     "jmespath==0.10.0",
-    "jq==1.0.2",
     "latex==0.7.0",
     "num2words==0.5.10",
     "pandas==1.2.0",

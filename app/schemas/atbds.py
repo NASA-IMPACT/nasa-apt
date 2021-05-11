@@ -1,7 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, validator
 from typing import Optional, List
-from app.schemas import versions_contacts
 from app.schemas import versions
 
 
