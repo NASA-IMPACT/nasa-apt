@@ -273,7 +273,8 @@ def versions_contacts_association_factory(db_session):
 
 
 @pytest.fixture
-def mocked_event_listener():
-    with patch("app.main.atbd_to_index") as mocked_event_listener:
-
-        yield mocked_event_listener
+def mocked_send_to_elasticsearch():
+    with patch(
+        "app.search.elasticsearch.send_to_elastic"
+    ) as mocked_send_to_elasticsearch:
+        yield mocked_send_to_elasticsearch

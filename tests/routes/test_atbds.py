@@ -10,7 +10,11 @@ from sqlalchemy.exc import InvalidRequestError
 
 
 def test_list_atbds_unauthenticated(
-    test_client, db_session, atbds_factory, atbd_versions_factory, mocked_event_listener
+    test_client,
+    db_session,
+    atbds_factory,
+    atbd_versions_factory,
+    mocked_send_to_elasticsearch,
 ):
     assert json.loads(test_client.get("/atbds").content) == []
 
@@ -57,7 +61,7 @@ def test_list_atbds_authenticated(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
     assert (
         json.loads(test_client.get("/atbds", headers=authenticated_headers).content)
@@ -97,7 +101,7 @@ def test_get_atbd_by_id_unauthenticated(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
         result = test_client.get("/atbds/1")
@@ -138,7 +142,7 @@ def test_get_atbd_by_id_authenticated(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
         result = test_client.get("/atbds/1")
@@ -179,7 +183,7 @@ def test_get_atbd_by_alias_unauthenticated(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
         result = test_client.get("/atbds/non-existent-alias")
@@ -220,7 +224,7 @@ def test_get_atbd_by_alias_authenticated(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
         result = test_client.get("/atbds/non-existent-alias")
@@ -348,7 +352,7 @@ def test_update_atbd_by_id(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
 
     with pytest.raises(Exception):
@@ -421,7 +425,7 @@ def test_update_atbd_by_alias(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
 
     with pytest.raises(Exception):
@@ -494,7 +498,7 @@ def test_delete_atbd_by_id(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
         result = test_client.delete("/atbds/1", headers=authenticated_headers)
@@ -529,7 +533,7 @@ def test_delete_atbd_by_alias(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
         result = test_client.delete(
@@ -566,7 +570,7 @@ def test_atbd_existence_check_by_id(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
 
     with pytest.raises(Exception):
@@ -599,7 +603,7 @@ def test_atbd_existence_check_by_alias(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
 
     with pytest.raises(Exception):
@@ -634,7 +638,7 @@ def test_publish_atbd_by_id(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
     s3_bucket,
 ):
 
@@ -712,7 +716,7 @@ def test_atbd_timestamps(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
 
     result = test_client.post(

@@ -10,8 +10,6 @@ from hypothesis import given, strategies as st
 
 
 # TODO: add test that elasticsearch indexing get's added to background tasks
-# TODO: add test to ensure that verisons are returned in the correct order (unsure if it's
-# created_at, or last_updated_at. I think it's created_at)
 
 
 def test_check_version_exists(
@@ -19,7 +17,7 @@ def test_check_version_exists(
     db_session,
     atbds_factory,
     atbd_versions_factory,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
     authenticated_headers,
 ):
     atbd = atbds_factory.create()
@@ -75,7 +73,7 @@ def test_get_version(
     db_session,
     atbds_factory,
     atbd_versions_factory,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
     authenticated_headers,
 ):
     atbd = atbds_factory.create()
@@ -114,10 +112,6 @@ def test_get_version(
     assert len(result["versions"][0]["document"].values()) > 0
 
 
-# def test_list_versions():
-#     raise NotImplementedError
-
-
 # def test_create_version():
 #     raise NotImplementedError
 
@@ -152,7 +146,7 @@ def test_atbd_versions_ordering(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
 
     atbd1 = atbds_factory.create()

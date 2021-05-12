@@ -293,7 +293,7 @@ def test_update_contacts_in_atbds_version(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_event_listener,
+    mocked_send_to_elasticsearch,
 ):
 
     contact = contacts_factory.create()
