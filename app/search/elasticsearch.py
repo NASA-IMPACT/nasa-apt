@@ -52,7 +52,7 @@ def send_to_elastic(data: List[Dict]):
     if not response.ok:
         logger.error(response.content)
         raise HTTPException(status_code=response.status_code, detail=response.text)
-
+    print("RESPONSE: ", response.content)
     return response.json()
 
 

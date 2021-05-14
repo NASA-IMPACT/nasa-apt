@@ -51,8 +51,7 @@ def get_pdf(
 
     if minor or version.status == "Published":
         print("FETCHING FROM S3: ", pdf_key)
-        # TODO: pdf_key contains the lastest minor version - which gets set
-        # as the filename, even though a different minor version was requested
+
         # TODO: add some error handling in case the PDF isn't found
         f = s3_client().get_object(Bucket=BUCKET, Key=pdf_key)["Body"]
         return StreamingResponse(

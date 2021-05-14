@@ -93,5 +93,5 @@ es_endpoint = "http://localhost:9200"
 # print("Search result: ")
 # print(r.content)
 
-# print(create_pg_connection_string())
-# print(create_token())
+print(create_pg_connection_string())
+print(create_token())

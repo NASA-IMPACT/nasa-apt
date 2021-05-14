@@ -20,30 +20,17 @@ def test_list_atbds_unauthenticated(
 
     atbds = [atbds_factory.create(), atbds_factory.create()]
     for atbd in atbds:
-        atbd.alias = atbd.alias.lower()
-        db_session.add(atbd)
-        db_session.commit()
-
-        version = atbd_versions_factory.create(atbd_id=atbd.id, status="Draft")
-        db_session.add(version)
-        db_session.commit()
+        atbd_versions_factory.create(atbd_id=atbd.id, status="Draft")
 
     result = json.loads(test_client.get("/atbds").content)
     assert result == []
 
     for atbd in atbds:
-        db_session.add(atbd)
-        db_session.commit()
 
-        version = atbd_versions_factory.create(
+        atbd_versions_factory.create(
             atbd_id=atbd.id, status="Published", major=1, minor=0
         )
-        db_session.add(version)
-        version = atbd_versions_factory.create(
-            atbd_id=atbd.id, status="Draft", major=2, minor=0
-        )
-        db_session.add(version)
-        db_session.commit()
+        atbd_versions_factory.create(atbd_id=atbd.id, status="Draft", major=2, minor=0)
 
     result = json.loads(test_client.get("/atbds").content)
 
@@ -69,19 +56,11 @@ def test_list_atbds_authenticated(
     )
     atbds = [atbds_factory.create(), atbds_factory.create()]
     for atbd in atbds:
-        atbd.alias = atbd.alias.lower()
-        db_session.add(atbd)
-        db_session.commit()
 
-        version = atbd_versions_factory.create(
+        atbd_versions_factory.create(
             atbd_id=atbd.id, status="Published", major=1, minor=0
         )
-        db_session.add(version)
-        version = atbd_versions_factory.create(
-            atbd_id=atbd.id, status="Draft", major=2, minor=0
-        )
-        db_session.add(version)
-        db_session.commit()
+        atbd_versions_factory.create(atbd_id=atbd.id, status="Draft", major=2, minor=0)
 
     result = json.loads(
         test_client.get("/atbds", headers=authenticated_headers).content
@@ -109,22 +88,13 @@ def test_get_atbd_by_id_unauthenticated(
 
     atbds = [atbds_factory.create(), atbds_factory.create()]
     for atbd in atbds:
-        atbd.alias = atbd.alias.lower()
-        db_session.add(atbd)
-        db_session.commit()
 
-        version = atbd_versions_factory.create(
+        atbd_versions_factory.create(
             atbd_id=atbd.id, status="Published", major=1, minor=0
         )
-        db_session.add(version)
-        version = atbd_versions_factory.create(
-            atbd_id=atbd.id, status="Draft", major=2, minor=0
-        )
-        db_session.add(version)
-        db_session.commit()
+        atbd_versions_factory.create(atbd_id=atbd.id, status="Draft", major=2, minor=0)
 
     atbd = atbds[0]
-    db_session.refresh(atbd)
 
     result = test_client.get(f"/atbds/{atbd.id}")
     result.raise_for_status()
@@ -150,22 +120,12 @@ def test_get_atbd_by_id_authenticated(
 
     atbds = [atbds_factory.create(), atbds_factory.create()]
     for atbd in atbds:
-        atbd.alias = atbd.alias.lower()
-        db_session.add(atbd)
-        db_session.commit()
-
-        version = atbd_versions_factory.create(
+        atbd_versions_factory.create(
             atbd_id=atbd.id, status="Published", major=1, minor=0
         )
-        db_session.add(version)
-        version = atbd_versions_factory.create(
-            atbd_id=atbd.id, status="Draft", major=2, minor=0
-        )
-        db_session.add(version)
-        db_session.commit()
+        atbd_versions_factory.create(atbd_id=atbd.id, status="Draft", major=2, minor=0)
 
     atbd = atbds[0]
-    db_session.refresh(atbd)
 
     result = test_client.get(f"/atbds/{atbd.id}", headers=authenticated_headers)
     result.raise_for_status()
@@ -190,23 +150,14 @@ def test_get_atbd_by_alias_unauthenticated(
         result.raise_for_status()
 
     atbds = [atbds_factory.create(), atbds_factory.create()]
-    for atbd in atbds:
-        atbd.alias = atbd.alias.lower()
-        db_session.add(atbd)
-        db_session.commit()
 
-        version = atbd_versions_factory.create(
+    for atbd in atbds:
+        atbd_versions_factory.create(
             atbd_id=atbd.id, status="Published", major=1, minor=0
         )
-        db_session.add(version)
-        version = atbd_versions_factory.create(
-            atbd_id=atbd.id, status="Draft", major=2, minor=0
-        )
-        db_session.add(version)
-        db_session.commit()
+        atbd_versions_factory.create(atbd_id=atbd.id, status="Draft", major=2, minor=0)
 
     atbd = atbds[0]
-    db_session.refresh(atbd)
 
     result = test_client.get(f"/atbds/{atbd.alias}")
     result.raise_for_status()
@@ -232,22 +183,13 @@ def test_get_atbd_by_alias_authenticated(
 
     atbds = [atbds_factory.create(), atbds_factory.create()]
     for atbd in atbds:
-        atbd.alias = atbd.alias.lower()
-        db_session.add(atbd)
-        db_session.commit()
 
-        version = atbd_versions_factory.create(
+        atbd_versions_factory.create(
             atbd_id=atbd.id, status="Published", major=1, minor=0
         )
-        db_session.add(version)
-        version = atbd_versions_factory.create(
-            atbd_id=atbd.id, status="Draft", major=2, minor=0
-        )
-        db_session.add(version)
-        db_session.commit()
+        atbd_versions_factory.create(atbd_id=atbd.id, status="Draft", major=2, minor=0)
 
     atbd = atbds[0]
-    db_session.refresh(atbd)
 
     result = test_client.get(f"/atbds/{atbd.alias}", headers=authenticated_headers)
     result.raise_for_status()
@@ -362,19 +304,9 @@ def test_update_atbd_by_id(
         result.raise_for_status()
 
     atbd = atbds_factory.create()
-    atbd.alias = None
-    db_session.add(atbd)
-    db_session.commit()
-
-    # create a version to go along with the atbd
-    # otherwise the atbd will fail to retrieve since
-    # it mandatorily joins versions on ATBDSs
-    version = atbd_versions_factory.create(atbd_id=atbd.id)
-    db_session.add(version)
-    db_session.commit()
+    atbd_versions_factory.create(atbd_id=atbd.id)
 
     assert atbd.title == atbd.title
-    assert atbd.alias is None
 
     with pytest.raises(Exception):
         result = test_client.post(
@@ -387,13 +319,8 @@ def test_update_atbd_by_id(
 
     with pytest.raises(Exception):
         atbd2 = atbds_factory.create()
-        atbd2.alias = atbd2.alias.lower()
-        db_session.add(atbd2)
-        db_session.commit()
 
-        version = atbd_versions_factory.create(atbd_id=atbd.id)
-        db_session.add(version)
-        db_session.commit()
+        atbd_versions_factory.create(atbd_id=atbd.id)
 
         # ensure that updating alias to an already existing alias
         # fails
@@ -435,16 +362,7 @@ def test_update_atbd_by_alias(
         result.raise_for_status()
 
     atbd = atbds_factory.create()
-    atbd.alias = atbd.alias.lower()
-    db_session.add(atbd)
-    db_session.commit()
-
-    # create a version to go along with the atbd
-    # otherwise the atbd will fail to retrieve since
-    # it mandatorily joins versions on ATBDSs
-    version = atbd_versions_factory.create(atbd_id=atbd.id)
-    db_session.add(version)
-    db_session.commit()
+    atbd_versions_factory.create(atbd_id=atbd.id)
 
     with pytest.raises(Exception):
         result = test_client.post(
@@ -457,13 +375,8 @@ def test_update_atbd_by_alias(
 
     with pytest.raises(Exception):
         atbd2 = atbds_factory.create()
-        atbd2.alias = atbd2.alias.lower()
-        db_session.add(atbd2)
-        db_session.commit()
 
         version = atbd_versions_factory.create(atbd_id=atbd.id)
-        db_session.add(version)
-        db_session.commit()
 
         # ensure that updating alias to an already existing alias
         # fails
@@ -504,17 +417,9 @@ def test_delete_atbd_by_id(
         result = test_client.delete("/atbds/1", headers=authenticated_headers)
         result.raise_for_status()
 
-    atbd = atbds_factory.create()
-    atbd.alias = None
-    db_session.add(atbd)
-    db_session.commit()
+    atbd = atbds_factory.create(alias=None)
 
-    # create a version to go along with the atbd
-    # otherwise the atbd will fail to retrieve since
-    # it mandatorily joins versions on ATBDSs
     version = atbd_versions_factory.create(atbd_id=atbd.id)
-    db_session.add(version)
-    db_session.commit()
 
     with pytest.raises(Exception):
         result = test_client.delete(f"/atbds/{atbd.id}")
@@ -542,16 +447,7 @@ def test_delete_atbd_by_alias(
         result.raise_for_status()
 
     atbd = atbds_factory.create()
-    atbd.alias = atbd.alias.lower()
-    db_session.add(atbd)
-    db_session.commit()
-
-    # create a version to go along with the atbd
-    # otherwise the atbd will fail to retrieve since
-    # it mandatorily joins versions on ATBDSs
     version = atbd_versions_factory.create(atbd_id=atbd.id)
-    db_session.add(version)
-    db_session.commit()
 
     with pytest.raises(Exception):
         result = test_client.delete(f"/atbds/{atbd.alias}")
@@ -578,16 +474,11 @@ def test_atbd_existence_check_by_id(
         result.raise_for_status()
 
     atbd = atbds_factory.create()
-    atbd.alias = atbd.alias.lower()
-    db_session.add(atbd)
-    db_session.commit()
 
     # create a version to go along with the atbd
     # otherwise the atbd will fail to retrieve since
     # it mandatorily joins versions on ATBDSs
     version = atbd_versions_factory.create(atbd_id=atbd.id)
-    db_session.add(version)
-    db_session.commit()
 
     with pytest.raises(Exception):
         result = test_client.delete(f"/atbds/{atbd.id}")
@@ -613,16 +504,11 @@ def test_atbd_existence_check_by_alias(
         result.raise_for_status()
 
     atbd = atbds_factory.create()
-    atbd.alias = atbd.alias.lower()
-    db_session.add(atbd)
-    db_session.commit()
 
     # create a version to go along with the atbd
     # otherwise the atbd will fail to retrieve since
     # it mandatorily joins versions on ATBDSs
     version = atbd_versions_factory.create(atbd_id=atbd.id)
-    db_session.add(version)
-    db_session.commit()
 
     with pytest.raises(Exception):
         result = test_client.delete(f"/atbds/{atbd.alias}")
@@ -647,10 +533,6 @@ def test_publish_atbd_by_id(
         result.raise_for_status()
 
     atbd = atbds_factory.create()
-    atbd.alias = atbd.alias.lower()
-    db_session.add(atbd)
-    db_session.commit()
-    db_session.refresh(atbd)
 
     with open("./tests/fullmoon.jpg", "rb") as f:
         s3_bucket.put_object(Key=f"{atbd.id}/images/fullmoon.jpg", Body=f.read())
@@ -659,8 +541,6 @@ def test_publish_atbd_by_id(
     # otherwise the atbd will fail to retrieve since
     # it mandatorily joins versions on ATBDSs
     version = atbd_versions_factory.create(atbd_id=atbd.id, status="Published")
-    db_session.add(version)
-    db_session.commit()
 
     with pytest.raises(Exception):
         result = test_client.post(f"/atbds/{atbd.id}/publish")

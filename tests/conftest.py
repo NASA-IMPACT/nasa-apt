@@ -181,7 +181,7 @@ class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
         # Ensure that model is in DB
         cls._meta.sqlalchemy_session.commit()
         cls._meta.sqlalchemy_session.refresh(model)
-        yield model
+        return model
 
 
 with open("./tests/document_test_fixture.json") as f:
@@ -190,7 +190,7 @@ with open("./tests/document_test_fixture.json") as f:
 
 @pytest.fixture
 def atbd_versions_factory(db_session):
-    class AtbdVersionsFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class AtbdVersionsFactory(BaseFactory):
         major = factory.Faker("pyint")
         minor = factory.Faker("pyint")
         status = factory.Faker(
@@ -198,7 +198,6 @@ def atbd_versions_factory(db_session):
             elements=["Draft", "Review", "Published"],
         )
         document = DOCUMENT
-        # document = faker.Faker().pydict(10, True, "str")
 
         sections_completed = faker.Faker().pydict(4, True, "str")
         published_by = factory.Faker("user_name")
@@ -218,7 +217,7 @@ def atbd_versions_factory(db_session):
 
 @pytest.fixture
 def atbds_factory(db_session):
-    class AtbdsFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class AtbdsFactory(BaseFactory):
         title = factory.Faker("pystr")
         alias = fuzzy.FuzzyText(
             length=15,
@@ -237,7 +236,7 @@ def atbds_factory(db_session):
 
 @pytest.fixture
 def contacts_factory(db_session):
-    class ContactsFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class ContactsFactory(BaseFactory):
 
         first_name = fuzzy.FuzzyText(length=10)
         middle_name = fuzzy.FuzzyText(length=10)
@@ -245,10 +244,11 @@ def contacts_factory(db_session):
         uuid = fuzzy.FuzzyText(length=10)
         url = fuzzy.FuzzyText(length=10, prefix="http://")
 
-        mechanisms = [
-            {"mechanism_type": "Email", "mechanism_value": "test@email.com"},
-            {"mechanism_type": "Twitter", "mechanism_value": "@test_handle"},
-        ]
+        # mechanisms = [
+        #     {"mechanism_type": "Email", "mechanism_value": "test@email.com"},
+        #     {"mechanism_type": "Twitter", "mechanism_value": "@test_handle"},
+        # ]
+        mechanisms = '{"(Email,test@email.com)", "(Mobile,\\"(123) 456 7891\\")"}'
 
         class Meta:
             model = Contacts

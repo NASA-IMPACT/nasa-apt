@@ -18,7 +18,7 @@ class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    "A new version can only be created if the latest verison has status: "
+                    "A new version can only be created if the latest version has status: "
                     f"`Published`"
                 ),
             )

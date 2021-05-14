@@ -63,7 +63,9 @@ def update_atbd_version(
     if version_input.contacts and len(version_input.contacts):
 
         for contact in version_input.contacts:
-
+            # This will overwrite an existing `ContactAssociation` items
+            # in the database - this makes updating roles on an existing
+            # contacts_link item possible
             crud_contacts_associations.upsert(
                 db_session=db,
                 obj_in=versions_contacts.ContactsAssociation(
@@ -120,7 +122,6 @@ def update_atbd_version(
     # Indexes the updated vesion as well as atbd info
     # (title, alias, etc)
     background_tasks.add_task(add_atbd_to_index, atbd)
-
     return atbd
 
 

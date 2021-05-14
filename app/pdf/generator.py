@@ -168,7 +168,6 @@ def process_data_access_urls(data):
         for url in process_data_access_url(access_url):
             s.append(url)
         urls.append(s)
-    print("URLS", urls)
     return urls
 
 
@@ -176,17 +175,14 @@ def process_algorithm_variables(data):
 
     parsed_data = [
         {
-            # process_text applies any subscript, superscript, bold, etc to the data
+            # process applies any subscript, superscript, bold, etc to the data
             # before transforming it into a table using latex
-            # TODO: Figure out how to do this without having to fetch children[0][children]
             k: " ".join(process(c) for c in v["children"])
             for k, v in d.items()
             if k in ["long_name", "unit"]
         }
         for d in data
     ]
-
-    print("PARSED DATA: ", parsed_data)
 
     algorithm_variables_dataframe = pd.DataFrame.from_dict(
         parsed_data, orient="columns"
