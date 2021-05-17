@@ -170,7 +170,7 @@ def delete_atbd_version(
             status_code=400,
             detail="Cannot delete an atbd version with status `Published`",
         )
-    db.delete(version)
+    db.delete(atbd_version)
     db.commit()
-    background_tasks.add_task(remove_atbd_from_index, version=version)
+    background_tasks.add_task(remove_atbd_from_index, version=atbd_version)
     return {}
