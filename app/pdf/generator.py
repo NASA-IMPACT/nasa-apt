@@ -1,27 +1,32 @@
+"""
+PDF generation code for ATBD Documents
+"""
 import os
 import pathlib
+from typing import Any, List, Union
+
 import pandas as pd
 from pylatex import (
-    Document,
     Command,
-    Package,
+    Document,
+    Enumerate,
+    Figure,
+    Itemize,
+    Math,
     NoEscape,
+    Package,
     Section,
     Subsection,
     Subsubsection,
     section,
-    Itemize,
-    Enumerate,
-    Math,
-    Figure,
     utils,
 )
-from typing import List
-from app.db.models import Atbds
-from app.schemas.versions_contacts import ContactsLinkOutput
+
 from app.api.utils import s3_client
 from app.config import BUCKET
-
+from app.db.models import Atbds
+from app.schemas import document
+from app.schemas.versions_contacts import ContactsLinkOutput
 
 SECTIONS = {
     "introduction": {"title": "Introduction"},
@@ -69,6 +74,11 @@ CONTENT_UNAVAILABLE = {"type": "p", "children": [{"text": "Content Unavailable"}
 
 
 def generate_contact(contact_link: ContactsLinkOutput) -> List:
+    """
+    Returns a list of Latex formated objects representing the parts of a
+    contact (name, email, uuid, etc), to be appended, in order, to the
+    Latex document.
+    """
     contact = contact_link.contact.dict(exclude_none=True)
 
     latex_contact = [
@@ -100,6 +110,10 @@ def generate_contact(contact_link: ContactsLinkOutput) -> List:
 
 
 def process_contacts(contacts: List[ContactsLinkOutput]) -> List:
+    """
+    Returns a flattened list of the all the Latex objects representing
+    all of the document contacts, to be appended, in order to the Latex document.
+    """
     contact_links = [ContactsLinkOutput.from_orm(contact) for contact in contacts]
 
     return [
@@ -109,16 +123,27 @@ def process_contacts(contacts: List[ContactsLinkOutput]) -> List:
     ]
 
 
-def hyperlink(url, text):
+def hyperlink(url: str, text: str) -> NoEscape:
+    """
+    Returns a Latex formatted hyperlink object, wrapped with a
+    NoEscape command to ensure the string gets processed as a
+    command, and not plain text.
+    """
     text = utils.escape_latex(text)
     return NoEscape(f"\\href{{{url}}}{{{text}}}")
 
 
-def reference(reference_id):
+def reference(reference_id: str) -> NoEscape:
+    """
+    Returns a Latex formatted refrerence object, wrapped with a
+    NoEscape command to ensure the string gets processed as a
+    command and not plain text.
+    """
 
     return NoEscape(f"\\cite{{{bib_reference_name(reference_id)}}}")
 
 
+# TODO: wrape the first 3 with NoEscape?
 TEXT_WRAPPERS = {
     "superscript": lambda e: f"\\textsuperscript{{{e}}}",
     "subscript": lambda e: f"\\textsubscript{{{e}}}",
@@ -128,10 +153,15 @@ TEXT_WRAPPERS = {
 }
 
 
-def wrap_text(data):
-    # Allows for wrapping text with multiple formatting options
-    # ie:  process_text({"bold": true, "italic": true, "text": ... })
-    # will return latex like `\bold{\italic{text}}`
+def wrap_text(data: document.TextLeaf) -> NoEscape:
+    """
+    Wraps text item with Latex commands corresponding to the sibbling elements
+    of the text item. Allows for wrapping multiple formatting options.
+    ----
+    eg: if data looks like: {"bold": true, "italic": true, "text": "text to format" }
+    then `wrap_text(data)` will return: `\\bold{\\italic{text to format}}`
+
+    """
     e = data["text"]
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option):
@@ -139,20 +169,28 @@ def wrap_text(data):
     return e
 
 
-def process_text_content(data):
-    res = []
-    for d in data:
-        if d.get("type") == "a":
-            res.append(hyperlink(d["url"], d["children"][0]["text"]))
-        elif d.get("type") == "ref":
-            res.append(reference(d["refId"]))
-        else:
-            res.append(wrap_text(d))
+def process_text_content(
+    data: Union[document.TextLeaf, document.ReferenceNode, document.LinkNode]
+) -> List[NoEscape]:
+    """
+    Returns a list of text base elements (text, reference or hyperlink)
+    wrapped with the appropriate Latex formatting commands
+    """
+    return [
+        hyperlink(d["url"], d["children"][0]["text"])
+        if d.get("type") == "a"
+        else reference(d["refId"])
+        if d.get("type") == "ref"
+        else wrap_text(d)
+        for d in data
+    ]
 
-    return res
 
-
-def process_data_access_url(access_url):
+def process_data_access_url(access_url: document.DataAccessUrl) -> List[NoEscape]:
+    """
+    Returns a list of Latex formatted commands, to be appended in order
+    to the Latex document, to display a single data acccess url
+    """
     p1 = section.Paragraph(wrap_text({"text": "Access url:", "bold": True}))
     p1.append(hyperlink(access_url["url"], access_url["url"]))
 
@@ -161,18 +199,27 @@ def process_data_access_url(access_url):
     return [p1, p2]
 
 
-def process_data_access_urls(data):
+# TODO: figure out typing anotations for the child elements of the returned List
+def process_data_access_urls(data: List[document.DataAccessUrl]) -> List:
+    """
+    Returns a list of Latex `Subsection` items with formatted elements to
+    display access url fields.
+    """
     urls = []
     for i, access_url in enumerate(data):
         s = Subsection(f"Entry #{str(i+1)}")
-        for url in process_data_access_url(access_url):
-            s.append(url)
+        for command in process_data_access_url(access_url):
+            s.append(command)
         urls.append(s)
     return urls
 
 
-def process_algorithm_variables(data):
-
+def process_algorithm_variables(data: List[document.AlgorithmVariable]) -> NoEscape:
+    """
+    Returns a Latex formatted table representing algorithm input or output variables,
+    wrapped with a NoEscape command. The text processing commands are applied to each
+    of the algorithm variable child items before generating the table.
+    """
     parsed_data = [
         {
             # process applies any subscript, superscript, bold, etc to the data
@@ -202,8 +249,10 @@ def process_algorithm_variables(data):
     return NoEscape(latex_table)
 
 
-def process_table(data, caption: str):
-
+def process_table(data: document.TableNode, caption: str) -> NoEscape:
+    """
+    Returns a Latex formatted Table Item, wrapped with a NoEscape Command
+    """
     rows = [
         tuple(
             " ".join(process(c) for c in table_cell["children"])
@@ -225,11 +274,19 @@ def process_table(data, caption: str):
     return NoEscape(latex_table)
 
 
-def bib_reference_name(reference_id):
+def bib_reference_name(reference_id: str) -> str:
+    """
+    Generates an identifier that can be used in the Latex document
+    to generate a reference object
+    """
     return f"ref{reference_id}"
 
 
-def generate_bib_reference(data):
+def generate_bib_reference(data: document.PublicationReference) -> str:
+    """
+    Returns a bibtex-formatted string representing a `@BOOK` type
+    reference to be saved to a `.bib` file
+    """
     reference_id = bib_reference_name(data["id"])
     reference = ""
     for e in ["title", "pages", "publisher", "year", "volume"]:
@@ -242,12 +299,37 @@ def generate_bib_reference(data):
     return f"@BOOK{{{reference_id},\n{reference}}}"
 
 
-def generate_bib_file(references, filepath):
+def generate_bib_file(references: List[document.PublicationReference], filepath: str):
+    """
+    Saves the provided references, each as a new line, in a `.bib` file. Raises an exception
+    if the provided filepath does not use a `.bib` extension
+    """
+    if not filepath.split(".")[-1] == "bib":
+        raise ValueError("BibTex file should have a `.bib` extension")
     with open(filepath, "w") as bib_file:
         bib_file.write("\n".join(generate_bib_reference(r) for r in references))
 
 
-def process(data, atbd_id: int = None):
+def process(
+    data: Union[
+        document.BaseNode,
+        document.SubsectionNode,
+        document.ImageBlockNode,
+        document.TableBlockNode,
+        document.DivNode,
+        document.OrderedListNode,
+        document.UnorderedListNode,
+        document.EquationNode,
+    ],
+    atbd_id: int = None,
+):
+    """
+    Top level processing of each of the possible section items: subsection, image,
+    table, generic div-type node, ordered and unordered list, and equation.
+
+    Returns Latex formatted object for each of these, to be appeneded to the
+    Latex document.
+    """
     if data.get("type") in ["p", "caption"]:
         return NoEscape(" ".join(d for d in process_text_content(data["children"])))
 
@@ -302,7 +384,64 @@ def process(data, atbd_id: int = None):
         return process_table(table, caption=caption)
 
 
+def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Document:
+    """
+    Creates a new Latex document instance and adds packages/metadata commands
+    necessary for the document style (eg: line numbering and spacing, math
+    char support, table of contents generation)
+    """
+    doc = Document(
+        default_filepath=filepath,
+        documentclass=Command("documentclass", options=["12pt"], arguments="article",),
+        fontenc="T1",
+        inputenc="utf8",
+        # use Latin-Math Modern pacakge for char support
+        lmodern=True,
+        textcomp=True,
+        page_numbers=True,
+        indent=True,
+    )
+    for p in [
+        "color",
+        "url",
+        "booktabs",
+        "graphicx",
+        "float",
+        "amsmath",
+        "array",
+        "fixltx2e",
+    ]:
+        doc.packages.append(Package(p))
+
+    if journal:
+        doc.packages.append(Package("setspace"))
+        doc.preamble.append(Command("doublespacing"))
+
+        doc.packages.append(Package("lineno"))
+        doc.preamble.append(Command("linenumbers"))
+
+    doc.packages.append(Package("hyperref"))
+    doc.preamble.append(
+        Command(
+            "hypersetup",
+            arguments=f"colorlinks={str(journal).lower()},linkcolor=blue,filecolor=magenta,urlcolor=blue",
+        )
+    )
+
+    doc.preamble.append(Command("title", arguments=atbd.title))
+    doc.preamble.append(Command("date", arguments=NoEscape("\\today")))
+
+    doc.append(Command("maketitle"))
+
+    if not journal:
+        doc.append(Command("tableofcontents"))
+    return doc
+
+
 def generate_latex(atbd: Atbds, filepath: str, journal=False):
+    """
+    Generates a Latex document with associated Bibtex file
+    """
 
     [atbd_version] = atbd.versions
     document_data = atbd_version.document
@@ -310,17 +449,18 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
     doc = setup_document(atbd, filepath, journal=journal)
 
     generate_bib_file(
-        document_data.get("publication_references", []),
-        filepath=f"{filepath}.bib",
+        document_data.get("publication_references", []), filepath=f"{filepath}.bib",
     )
+    section_name: str
+    info: Any
 
     for section_name, info in SECTIONS.items():
         # Journal Acknowledgements and Journal Discussion are only included in
         # Journal type pdfs
-        if (
-            section_name in ["journal_acknowledgements", "journal_dicsussion"]
-            and not journal
-        ):
+        if not journal and section_name not in [
+            "journal_acknowledgements",
+            "journal_dicsussion",
+        ]:
             continue
 
         s = Section(info["title"])
@@ -370,60 +510,11 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
     return doc
 
 
-def setup_document(atbd: Atbds, filepath: str, journal: bool = False):
-    doc = Document(
-        default_filepath=filepath,
-        documentclass=Command(
-            "documentclass",
-            options=["12pt"],
-            arguments="article",
-        ),
-        fontenc="T1",
-        inputenc="utf8",
-        # use Latin-Math Modern pacakge for char support
-        lmodern=True,
-        textcomp=True,
-        page_numbers=True,
-        indent=True,
-    )
-    for p in [
-        "color",
-        "url",
-        "booktabs",
-        "graphicx",
-        "float",
-        "amsmath",
-        "array",
-        "fixltx2e",
-    ]:
-        doc.packages.append(Package(p))
-
-    if journal:
-        doc.packages.append(Package("setspace"))
-        doc.preamble.append(Command("doublespacing"))
-
-        doc.packages.append(Package("lineno"))
-        doc.preamble.append(Command("linenumbers"))
-
-    doc.packages.append(Package("hyperref"))
-    doc.preamble.append(
-        Command(
-            "hypersetup",
-            arguments=f"colorlinks={str(journal).lower()},linkcolor=blue,filecolor=magenta,urlcolor=blue",
-        )
-    )
-
-    doc.preamble.append(Command("title", arguments=atbd.title))
-    doc.preamble.append(Command("date", arguments=NoEscape("\\today")))
-
-    doc.append(Command("maketitle"))
-
-    if not journal:
-        doc.append(Command("tableofcontents"))
-    return doc
-
-
 def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
+    """
+    Generates and saves a Latex document as a PDF to `/tmp`, along with
+    the necessary bib file
+    """
     # The extension is removed because the latex compiler uses this filepath
     # to generate a bunch of temporary files (<filepath>.tex, <filepath>.log,
     # <filepath>.aux, etc), before generating the pdf. Once it generates the
@@ -439,11 +530,11 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
         filepath=filepath,
         clean=True,
         clean_tex=False,
-        # automatically performs the multiple runs necessary
+        # latexmk automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
         compiler="latexmk",
-        # loads a pacakge necessary for the compiler to manage
-        # image positioning within the pdf document
+        # the `--pdf` flag loads a pacakge necessary for the compiler
+        # to manage image positioning within the pdf document
         compiler_args=["--pdf"],
     )
 

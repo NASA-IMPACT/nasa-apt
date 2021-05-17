@@ -10,3 +10,5 @@ venv
 cdk.out/*
 *.pyc
 **/__pycache__/
+.mypy_cache/*
+ 

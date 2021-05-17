@@ -1,23 +1,36 @@
-from app.api.utils import get_major_from_version_string, get_db, s3_client
-from app.crud.atbds import crud_atbds
-from app.db.models import Atbds, AtbdVersionsContactsAssociation, Contacts, AtbdVersions
-from app.pdf.generator import generate_pdf
-from app.config import BUCKET
+"""
+Methods for the API PDF route
+"""
 import os
-from fastapi import BackgroundTasks, APIRouter, Depends
-from fastapi.responses import FileResponse, StreamingResponse
 
+from app.api.utils import get_db, get_major_from_version_string, s3_client
+from app.config import BUCKET
+from app.crud.atbds import crud_atbds
+from app.db.models import Atbds, AtbdVersions
+from app.pdf.generator import generate_pdf
+
+from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi.responses import FileResponse, StreamingResponse
 
 router = APIRouter()
 
 
 def save_pdf_to_s3(atbd: Atbds, journal: bool = False):
+    """
+    Uploads a generated PDF from local execution environment to S3
+    """
     key = generate_pdf_key(atbd=atbd, journal=journal)
     local_pdf_key = generate_pdf(atbd=atbd, filepath=key, journal=journal)
     s3_client().upload_file(Filename=local_pdf_key, Bucket=BUCKET, Key=key)
 
 
+# TODO: will this break if the ATBD is created without an alias and then
+# an alias is added later?
 def generate_pdf_key(atbd: Atbds, minor: int = None, journal: bool = False):
+    """
+    Generates a key for the PDF, using the ATBD alias, if present, and the
+    ATBD ID, if not
+    """
     [version] = atbd.versions
 
     version_string = f"v{version.major}-{minor if minor is not None else version.minor}"
@@ -38,18 +51,33 @@ def generate_pdf_key(atbd: Atbds, minor: int = None, journal: bool = False):
 def get_pdf(
     atbd_id: str,
     version: str,
-    journal: str = False,
+    journal: bool = False,
     background_tasks: BackgroundTasks = None,
     db=Depends(get_db),
 ):
+    """
+    Returns a PDF to the user - either as a stream of Bytes from S3 or as a
+    FileResponse object, from a PDF generated and stored locally in the
+    Lambda's runtime memory.
+
+    The PDF will be served from S3 if either the user specifies a minor version
+    number or if the lastest version has status `Published`
+    """
 
     major, minor = get_major_from_version_string(version)
 
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
-    [version] = atbd.versions
+    atbd: Atbds = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+
+    # Unpacking the versions list into an array of a single element
+    # enforces the assumption that the ATBD will only contain a single
+    # version if a version.major value was supplied to the the
+    # crud_atbds.get() method
+    atbd_version: AtbdVersions
+    [atbd_version] = atbd.versions
+
     pdf_key = generate_pdf_key(atbd, minor=minor, journal=journal)
 
-    if minor or version.status == "Published":
+    if minor or atbd_version.status == "Published":
         print("FETCHING FROM S3: ", pdf_key)
 
         # TODO: add some error handling in case the PDF isn't found

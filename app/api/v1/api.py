@@ -1,6 +1,6 @@
-"""NASA-APT api nase"""
+"""NASA-APT api nasa"""
 
-from app.api.v1 import atbds, auth, pdf, elasticsearch, contacts, versions, images
+from app.api.v1 import atbds, auth, contacts, elasticsearch, images, pdf, versions
 
 from fastapi import APIRouter
 
