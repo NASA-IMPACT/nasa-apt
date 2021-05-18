@@ -40,7 +40,7 @@ eg:
 ```bash
 cdk deploy nasa-apt-api-lambda-dev --profile <AWS_PROFILe>
 ```
-The output of this command will contain the URL endpoint of the REST API.
+The output of this command will contain the URL endpoint of the REST API, as well as the ARN of the database secrets, which will be used in the next step. 
 
 
 ## Database changes
@@ -65,7 +65,7 @@ Sqitch migrations must be manually applied the database in AWS. When deploying a
 
 These can be found using the CLI: 
 ```bash
-aws secretsmanager get-secret-value --secret-id ${STACK_NAME}-database-secrets
+aws secretsmanager get-secret-value --secret-id ${STACK_NAME}-database-secrets # you can also use the secrets ARN from the output of the `cdk deploy` command as the value of the `--secret-id` flag
 ```
 or throught the AWS console, by going to AWS Secrets manager and selecting the instance corresponding to the recently deployed CDK stack. 
 
@@ -114,6 +114,50 @@ For debugging purposes the data storage resources are available:
 - The Localstack (AWS) resources are accessible via [http://localhost:4566](http://localhost:4566)
 - The Elasticsearch instance is accessible via [http://localhost:9200](http://localhost:9200)
 - The Postgres DB is accessible via the username/password/host/port/dbname combo: `masteruser/password/localhost/5432/nasadb`
+
+## Contributing
+This repo is set to use `pre-commit` to run *my-py*, *flake8*, *pydocstring* and *black* ("uncompromising Python code formatter") when commiting new code.
+
+```bash
+pip install -e .[dev] # use ".[dev]" with quotation marks if on mac
+
+pre-commit install
+```
+
+```
+$ git add .
+$ git commit -m'fix a really important thing'
+black....................................................................Passed
+Flake8...................................................................Passed
+Verifying PEP257 Compliance..............................................Passed
+mypy.....................................................................Passed
+[precommit cc12c5a] fix a really important thing
+ ```
+
+## API V1 --> V2
+
+A number of changes were made to the API from it's first iteration:
+
+1. Enable efficient and straightforward (developer friendly) querying and updating of ATBD document versions
+
+    Previously the API was build with [PostgREST](https://postgrest.org/en/stable/), an incredible tool which just needs to be pointed to an existing database, and will generate a REST API that manages foreign key relations and authentication. This was a great way to get the project up and running with very little code, but because the queries were automatically generated, customizing the access patterns to retrieve an entire document quickly became very complex. Additionally, implementing queries beyond simple CRUD operations required complex Postgres functions, which are difficult to debug. 
+
+    The mitigate the above problems we decided to re-implement the API using FastAPI. While this means we have to re-implement CRUD operations ourselves, we now have much finer grained control over data I/O operations. We are able to implement custom queries/operations, as well as custom data validation and formatting and eventually custom authorization logic. 
+
+2. Enable ATBD document versioning
+
+    In order to implement ATBD document versioning we revisited the database structure in Postgres. The data was highly normalized (accross half a dozen differen foreign key relations) which entailed huge complexity for implementing versioning, as creating a new version of a document would have required duplicating table records accross all of these tables. Instead the data was denormzalied into a single `atbd_versions` table - meaning that a new version can be creating with a single record duplication. 
+
+    Since we had already made the decision to use FastAPI we implemented input data validation using Pydantic. Given that, previously, the data was often deeply nested within the highly normalized tables, denormalizing the table and implementing validation with Pydnatic is just as strict, if not stricter, than the data validation that was previously being performed.
+
+3. Enable tighter development cycles by streamlining API deployment process
+    
+    Previously the API was deployed using a cloudformation template. Migrating to CDK allows us to use Python code to define and provision AWS resources. We can also update any part of the application with a single `cdk deploy` command, wherease before, ECS images had to be updated separately from the Cloudformation stack, depending on what changes were required. 
+
+4. Reduce API response latency and overhead, increase scalability and error traceability
+    
+    Previously the API was running in ECS instances. The images were difficult to debug as the logs were not readily available, and did not scale as readily as Lambda functions. Using [Mangum](https://pypi.org/project/mangum/) we can wrap our FastAPI app with a single line of code to make it compatible with the Lambda runtime environment. This results in an API that is readily scalable and only incurs costs proportinally to its usage. Lastly we benefit from the Lambda monitoring and logging functionality made available through Cloudwatch. 
+
 
 
 ## Notes

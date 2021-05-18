@@ -110,7 +110,8 @@ class nasaAPTLambdaStack(core.Stack):
             capacity=elasticsearch.CapacityConfig(
                 data_node_instance_type="t2.small.elasticsearch", data_nodes=1,
             ),
-            domain_name=f"{id}-elastic",
+            # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in AWS
+            domain_name=f"{id}-elastic"[-28:],
             ebs=elasticsearch.EbsOptions(
                 enabled=True,
                 iops=0,
