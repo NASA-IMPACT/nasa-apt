@@ -1,3 +1,6 @@
+"""NASA APT API."""
+
+
 from setuptools import find_packages, setup
 
 with open("README.md") as f:
@@ -52,20 +55,22 @@ inst_reqs = [
     "SQLAlchemy-Utils==0.37.0",
 ]
 extra_reqs = {
+    "dev": ["pre-commit"],
     "server": ["uvicorn", "click"],
     "deploy": [
+        "python-dotenv",
         "docker",
-        "aws-cdk.core>=1.72.0",
-        "aws-cdk.aws_lambda>=1.72.0",
-        "aws-cdk.aws_apigatewayv2>=1.72.0",
-        "aws-cdk.aws_apigatewayv2_integrations>=1.72.0",
-        "aws-cdk.aws_iam>=1.72.0",
-        "aws-cdk.aws_rds>=1.72.0",
-        "aws-cdk.aws_ssm>=1.72.0",
-        "aws-cdk.aws_ec2>=1.72.0",
-        "aws-cdk.aws_secretsmanager>=1.72.0",
-        "aws-cdk.aws_ecs>=1.72.0",
-        "aws-cdk.aws_elasticsearch>=1.72.0",
+        "aws-cdk.core>=1.95.0",
+        "aws-cdk.aws_lambda>=1.95.0",
+        "aws-cdk.aws_apigatewayv2>=1.95.0",
+        "aws-cdk.aws_apigatewayv2_integrations>=1.95.0",
+        "aws-cdk.aws_iam>=1.95.0",
+        "aws-cdk.aws_rds>=1.95.0",
+        "aws-cdk.aws_ssm>=1.95.0",
+        "aws-cdk.aws_ec2>=1.95.0",
+        "aws-cdk.aws_secretsmanager>=1.95.0",
+        "aws-cdk.aws_ecs>=1.95.0",
+        "aws-cdk.aws_elasticsearch>=1.95.0",
     ],
     "test": [
         "factory-boy==3.2.0",

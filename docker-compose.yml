@@ -18,7 +18,7 @@ services:
     command: >
       sh -c "
         sqitch deploy --verify db:pg://masteruser:password@db:5432/nasadb &&
-        psql 'postgres://masteruser:password@db:5432/nasadb?options=--search_path%3dapt' -f /sqitch/testDataLocal.sql
+        psql 'postgres://masteruser:password@db:5432/nasadb?options=--search_path%3dapt' -f /sqitch/testData.sql
       "
     volumes: 
       - ./db:/sqitch

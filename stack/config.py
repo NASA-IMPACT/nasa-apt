@@ -2,6 +2,11 @@
 
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 PROJECT_NAME = os.environ.get("PROJECT_NAME", "nasa-apt-api")
 
 # API_VERSION_STRING must start with `/`

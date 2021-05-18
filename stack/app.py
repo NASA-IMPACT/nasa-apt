@@ -70,7 +70,9 @@ class nasaAPTLambdaStack(core.Stack):
         database = rds.DatabaseInstance(
             self,
             f"{id}-postgres-db",
-            credentials=rds.Credentials.from_generated_secret(username="masteruser"),
+            credentials=rds.Credentials.from_generated_secret(
+                username="masteruser", secret_name=f"{id}-database-secrets"
+            ),
             allocated_storage=10,
             vpc=vpc,
             publicly_accessible=True,

@@ -1,24 +1,47 @@
 # nasa-apt
 
-**Version:** 1.0.0
-
-## Local development
+**Version:** 2.0.0
 
 Code and issues relevant to the NASA APT project
 
-The project API is built using [Postgrest](https://github.com/PostgREST/postgrest).
+## Components: 
+- [FastAPI](https://fastapi.tiangolo.com/): provides the routes/methods for the REST API. Uses [Pydantic](https://pydantic-docs.helpmanual.io/) for data validation, [SQLAlchemy](https://www.sqlalchemy.org/) for database connection and ORM and [PyLatex](https://jeltef.github.io/PyLaTeX/current/) for Latex/PDF document generation
+- [Postgresql](https://www.postgresql.org/): Database where ATBD and ATBD Version content is stored
+- [ElasticSearch](https://www.elastic.co/elasticsearch/): Document indexing to provide full-text searching of ATBD documents
 
-When running the project for the first time run `docker-compose up --build`
+### AWS Deployment: 
+The API is deployed to AWS using [AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html). To get started with CDK you will need to have `npm` installed. Follow the steps in the link above to get started. 
 
-After the first time, you can drop `--build`
+To deploy a new APT API stack, copy the `.env.sample` file to your workstation. 
+Required values in the `.env` file are: 
+- `APT_FRONTEND_URL`. This is the URL where the frontend is deployed. Necessary for the SAML authentication code to redirect the user upon successfull token generation.
+-  `IDP_METADATA_URL`. Setting this value to `mock` will cause the API to bypass authentication (and create a valid JWT token whenever you click "login")
+- `JWT_SECRET`. This will be the secret key used to sign JWT tokens when authenticating users and validate requests from users. 
 
-Stop with `ctrl+C` and `docker-compose down`
+Optional values in the `.env` file are: 
+- `PROJECT_NAME`. Value will be used to identify the CDK stack and generated resources in AWS. Defaults to `nasa-apt-api`
+- `STAGE`. This value will be used to identify the CDK stack and generated resources in AWS. Defaults to `dev`
+- `API_VERSION_STRING`. This value will be prepended to all API routes, and __must__ start with a `/`. Defaults to `/v1`
+- `OWNER` and `CLIENT`. These values are used for tagging resources in AWS for billing and tracing purposes.
+- `VPC_ID`. If provided the generated AWS resources will be placed within this VPC, otherwise a new VPC will be created for the STACK. 
+- `S3_BUCKET`. The name of the S3 bucket to store files images and PDFs for the APT application. If provided, this value must be unique within AWS, otherwise the stack will fail to create. 
 
-This will create a complete development environment with an instance of the DB, the REST API, `localstack` for s3, and
-the FastAPI Search / PDF serialization service.
+To deploy a new stack run: 
+```bash
+git clone https://github.com/NASA-IMPACT/nasa-apt.git
 
-- The Swagger API documentation is accessible via [http://localhost:8080](http://localhost:8080).
-- The REST API is accessible via [http://localhost:3000](http://localhost:3000).
+pip install -e .[deploy] # (use ".[deploy]", with quotation marks if on mac)
+
+cdk list # optional - verify that all required pacakges are correctly installed
+
+cdk deploy ${PROJECT_NAME}-lambda-${STAGE} # use the `--profile ${PROFILE_NAME}` flag if using a non-default AWS account
+```
+eg:
+```bash
+cdk deploy nasa-apt-api-lambda-dev --profile <AWS_PROFILe>
+```
+The output of this command will contain the URL endpoint of the REST API.
+
 
 ## Database changes
 
@@ -38,92 +61,60 @@ This creates new empty `sql` scripts in the `deploy`, `revert` and `verify` dire
 You can then update the `somechange.sql` script in the `deploy` directory with the necessary change.
 See the Sqitch [documentation](https://sqitch.org/docs/manual/sqitchtutorial) for more details on change dependencies and validation.
 
-To update your local environment with the new database changes you need to re-run
+Sqitch migrations must be manually applied the database in AWS. When deploying a stack for the first time, to prepare the database you will need the database secrets to access the database. 
 
-```shell script
-./startserver.sh
+These can be found using the CLI: 
+```bash
+aws secretsmanager get-secret-value --secret-id ${STACK_NAME}-database-secrets
 ```
+or throught the AWS console, by going to AWS Secrets manager and selecting the instance corresponding to the recently deployed CDK stack. 
 
-(note that this will remove any new data stored in your local development database.)
+The secrets value needed to setup the database are: 
+- `HOST`
+- `USERNAME`
+- `PASSWORD`
+- `DBNAME`
+- `PORT` (should be default value of `5432`) 
 
-## Deploying to AWS
-
-To deploy the AWS infrastructure for the application you will need an
-installation of the [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
-with credentials which allow creating all the stack resources.
-
-To deploy the AWS infrastructure from the root directory run
-
-```shell script
-cd cloudformation
-./deploy.sh
-```
-
-You will be prompted for a stack name and a master db password. The current
-stack is `nasa-apt-v5-prod`
-
-After the stack has been successfully deployed you can create the database tables.
-You will need an installation of the `psql` command line client.
-
-You will also need to update the RDS instance's security policy to allow inbound traffic from the IP address of the machine where you
-are executing the deployment. (see Resources | DBInstance | Security and Network | Security Groups |
-Edit inbound rules | Custom TCP, Port 5432, My IP).
-
-To create the schema and tables in the AWS RDS from the project root run
-
-```shell script
+With these values the DB migration can be applied as follows (requires Docker): 
+```bash
 cd db
-./sqitch deploy --verify db:pg://{yourmasteruser}:{yourmasterpassword}@{yourRDSendpoint}:5432/nasadb
+./sqitch deploy --verify db:pg://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${DBNAME} 
 ```
 
-Because of PostgREST's schema reloading [model](http://postgrest.org/en/v5.2/admin.html#schema-reloading) some
-underlying database changes may require a forced redeployment of the PostgREST ECS service to reflect the changes. (See Note in
-[Environments](#environments))
+Once the database has been setup, any migrations must also be manually applied to the database using the above command. 
+(More info on how to backup, update and restore the database from backup coming soon.)
 
-## Environments
+Optionally, some of the test fixture data can be loaded with the following command (requires [psql](https://www.postgresql.org/docs/13/app-psql.html), recommended **only** for dev/staging environemnts):
 
-There are currently 2 environments defined for NASA-APT, which follow specific branches
-
-- Production (`master`): https://apt.ds.io
-
-**Given that deployment is a manual process it is important that the environments are kept up to date after a merge to `master` or `develop`.**
-
-**NOTE:** Although the product is not yet being fully used, the data in the production environment should not be lost, and should be taken into account on any database migrations.
-
-Steps to deploy:
-
-1. Make a snapshot backup of the RDS instance.
-2. Update the cloudformation stack if needed (see previous section).
-3. Update the database as described in the previous section. (_The easiest way to get the connection string is to check the env variables of the task of the corresponding ECS cluster_). You may need to add your ip address to the sec group inbound rules.
-4. Force a new deployment of the PostgREST ECS service so that it can infer database schema changes:
-
-```shell script
-aws ecs update-service --force-new-deployment --cluster <cluster-id> --service <service-arn>
-# e.g.
-aws ecs update-service --force-new-deployment --cluster stackname-ECSCluster-nWSsDVGj9NXS --service stackname-svc-pgr
-# then wait until the service's desired count == the running count (this will take about 10 minutes)
+```bash
+cd db # if not already in `/cd`
+psql 'postgres://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${DBNAME}?options=--search_path%3dapt' -f ./testData.sql
 ```
 
-## Updating the FastAPI (PDF/Search) service
-
-The PDF generation service uses docker and it is stored on amazon ECR. During the first cloudformation deployment, the container is created and uploaded, but subsequent updates need to be performed manually.
-We're currently using a single ECR repo (nasa-apt/prod/fastapi) to store the container and it is shared between the production and staging environments.
-
-1. Build the container
-
+## Local development
+The API can be run locally for development purposes. To run locally, run: 
+```bash
+docker-compose up --build
 ```
-cd nasa-apt/fastapi/
-# from the fastapi/Readme
-docker build --target prod . -t nasa-apt/prod/fastapi
-```
+This will create several docker containers: one for the Postgres database, one for the REST API, one for the ElasticSearch instance and one for a Localstack instance, which mocks AWS resources locally. 
 
-2. Go to the [ECR page](https://us-east-1.console.aws.amazon.com/ecr/repositories?region=us-east-1), select the correct repo and click "View Push Commands".
-3. Follow steps 1, 3, and 4.
-4. Update the pdf service. Easiest way to know the cluster and service is to go to the [ECS cluster](https://us-east-1.console.aws.amazon.com/ecs/home?region=us-east-1#/clusters)page and selecting the appropriate one.
+Upon spinning up, all necessary database migrations (see below) will be run, and the database will be pre-populated with a test ATBD, which has 2 versions, one with status `Published` and one with status `Draft`. The ElasticSearch instance will not be populated with data until the ATBD gets updated. 
 
-```
-aws ecs update-service --force-new-deployment --cluster <cluster> --service <service>
-```
+After running for the first time you can drop the `--build` flag (this flag forces the docker image to be re-built).
+
+You can stop running the API with `ctrl+C` and `docker-compose down`. To clear out the volumes and remove the data that gets persisted between sessions, use `docker-compose down --volumes`. 
+
+Locally, the resources will be available at the following endpoints: 
+
+- The Swagger API documentation is accessible via [http://localhost:8080](http://localhost:8080).
+- The REST API is accessible via [http://localhost:8000](http://localhost:8000).
+
+For debugging purposes the data storage resources are available: 
+- The Localstack (AWS) resources are accessible via [http://localhost:4566](http://localhost:4566)
+- The Elasticsearch instance is accessible via [http://localhost:9200](http://localhost:9200)
+- The Postgres DB is accessible via the username/password/host/port/dbname combo: `masteruser/password/localhost/5432/nasadb`
+
 
 ## Notes
 
