@@ -1,13 +1,17 @@
-import os
-import boto3
+"""
+Collects various config values that are needed by the API. Most of these a
+allow the API to contact other resources (database, elasticsearch, etc) and
+are set by the CDK stack at deployment.
+"""
 import json
+import os
 
+import boto3
 
-PROJECT_NAME = "APT API"
-# API_VERSION_STR = "/v1"
-API_VERSION_STR = ""
-
-
+API_VERSION_STRING = os.environ.get("API_VERSION_STRING") or exit(
+    "API_VERSION_STRING env var required"
+)
+PROJECT_NAME = os.environ.get("PROJECT_NAME") or exit("PROJECT_NAME env var required")
 FRONTEND_URL = os.environ.get("APT_FRONTEND_URL") or exit(
     "APT_FRONTEND_URL env var required"
 )
@@ -33,7 +37,7 @@ IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(
     "IDP_METADATA_URL env var required"
 )
 
-BUCKET = os.environ.get("S3_BUCKET") or exit("S3_BUCKET env var required")
+S3_BUCKET = os.environ.get("S3_BUCKET") or exit("S3_BUCKET env var required")
 
 AWS_RESOURCES_ENDPOINT = os.environ.get("AWS_RESOURCES_ENDPOINT")
 
@@ -60,4 +64,3 @@ POSTGRES_ADMIN_PASSWORD = pg_credentials["password"]
 POSTGRES_PORT = pg_credentials["port"]
 POSTGRES_DB_NAME = pg_credentials["dbname"]
 POSTGRES_HOST = pg_credentials["host"]
-

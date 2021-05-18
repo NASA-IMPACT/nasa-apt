@@ -1,0 +1,9 @@
+# Frontend Url used to set CORS origin for FastAPI
+export APT_FRONTEND_URL=https://impact.earthdata.nasa.gov/apt/
+
+# url for SAML IDP metadata
+export #IDP_METADATA_URL=https://auth.launchpad-sbx.nasa.gov/unauth/metadata/launchpad-sbx.idp.xml
+export IDP_METADATA_URL=mock
+
+# Note: If the JWT_SECRET isn't sufficiently long, postgrest may complain
+export JWT_SECRET=lksdjlkasjasdlkjasdl5kjfdlasdfkkllkjasdfhlksdjlka54sdjasdlkjasdlkjsdflkjwelkwejrlkrjwlkwejlwekjrwelkrjewlkrjwelkrj

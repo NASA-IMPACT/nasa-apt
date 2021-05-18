@@ -1,12 +1,15 @@
-from app.schemas import contacts
-from app.db.db_session import DbSession
-from app.crud.contacts import crud_contacts
-from app.db.models import Contacts
+""" Contacts endpoint."""
+from typing import List
+
+from sqlalchemy import orm
+
 from app.api.utils import get_db, require_user
 from app.auth.saml import User
-from sqlalchemy import func, orm
+from app.crud.contacts import crud_contacts
+from app.db.db_session import DbSession
+from app.schemas import contacts
+
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
 
 router = APIRouter()
 
@@ -25,6 +28,9 @@ def list_contacts(
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
+    """
+    Lists contacts
+    """
     if filters:
         return crud_contacts.get_multi(db_session=db, filters=filters)
     return crud_contacts.get_multi(db_session=db)
@@ -42,14 +48,8 @@ def list_contacts(
 def get_contact(
     contact_id: str, db: DbSession = Depends(get_db), user: User = Depends(require_user)
 ):
+    """Returns a single contact by id. Raises a 404 error if the contact does not exist"""
     try:
-
-        # print(
-        #     "ATBD VERSIONS LINK FOR CONTACT: ",
-        #     crud_contacts.get(
-        #         db_session=db, obj_in=contacts.Lookup(id=contact_id)
-        #     ).atbd_versions_link,
-        # )
         return crud_contacts.get(db_session=db, obj_in=contacts.Lookup(id=contact_id))
     except orm.exc.NoResultFound:
         raise HTTPException(
@@ -67,7 +67,7 @@ def create_contact(
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
-    print("Create Contact Input: ", create_contact_input)
+    """Creates a new contact. Raises an exception if the user is not logged in."""
     return crud_contacts.create(db_session=db, obj_in=create_contact_input)
 
 
@@ -84,8 +84,8 @@ def update_contact(
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
+    """Updates fields within a contact. Raises an exception if the user isn't logged in."""
     contact = crud_contacts.get(db_session=db, obj_in=contacts.Lookup(id=contact_id))
-
     return crud_contacts.update(db=db, db_obj=contact, obj_in=update_contact_input)
 
 
@@ -100,7 +100,8 @@ def update_contact(
 def delete_contact(
     contact_id: int, db: DbSession = Depends(get_db), user: User = Depends(require_user)
 ):
+    """ Deletes a given contact. Raises an exception if the user isn't logged in."""
     contact = crud_contacts.get(db_session=db, obj_in=contacts.Lookup(id=contact_id))
     db.delete(contact)
     db.commit()
-    return []
+    return {}

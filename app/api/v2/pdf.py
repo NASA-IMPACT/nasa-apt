@@ -1,10 +1,8 @@
-"""
-Methods for the API PDF route
-"""
+"""PDF Endpoint."""
 import os
 
+from app import config
 from app.api.utils import get_db, get_major_from_version_string, s3_client
-from app.config import BUCKET
 from app.crud.atbds import crud_atbds
 from app.db.models import Atbds, AtbdVersions
 from app.pdf.generator import generate_pdf
@@ -21,7 +19,7 @@ def save_pdf_to_s3(atbd: Atbds, journal: bool = False):
     """
     key = generate_pdf_key(atbd=atbd, journal=journal)
     local_pdf_key = generate_pdf(atbd=atbd, filepath=key, journal=journal)
-    s3_client().upload_file(Filename=local_pdf_key, Bucket=BUCKET, Key=key)
+    s3_client().upload_file(Filename=local_pdf_key, Bucket=config.S3_BUCKET, Key=key)
 
 
 # TODO: will this break if the ATBD is created without an alias and then
@@ -81,7 +79,7 @@ def get_pdf(
         print("FETCHING FROM S3: ", pdf_key)
 
         # TODO: add some error handling in case the PDF isn't found
-        f = s3_client().get_object(Bucket=BUCKET, Key=pdf_key)["Body"]
+        f = s3_client().get_object(Bucket=config.S3_BUCKET, Key=pdf_key)["Body"]
         return StreamingResponse(
             f.iter_chunks(),
             media_type="application/pdf",

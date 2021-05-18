@@ -1,5 +1,7 @@
-import pytest
 import json
+
+import pytest
+
 from app.db.models import Contacts
 
 
@@ -10,11 +12,11 @@ def test_list_contacts(
     contact = contacts_factory.create()
 
     with pytest.raises(Exception):
-        result = test_client.get("/contacts")
+        result = test_client.get("/v2/contacts")
         result.raise_for_status()
 
     result = json.loads(
-        test_client.get("/contacts", headers=authenticated_headers).content
+        test_client.get("/v2/contacts", headers=authenticated_headers).content
     )
     assert len(result) == 1
     assert result[0]["first_name"] == contact.first_name
@@ -26,7 +28,7 @@ def test_list_contacts(
     contact = contacts_factory.create()
 
     result = json.loads(
-        test_client.get("/contacts", headers=authenticated_headers).content
+        test_client.get("/v2/contacts", headers=authenticated_headers).content
     )
     assert len(result) == 2
 
@@ -44,12 +46,12 @@ def test_get_contact_by_id(
     contact = contacts_factory.create(mechanisms="{}")
 
     with pytest.raises(Exception):
-        result = test_client.get(f"/contacts/{contact.id}")
+        result = test_client.get(f"/v2/contacts/{contact.id}")
         result.raise_for_status()
 
     result = json.loads(
         test_client.get(
-            f"/contacts/{contact.id}", headers=authenticated_headers
+            f"/v2/contacts/{contact.id}", headers=authenticated_headers
         ).content
     )
     assert result["first_name"] == contact.first_name
@@ -61,7 +63,7 @@ def test_get_contact_by_id(
 
     result = json.loads(
         test_client.get(
-            f"/contacts/{contact.id}", headers=authenticated_headers
+            f"/v2/contacts/{contact.id}", headers=authenticated_headers
         ).content
     )
     assert result["first_name"] == contact.first_name
@@ -76,7 +78,7 @@ def test_get_contact_by_id(
     version = atbd_versions_factory.create(atbd_id=atbd.id)
     db_session.refresh(version)
 
-    versions_contact_association = versions_contacts_association_factory.create(
+    versions_contacts_association_factory.create(
         atbd_id=atbd.id,
         major=version.major,
         contact_id=contact.id,
@@ -84,7 +86,9 @@ def test_get_contact_by_id(
     )
     db_session.commit()
 
-    result = test_client.get(f"/contacts/{contact.id}", headers=authenticated_headers)
+    result = test_client.get(
+        f"/v2/contacts/{contact.id}", headers=authenticated_headers
+    )
     result.raise_for_status()
     result = json.loads(result.content)
 
@@ -113,9 +117,7 @@ def test_create_contact(
         del contact["first_name"]
         del contact["_sa_instance_state"]
         result = test_client.post(
-            "/contacts",
-            headers=authenticated_headers,
-            data=json.dumps(contact),
+            "/v2/contacts", headers=authenticated_headers, data=json.dumps(contact),
         )
         result.raise_for_status()
 
@@ -126,9 +128,7 @@ def test_create_contact(
     ]
     del contact["_sa_instance_state"]
     result = test_client.post(
-        "/contacts",
-        headers=authenticated_headers,
-        data=json.dumps(contact),
+        "/v2/contacts", headers=authenticated_headers, data=json.dumps(contact),
     )
     db_session.close()
 
@@ -149,9 +149,7 @@ def test_create_contact(
     del contact["_sa_instance_state"]
 
     result = test_client.post(
-        "/contacts",
-        headers=authenticated_headers,
-        data=json.dumps(contact),
+        "/v2/contacts", headers=authenticated_headers, data=json.dumps(contact),
     )
     result.raise_for_status()
     db_session.close()
@@ -173,7 +171,7 @@ def test_update_contact(
     with pytest.raises(Exception):
 
         result = test_client.post(
-            f"/contacts/{contact.id}",
+            f"/v2/contacts/{contact.id}",
             data=json.dumps(
                 {"first_name": "new_first_name", "last_name": "new_last_name"}
             ),
@@ -181,7 +179,7 @@ def test_update_contact(
         result.raise_for_status()
 
     result = test_client.post(
-        f"/contacts/{contact.id}",
+        f"/v2/contacts/{contact.id}",
         data=json.dumps({"first_name": "new_first_name", "last_name": "new_last_name"}),
         headers=authenticated_headers,
     )
@@ -208,12 +206,11 @@ def test_delete_contact(
     db_session.commit()
 
     with pytest.raises(Exception):
-        result = test_client.delete(f"/contacts/{contact.id}")
+        result = test_client.delete(f"/v2/contacts/{contact.id}")
         result.raise_for_status()
 
     result = test_client.delete(
-        f"/contacts/{contact.id}",
-        headers=authenticated_headers,
+        f"/v2/contacts/{contact.id}", headers=authenticated_headers,
     )
     result.raise_for_status()
     assert db_session.query(Contacts).all() == []
@@ -246,6 +243,6 @@ def test_delete_contact(
     assert len(version.contacts_link) > 0
     assert version.contacts_link[0].contact.id == contact.id
 
-    test_client.delete(f"/contacts/{contact.id}", headers=authenticated_headers)
+    test_client.delete(f"/v2/contacts/{contact.id}", headers=authenticated_headers)
     db_session.refresh(version)
     assert len(version.contacts_link) == 0

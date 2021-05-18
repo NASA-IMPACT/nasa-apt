@@ -1,20 +1,23 @@
-from app.db.models import Atbds, AtbdVersions, Contacts, AtbdVersionsContactsAssociation
-from unittest.mock import patch
-import pytest
-from sqlalchemy import engine, create_engine, text, MetaData
-import testing.postgresql
-from sqlalchemy.orm import scoped_session
-from fastapi.testclient import TestClient
-from jose import jwt
-from datetime import datetime, timedelta
-import os
-import boto3
 import json
-from moto import mock_secretsmanager, mock_s3
-import factory
-from factory import fuzzy
-import faker
 import logging
+import os
+from datetime import datetime, timedelta
+from unittest.mock import patch
+
+import boto3
+import factory
+import faker
+import pytest
+import testing.postgresql
+from factory import fuzzy
+from jose import jwt
+from moto import mock_s3, mock_secretsmanager
+from sqlalchemy import create_engine, engine, text
+from sqlalchemy.orm import scoped_session
+
+from app.db.models import Atbds, AtbdVersions, AtbdVersionsContactsAssociation, Contacts
+
+from fastapi.testclient import TestClient
 
 
 @pytest.fixture
@@ -28,6 +31,11 @@ def monkeysession(request):
     mpatch.setenv("AWS_SECRET_ACCESS_KEY", "patch")
     mpatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
     mpatch.setenv("ELASTICSEARCH_URL", "patch")
+    mpatch.setenv("POSTGRES_ADMIN_CREDENTIALS_ARN", "mocked_secrets_manager_arn")
+    mpatch.setenv("API_VERSION_STRING", "/v2")
+    mpatch.setenv("PROJECT_NAME", "project_name")
+    mpatch.setenv("FASTAPI_HOST", "mocked_api_host")
+    mpatch.setenv("S3_BUCKET", "mocked_bucket")
     yield mpatch
     mpatch.undo()
 
@@ -114,9 +122,9 @@ def test_client(db_session):
 @mock_s3
 @pytest.fixture
 def s3_bucket(monkeysession, s3_resource):
-    from app.config import BUCKET
+    from app.config import S3_BUCKET
 
-    bucket = s3_resource.Bucket(name=BUCKET)
+    bucket = s3_resource.Bucket(name=S3_BUCKET)
     bucket.create()
 
     yield bucket
@@ -138,7 +146,7 @@ def secretsmanager_client(monkeysession):
 def secrets(secretsmanager_client, database_connection, monkeysession):
 
     secretsmanager_client.create_secret(
-        Name=os.environ["POSTGRES_ADMIN_CREDENTIALS_ARN"],
+        Name="mocked_secrets_manager_arn",
         SecretString=json.dumps(
             {
                 "username": database_connection["user"],
@@ -149,7 +157,6 @@ def secrets(secretsmanager_client, database_connection, monkeysession):
             }
         ),
     )
-    monkeysession.setenv("POSTGRES_ADMIN_CREDENTIALS_ARN", "mocked_credentials_arn")
 
 
 @pytest.fixture
@@ -194,8 +201,7 @@ def atbd_versions_factory(db_session):
         major = factory.Faker("pyint")
         minor = factory.Faker("pyint")
         status = factory.Faker(
-            "random_element",
-            elements=["Draft", "Review", "Published"],
+            "random_element", elements=["Draft", "Review", "Published"],
         )
         document = DOCUMENT
 
@@ -220,9 +226,7 @@ def atbds_factory(db_session):
     class AtbdsFactory(BaseFactory):
         title = factory.Faker("pystr")
         alias = fuzzy.FuzzyText(
-            length=15,
-            prefix="x9-",
-            chars="qwertyuiopasdfghjklzxcvbnm",
+            length=15, prefix="x9-", chars="qwertyuiopasdfghjklzxcvbnm",
         )
         created_by = factory.Faker("pystr")
         last_updated_by = factory.Faker("pystr")

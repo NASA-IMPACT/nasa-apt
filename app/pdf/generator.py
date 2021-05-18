@@ -23,7 +23,7 @@ from pylatex import (
 )
 
 from app.api.utils import s3_client
-from app.config import BUCKET
+from app.config import S3_BUCKET
 from app.db.models import Atbds
 from app.schemas import document
 from app.schemas.versions_contacts import ContactsLinkOutput
@@ -362,7 +362,7 @@ def process(
         # lambda execution environment only allows for files to
         # written to `/tmp` directory
         s3_client().download_file(
-            Bucket=BUCKET,
+            Bucket=S3_BUCKET,
             Key=f"{atbd_id}/images/{img['objectKey']}",
             Filename=f"/tmp/{img['objectKey']}",
         )

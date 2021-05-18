@@ -6,8 +6,8 @@ from typing import Tuple, Union
 
 from boto3 import client
 
-from app import config
 from app.auth.saml import User, get_user
+from app.config import AWS_RESOURCES_ENDPOINT
 from app.db.db_session import DbSession, get_session
 from app.logs import logger
 
@@ -18,8 +18,8 @@ def s3_client() -> client:
     """
     Returns a boto3 s3 client - configured to point at a specfic endpoint url if provided
     """
-    if config.AWS_RESOURCES_ENDPOINT:
-        return client("s3", endpoint_url=config.AWS_RESOURCES_ENDPOINT)
+    if AWS_RESOURCES_ENDPOINT:
+        return client("s3", endpoint_url=AWS_RESOURCES_ENDPOINT)
     return client("s3")
 
 

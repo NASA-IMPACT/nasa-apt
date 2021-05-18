@@ -1,21 +1,18 @@
-"""ATBD's endpoint."""
-from app.schemas import atbds
-from app.db.db_session import DbSession
+"""ATBDs endpoint."""
+import datetime
+from typing import List
+
+from sqlalchemy import exc
+
 from app.api.utils import get_db, require_user
-from app.api.v1.pdf import save_pdf_to_s3
-from app.search.elasticsearch import remove_atbd_from_index, add_atbd_to_index
+from app.api.v2.pdf import save_pdf_to_s3
 from app.auth.saml import User
 from app.crud.atbds import crud_atbds
-from sqlalchemy import exc
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    BackgroundTasks,
-)
-from typing import List
-import datetime
-import botocore
+from app.db.db_session import DbSession
+from app.schemas import atbds
+from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 router = APIRouter()
 
@@ -26,6 +23,8 @@ router = APIRouter()
     response_model=List[atbds.SummaryOutput],
 )
 def list_atbds(db: DbSession = Depends(get_db)):
+    """Lists all ATBDs with summary version info (only versions with status
+    `Published` will be displayed if the user is not logged in)"""
     return crud_atbds.scan(db=db)
 
 
@@ -34,6 +33,8 @@ def list_atbds(db: DbSession = Depends(get_db)):
     responses={200: dict(description="Atbd with given ID/alias exists in backend")},
 )
 def atbd_exists(atbd_id: str, db: DbSession = Depends(get_db)):
+    """Returns status 200 if ATBD exsits and raises 404 if not (or if the user is
+    not logged in and the ATBD has no versions with status `Published`)"""
     return crud_atbds.exists(db=db, atbd_id=atbd_id)
 
 
@@ -43,6 +44,8 @@ def atbd_exists(atbd_id: str, db: DbSession = Depends(get_db)):
     response_model=atbds.SummaryOutput,
 )
 def get_atbd(atbd_id: str, db: DbSession = Depends(get_db)):
+    """Returns a single ATBD (raises 404 if the ATBD has no versions with
+    status `Published` and the user is not logged in)"""
     return crud_atbds.get(db=db, atbd_id=atbd_id)
 
 
@@ -56,6 +59,8 @@ def create_atbd(
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
+    """Creates a new ATBD. Requires a title, optionally takes an alias.
+    Raises 400 if the user is not logged in."""
     output = crud_atbds.create(db, atbd_input, user["user"])
     return output
 
@@ -72,6 +77,9 @@ def update_atbd(
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
+    """Updates an ATBD (eiither Title or Alias). Raises 400 if the user
+    is not logged in. Re-indexes all corresponding items in Elasticsearch
+    with the new/updated values"""
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
     atbd.last_updated_by = user["user"]
     atbd.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
@@ -96,6 +104,11 @@ def publish_atbd(
     db=Depends(get_db),
     user=Depends(require_user),
 ):
+    """Publishes an ATBD. Raises 400 if the `latest` version does NOT have
+    status `Published` or if the user is not logged in.
+
+    Adds PDF generation (and serialization to S3) to background tasks.
+    """
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1)
     [latest_version] = atbd.versions
     if latest_version.status == "Published":
@@ -132,6 +145,8 @@ def delete_atbd(
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
 ):
+    """Deletes an ATBD (and all child versions). Removes all associated
+    items in the Elasticsearch index."""
     atbd = crud_atbds.remove(db=db, atbd_id=atbd_id)
 
     background_tasks.add_task(remove_atbd_from_index, atbd=atbd)

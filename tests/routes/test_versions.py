@@ -1,13 +1,9 @@
-from datetime import datetime
-import time
-import random
-import pytest
 import json
-from app.db.models import Atbds
-from app.schemas import versions
-from sqlalchemy.exc import InvalidRequestError
-from hypothesis import given, strategies as st
+import random
+import time
+from datetime import datetime
 
+import pytest
 
 # TODO: add tests for image upload/download
 # TODO: add tests for pdf generation
@@ -27,29 +23,29 @@ def test_check_version_exists(
 
     # check unauthenticated access
     with pytest.raises(Exception):
-        result = test_client.head(f"atbds/{atbd.id}/versions/{version.major}")
+        result = test_client.head(f"/v2/atbds/{atbd.id}/versions/{version.major}")
         result.raise_for_status()
 
     # check non-existent atbd_id
     with pytest.raises(Exception):
         result = test_client.head(
-            f"atbds/999/versions/{version.major}", headers=authenticated_headers
+            f"/v2/atbds/999/versions/{version.major}", headers=authenticated_headers
         )
         result.raise_for_status()
     # check non-existent version major
     with pytest.raises(Exception):
         result = test_client.head(
-            f"atbds/{atbd.id}/versions/999", headers=authenticated_headers
+            f"/v2/atbds/{atbd.id}/versions/999", headers=authenticated_headers
         )
         result.raise_for_status()
 
     result = test_client.head(
-        f"atbds/{atbd.id}/versions/{version.major}", headers=authenticated_headers
+        f"/v2/atbds/{atbd.id}/versions/{version.major}", headers=authenticated_headers
     )
 
     result.raise_for_status()
     result = test_client.head(
-        f"atbds/{atbd.id}/versions/v{version.major}.{version.minor}",
+        f"/v2/atbds/{atbd.id}/versions/v{version.major}.{version.minor}",
         headers=authenticated_headers,
     )
     result.raise_for_status()
@@ -58,10 +54,10 @@ def test_check_version_exists(
     db_session.add(version)
     db_session.commit()
 
-    result = test_client.head(f"atbds/{atbd.id}/versions/{version.major}")
+    result = test_client.head(f"/v2/atbds/{atbd.id}/versions/{version.major}")
     result.raise_for_status()
     result = test_client.head(
-        f"atbds/{atbd.id}/versions/v{version.major}.{version.minor}"
+        f"/v2/atbds/{atbd.id}/versions/v{version.major}.{version.minor}"
     )
     result.raise_for_status()
 
@@ -78,23 +74,23 @@ def test_get_version(
     version = atbd_versions_factory.create(atbd_id=atbd.id, status="Draft")
 
     with pytest.raises(Exception):
-        result = test_client.get(f"atbds/{atbd.id}/versions/{version.major}")
+        result = test_client.get(f"/v2/atbds/{atbd.id}/versions/{version.major}")
         result.raise_for_status()
 
     with pytest.raises(Exception):
         result = test_client.get(
-            f"atbds/999/versions/{version.major}", headers=authenticated_headers
+            f"/v2/atbds/999/versions/{version.major}", headers=authenticated_headers
         )
         result.raise_for_status()
 
     with pytest.raises(Exception):
         result = test_client.get(
-            f"atbds/{atbd.id}/versions/999", headers=authenticated_headers
+            f"/v2/atbds/{atbd.id}/versions/999", headers=authenticated_headers
         )
         result.raise_for_status()
 
     result = test_client.get(
-        f"atbds/{atbd.id}/versions/{version.major}", headers=authenticated_headers
+        f"/v2/atbds/{atbd.id}/versions/{version.major}", headers=authenticated_headers
     )
     result.raise_for_status()
     result = json.loads(result.content)
@@ -118,21 +114,17 @@ def test_create_version(
 
     # check unauthenticated access
     with pytest.raises(Exception):
-        result = test_client.post(
-            f"atbds/{atbd.id}/versions",
-        )
+        result = test_client.post(f"/v2/atbds/{atbd.id}/versions",)
         result.raise_for_status()
 
     with pytest.raises(Exception):
         result = test_client.post(
-            f"atbds/999/versions",
-            headers=authenticated_headers,
+            "/v2/atbds/999/versions", headers=authenticated_headers,
         )
         result.raise_for_status()
     with pytest.raises(Exception):
         result = test_client.post(
-            f"atbds/{atbd.id}/versions",
-            headers=authenticated_headers,
+            f"/v2/atbds/{atbd.id}/versions", headers=authenticated_headers,
         )
         result.raise_for_status()
 
@@ -141,8 +133,7 @@ def test_create_version(
     db_session.commit()
 
     result = test_client.post(
-        f"atbds/{atbd.id}/versions",
-        headers=authenticated_headers,
+        f"/v2/atbds/{atbd.id}/versions", headers=authenticated_headers,
     )
     result.raise_for_status()
     db_session.refresh(atbd)
@@ -163,20 +154,17 @@ def test_update_version(
 
     # check unauthenticated access
     with pytest.raises(Exception):
-        result = test_client.post(
-            f"atbds/{atbd.id}/versions/999",
-        )
+        result = test_client.post(f"/v2/atbds/{atbd.id}/versions/999",)
         result.raise_for_status()
 
     with pytest.raises(Exception):
         result = test_client.post(
-            f"atbds/999/versions/{version.major}",
-            headers=authenticated_headers,
+            f"/v2/atbds/999/versions/{version.major}", headers=authenticated_headers,
         )
         result.raise_for_status()
 
     result = test_client.post(
-        f"atbds/{atbd.id}/versions/{version.major}",
+        f"/v2/atbds/{atbd.id}/versions/{version.major}",
         data=json.dumps(
             {
                 "changelog": "updated changelog",
@@ -192,7 +180,7 @@ def test_update_version(
     mocked_send_to_elasticsearch.assert_called()
 
     result = test_client.post(
-        f"atbds/{atbd.id}/versions/v{version.major}.{version.minor}",
+        f"/v2/atbds/{atbd.id}/versions/v{version.major}.{version.minor}",
         data=json.dumps({"changelog": "updated changelog part 2"}),
         headers=authenticated_headers,
     )
@@ -219,7 +207,7 @@ def test_update_version_contacts(
 
     with pytest.raises(Exception):
         result = test_client.post(
-            f"/atbds/{atbd.id}/versions/{version.major}",
+            f"/v2/atbds/{atbd.id}/versions/{version.major}",
             data=json.dumps(
                 {
                     "contacts": [
@@ -235,7 +223,7 @@ def test_update_version_contacts(
     assert version.contacts_link == []
 
     result = test_client.post(
-        f"/atbds/{atbd.id}/versions/{version.major}",
+        f"/v2/atbds/{atbd.id}/versions/{version.major}",
         data=json.dumps(
             {
                 "contacts": [
@@ -259,7 +247,7 @@ def test_update_version_contacts(
     contact2 = contacts_factory.create()
 
     result = test_client.post(
-        f"/atbds/{atbd.id}/versions/{version.major}",
+        f"/v2/atbds/{atbd.id}/versions/{version.major}",
         data=json.dumps(
             {
                 "contacts": [
@@ -282,7 +270,7 @@ def test_update_version_contacts(
     assert version.contacts_link[1].atbd_version == version
 
     result = test_client.post(
-        f"/atbds/{atbd.id}/versions/{version.major}",
+        f"/v2/atbds/{atbd.id}/versions/{version.major}",
         data=json.dumps({"contacts": [{"id": contact.id, "roles": []}]}),
         headers=authenticated_headers,
     )
@@ -293,8 +281,7 @@ def test_update_version_contacts(
     assert version.contacts_link[0].roles == "{}"
 
     result = test_client.get(
-        f"/atbds/{atbd.id}/versions/{version.major}",
-        headers=authenticated_headers,
+        f"/v2/atbds/{atbd.id}/versions/{version.major}", headers=authenticated_headers,
     )
 
     result.raise_for_status()
@@ -315,14 +302,14 @@ def test_update_version_document(
     version = atbd_versions_factory.create(atbd_id=atbd.id, status="Draft")
     with pytest.raises(Exception):
         result = test_client.post(
-            f"atbds/{atbd.id}/versions/{version.major}",
+            f"/v2/atbds/{atbd.id}/versions/{version.major}",
             headers=authenticated_headers,
             data=json.dumps({"document": {"not_a_valid_key": {"NOT A VALID VALUE"}}}),
         )
         result.raise_for_status()
     original_output_vars = version.document["algorithm_output_variables"]
     result = test_client.post(
-        f"atbds/{atbd.id}/versions/{version.major}",
+        f"/v2/atbds/{atbd.id}/versions/{version.major}",
         headers=authenticated_headers,
         data=json.dumps(
             {
@@ -331,9 +318,7 @@ def test_update_version_document(
                         "children": [
                             {
                                 "type": "p",
-                                "children": [
-                                    {"text": "Updated TEXT", "bold": True},
-                                ],
+                                "children": [{"text": "Updated TEXT", "bold": True}],
                             }
                         ]
                     }
@@ -345,18 +330,13 @@ def test_update_version_document(
     db_session.refresh(version)
     assert version.document["journal_acknowledgements"] == {
         "children": [
-            {
-                "type": "p",
-                "children": [
-                    {"text": "Updated TEXT", "bold": True},
-                ],
-            }
+            {"type": "p", "children": [{"text": "Updated TEXT", "bold": True}]}
         ]
     }
     assert version.document["algorithm_output_variables"] == original_output_vars
 
     result = test_client.post(
-        f"atbds/{atbd.id}/versions/{version.major}?overwrite=True",
+        f"/v2/atbds/{atbd.id}/versions/{version.major}?overwrite=True",
         headers=authenticated_headers,
         data=json.dumps(
             {
@@ -365,9 +345,7 @@ def test_update_version_document(
                         "children": [
                             {
                                 "type": "p",
-                                "children": [
-                                    {"text": "Updated TEXT", "bold": True},
-                                ],
+                                "children": [{"text": "Updated TEXT", "bold": True}],
                             }
                         ]
                     }
@@ -379,12 +357,7 @@ def test_update_version_document(
     db_session.refresh(version)
     assert version.document["journal_acknowledgements"] == {
         "children": [
-            {
-                "type": "p",
-                "children": [
-                    {"text": "Updated TEXT", "bold": True},
-                ],
-            }
+            {"type": "p", "children": [{"text": "Updated TEXT", "bold": True}]}
         ]
     }
     assert version.document.get("algorithm_output_variables") is None
@@ -407,7 +380,7 @@ def test_update_version_sections_completed(
     )
     with pytest.raises(Exception):
         result = test_client.post(
-            f"atbds/{atbd.id}/versions/{version.major}",
+            f"/v2/atbds/{atbd.id}/versions/{version.major}",
             headers=authenticated_headers,
             data=json.dumps(
                 {"sections_completed": {"not_a_valid_key": {"NOT A VALID VALUE"}}}
@@ -416,7 +389,7 @@ def test_update_version_sections_completed(
         result.raise_for_status()
 
     result = test_client.post(
-        f"atbds/{atbd.id}/versions/{version.major}",
+        f"/v2/atbds/{atbd.id}/versions/{version.major}",
         headers=authenticated_headers,
         data=json.dumps(
             {"sections_completed": {"algorithm_output_variables": "complete"}}
@@ -428,7 +401,7 @@ def test_update_version_sections_completed(
     assert version.sections_completed["algorithm_input_variables"] == "incomplete"
 
     result = test_client.post(
-        f"atbds/{atbd.id}/versions/{version.major}?overwrite=True",
+        f"/v2/atbds/{atbd.id}/versions/{version.major}?overwrite=True",
         headers=authenticated_headers,
         data=json.dumps(
             {"sections_completed": {"algorithm_output_variables": "complete"}}
@@ -452,15 +425,11 @@ def test_update_minor_version_number(
 ):
 
     atbd = atbds_factory.create()
-    version = atbd_versions_factory.create(
-        atbd_id=atbd.id,
-        minor=1,
-        status="Draft",
-    )
+    version = atbd_versions_factory.create(atbd_id=atbd.id, minor=1, status="Draft",)
     # check can't bump minor version on un-published Version
     with pytest.raises(Exception):
         result = test_client.post(
-            f"atbds/{atbd.id}/versions/{version.major}",
+            f"/v2/atbds/{atbd.id}/versions/{version.major}",
             headers=authenticated_headers,
             data=json.dumps({"minor": 2}),
         )
@@ -468,7 +437,7 @@ def test_update_minor_version_number(
     # check can't bump minor version more than crt + 1
     with pytest.raises(Exception):
         result = test_client.post(
-            f"atbds/{atbd.id}/versions/{version.major}",
+            f"/v2/atbds/{atbd.id}/versions/{version.major}",
             headers=authenticated_headers,
             data=json.dumps({"minor": 3}),
         )
@@ -483,7 +452,7 @@ def test_update_minor_version_number(
         s3_bucket.put_object(Key=f"{atbd.id}/images/fullmoon.jpg", Body=f.read())
 
     result = test_client.post(
-        f"atbds/{atbd.id}/versions/{version.major}",
+        f"/v2/atbds/{atbd.id}/versions/{version.major}",
         headers=authenticated_headers,
         data=json.dumps({"minor": 2}),
     )
@@ -510,29 +479,19 @@ def test_delete_version(
     mocked_send_to_elasticsearch,
 ):
     atbd = atbds_factory.create()
-    version = atbd_versions_factory.create(
-        atbd_id=atbd.id,
-        minor=1,
-        status="Draft",
-    )
+    version = atbd_versions_factory.create(atbd_id=atbd.id, minor=1, status="Draft",)
     with pytest.raises(Exception):
-        result = test_client.delete(
-            f"atbds/9999/versions/{version.major}",
-        )
+        result = test_client.delete(f"/v2/atbds/9999/versions/{version.major}",)
         result.raise_for_status()
     with pytest.raises(Exception):
-        result = test_client.delete(
-            f"atbds/{atbd.id}/versions/9999",
-        )
+        result = test_client.delete(f"/v2/atbds/{atbd.id}/versions/9999",)
         result.raise_for_status()
     with pytest.raises(Exception):
-        result = test_client.delete(
-            f"atbds/{atbd.id}/versions/{version.major}",
-        )
+        result = test_client.delete(f"/v2/atbds/{atbd.id}/versions/{version.major}",)
         result.raise_for_status()
 
     result = test_client.delete(
-        f"atbds/{atbd.id}/versions/{version.major}", headers=authenticated_headers
+        f"/v2/atbds/{atbd.id}/versions/{version.major}", headers=authenticated_headers
     )
     result.raise_for_status()
 
@@ -557,13 +516,11 @@ def test_atbd_versions_ordering(
     # versions get returned in order of creation
     for _ in range(10):
 
-        atbd_versions_factory.create(
-            atbd_id=random.choice([atbd1.id, atbd2.id]),
-        )
+        atbd_versions_factory.create(atbd_id=random.choice([atbd1.id, atbd2.id]),)
 
         time.sleep(0.2)
 
-    result = test_client.get("/atbds", headers=authenticated_headers)
+    result = test_client.get("/v2/atbds", headers=authenticated_headers)
     result.raise_for_status()
     result = json.loads(result.content)
     dt_format = "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -573,7 +530,7 @@ def test_atbd_versions_ordering(
             c2 = atbd["versions"][i + 1]["created_at"]
             assert datetime.strptime(c1, dt_format) < datetime.strptime(c2, dt_format)
 
-    result = test_client.get("/atbds")
+    result = test_client.get("/v2/atbds")
     result.raise_for_status()
     result = json.loads(result.content)
     dt_format = "%Y-%m-%dT%H:%M:%S.%f%z"

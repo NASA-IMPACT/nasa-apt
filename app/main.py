@@ -1,23 +1,19 @@
 """NASA-APT app."""
 
-# from app import version
+
 from app import config
-from app.api.v1.api import api_router
-from app.db.db_session import DbSession
-from app.db.models import Atbds, AtbdVersions
-from app.search.elasticsearch import add_atbd_to_index
+from app.api.v2.api import api_router
 
 from fastapi import FastAPI
+
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
-from sqlalchemy import event
-
 
 app = FastAPI(
     title=config.PROJECT_NAME,
     openapi_url="/api/v1/openapi.json",
     description="A lightweight Cloud Optimized GeoTIFF tile server",
-    # version=version,
+    version=config.API_VERSION_STRING,
 )
 
 # Set all CORS enabled origins
@@ -33,7 +29,8 @@ if config.BACKEND_CORS_ORIGINS:
 
 app.add_middleware(GZipMiddleware, minimum_size=0)
 
-app.include_router(api_router, prefix=config.API_VERSION_STR)
+
+app.include_router(api_router, prefix=config.API_VERSION_STRING)
 
 
 @app.get("/ping", description="Health Check")

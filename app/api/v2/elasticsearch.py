@@ -1,19 +1,25 @@
-from app import config
+"""Elasticsearch Endpoint."""
 
-from app.logs import logger
-from app.auth.saml import get_user, User
+import boto3
 import requests
 from requests_aws4auth import AWS4Auth
-import boto3
-from fastapi import HTTPException, Depends, APIRouter
 
+from app.auth.saml import User, get_user
+from app.config import ELASTICSEARCH_URL
+from app.logs import logger
 
-logger.info("ELASTICSEARCH_URL %s", config.ELASTICSEARCH_URL)
+from fastapi import APIRouter, Depends, HTTPException
+
+logger.info("ELASTICSEARCH_URL %s", ELASTICSEARCH_URL)
 
 router = APIRouter()
 
 
 def aws_auth():
+    """Returns AWS credentials, to be used when signing requests against
+    Elasticsearch. Credentials will be based off of the lambda's runtime
+    IAM role.
+    """
     logger.info("Getting AWS Auth Credentials")
     region = "us-east-1"
     credentials = boto3.Session().get_credentials()
@@ -28,23 +34,12 @@ def aws_auth():
     return awsauth
 
 
-# TODO: re-implemnt
-# @router.get(root_path + "reindex")
-# def reindex(request: Request, user: User = Depends(require_user)):
-#     """
-#     Reindex all ATBD's into ElasticSearch
-#     """
-#     logger.info("Reindexing %s", config.ELASTICSEARCH_URL)
-#     results = await update_index(connection=request.app.state.connection)
-#     return JSONResponse(content=results)
-
-
 @router.post("/search")
 def search_elastic(request: dict, user: User = Depends(get_user)):
     """
     Proxies POST json to elastic search endpoint
     """
-    url = f"{config.ELASTICSEARCH_URL}/atbd/_search"
+    url = f"{ELASTICSEARCH_URL}/atbd/_search"
 
     logger.info("User %s", user)
     logger.info("data: %s", request)

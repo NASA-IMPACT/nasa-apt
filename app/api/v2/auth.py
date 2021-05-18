@@ -1,13 +1,10 @@
+"""SAML auth endpoint."""
 from app import config
-from app.logs import logger
 from app.auth.saml import SamlAuth, saml_auth
+from app.logs import logger
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    Response,
-    HTTPException,
-)
+from fastapi import APIRouter, Depends, HTTPException, Response
+
 from starlette.responses import RedirectResponse
 
 router = APIRouter()
@@ -17,6 +14,7 @@ mockauth = config.IDP_METADATA_URL == "mock"
 
 @router.get("/sso")
 async def sso(saml: SamlAuth = Depends(saml_auth)):
+    """sso route"""
     if mockauth:
         print(f"Redirecting to : {saml.url_for('acs')}?RelayState={saml.return_to}")
         return RedirectResponse(
@@ -28,6 +26,7 @@ async def sso(saml: SamlAuth = Depends(saml_auth)):
 @router.post("/acs")
 @router.get("/acs")
 async def acs(saml: SamlAuth = Depends(saml_auth),):
+    """ACS route"""
     auth = saml.auth
     if mockauth:
         saml.name_id = "nameid"
@@ -57,6 +56,7 @@ async def acs(saml: SamlAuth = Depends(saml_auth),):
 @router.get("/slo")
 @router.post("/slo")
 async def slo(saml: SamlAuth = Depends(saml_auth)):
+    """SLO route"""
     auth = saml.auth
     logger.warning(
         "slo return_to: %s, relay_state: %s", saml.return_to, saml.relay_state
@@ -79,6 +79,7 @@ async def slo(saml: SamlAuth = Depends(saml_auth)):
 @router.get("/sls")
 @router.post("/sls")
 async def sls(saml: SamlAuth = Depends(saml_auth)):
+    """SLS Route"""
     auth = saml.auth
     auth.process_slo()
     logger.warning("acs relay_state: %s", saml.relay_state)
@@ -93,6 +94,7 @@ async def sls(saml: SamlAuth = Depends(saml_auth)):
 @router.get("/attrs")
 @router.post("/attrs")
 async def attrs(saml: SamlAuth = Depends(saml_auth)):
+    """ATTRS route"""
     if saml.userdata is not None:
         ret = saml.userdata.copy()
         ret["token"] = saml.create_token()
@@ -105,6 +107,7 @@ async def attrs(saml: SamlAuth = Depends(saml_auth)):
 
 @router.get("/token")
 async def token(saml: SamlAuth = Depends(saml_auth)):
+    """TOKEN Route"""
     if saml.userdata is not None:
         return {"token": saml.create_token()}
     raise HTTPException(
@@ -115,6 +118,7 @@ async def token(saml: SamlAuth = Depends(saml_auth)):
 
 @router.get("/metadata")
 async def metadata(saml: SamlAuth = Depends(saml_auth)):
+    """Metadata route"""
     settings = saml.settings
     metadata = settings.get_sp_metadata()
     errors = settings.validate_metadata(metadata)

@@ -2,7 +2,7 @@
 import datetime
 
 from app.api.utils import get_db, get_major_from_version_string, require_user
-from app.api.v1.pdf import save_pdf_to_s3
+from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
 from app.crud.contacts import crud_contacts_associations
 from app.crud.versions import crud_versions

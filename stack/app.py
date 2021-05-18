@@ -1,15 +1,18 @@
+"""
+CDK Stack definition code for NASA APT API
+"""
+from typing import Any
+
+import config
 from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
-from aws_cdk import aws_iam as iam
-from aws_cdk import aws_rds as rds
-from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_elasticsearch as elasticsearch
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_lambda as _lambda
+from aws_cdk import aws_rds as rds
+from aws_cdk import aws_s3 as s3
 from aws_cdk import core
-from typing import Any
-import config
-import os
 
 
 class nasaAPTLambdaStack(core.Stack):
@@ -93,7 +96,10 @@ class nasaAPTLambdaStack(core.Stack):
         )
 
         # TODO: add JWT secret as a `secretsmanager` generated object
-        bucket = s3.Bucket(self, f"{id}")
+        bucket_params = dict(scope=self, id=f"{id}")
+        if config.S3_BUCKET:
+            bucket_params["bucket_name"] = config.S3_BUCKET
+        bucket = s3.Bucket(**bucket_params)
 
         esdomain = elasticsearch.Domain(
             self,
@@ -132,17 +138,16 @@ class nasaAPTLambdaStack(core.Stack):
             ],
             resources=["*"],
         )
-        frontend_url = os.environ["APT_FRONTEND_URL"]
+        frontend_url = config.FRONTEND_URL
         lambda_env = dict(
+            PROJECT_NAME=config.PROJECT_NAME,
+            API_VERSION_STRING=config.API_VERSION_STRING,
             APT_FRONTEND_URL=frontend_url,
-            BACKEND_CORS_ORIGINS=os.environ.get(
-                "BACKEND_CORS_ORIGINS",
-                f"*,http://localhost:3000,http://localhost:3006,{frontend_url}",
-            ),
+            BACKEND_CORS_ORIGINS=config.BACKEND_CORS_ORIGINS,
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             ELASTICSEARCH_URL=esdomain.domain_endpoint,
-            JWT_SECRET=os.environ["JWT_SECRET"],
-            IDP_METADATA_URL=os.environ["IDP_METADATA_URL"],
+            JWT_SECRET=config.JWT_SECRET,
+            IDP_METADATA_URL=config.JWT_SECRET,
             S3_BUCKET=bucket.bucket_name,
         )
         lambda_env.update(dict(MODULE_NAME="nasa_apt.main", VARIABLE_NAME="app",))
@@ -199,8 +204,8 @@ app = core.App()
 for key, value in {
     "Project": config.PROJECT_NAME,
     "Stack": config.STAGE,
-    "Owner": os.environ.get("OWNER", "Leo Thomas"),
-    "Client": os.environ.get("CLIENT", "NASA Impact"),
+    "Owner": config.OWNER,
+    "Client": config.CLIENT,
 }.items():
     if value:
         core.Tag.add(app, key, value)

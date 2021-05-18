@@ -1,8 +1,9 @@
-import pytest
 import json
-from app.db.models import Atbds
+
+import pytest
 from sqlalchemy.exc import InvalidRequestError
 
+from app.db.models import Atbds
 
 # TODO: add test that elasticsearch indexing get's added to background tasks
 # TODO: add test to ensure that verisons are returned in the correct order (unsure if it's
@@ -16,13 +17,13 @@ def test_list_atbds_unauthenticated(
     atbd_versions_factory,
     mocked_send_to_elasticsearch,
 ):
-    assert json.loads(test_client.get("/atbds").content) == []
+    assert json.loads(test_client.get("/v2/atbds").content) == []
 
     atbds = [atbds_factory.create(), atbds_factory.create()]
     for atbd in atbds:
         atbd_versions_factory.create(atbd_id=atbd.id, status="Draft")
 
-    result = json.loads(test_client.get("/atbds").content)
+    result = json.loads(test_client.get("/v2/atbds").content)
     assert result == []
 
     for atbd in atbds:
@@ -32,14 +33,14 @@ def test_list_atbds_unauthenticated(
         )
         atbd_versions_factory.create(atbd_id=atbd.id, status="Draft", major=2, minor=0)
 
-    result = json.loads(test_client.get("/atbds").content)
+    result = json.loads(test_client.get("/v2/atbds").content)
 
     assert len(result) == 2
     for i, r in enumerate(result):
         assert r["title"] == atbds[i].title
         assert len(r["versions"]) == 1
         assert r["versions"][0]["status"] == "Published"
-        assert r["versions"][0]["version"] == "v1.0"
+        assert r["versions"][0]["version"] == "v2.0"
 
 
 def test_list_atbds_authenticated(
@@ -51,7 +52,7 @@ def test_list_atbds_authenticated(
     mocked_send_to_elasticsearch,
 ):
     assert (
-        json.loads(test_client.get("/atbds", headers=authenticated_headers).content)
+        json.loads(test_client.get("/v2/atbds", headers=authenticated_headers).content)
         == []
     )
     atbds = [atbds_factory.create(), atbds_factory.create()]
@@ -63,7 +64,7 @@ def test_list_atbds_authenticated(
         atbd_versions_factory.create(atbd_id=atbd.id, status="Draft", major=2, minor=0)
 
     result = json.loads(
-        test_client.get("/atbds", headers=authenticated_headers).content
+        test_client.get("/v2/atbds", headers=authenticated_headers).content
     )
     assert len(result) == 2
     for i, r in enumerate(result):
@@ -71,7 +72,7 @@ def test_list_atbds_authenticated(
         assert r["alias"] == atbds[i].alias
         assert len(r["versions"]) == 2
         assert set(v["status"] for v in r["versions"]) == {"Draft", "Published"}
-        assert set(v["version"] for v in r["versions"]) == {"v1.0", "v2.0"}
+        assert set(v["version"] for v in r["versions"]) == {"v2.0", "v2.0"}
 
 
 def test_get_atbd_by_id_unauthenticated(
@@ -83,7 +84,7 @@ def test_get_atbd_by_id_unauthenticated(
     mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
-        result = test_client.get("/atbds/1")
+        result = test_client.get("/v2/atbds/1")
         result.raise_for_status()
 
     atbds = [atbds_factory.create(), atbds_factory.create()]
@@ -96,14 +97,14 @@ def test_get_atbd_by_id_unauthenticated(
 
     atbd = atbds[0]
 
-    result = test_client.get(f"/atbds/{atbd.id}")
+    result = test_client.get(f"/v2/atbds/{atbd.id}")
     result.raise_for_status()
     result = json.loads(result.content)
     assert result["title"] == atbd.title
     assert result["alias"] == atbd.alias
     assert len(result["versions"]) == 1
     assert result["versions"][0]["status"] == "Published"
-    assert result["versions"][0]["version"] == "v1.0"
+    assert result["versions"][0]["version"] == "v2.0"
 
 
 def test_get_atbd_by_id_authenticated(
@@ -115,7 +116,7 @@ def test_get_atbd_by_id_authenticated(
     mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
-        result = test_client.get("/atbds/1")
+        result = test_client.get("/v2/atbds/1")
         result.raise_for_status()
 
     atbds = [atbds_factory.create(), atbds_factory.create()]
@@ -127,14 +128,14 @@ def test_get_atbd_by_id_authenticated(
 
     atbd = atbds[0]
 
-    result = test_client.get(f"/atbds/{atbd.id}", headers=authenticated_headers)
+    result = test_client.get(f"/v2/atbds/{atbd.id}", headers=authenticated_headers)
     result.raise_for_status()
     result = json.loads(result.content)
     assert result["title"] == atbd.title
     assert result["alias"] == atbd.alias
     assert len(result["versions"]) == 2
     assert set(v["status"] for v in result["versions"]) == {"Draft", "Published"}
-    assert set(v["version"] for v in result["versions"]) == {"v1.0", "v2.0"}
+    assert set(v["version"] for v in result["versions"]) == {"v2.0", "v2.0"}
 
 
 def test_get_atbd_by_alias_unauthenticated(
@@ -146,7 +147,7 @@ def test_get_atbd_by_alias_unauthenticated(
     mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
-        result = test_client.get("/atbds/non-existent-alias")
+        result = test_client.get("/v2/atbds/non-existent-alias")
         result.raise_for_status()
 
     atbds = [atbds_factory.create(), atbds_factory.create()]
@@ -159,14 +160,14 @@ def test_get_atbd_by_alias_unauthenticated(
 
     atbd = atbds[0]
 
-    result = test_client.get(f"/atbds/{atbd.alias}")
+    result = test_client.get(f"/v2/atbds/{atbd.alias}")
     result.raise_for_status()
     result = json.loads(result.content)
     assert result["title"] == atbd.title
     assert result["alias"] == atbd.alias
     assert len(result["versions"]) == 1
     assert result["versions"][0]["status"] == "Published"
-    assert result["versions"][0]["version"] == "v1.0"
+    assert result["versions"][0]["version"] == "v2.0"
 
 
 def test_get_atbd_by_alias_authenticated(
@@ -178,7 +179,7 @@ def test_get_atbd_by_alias_authenticated(
     mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
-        result = test_client.get("/atbds/non-existent-alias")
+        result = test_client.get("/v2/atbds/non-existent-alias")
         result.raise_for_status()
 
     atbds = [atbds_factory.create(), atbds_factory.create()]
@@ -191,24 +192,26 @@ def test_get_atbd_by_alias_authenticated(
 
     atbd = atbds[0]
 
-    result = test_client.get(f"/atbds/{atbd.alias}", headers=authenticated_headers)
+    result = test_client.get(f"/v2/atbds/{atbd.alias}", headers=authenticated_headers)
     result.raise_for_status()
     result = json.loads(result.content)
     assert result["title"] == atbd.title
     assert result["alias"] == atbd.alias
     assert len(result["versions"]) == 2
     assert set(v["status"] for v in result["versions"]) == {"Draft", "Published"}
-    assert set(v["version"] for v in result["versions"]) == {"v1.0", "v2.0"}
+    assert set(v["version"] for v in result["versions"]) == {"v2.0", "v2.0"}
 
 
 def test_create_atbd_without_alias(test_client, db_session, authenticated_headers):
 
     with pytest.raises(Exception):
-        result = test_client.post("/atbds", data=json.dumps({"title": "New Test ATBD"}))
+        result = test_client.post(
+            "/v2/atbds", data=json.dumps({"title": "New Test ATBD"})
+        )
         result.raise_for_status()
 
     result = test_client.post(
-        "/atbds",
+        "/v2/atbds",
         data=json.dumps({"title": "New Test ATBD"}),
         headers=authenticated_headers,
     )
@@ -240,7 +243,7 @@ def test_create_atbd_without_alias(test_client, db_session, authenticated_header
 def test_create_atbd_with_alias(test_client, db_session, authenticated_headers):
     with pytest.raises(Exception):
         result = test_client.post(
-            "/atbds",
+            "/v2/atbds",
             data=json.dumps(
                 {"title": "New Test ATBD", "alias": "Non Conforming Alias"}
             ),
@@ -249,7 +252,7 @@ def test_create_atbd_with_alias(test_client, db_session, authenticated_headers):
         result.raise_for_status()
 
     result = test_client.post(
-        "/atbds",
+        "/v2/atbds",
         data=json.dumps({"title": "New Test ATBD", "alias": "new-test-atbd-alias"}),
         headers=authenticated_headers,
     )
@@ -258,7 +261,7 @@ def test_create_atbd_with_alias(test_client, db_session, authenticated_headers):
     with pytest.raises(Exception):
         # Test that duplicate alias fails
         failed_result = test_client.post(
-            "/atbds",
+            "/v2/atbds",
             data=json.dumps({"title": "New Test ATBD", "alias": "new-test-atbd-alias"}),
             headers=authenticated_headers,
         )
@@ -299,7 +302,7 @@ def test_update_atbd_by_id(
 
     with pytest.raises(Exception):
         result = test_client.post(
-            "/atbds/1", data=json.dumps({"title": "New Test ATBD"})
+            "/v2/atbds/1", data=json.dumps({"title": "New Test ATBD"})
         )
         result.raise_for_status()
 
@@ -310,7 +313,7 @@ def test_update_atbd_by_id(
 
     with pytest.raises(Exception):
         result = test_client.post(
-            f"/atbds/{atbd.id}",
+            f"/v2/atbds/{atbd.id}",
             data=json.dumps(
                 {"title": "New Test ATBD", "alias": "Non conforming alias"}
             ),
@@ -325,13 +328,13 @@ def test_update_atbd_by_id(
         # ensure that updating alias to an already existing alias
         # fails
         result = test_client.post(
-            f"/atbds/{atbd.id}",
+            f"/v2/atbds/{atbd.id}",
             data=json.dumps({"title": "New Test ATBD", "alias": atbd2.alias}),
         )
         result.raise_for_status()
 
     result = test_client.post(
-        f"/atbds/{atbd.id}",
+        f"/v2/atbds/{atbd.id}",
         data=json.dumps({"title": "New (Updated) Test ATBD", "alias": "new-alias"}),
         headers=authenticated_headers,
     )
@@ -357,7 +360,7 @@ def test_update_atbd_by_alias(
 
     with pytest.raises(Exception):
         result = test_client.post(
-            "/atbds/non-existent-alias", data=json.dumps({"title": "New Test ATBD"})
+            "/v2/atbds/non-existent-alias", data=json.dumps({"title": "New Test ATBD"})
         )
         result.raise_for_status()
 
@@ -366,7 +369,7 @@ def test_update_atbd_by_alias(
 
     with pytest.raises(Exception):
         result = test_client.post(
-            f"/atbds/{atbd.alias}",
+            f"/v2/atbds/{atbd.alias}",
             data=json.dumps(
                 {"title": "New Test ATBD", "alias": "Non conforming alias"}
             ),
@@ -376,18 +379,18 @@ def test_update_atbd_by_alias(
     with pytest.raises(Exception):
         atbd2 = atbds_factory.create()
 
-        version = atbd_versions_factory.create(atbd_id=atbd.id)
+        atbd_versions_factory.create(atbd_id=atbd.id)
 
         # ensure that updating alias to an already existing alias
         # fails
         result = test_client.post(
-            f"/atbds/{atbd.alias}",
+            f"/v2/atbds/{atbd.alias}",
             data=json.dumps({"title": "New Test ATBD", "alias": atbd2.alias}),
         )
         result.raise_for_status()
 
     result = test_client.post(
-        f"/atbds/{atbd.alias}",
+        f"/v2/atbds/{atbd.alias}",
         data=json.dumps({"title": "New (Updated) Test ATBD", "alias": "new-alias"}),
         headers=authenticated_headers,
     )
@@ -401,7 +404,7 @@ def test_update_atbd_by_alias(
     assert atbd.last_updated_by is not None
     assert atbd.last_updated_at > atbd.created_at
 
-    result = test_client.get("/atbds/new-alias", headers=authenticated_headers)
+    result = test_client.get("/v2/atbds/new-alias", headers=authenticated_headers)
     result.raise_for_status()
 
 
@@ -414,18 +417,18 @@ def test_delete_atbd_by_id(
     mocked_send_to_elasticsearch,
 ):
     with pytest.raises(Exception):
-        result = test_client.delete("/atbds/1", headers=authenticated_headers)
+        result = test_client.delete("/v2/atbds/1", headers=authenticated_headers)
         result.raise_for_status()
 
     atbd = atbds_factory.create(alias=None)
 
-    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    atbd_versions_factory.create(atbd_id=atbd.id)
 
     with pytest.raises(Exception):
-        result = test_client.delete(f"/atbds/{atbd.id}")
+        result = test_client.delete(f"/v2/atbds/{atbd.id}")
         result.raise_for_status()
 
-    result = test_client.delete(f"/atbds/{atbd.id}", headers=authenticated_headers)
+    result = test_client.delete(f"/v2/atbds/{atbd.id}", headers=authenticated_headers)
     result.raise_for_status()
     with pytest.raises(InvalidRequestError):
         db_session.refresh(atbd)
@@ -442,18 +445,20 @@ def test_delete_atbd_by_alias(
 ):
     with pytest.raises(Exception):
         result = test_client.delete(
-            "/atbds/non-existent-alias", headers=authenticated_headers
+            "/v2/atbds/non-existent-alias", headers=authenticated_headers
         )
         result.raise_for_status()
 
     atbd = atbds_factory.create()
-    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    atbd_versions_factory.create(atbd_id=atbd.id)
 
     with pytest.raises(Exception):
-        result = test_client.delete(f"/atbds/{atbd.alias}")
+        result = test_client.delete(f"/v2/atbds/{atbd.alias}")
         result.raise_for_status()
 
-    result = test_client.delete(f"/atbds/{atbd.alias}", headers=authenticated_headers)
+    result = test_client.delete(
+        f"/v2/atbds/{atbd.alias}", headers=authenticated_headers
+    )
     result.raise_for_status()
     with pytest.raises(InvalidRequestError):
         db_session.refresh(atbd)
@@ -470,7 +475,7 @@ def test_atbd_existence_check_by_id(
 ):
 
     with pytest.raises(Exception):
-        result = test_client.head("/atbds/1", headers=authenticated_headers)
+        result = test_client.head("/v2/atbds/1", headers=authenticated_headers)
         result.raise_for_status()
 
     atbd = atbds_factory.create()
@@ -478,13 +483,13 @@ def test_atbd_existence_check_by_id(
     # create a version to go along with the atbd
     # otherwise the atbd will fail to retrieve since
     # it mandatorily joins versions on ATBDSs
-    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    atbd_versions_factory.create(atbd_id=atbd.id)
 
     with pytest.raises(Exception):
-        result = test_client.delete(f"/atbds/{atbd.id}")
+        result = test_client.delete(f"/v2/atbds/{atbd.id}")
         result.raise_for_status()
 
-    result = test_client.delete(f"/atbds/{atbd.id}", headers=authenticated_headers)
+    result = test_client.delete(f"/v2/atbds/{atbd.id}", headers=authenticated_headers)
     result.raise_for_status()
 
 
@@ -499,7 +504,7 @@ def test_atbd_existence_check_by_alias(
 
     with pytest.raises(Exception):
         result = test_client.head(
-            "/atbds/non-existent-alias", headers=authenticated_headers
+            "/v2/atbds/non-existent-alias", headers=authenticated_headers
         )
         result.raise_for_status()
 
@@ -508,13 +513,15 @@ def test_atbd_existence_check_by_alias(
     # create a version to go along with the atbd
     # otherwise the atbd will fail to retrieve since
     # it mandatorily joins versions on ATBDSs
-    version = atbd_versions_factory.create(atbd_id=atbd.id)
+    atbd_versions_factory.create(atbd_id=atbd.id)
 
     with pytest.raises(Exception):
-        result = test_client.delete(f"/atbds/{atbd.alias}")
+        result = test_client.delete(f"/v2/atbds/{atbd.alias}")
         result.raise_for_status()
 
-    result = test_client.delete(f"/atbds/{atbd.alias}", headers=authenticated_headers)
+    result = test_client.delete(
+        f"/v2/atbds/{atbd.alias}", headers=authenticated_headers
+    )
     result.raise_for_status()
 
 
@@ -529,7 +536,7 @@ def test_publish_atbd_by_id(
 ):
 
     with pytest.raises(Exception):
-        result = test_client.post("/atbds/1/publish", headers=authenticated_headers)
+        result = test_client.post("/v2/atbds/1/publish", headers=authenticated_headers)
         result.raise_for_status()
 
     atbd = atbds_factory.create()
@@ -543,13 +550,13 @@ def test_publish_atbd_by_id(
     version = atbd_versions_factory.create(atbd_id=atbd.id, status="Published")
 
     with pytest.raises(Exception):
-        result = test_client.post(f"/atbds/{atbd.id}/publish")
+        result = test_client.post(f"/v2/atbds/{atbd.id}/publish")
         result.raise_for_status()
 
     with pytest.raises(Exception):
 
         result = test_client.post(
-            f"/atbds/{atbd.id}/publish", headers=authenticated_headers
+            f"/v2/atbds/{atbd.id}/publish", headers=authenticated_headers
         )
         result.raise_for_status()
 
@@ -560,12 +567,14 @@ def test_publish_atbd_by_id(
     with pytest.raises(Exception):
 
         result = test_client.post(
-            f"/atbds/{atbd.id}/publish", headers=authenticated_headers
+            f"/v2/atbds/{atbd.id}/publish", headers=authenticated_headers
         )
         result.raise_for_status()
 
     result = test_client.post(
-        f"/atbds/{atbd.id}/publish", data=json.dumps({}), headers=authenticated_headers
+        f"/v2/atbds/{atbd.id}/publish",
+        data=json.dumps({}),
+        headers=authenticated_headers,
     )
     result.raise_for_status()
 
@@ -600,7 +609,7 @@ def test_atbd_timestamps(
 ):
 
     result = test_client.post(
-        "/atbds",
+        "/v2/atbds",
         data=json.dumps({"alias": "test-alias", "title": "Test ATBD"}),
         headers=authenticated_headers,
     )
@@ -617,7 +626,7 @@ def test_atbd_timestamps(
     prev_created_at = atbd.created_at
 
     result = test_client.post(
-        f"/atbds/{result['id']}",
+        f"/v2/atbds/{result['id']}",
         data=json.dumps({"title": "NEW Test ATBD"}),
         headers=authenticated_headers,
     )

@@ -7,9 +7,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: $POSTGRES_DB_NAME
-      POSTGRES_USER: $POSTGRES_ADMIN_USER
-      POSTGRES_PASSWORD: $POSTGRES_ADMIN_PASSWORD
+      POSTGRES_DB: nasadb
+      POSTGRES_USER: masteruser
+      POSTGRES_PASSWORD: password
     command: postgres -c log_statement=all
   db-bootstrapper: 
     build: 
@@ -17,8 +17,8 @@ services:
       dockerfile: ./db/local.Dockerfile
     command: >
       sh -c "
-        sqitch deploy --verify db:pg://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME &&
-        psql 'postgres://$POSTGRES_ADMIN_USER:$POSTGRES_ADMIN_PASSWORD@db:5432/$POSTGRES_DB_NAME?options=--search_path%3dapt' -f /sqitch/testDataLocal.sql
+        sqitch deploy --verify db:pg://masteruser:password@db:5432/nasadb &&
+        psql 'postgres://masteruser:password@db:5432/nasadb?options=--search_path%3dapt' -f /sqitch/testDataLocal.sql
       "
     volumes: 
       - ./db:/sqitch
@@ -51,11 +51,11 @@ services:
       AWS_DEFAULT_REGION: us-east-1
       HOSTNAME: localhost
       HOSTNAME_EXTERNAL: localhost
-      S3_BUCKET: $S3_BUCKET  
-      POSTGRES_DB: $POSTGRES_DB_NAME
-      POSTGRES_USER: $POSTGRES_ADMIN_USER
-      POSTGRES_PASSWORD: $POSTGRES_ADMIN_PASSWORD
-      POSTGRES_ADMIN_CREDENTIALS_ARN: $POSTGRES_ADMIN_CREDENTIALS_ARN
+      S3_BUCKET: nasa-apt-dev-files  
+      POSTGRES_DB: nasadb
+      POSTGRES_USER: masteruser
+      POSTGRES_PASSWORD: password
+      POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
     ports:
       - "4566:4566"
     volumes: 
@@ -88,9 +88,11 @@ services:
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
       AWS_DEFAULT_REGION: us-east-1
+      PROJECT_NAME: nasa-apt-api-local
+      API_VERSION_STRING: /v2
       AWS_RESOURCES_ENDPOINT: http://localstack:4566
-      S3_BUCKET: $S3_BUCKET
-      POSTGRES_ADMIN_CREDENTIALS_ARN: $POSTGRES_ADMIN_CREDENTIALS_ARN
+      S3_BUCKET: nasa-apt-dev-files
+      POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
       # This URL omits the "http://" in order to remain consistent
       # with the value of the URL returned by the ElasticSearch Domain 
       # CDK component
