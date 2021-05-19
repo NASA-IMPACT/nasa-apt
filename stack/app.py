@@ -12,6 +12,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_cdk import core
 
 
@@ -132,7 +133,6 @@ class nasaAPTLambdaStack(core.Stack):
                 )
             ],
         )
-
         logs_access = iam.PolicyStatement(
             actions=[
                 "logs:CreateLogGroup",
@@ -140,6 +140,13 @@ class nasaAPTLambdaStack(core.Stack):
                 "logs:PutLogEvents",
             ],
             resources=["*"],
+        )
+        jwt_secret = secretsmanager.Secret(
+            self,
+            f"{id}-jwt-secret",
+            description="Secret Key for signing JWT tokens",
+            removal_policy=core.RemovalPolicy.SNAPSHOT,
+            secret_name=f"{id}-jwt-secret",
         )
         frontend_url = config.FRONTEND_URL
         lambda_env = dict(
@@ -149,8 +156,9 @@ class nasaAPTLambdaStack(core.Stack):
             BACKEND_CORS_ORIGINS=config.BACKEND_CORS_ORIGINS,
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             ELASTICSEARCH_URL=esdomain.domain_endpoint,
-            JWT_SECRET=config.JWT_SECRET,
-            IDP_METADATA_URL=config.JWT_SECRET,
+            # JWT_SECRET=config.JWT_SECRET,
+            JWT_SECRET_ARN=jwt_secret.secret_arn,
+            IDP_METADATA_URL=config.IDP_METADATA_URL,
             S3_BUCKET=bucket.bucket_name,
         )
         lambda_env.update(dict(MODULE_NAME="nasa_apt.main", VARIABLE_NAME="app",))
@@ -175,6 +183,7 @@ class nasaAPTLambdaStack(core.Stack):
 
         lambda_function.add_to_role_policy(logs_access)
         database.secret.grant_read(lambda_function)
+        jwt_secret.grant_read(lambda_function)
         esdomain.grant_read_write(lambda_function)
         bucket.grant_read_write(lambda_function)
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.

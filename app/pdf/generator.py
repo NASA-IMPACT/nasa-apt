@@ -457,7 +457,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
     for section_name, info in SECTIONS.items():
         # Journal Acknowledgements and Journal Discussion are only included in
         # Journal type pdfs
-        if not journal and section_name not in [
+        if not journal and section_name in [
             "journal_acknowledgements",
             "journal_dicsussion",
         ]:

@@ -21,6 +21,11 @@ BACKEND_CORS_ORIGINS = os.environ.get(
     default=f"*,http://localhost:9000,http://localhost:3006,{FRONTEND_URL}",
 )
 
+
+JWT_SECRET_ARN = os.environ.get("JWT_SECRET_ARN") or exit(
+    "JWT_SECRET_ARN env var required"
+)
+
 POSTGRES_ADMIN_CREDENTIALS_ARN = os.environ.get(
     "POSTGRES_ADMIN_CREDENTIALS_ARN"
 ) or exit("POSTGRES_ADMIN_CREDENTIALS_ARN env var required")
@@ -30,7 +35,7 @@ ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL") or exit(
     "ELASTICSEARCH_URL env var required"
 )
 
-JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
+# JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
 HOST = os.environ.get("FASTAPI_HOST") or exit("FASTAPI_HOST env var required")
 
 IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(
@@ -64,3 +69,5 @@ POSTGRES_ADMIN_PASSWORD = pg_credentials["password"]
 POSTGRES_PORT = pg_credentials["port"]
 POSTGRES_DB_NAME = pg_credentials["dbname"]
 POSTGRES_HOST = pg_credentials["host"]
+
+JWT_SECRET = secrets_manager.get_secret_value(SecretId=JWT_SECRET_ARN)["SecretString"]
