@@ -73,6 +73,7 @@ extra_reqs = {
         "aws-cdk.aws_elasticsearch>=1.95.0",
     ],
     "test": [
+        "moto==2.0.8",
         "factory-boy==3.2.0",
         "pytest==6.2.2",
         "pytest-sqitch==0.1.1",

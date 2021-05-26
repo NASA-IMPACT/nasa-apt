@@ -6,8 +6,6 @@ from sqlalchemy.exc import InvalidRequestError
 from app.db.models import Atbds
 
 # TODO: add test that elasticsearch indexing get's added to background tasks
-# TODO: add test to ensure that verisons are returned in the correct order (unsure if it's
-# created_at, or last_updated_at. I think it's created_at)
 
 
 def test_list_atbds_unauthenticated(
@@ -40,7 +38,7 @@ def test_list_atbds_unauthenticated(
         assert r["title"] == atbds[i].title
         assert len(r["versions"]) == 1
         assert r["versions"][0]["status"] == "Published"
-        assert r["versions"][0]["version"] == "v2.0"
+        assert r["versions"][0]["version"] == "v1.0"
 
 
 def test_list_atbds_authenticated(
@@ -72,7 +70,7 @@ def test_list_atbds_authenticated(
         assert r["alias"] == atbds[i].alias
         assert len(r["versions"]) == 2
         assert set(v["status"] for v in r["versions"]) == {"Draft", "Published"}
-        assert set(v["version"] for v in r["versions"]) == {"v2.0", "v2.0"}
+        assert set(v["version"] for v in r["versions"]) == {"v1.0", "v2.0"}
 
 
 def test_get_atbd_by_id_unauthenticated(
@@ -104,7 +102,7 @@ def test_get_atbd_by_id_unauthenticated(
     assert result["alias"] == atbd.alias
     assert len(result["versions"]) == 1
     assert result["versions"][0]["status"] == "Published"
-    assert result["versions"][0]["version"] == "v2.0"
+    assert result["versions"][0]["version"] == "v1.0"
 
 
 def test_get_atbd_by_id_authenticated(
@@ -135,7 +133,7 @@ def test_get_atbd_by_id_authenticated(
     assert result["alias"] == atbd.alias
     assert len(result["versions"]) == 2
     assert set(v["status"] for v in result["versions"]) == {"Draft", "Published"}
-    assert set(v["version"] for v in result["versions"]) == {"v2.0", "v2.0"}
+    assert set(v["version"] for v in result["versions"]) == {"v1.0", "v2.0"}
 
 
 def test_get_atbd_by_alias_unauthenticated(
@@ -167,7 +165,7 @@ def test_get_atbd_by_alias_unauthenticated(
     assert result["alias"] == atbd.alias
     assert len(result["versions"]) == 1
     assert result["versions"][0]["status"] == "Published"
-    assert result["versions"][0]["version"] == "v2.0"
+    assert result["versions"][0]["version"] == "v1.0"
 
 
 def test_get_atbd_by_alias_authenticated(
@@ -199,7 +197,7 @@ def test_get_atbd_by_alias_authenticated(
     assert result["alias"] == atbd.alias
     assert len(result["versions"]) == 2
     assert set(v["status"] for v in result["versions"]) == {"Draft", "Published"}
-    assert set(v["version"] for v in result["versions"]) == {"v2.0", "v2.0"}
+    assert set(v["version"] for v in result["versions"]) == {"v1.0", "v2.0"}
 
 
 def test_create_atbd_without_alias(test_client, db_session, authenticated_headers):
