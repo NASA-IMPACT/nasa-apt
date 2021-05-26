@@ -11,4 +11,6 @@ cdk.out/*
 *.pyc
 **/__pycache__/
 .mypy_cache/*
- 
+Pipfile*
+*.egg-info*
+.coverage*
