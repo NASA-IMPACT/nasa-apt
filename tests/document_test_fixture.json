@@ -377,7 +377,8 @@
                     {
                         "text": "Equation Example"
                     }
-                ]
+                ],
+                "id": "equation-example"
             },
             {
                 "type": "equation",
@@ -393,7 +394,8 @@
                     {
                         "text": "Image Example"
                     }
-                ]
+                ],
+                "id": "image-example"
             },
             {
                 "type": "image-block",
@@ -423,7 +425,8 @@
                     {
                         "text": "Table Example"
                     }
-                ]
+                ],
+                "id": "table-example"
             },
             {
                 "type": "table-block",
@@ -514,7 +517,7 @@
                                                 "type": "p",
                                                 "children": [
                                                     {
-                                                        "text": "2020-01-01T00:00:00"
+                                                        "text": "2020-01-01 at 00:00:00"
                                                     }
                                                 ]
                                             }
@@ -558,7 +561,7 @@
                                                 "type": "p",
                                                 "children": [
                                                     {
-                                                        "text": "2020-01-01T00:00:00"
+                                                        "text": "2020-01-01 at 00:00:00"
                                                     }
                                                 ]
                                             }
@@ -596,7 +599,8 @@
                     {
                         "text": "Canopy cover types"
                     }
-                ]
+                ],
+                "id": "canopy-cover-types"
             },
             {
                 "type": "p",

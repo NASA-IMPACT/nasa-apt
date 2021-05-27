@@ -1,13 +1,20 @@
+"""CRUD Operations for Atbds model"""
+from sqlalchemy import column, exc, func, orm, select
+
 from app.crud.base import CRUDBase
-from app.db.models import Atbds, AtbdVersions, AtbdVersionsContactsAssociation
 from app.db.db_session import DbSession
-from app.schemas.atbds import FullOutput, Create, Update
-from sqlalchemy import exc, column, select, func, orm
+from app.db.models import Atbds, AtbdVersions
+from app.schemas.atbds import Create, FullOutput, Update
+
 from fastapi import HTTPException
 
 
 class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
+    """CRUDAtbds."""
+
     def scan(self, db: DbSession):
+        """List operation - uses orm.containst_earger to join Versions only once,
+        as opposed to re-loading the relation everytime the model is loaded."""
         query = (
             db.query(Atbds)
             .join(AtbdVersions, Atbds.id == AtbdVersions.atbd_id)
@@ -54,6 +61,7 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         return query
 
     def get(self, db: DbSession, atbd_id: str, version: int = None):
+        """Query a single ATBD."""
         query = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
         try:
             return query.one()
@@ -63,7 +71,8 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
                 status_code=404, detail=f"No data found for id/alias: {atbd_id}"
             )
 
-    def exists(self, db: DbSession, atbd_id: str, version: int = None):
+    def exists(self, db: DbSession, atbd_id: str, version: int = None):  # type: ignore
+        """Raise exception if ATBD is not found in DB, otherwise returns 200."""
 
         lookup = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
         result = db.query(lookup.exists()).scalar()
@@ -73,8 +82,9 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
             )
         return result
 
-    def create(self, db: DbSession, atbd_input: Create, user: str):
-        # User shows up twice in input parameters, as it sets the value
+    def create(self, db: DbSession, atbd_input: Create, user: str):  # type: ignore
+        """Creates a new ATBD (using a custom Postgres function, in order to also create the
+        necessary Version)"""
 
         _input = (
             (atbd_input.title, user)
@@ -137,7 +147,8 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         ]
         return output
 
-    def remove(self, db: DbSession, atbd_id: str):
+    def remove(self, db: DbSession, atbd_id: str) -> Atbds:  # type: ignore
+        """Deletes an ATBD."""
         atbd = self.get(db=db, atbd_id=atbd_id)
         db.delete(atbd)
         db.commit()

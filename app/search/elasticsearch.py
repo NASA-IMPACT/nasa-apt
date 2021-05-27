@@ -1,22 +1,24 @@
+"""Provide functionality for indexing and searching documents in ElasticSearch"""
 import json
-from app import config
-from app.logs import logger
-from app.crud.atbds import crud_atbds
-from app.schemas.elasticsearch import ElasticsearchAtbd
-from app.db.models import Atbds, AtbdVersions
-from app.db.db_session import DbSession
+from typing import Dict, List
+
+import boto3
 import requests
 from requests_aws4auth import AWS4Auth
-import boto3
 
-from typing import Dict, List
+from app import config
+from app.db.models import Atbds, AtbdVersions
+from app.logs import logger
+from app.schemas.elasticsearch import ElasticsearchAtbd
+
 from fastapi import HTTPException
-
 
 logger.info("ELASTICSEARCH_URL %s", config.ELASTICSEARCH_URL)
 
 
 def aws_auth():
+    """Provides an AWS4AUth object in ordere to authenticate against the
+    ElasticSearch instance"""
     logger.info("Getting AWS Auth Credentials")
     region = "us-east-1"
     credentials = boto3.Session().get_credentials()
@@ -33,10 +35,11 @@ def aws_auth():
 
 def send_to_elastic(data: List[Dict]):
     """
-    POST json to elastic endpoint
+    POST json to elastic endpoint.
+    TODO: update this to use the `elasticsearch-py` python client
     """
     # bulk commands must end with newline
-    data = "\n".join(data) + "\n"
+    data_string = "\n".join(json.dumps(d) for d in data) + "\n"
 
     url = f"http://{config.ELASTICSEARCH_URL}/atbd/_bulk"
 
@@ -45,7 +48,7 @@ def send_to_elastic(data: List[Dict]):
     response = requests.post(
         url,
         auth=auth,
-        data=data.encode("utf-8"),
+        data=data_string.encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
     logger.info("%s %s %s", url, response.status_code, response.text)
@@ -74,18 +77,18 @@ def send_to_elastic(data: List[Dict]):
 
 
 def remove_atbd_from_index(atbd: Atbds = None, version: AtbdVersions = None):
+    """Deletes documents indexed in ElasticSearch that correspond to
+    either a single version or all versions belonging to an ATBD"""
 
     if version:
         return send_to_elastic(
             [
-                json.dumps(
-                    {
-                        "delete": {
-                            "_index": "atbd",
-                            "_id": f"{version.atbd_id}_v{version.major}",
-                        }
+                {
+                    "delete": {
+                        "_index": "atbd",
+                        "_id": f"{version.atbd_id}_v{version.major}",
                     }
-                )
+                }
             ]
         )
     if not atbd:
@@ -95,40 +98,35 @@ def remove_atbd_from_index(atbd: Atbds = None, version: AtbdVersions = None):
         )
     return send_to_elastic(
         [
-            json.dumps(
-                {"delete": {"_index": "atbd", "_id": f"{atbd.id}_v{version.major}"}}
-            )
+            {"delete": {"_index": "atbd", "_id": f"{atbd.id}_v{version.major}"}}
             for version in atbd.versions
         ]
     )
 
 
 def add_atbd_to_index(atbd: Atbds):
-    # If the atbd itself (title, alias, etc) has been updated
-    # then all of the versions will be re-index, otherwise
-    # if only one version was updated the `atbd.versions` object
-    # will only contain 1 version, which should be updated
+    """Indexes an ATBD in ElasticSearch. If the ATBD metadata (title, alias) is
+    to be updated, then the `atbd` input param will contain all associated versions,
+    wich will all be updated in the ElasticSearch. If the ATBD version data (document,
+    changelog, citation, etc) has been updated, then the `atbd` input param
+    will only contain a single version, and only that version will be updated."""
+
     es_commands = []
     for version in atbd.versions:
 
         atbd.version = version
 
         es_commands.append(
-            json.dumps(
-                {
-                    "index": {
-                        "_index": "atbd",
-                        "_type": "atbd",
-                        "_id": f"{atbd.id}_v{version.major}",
-                    }
+            {
+                "index": {
+                    "_index": "atbd",
+                    "_type": "atbd",
+                    "_id": f"{atbd.id}_v{version.major}",
                 }
-            )
+            }
         )
         es_commands.append(
-            ElasticsearchAtbd.from_orm(atbd).json(
-                by_alias=True,
-                exclude_none=True,
-            )
+            ElasticsearchAtbd.from_orm(atbd).dict(by_alias=True, exclude_none=True,)
         )
 
     return send_to_elastic(es_commands)

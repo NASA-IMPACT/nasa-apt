@@ -191,10 +191,10 @@ def process_data_access_url(access_url: document.DataAccessUrl) -> List[NoEscape
     Returns a list of Latex formatted commands, to be appended in order
     to the Latex document, to display a single data acccess url
     """
-    p1 = section.Paragraph(wrap_text({"text": "Access url:", "bold": True}))
+    p1 = section.Paragraph(wrap_text({"text": "Access url:", "bold": True}))  # type: ignore
     p1.append(hyperlink(access_url["url"], access_url["url"]))
 
-    p2 = section.Paragraph(wrap_text({"text": "Description:", "bold": True}))
+    p2 = section.Paragraph(wrap_text({"text": "Description:", "bold": True}))  # type: ignore
     p2.append(access_url["description"])
     return [p1, p2]
 
@@ -479,7 +479,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             continue
 
         if not document_data.get(section_name):
-            doc.append(process(CONTENT_UNAVAILABLE))
+            doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
             continue
 
         if section_name in [

@@ -14,3 +14,4 @@ cdk.out/*
 Pipfile*
 *.egg-info*
 .coverage*
+.tox*

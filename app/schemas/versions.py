@@ -1,21 +1,25 @@
-from datetime import datetime
-from pydantic import BaseModel, validator
-from typing import Optional, Union, Dict, Any, List
+"""Pydantic models for AtbdVersions"""
 import enum
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
+from pydantic import BaseModel, validator
 
-from app.schemas.document import Document
 from app.schemas import versions_contacts
+from app.schemas.document import Document
 
 
 class StatusEnum(enum.Enum):
+    """Status for ATBD, values provided by NASA impact"""
+
     draft = "Draft"
     review = "Review"
     published = "Published"
 
 
-# TODO: use status enum above
 class AtbdVersionSummaryOutput(BaseModel):
+    """Summary output for AtbdVersion (does NOT include full document).
+    TODO: use status enum above"""
 
     major: int
     minor: int
@@ -32,15 +36,19 @@ class AtbdVersionSummaryOutput(BaseModel):
     changelog: Optional[str]
 
     @validator("version", always=True)
-    def generate_semver(cls, v, values) -> str:
+    def _generate_semver(cls, v, values) -> str:
         return f"v{values['major']}.{values['minor']}"
 
     class Config:
+        """Config."""
+
         title = "AtbdVersion"
         orm_mode = True
 
 
 class FullOutput(AtbdVersionSummaryOutput):
+    """Version output, including document, sections completed, doi, and contacts"""
+
     document: Optional[Document]
     sections_completed: Optional[dict]
     doi: Optional[str]
@@ -48,15 +56,21 @@ class FullOutput(AtbdVersionSummaryOutput):
 
 
 class Create(BaseModel):
+    """Create new version (empty since new versions get created blank and then their content gets updated)"""
+
     atbd_id: str
 
 
 class Lookup(BaseModel):
+    """Atbd Version lookup model"""
+
     atbd_id: str
     major: int
 
 
 class Citation(BaseModel):
+    """Atbd Version citation"""
+
     creators: Optional[str]
     editors: Optional[str]
     title: Optional[str]
@@ -71,11 +85,16 @@ class Citation(BaseModel):
 
 
 class CompletednessEnum(str, enum.Enum):
+    """Enum for Atbd verions sections completedness. TODO: use this enum in SectionsCompleted below"""
+
     incomplete = "incomplete"
     complete = "complete"
 
 
 class SectionsCompleted(BaseModel):
+    """Sections completed - each value is a str equal to either `incomplete` or `complete`.
+    Gets set by the user"""
+
     introduction: CompletednessEnum
     historical_perspective: CompletednessEnum
     algorithm_description: CompletednessEnum
@@ -99,6 +118,9 @@ class SectionsCompleted(BaseModel):
 
 
 class Update(BaseModel):
+    """Update ATBD Version. Cannot increment minor version number AND update document content at
+    the same time."""
+
     minor: Optional[int]
     document: Optional[Document]
     sections_completed: Optional[dict]
@@ -109,7 +131,7 @@ class Update(BaseModel):
     contacts: Optional[List[versions_contacts.ContactsLinkInput]]
 
     @validator("document", always=True)
-    def ensure_either_minor_or_document(
+    def _ensure_either_minor_or_document(
         cls, value: Optional[dict], values: Dict[str, Optional[Any]]
     ):
         minor = values.get("minor")
@@ -118,8 +140,3 @@ class Update(BaseModel):
                 "Document data cannot be updated at the same time as the minor version number"
             )
         return value
-
-
-class JSONFieldUpdate(BaseModel):
-    key: str
-    value: Union[str, dict]
