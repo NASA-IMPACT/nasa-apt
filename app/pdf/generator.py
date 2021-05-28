@@ -91,7 +91,7 @@ def generate_contact(contact_link: ContactsLinkOutput) -> List:
 
     for k in ["uuid", "url"]:
         if contact.get(k):
-            paragraph = section.Package(f"{k.title()}:")
+            paragraph = section.Paragraph(f"{k.title()}:")
             paragraph.append(NoEscape(contact[k]))
             latex_contact.append(paragraph)
 
@@ -148,8 +148,10 @@ TEXT_WRAPPERS = {
     "superscript": lambda e: f"\\textsuperscript{{{e}}}",
     "subscript": lambda e: f"\\textsubscript{{{e}}}",
     "underline": lambda e: f"\\underline{{{e}}}",
-    "italic": lambda e: utils.italic(e),
-    "bold": lambda e: utils.bold(e),
+    "italic": lambda e: f"\\textit{{{e}}}",
+    "bold": lambda e: f"\\textbf{{{e}}}"
+    # "italic": lambda e: utils.italic(e),
+    # "bold": lambda e: utils.bold(e),
 }
 
 
