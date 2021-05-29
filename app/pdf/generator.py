@@ -168,7 +168,8 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option):
             e = command(e)
-    return e
+    # TODO: should this be wrapped with NoEscape?
+    return NoEscape(e)
 
 
 def process_text_content(
@@ -178,14 +179,15 @@ def process_text_content(
     Returns a list of text base elements (text, reference or hyperlink)
     wrapped with the appropriate Latex formatting commands
     """
-    return [
-        hyperlink(d["url"], d["children"][0]["text"])
-        if d.get("type") == "a"
-        else reference(d["refId"])
-        if d.get("type") == "ref"
-        else wrap_text(d)
-        for d in data
-    ]
+    result = []
+    for d in data:
+        if d.get("type") == "a":
+            result.append(hyperlink(d["url"], d["children"][0]["text"]))
+        elif d.get("type") == "ref":
+            result.append(reference(d["refId"]))
+        else:
+            result.append(wrap_text(d))
+    return result
 
 
 def process_data_access_url(access_url: document.DataAccessUrl) -> List[NoEscape]:
@@ -333,20 +335,27 @@ def process(
     Latex document.
     """
     if data.get("type") in ["p", "caption"]:
-        return NoEscape(" ".join(d for d in process_text_content(data["children"])))
+        # p = section.Paragraph("")
+        # p.append(NoEscape(" ".join(d for d in process_text_content(data["children"]))))
+        # return p
+        return NoEscape(
+            "\n" + " ".join(d for d in process_text_content(data["children"]))
+        )
 
     if data.get("type") in ["ul", "ol"]:
         latex_list = Itemize() if data["type"] == "ul" else Enumerate()
         for child in data["children"]:
-
-            latex_list.add_item(process(child))
+            # latex_list.add_item(process(child))
+            for item in process(child):
+                latex_list.add_item(item)
         return latex_list
 
     if data.get("type") == "li":
         # TODO: confirm the `li` elements can only have 1 child element
         # If not, figure out how to handle a list item with different
         # kinds of children elements (paragraph / other list types)
-        return process(data["children"][0])
+        return [process(d) for d in data["children"]]
+        # return process(data["children"][0])
 
     if data.get("type") == "sub-section":
         section_title = NoEscape(
