@@ -1,0 +1,145 @@
+
+name: Deploy APT API
+on: [push, pull_request]
+jobs: 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup python 3
+      uses: actions/setup-python@v2
+      with: 
+        python-version: 3.8
+    - name: Install APT-GET dependencies
+      run: | 
+        sudo apt-get update 
+        sudo apt-get install -y  libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+    - name: Install python dependencies
+      run: |
+        pip install --upgrade pip setuptools wheel 
+        pip install -e .[dev] --no-binary xmlsec
+    - name: Run linting
+      run: |
+        pre-commit run --all-files
+  test: 
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps: 
+    - uses: actions/checkout@v2
+    - name: Setup python 3
+      uses: actions/setup-python@v2
+      with: 
+        python-version: 3.8
+    - name: Install APT-GET dependencies
+      run: |
+        sudo apt-get update 
+        sudo apt-get install -y  libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+        sudo apt-get install texlive-latex-recommended texlive-xetex latexmk
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip setuptools wheel 
+        pip install -e .[test] --no-binary xmlsec
+    - name: Run tests
+      run: pytest tests --cov app --cov-report term-missing --ignore=venev
+  deploy-staging: 
+    needs: [test]
+      # deploying off of `feature/api-v2-ci-cd` is for testing purposes only
+    if: |
+      ${{
+        github.event.ref == 'refs/heads/develop' || 
+        github.event.ref == 'refs/heads/feature/api-v2' || 
+        github.event.ref == 'refs/heads/feature/api-v2-ci-cd' 
+      }}
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      - name: Setup python 3
+        uses: actions/setup-python@v2
+        with: 
+          python-version: 3.8
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with: 
+          node-version: 14 
+      - name: Configure awscli
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Make .env file
+        run: |
+          cat <<EOF >> .env
+          STAGE=dev
+          API_VERSION_STRING=/v2
+          # Frontend Url used to set CORS origin for FastAPI
+          APT_FRONTEND_URL=https://impact.earthdata.nasa.gov/apt/
+          # url for SAML IDP metadata
+          #IDP_METADATA_URL=https://auth.launchpad-sbx.nasa.gov/unauth/metadata/launchpad-sbx.idp.xml
+          IDP_METADATA_URL=mock
+          EOF
+      - name: Install APT dependencies
+        run: |
+          sudo apt-get update 
+          sudo apt-get install -y  libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+      - name: Install python dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel 
+          pip install -e .[deploy] --no-binary xmlsec
+      - name: Install CDK
+        run: npm install -g aws-cdk
+      - name: Bootstrap CDK 
+        run: cdk bootstrap
+      - name: Deploy stack
+        run: cdk deploy nasa-apt-api-lambda-dev --require-approval never
+  deploy-prod: 
+    needs: [test]
+    if: github.event.ref == 'refs/heads/master' 
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      - name: Setup python 3
+        uses: actions/setup-python@v2
+        with: 
+          python-version: 3.8
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with: 
+          node-version: 14 
+      - name: Configure awscli
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Make .env file
+        run: |
+          cat <<EOF >> .env
+          STAGE=prod
+          API_VERSION_STRING=/v2
+          # Frontend Url used to set CORS origin for FastAPI
+          APT_FRONTEND_URL=https://impact.earthdata.nasa.gov/apt/
+          # url for SAML IDP metadata
+          #IDP_METADATA_URL=https://auth.launchpad-sbx.nasa.gov/unauth/metadata/launchpad-sbx.idp.xml
+          IDP_METADATA_URL=mock
+          EOF
+      - name: Install APT dependencies
+        run: |
+          sudo apt-get update 
+          sudo apt-get install -y  libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+      - name: Install python dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel 
+          pip install -e .[deploy] --no-binary xmlsec
+      - name: Install CDK
+        run: npm install -g aws-cdk
+      - name: Bootstrap CDK 
+        run: cdk bootstrap
+      - name: Deploy stack
+        run: cdk deploy nasa-apt-api-lambda-prod --require-approval never
+      
+
+
+
+
+       
