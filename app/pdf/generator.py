@@ -338,9 +338,7 @@ def process(
         # p = section.Paragraph("")
         # p.append(NoEscape(" ".join(d for d in process_text_content(data["children"]))))
         # return p
-        return NoEscape(
-            "\n" + " ".join(d for d in process_text_content(data["children"]))
-        )
+        return NoEscape(" ".join(d for d in process_text_content(data["children"])))
 
     if data.get("type") in ["ul", "ol"]:
         latex_list = Itemize() if data["type"] == "ul" else Enumerate()
@@ -512,6 +510,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             continue
 
         for item in document_data[section_name].get("children", [CONTENT_UNAVAILABLE]):
+            doc.append(NoEscape("\n"))
             doc.append(process(item, atbd_id=atbd.id))
             continue
 
