@@ -1,15 +1,20 @@
-import boto3
-import botocore
-from datetime import datetime
+"""Localstack startup script
+"""
 import os
 import time
+from datetime import datetime
 
+import boto3
+import botocore
 
 start_time = datetime.now()
 count = 0
 
 
 def aws_resources_ready():
+    """
+    Returs true if all necessary startup resources are present in Localstack
+    """
     s3 = boto3.client("s3", endpoint_url=os.environ["AWS_RESOURCES_ENDPOINT"])
     if not (
         {b["Name"] for b in s3.list_buckets()["Buckets"]} == {os.environ["S3_BUCKET"]}
@@ -20,7 +25,7 @@ def aws_resources_ready():
     )
     if not (
         {s["Name"] for s in sm.list_secrets()["SecretList"]}
-        == {"mocked_credentials_arn"}
+        == {"mocked_credentials_arn", "mocked_jwt_secret_arn"}
     ):
         return False
 

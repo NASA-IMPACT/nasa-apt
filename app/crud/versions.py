@@ -1,17 +1,23 @@
-from app.crud.base import CRUDBase
-from app.db.models import AtbdVersions, AtbdVersionsContactsAssociation
-from app.db.db_session import DbSession
-from app.schemas.versions import FullOutput, Create, Update
-from app.crud.atbds import crud_atbds
+"""CRUD operations for ATBD Versions."""
 from sqlalchemy import orm
-from typing import List
+
+from app.crud.atbds import crud_atbds
+from app.crud.base import CRUDBase
+from app.db.db_session import DbSession
+from app.db.models import AtbdVersions
+from app.schemas.versions import Create, FullOutput, Update
 
 from fastapi import HTTPException
 
 
 class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
-    def create(self, db: DbSession, atbd_id: str, user: str):
+    """CRUDVersions"""
 
+    def create(self, db: DbSession, atbd_id: str, user: str):  # type: ignore
+        """Creates a new version from a previous one, by incrementing the major version number
+        from the latest version, and clearing out all other fields. Raises an exception if the
+        latest version does not have status=`Published` because an ATBD cannot have more than
+        one `Draft` versions at a time."""
         [latest_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1).versions
 
         if latest_version.status != "Published":
@@ -19,7 +25,7 @@ class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
                 status_code=400,
                 detail=(
                     "A new version can only be created if the latest version has status: "
-                    f"`Published`"
+                    "`Published`"
                 ),
             )
 

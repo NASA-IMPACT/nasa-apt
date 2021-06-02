@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
@@ -36,6 +35,10 @@ def monkeysession(request):
     mpatch.setenv("PROJECT_NAME", "project_name")
     mpatch.setenv("FASTAPI_HOST", "mocked_api_host")
     mpatch.setenv("S3_BUCKET", "mocked_bucket")
+    mpatch.setenv("APT_FRONTEND_URL", "mocked_frontend_url")
+    mpatch.setenv("JWT_SECRET_ARN", "mocked_jwt_arn")
+    mpatch.setenv("IDP_METADATA_URL", "mock")
+
     yield mpatch
     mpatch.undo()
 
@@ -157,6 +160,9 @@ def secrets(secretsmanager_client, database_connection, monkeysession):
             }
         ),
     )
+    secretsmanager_client.create_secret(
+        Name="mocked_jwt_arn", SecretString="mockedsecretkeyforsigningjwttokens"
+    )
 
 
 @pytest.fixture
@@ -177,7 +183,7 @@ def authenticated_jwt():
             "exp": datetime.utcnow() + timedelta(seconds=60),
             "role": "app_user",
         },
-        os.environ["JWT_SECRET"],
+        "mockedsecretkeyforsigningjwttokens",
     )
 
 

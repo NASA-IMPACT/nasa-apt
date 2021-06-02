@@ -56,6 +56,8 @@ services:
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
+      JWT_SECRET_ARN: mocked_jwt_secret_arn
+      JWT_SECRET_VALUE: mock-jwt-secret-value-NOT-TO-BE-USED-IN-PRODUCTION
     ports:
       - "4566:4566"
     volumes: 
@@ -93,6 +95,8 @@ services:
       AWS_RESOURCES_ENDPOINT: http://localstack:4566
       S3_BUCKET: nasa-apt-dev-files
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
+      JWT_SECRET_ARN: mocked_jwt_secret_arn
+
       # This URL omits the "http://" in order to remain consistent
       # with the value of the URL returned by the ElasticSearch Domain 
       # CDK component

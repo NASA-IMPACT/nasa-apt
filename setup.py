@@ -56,10 +56,9 @@ inst_reqs = [
 ]
 extra_reqs = {
     "dev": ["pre-commit"],
-    "server": ["uvicorn", "click"],
+    # "server": ["uvicorn", "click"],
     "deploy": [
         "python-dotenv",
-        "docker",
         "aws-cdk.core>=1.95.0",
         "aws-cdk.aws_lambda>=1.95.0",
         "aws-cdk.aws_apigatewayv2>=1.95.0",
@@ -73,8 +72,10 @@ extra_reqs = {
         "aws-cdk.aws_elasticsearch>=1.95.0",
     ],
     "test": [
+        "moto==2.0.8",
         "factory-boy==3.2.0",
         "pytest==6.2.2",
+        "pytest-cov==2.12.0",
         "pytest-sqitch==0.1.1",
         "testing-postgresql==1.3.0",
     ],

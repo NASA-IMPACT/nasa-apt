@@ -16,7 +16,7 @@ To deploy a new APT API stack, copy the `.env.sample` file to your workstation.
 Required values in the `.env` file are: 
 - `APT_FRONTEND_URL`. This is the URL where the frontend is deployed. Necessary for the SAML authentication code to redirect the user upon successfull token generation.
 -  `IDP_METADATA_URL`. Setting this value to `mock` will cause the API to bypass authentication (and create a valid JWT token whenever you click "login")
-- `JWT_SECRET`. This will be the secret key used to sign JWT tokens when authenticating users and validate requests from users. 
+
 
 Optional values in the `.env` file are: 
 - `PROJECT_NAME`. Value will be used to identify the CDK stack and generated resources in AWS. Defaults to `nasa-apt-api`

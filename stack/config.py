@@ -41,7 +41,7 @@ MAX_CONCURRENT: int = 500 if STAGE == "prod" else 0
 #                                 API CONFIG                                   #
 #                                                                              #
 ################################################################################
-JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
+# JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
 
 IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(
     "IDP_METADATA_URL env var required"

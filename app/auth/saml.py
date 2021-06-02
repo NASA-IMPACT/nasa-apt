@@ -1,26 +1,26 @@
-from app import config
-from app.logs import logger
+"""SAML Authentication code.
+
+Note: this file is not well documented due to having been implemented by
+another developer."""
+
 import os
 from datetime import datetime, timedelta
+from typing import Optional, Union
 from urllib.parse import urlparse, urlunparse
-from onelogin.saml2.auth import OneLogin_Saml2_Auth
-from onelogin.saml2.settings import OneLogin_Saml2_Settings
-from onelogin.saml2.idp_metadata_parser import OneLogin_Saml2_IdPMetadataParser
-
-from fastapi import (
-    Depends,
-    Response,
-    Request,
-    HTTPException,
-    Cookie,
-)
-from starlette.responses import RedirectResponse
-from starlette.datastructures import UploadFile
-from typing import Union, Optional
 
 from jose import jwt
 from jose.exceptions import JWTError
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.idp_metadata_parser import OneLogin_Saml2_IdPMetadataParser
+from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
+from app import config
+from app.logs import logger
+
+from fastapi import Cookie, Depends, HTTPException, Request, Response
+
+from starlette.datastructures import UploadFile
+from starlette.responses import RedirectResponse
 
 token_life = 3600
 
@@ -42,16 +42,22 @@ if not mockauth:
 
 
 def url_for_path(path):
+    """."""
     url = urlparse(host)
     return urlunparse(url._replace(path=path))
 
 
 class MockAuth:
+    """."""
+
     def get_errors(self):
+        """."""
         return []
 
 
 class SamlAuth:
+    """."""
+
     def __init__(
         self,
         request: Request,
@@ -61,6 +67,7 @@ class SamlAuth:
         token: Optional[str] = Cookie(None),
         jwt: Optional[str] = None,
     ):
+        """."""
         print("SamlAUTH JWT Token: ", jwt)
         self.request = request
         self.response = response
@@ -93,10 +100,12 @@ class SamlAuth:
         )
 
     def url_for(self, path):
+        """."""
         path = urlparse(self.request.url_for(path)).path
         return url_for_path(path)
 
     async def prepare_saml_request(self):
+        """."""
         url = urlparse(self.url)
         get_data = self.request.query_params._dict
         form = await self.request.form()
@@ -123,6 +132,7 @@ class SamlAuth:
         }
 
     async def get_auth(self):
+        """."""
         if mockauth:
             self.auth = MockAuth()
             return self.auth
@@ -171,10 +181,12 @@ class SamlAuth:
         return self.auth
 
     def save_session(self):
+        """."""
         if self.user is not None:
             self.response.set_cookie(key="jwt", value=self.create_token())
 
     def create_token_data(self):
+        """."""
         exp = datetime.utcnow() + timedelta(seconds=token_life)
         data = {
             "userdata": self.userdata,
@@ -189,9 +201,11 @@ class SamlAuth:
         return data
 
     def create_token(self):
+        """."""
         return jwt.encode(self.create_token_data(), config.JWT_SECRET)
 
     def parse_token(self, token):
+        """."""
         if token is None:
             return None
         try:
@@ -204,6 +218,7 @@ class SamlAuth:
         return contents
 
     def get_auth_from_header(self):
+        """."""
         auth_header = self.request.headers.get("Authorization", None)
         if auth_header:
             scheme, _, token = auth_header.partition(" ")
@@ -217,6 +232,7 @@ class SamlAuth:
         self.parse_token(token)
 
     def get_token_data(self):
+        """."""
         token_data = self.get_auth_from_header()
         if token_data is None or self.userdata is None:
             token_data = self.parse_token(self.COOKIE_token)
@@ -226,6 +242,7 @@ class SamlAuth:
         return token_data
 
     def raise_autherror(self):
+        """."""
         if self.auth is not None:
             errors = self.auth.get_errors()
             if len(errors) > 0:
@@ -234,6 +251,7 @@ class SamlAuth:
         return None
 
     def redirect(self, url):
+        """."""
         # only redirect when there are no errors
         logger.warning("redirecting %s", url)
         self.raise_autherror()
@@ -253,6 +271,7 @@ class SamlAuth:
 
 
 async def saml_auth(saml: SamlAuth = Depends(SamlAuth)):
+    """."""
     await saml.get_auth()
     return saml
 
@@ -261,6 +280,7 @@ User = Union[dict, None]
 
 
 async def require_user(saml: SamlAuth = Depends(SamlAuth)) -> User:
+    """."""
     if saml.userdata is not None:
         return saml.userdata
     raise HTTPException(
@@ -270,4 +290,5 @@ async def require_user(saml: SamlAuth = Depends(SamlAuth)) -> User:
 
 
 async def get_user(saml: SamlAuth = Depends(SamlAuth)) -> User:
+    """."""
     return saml.userdata

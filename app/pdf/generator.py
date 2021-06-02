@@ -91,7 +91,7 @@ def generate_contact(contact_link: ContactsLinkOutput) -> List:
 
     for k in ["uuid", "url"]:
         if contact.get(k):
-            paragraph = section.Package(f"{k.title()}:")
+            paragraph = section.Paragraph(f"{k.title()}:")
             paragraph.append(NoEscape(contact[k]))
             latex_contact.append(paragraph)
 
@@ -148,8 +148,10 @@ TEXT_WRAPPERS = {
     "superscript": lambda e: f"\\textsuperscript{{{e}}}",
     "subscript": lambda e: f"\\textsubscript{{{e}}}",
     "underline": lambda e: f"\\underline{{{e}}}",
-    "italic": lambda e: utils.italic(e),
-    "bold": lambda e: utils.bold(e),
+    "italic": lambda e: f"\\textit{{{e}}}",
+    "bold": lambda e: f"\\textbf{{{e}}}"
+    # "italic": lambda e: utils.italic(e),
+    # "bold": lambda e: utils.bold(e),
 }
 
 
@@ -166,7 +168,8 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option):
             e = command(e)
-    return e
+    # TODO: should this be wrapped with NoEscape?
+    return NoEscape(e)
 
 
 def process_text_content(
@@ -176,14 +179,15 @@ def process_text_content(
     Returns a list of text base elements (text, reference or hyperlink)
     wrapped with the appropriate Latex formatting commands
     """
-    return [
-        hyperlink(d["url"], d["children"][0]["text"])
-        if d.get("type") == "a"
-        else reference(d["refId"])
-        if d.get("type") == "ref"
-        else wrap_text(d)
-        for d in data
-    ]
+    result = []
+    for d in data:
+        if d.get("type") == "a":
+            result.append(hyperlink(d["url"], d["children"][0]["text"]))
+        elif d.get("type") == "ref":
+            result.append(reference(d["refId"]))
+        else:
+            result.append(wrap_text(d))
+    return result
 
 
 def process_data_access_url(access_url: document.DataAccessUrl) -> List[NoEscape]:
@@ -191,10 +195,10 @@ def process_data_access_url(access_url: document.DataAccessUrl) -> List[NoEscape
     Returns a list of Latex formatted commands, to be appended in order
     to the Latex document, to display a single data acccess url
     """
-    p1 = section.Paragraph(wrap_text({"text": "Access url:", "bold": True}))
+    p1 = section.Paragraph(wrap_text({"text": "Access url:", "bold": True}))  # type: ignore
     p1.append(hyperlink(access_url["url"], access_url["url"]))
 
-    p2 = section.Paragraph(wrap_text({"text": "Description:", "bold": True}))
+    p2 = section.Paragraph(wrap_text({"text": "Description:", "bold": True}))  # type: ignore
     p2.append(access_url["description"])
     return [p1, p2]
 
@@ -331,20 +335,25 @@ def process(
     Latex document.
     """
     if data.get("type") in ["p", "caption"]:
+        # p = section.Paragraph("")
+        # p.append(NoEscape(" ".join(d for d in process_text_content(data["children"]))))
+        # return p
         return NoEscape(" ".join(d for d in process_text_content(data["children"])))
 
     if data.get("type") in ["ul", "ol"]:
         latex_list = Itemize() if data["type"] == "ul" else Enumerate()
         for child in data["children"]:
-
-            latex_list.add_item(process(child))
+            # latex_list.add_item(process(child))
+            for item in process(child):
+                latex_list.add_item(item)
         return latex_list
 
     if data.get("type") == "li":
         # TODO: confirm the `li` elements can only have 1 child element
         # If not, figure out how to handle a list item with different
         # kinds of children elements (paragraph / other list types)
-        return process(data["children"][0])
+        return [process(d) for d in data["children"]]
+        # return process(data["children"][0])
 
     if data.get("type") == "sub-section":
         section_title = NoEscape(
@@ -457,7 +466,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
     for section_name, info in SECTIONS.items():
         # Journal Acknowledgements and Journal Discussion are only included in
         # Journal type pdfs
-        if not journal and section_name not in [
+        if not journal and section_name in [
             "journal_acknowledgements",
             "journal_dicsussion",
         ]:
@@ -479,7 +488,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             continue
 
         if not document_data.get(section_name):
-            doc.append(process(CONTENT_UNAVAILABLE))
+            doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
             continue
 
         if section_name in [
@@ -501,6 +510,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             continue
 
         for item in document_data[section_name].get("children", [CONTENT_UNAVAILABLE]):
+            doc.append(NoEscape("\n"))
             doc.append(process(item, atbd_id=atbd.id))
             continue
 

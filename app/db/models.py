@@ -1,39 +1,26 @@
+"""SQLAlchemy models for interfacing with the database"""
 from sqlalchemy import (
+    JSON,
+    CheckConstraint,
     Column,
-    String,
-    Integer,
     ForeignKey,
     ForeignKeyConstraint,
-    CheckConstraint,
+    Integer,
+    String,
     types,
-    JSON,
-    Enum,
-    Table,
-    Text,
-    cast,
 )
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.ext.associationproxy import association_proxy
-import sqlalchemy.types as types
-from sqlalchemy_utils import CompositeArray, CompositeType
+from sqlalchemy.orm import backref, relationship
 
 from app.db.base import Base
 from app.db.types import utcnow
-from app.schemas.versions import StatusEnum
-from app.schemas.contacts import RolesEnum, ContactMechanismEnum
-import re
 
 
 class AtbdVersions(Base):
+    """AtbdVersions"""
+
     __tablename__ = "atbd_versions"
-    atbd_id = Column(
-        Integer(),
-        ForeignKey("atbds.id"),
-        primary_key=True,
-        index=True,
-    )
+    atbd_id = Column(Integer(), ForeignKey("atbds.id"), primary_key=True, index=True,)
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="Draft", nullable=False)
@@ -50,7 +37,7 @@ class AtbdVersions(Base):
     citation = Column(MutableDict.as_mutable(JSON), server_default="{}")
 
     def __repr__(self):
-
+        """String representation"""
         return (
             f"<AtbdVersions(atbd_id={self.atbd_id}, version=v{self.major}.{self.minor},"
             f" status={self.status}, document={self.document},"
@@ -62,6 +49,8 @@ class AtbdVersions(Base):
 
 
 class Atbds(Base):
+    """Atbds"""
+
     __tablename__ = "atbds"
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
     title = Column(String(), nullable=False)
@@ -81,6 +70,7 @@ class Atbds(Base):
     )
 
     def __repr__(self):
+        """String representation"""
         versions = ", ".join(f"v{v.major}.{v.minor}" for v in self.versions)
         return (
             f"<Atbds(id={self.id}, title={self.title}, alias={self.alias},"
@@ -91,6 +81,8 @@ class Atbds(Base):
 
 
 class Contacts(Base):
+    """Contacts"""
+
     __tablename__ = "contacts"
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
     first_name = Column(String(), nullable=False)
@@ -101,6 +93,7 @@ class Contacts(Base):
     mechanisms = Column(String())
 
     def __repr__(self):
+        """String representation"""
         return (
             f"<Contact(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name},"
             f" last_name={self.last_name}, uuid={self.uuid}, url={self.url}, "
@@ -109,6 +102,11 @@ class Contacts(Base):
 
 
 class AtbdVersionsContactsAssociation(Base):
+    """AtbdVersionContactsAssociation.
+    see https://docs.sqlalchemy.org/en/14/orm/extensions/associationproxy.html for
+    more information on the Association Proxy pattern used here to present the
+    many to many relation that AtbdVersions and Contacts have"""
+
     __tablename__ = "atbd_versions_contacts"
     # Foreign keys are defined up here in order
     # to use a composite foreign key. The FK constraint
@@ -121,16 +119,8 @@ class AtbdVersionsContactsAssociation(Base):
         ),
     )
 
-    atbd_id = Column(
-        Integer(),
-        nullable=False,
-        primary_key=True,
-    )
-    major = Column(
-        Integer(),
-        nullable=False,
-        primary_key=True,
-    )
+    atbd_id = Column(Integer(), nullable=False, primary_key=True,)
+    major = Column(Integer(), nullable=False, primary_key=True,)
 
     contact_id = Column(
         Integer(), ForeignKey("contacts.id"), nullable=False, primary_key=True
@@ -150,6 +140,7 @@ class AtbdVersionsContactsAssociation(Base):
     )
 
     def __repr__(self):
+        """String representation"""
         return (
             f"<AtbdVersionContact(atbd_id={self.atbd_id}), major={self.major}, "
             f"contact_id={self.contact_id}, roles={self.roles}, "

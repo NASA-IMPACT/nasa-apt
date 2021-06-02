@@ -1,4 +1,5 @@
 awslocal secretsmanager create-secret --name "${POSTGRES_ADMIN_CREDENTIALS_ARN}" --secret-string '{"username": "'"${POSTGRES_USER}"'","password": "'"${POSTGRES_PASSWORD}"'","port": 5432,"dbname": "'"${POSTGRES_DB}"'","host": "db"}' 
+awslocal secretsmanager create-secret --name "${JWT_SECRET_ARN}" --secret-string "${JWT_SECRET_VALUE}" 
 
 # No need to mess around with ACL - according to @ciaranevans localstack free has no concept of 
 # IAM roles and access control.

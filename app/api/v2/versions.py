@@ -102,7 +102,7 @@ def update_atbd_version(
             if contact.contact_id in [c.id for c in version_input.contacts]:
                 continue
             crud_contacts_associations.remove(
-                db_session=db, id=(atbd_id, major, contact.contact_id)
+                db_session=db, id=(atbd_id, major, contact.contact_id)  # type: ignore
             )
 
     if version_input.minor and atbd_version.status != "Published":
@@ -127,7 +127,7 @@ def update_atbd_version(
         version_input.document = {
             **atbd_version.document,
             **version_input.document.dict(exclude_unset=True),
-        }
+        }  # type: ignore
 
     if version_input.sections_completed and not overwrite:
         version_input.sections_completed = {
