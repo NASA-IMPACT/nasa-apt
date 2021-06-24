@@ -96,15 +96,15 @@ services:
       S3_BUCKET: nasa-apt-dev-files
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
       JWT_SECRET_ARN: mocked_jwt_secret_arn
-
       # This URL omits the "http://" in order to remain consistent
       # with the value of the URL returned by the ElasticSearch Domain 
       # CDK component
       ELASTICSEARCH_URL: elastic:9200
       IDP_METADATA_URL: $IDP_METADATA_URL
       FASTAPI_HOST: http://localhost:8000
-      JWT_SECRET: $JWT_SECRET
       APT_FRONTEND_URL: $APT_FRONTEND_URL
+      APP_CLIENT_ID: 3v15rnvglc8p9nkja4behaoijk
+      USER_POOL_ID: us-east-1_myPaDY9o1
     depends_on:
       - localstack-ready
       - db-bootstrapper

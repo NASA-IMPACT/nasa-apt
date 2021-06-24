@@ -59,7 +59,7 @@ def send_to_elastic(data: List[Dict]):
     return response.json()
 
 
-# TODO: re-implement this method
+# TODO: Dies the "update_index" method need to be re-implemented?
 
 # async def update_index(
 #     connection: asyncpg.connection,
@@ -126,7 +126,10 @@ def add_atbd_to_index(atbd: Atbds):
             }
         )
         es_commands.append(
-            ElasticsearchAtbd.from_orm(atbd).dict(by_alias=True, exclude_none=True,)
+            ElasticsearchAtbd.from_orm(atbd).dict(
+                by_alias=True,
+                exclude_none=True,
+            )
         )
 
     return send_to_elastic(es_commands)

@@ -35,7 +35,6 @@ ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL") or exit(
     "ELASTICSEARCH_URL env var required"
 )
 
-# JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
 HOST = os.environ.get("FASTAPI_HOST") or exit("FASTAPI_HOST env var required")
 
 IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(

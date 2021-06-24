@@ -25,7 +25,9 @@ async def sso(saml: SamlAuth = Depends(saml_auth)):
 
 @router.post("/acs")
 @router.get("/acs")
-async def acs(saml: SamlAuth = Depends(saml_auth),):
+async def acs(
+    saml: SamlAuth = Depends(saml_auth),
+):
     """ACS route"""
     auth = saml.auth
     if mockauth:

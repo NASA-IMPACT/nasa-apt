@@ -1,6 +1,6 @@
 """ATBDs endpoint."""
 import datetime
-from typing import List
+from typing import List, Dict
 
 from sqlalchemy import exc
 
@@ -152,3 +152,74 @@ def delete_atbd(
     background_tasks.add_task(remove_atbd_from_index, atbd=atbd)
 
     return {}
+
+
+import os
+import urllib
+import json
+from jose import jwk, jwt
+from jose.utils import base64url_decode
+import time
+import boto3
+
+
+@router.post(
+    "/auth-test", responses={200: dict(description="Auth token successfully read")}
+)
+def validate_token(token_input: Dict[str, str]):
+    token = token_input["token"]
+    user_pool_id = os.environ["USER_POOL_ID"]
+    app_client_id = os.environ["APP_CLIENT_ID"]
+    region = "us-east-1"
+
+    print("USER POOL ID: ", user_pool_id)
+    print("REGION: ", region)
+
+    keys_url = f"https://cognito-idp.{region}.amazonaws.com/{user_pool_id}/.well-known/jwks.json"
+
+    with urllib.request.urlopen(keys_url) as f:
+        response = f.read()
+    keys = json.loads(response.decode("utf-8"))["keys"]
+
+    headers = jwt.get_unverified_headers(token)
+
+    kids = [k for k in keys if k["kid"] == headers["kid"]]
+
+    if len(kids) < 1:
+        raise HTTPException(status_code=500, detail="Public key not found in jwks.json")
+
+    if len(kids) > 1:
+        raise HTTPException(status_code=500, detail="Multiple keys found in jwks.json")
+
+    kid = kids[0]
+
+    public_key = jwk.construct(kid)
+
+    message, encoded_signature = str(token).rsplit(".", 1)
+
+    decoded_signature = base64url_decode(encoded_signature.encode("utf-8"))
+
+    if not public_key.verify(message.encode("utf-8"), decoded_signature):
+        raise HTTPException(status_code=400, detail="Signature validation failed")
+
+    claims = jwt.get_unverified_claims(token)
+
+    if time.time() > claims["exp"]:
+        raise HTTPException(status_code=400, detail="Token is expired")
+
+    if claims.get("aud") and claims["aud"] != app_client_id:
+        raise HTTPException(
+            status_code=400, detail="Token was not issued for this app client"
+        )
+
+    if not token_input.get("username"):
+        return claims
+
+    email_to_query = token_input["username"]
+    cognito_client = boto3.client("cognito-idp")
+    userinfo = cognito_client.admin_get_user(
+        UserPoolId=user_pool_id, Username=email_to_query
+    )
+    claims["queried_user"] = userinfo
+
+    return claims

@@ -13,6 +13,7 @@ from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_secretsmanager as secretsmanager
+from aws_cdk import aws_cognito as cognito
 from aws_cdk import core
 
 
@@ -98,7 +99,6 @@ class nasaAPTLambdaStack(core.Stack):
             description="Arn of the SecretsManager instance holding the connection info for Postgres DB",
         )
 
-        # TODO: add JWT secret as a `secretsmanager` generated object
         bucket_params = dict(scope=self, id=f"{id}")
         if config.S3_BUCKET:
             bucket_params["bucket_name"] = config.S3_BUCKET
@@ -109,10 +109,12 @@ class nasaAPTLambdaStack(core.Stack):
             f"{id}-elasticsearch-domain",
             version=elasticsearch.ElasticsearchVersion.V7_7,
             capacity=elasticsearch.CapacityConfig(
-                data_node_instance_type="t2.small.elasticsearch", data_nodes=1,
+                data_node_instance_type="t2.small.elasticsearch",
+                data_nodes=1,
             ),
             # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in AWS
-            domain_name=f"{id}-elastic"[-28:],
+            # (and can't start with a `-` character)
+            domain_name=f"{id}-elastic"[-28:].strip("-"),
             ebs=elasticsearch.EbsOptions(
                 enabled=True,
                 iops=0,
@@ -156,12 +158,16 @@ class nasaAPTLambdaStack(core.Stack):
             BACKEND_CORS_ORIGINS=config.BACKEND_CORS_ORIGINS,
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             ELASTICSEARCH_URL=esdomain.domain_endpoint,
-            # JWT_SECRET=config.JWT_SECRET,
             JWT_SECRET_ARN=jwt_secret.secret_arn,
             IDP_METADATA_URL=config.IDP_METADATA_URL,
             S3_BUCKET=bucket.bucket_name,
         )
-        lambda_env.update(dict(MODULE_NAME="nasa_apt.main", VARIABLE_NAME="app",))
+        lambda_env.update(
+            dict(
+                MODULE_NAME="nasa_apt.main",
+                VARIABLE_NAME="app",
+            )
+        )
 
         lambda_function_props = dict(
             runtime=_lambda.Runtime.FROM_IMAGE,
@@ -205,7 +211,93 @@ class nasaAPTLambdaStack(core.Stack):
         # Adds the "host" to the lambda function environment variables
         # This is necessary for the saml authentication logic
         lambda_function.add_environment(
-            key="FASTAPI_HOST", value=api_gateway.api_endpoint,
+            key="FASTAPI_HOST",
+            value=api_gateway.api_endpoint,
+        )
+
+        user_pool = cognito.UserPool(
+            self,
+            f"{id}-users",
+            account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
+            self_sign_up_enabled=True,
+            sign_in_aliases=cognito.SignInAliases(email=True, username=False),
+            standard_attributes=cognito.StandardAttributes(
+                preferred_username=cognito.StandardAttribute(
+                    mutable=True, required=True
+                )
+            ),
+            user_pool_name=f"{id}-users",
+            user_verification=cognito.UserVerificationConfig(
+                # TODO: this email body can contain HTML tags for a better user experience
+                email_body=(
+                    "Thank you for signing up to the Algorithm Publication Tool.<br>Please "
+                    "verify you account by clicking on {##Verify Email##}.<br>Sincerely,"
+                    "<br>The NASA APT team"
+                ),
+                email_style=cognito.VerificationEmailStyle.LINK,
+            ),
+        )
+
+        lambda_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["cognito-idp:AdminGetUser"],
+                resources=[user_pool.user_pool_arn],
+            )
+        )
+
+        core.CfnOutput(
+            self,
+            f"{id}-userpool-id",
+            value=user_pool.user_pool_id,
+            description="User Pool ID",
+        )
+        print("FRONTEND URLS: ", config.FRON)
+        app_client = user_pool.add_client(
+            f"{id}-apt-app-client",
+            auth_flows=cognito.AuthFlow(user_password=True),
+            o_auth=cognito.OAuthSettings(
+                callback_urls=[config.FRONTEND_URL],
+                logout_urls=[config.FRONTEND_URL],
+                flows=cognito.OAuthFlows(implicit_code_grant=True),
+                scopes=[
+                    cognito.OAuthScope.OPENID,
+                    cognito.OAuthScope.EMAIL,
+                    cognito.OAuthScope.PROFILE,
+                    # TODO: verify if all these scopes are required
+                    cognito.OAuthScope.COGNITO_ADMIN,
+                ],
+            ),
+            # As a security measure, this sends an error message
+            # that is NOT UserNotFoundError, to avoid revealing user
+            # absence.
+            prevent_user_existence_errors=False,
+            user_pool_client_name=f"{id}-apt-app-client",
+        )
+        core.CfnOutput(
+            self,
+            f"{id}-app-client-id",
+            value=app_client.user_pool_client_id,
+            description="User Pool App Client ID",
+        )
+
+        domain = user_pool.add_domain(
+            f"{id}-apt-app-client-domain",
+            cognito_domain=cognito.CognitoDomainOptions(domain_prefix=f"{id}"),
+        )
+
+        core.CfnOutput(
+            self,
+            f"{id}-domain",
+            value=domain.domain_name,
+            description="User pool domain",
+        )
+
+        lambda_function.add_environment(
+            key="USER_POOL_ID",
+            value=user_pool.user_pool_id,
+        )
+        lambda_function.add_environment(
+            key="APP_CLIENT_ID", value=app_client.user_pool_client_id
         )
 
 
