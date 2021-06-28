@@ -6,6 +6,7 @@ from typing import Any
 import config
 from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
+from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_elasticsearch as elasticsearch
 from aws_cdk import aws_iam as iam
@@ -13,7 +14,6 @@ from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_secretsmanager as secretsmanager
-from aws_cdk import aws_cognito as cognito
 from aws_cdk import core
 
 
@@ -109,8 +109,7 @@ class nasaAPTLambdaStack(core.Stack):
             f"{id}-elasticsearch-domain",
             version=elasticsearch.ElasticsearchVersion.V7_7,
             capacity=elasticsearch.CapacityConfig(
-                data_node_instance_type="t2.small.elasticsearch",
-                data_nodes=1,
+                data_node_instance_type="t2.small.elasticsearch", data_nodes=1,
             ),
             # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in AWS
             # (and can't start with a `-` character)
@@ -162,12 +161,7 @@ class nasaAPTLambdaStack(core.Stack):
             IDP_METADATA_URL=config.IDP_METADATA_URL,
             S3_BUCKET=bucket.bucket_name,
         )
-        lambda_env.update(
-            dict(
-                MODULE_NAME="nasa_apt.main",
-                VARIABLE_NAME="app",
-            )
-        )
+        lambda_env.update(dict(MODULE_NAME="nasa_apt.main", VARIABLE_NAME="app",))
 
         lambda_function_props = dict(
             runtime=_lambda.Runtime.FROM_IMAGE,
@@ -211,8 +205,7 @@ class nasaAPTLambdaStack(core.Stack):
         # Adds the "host" to the lambda function environment variables
         # This is necessary for the saml authentication logic
         lambda_function.add_environment(
-            key="FASTAPI_HOST",
-            value=api_gateway.api_endpoint,
+            key="FASTAPI_HOST", value=api_gateway.api_endpoint,
         )
 
         user_pool = cognito.UserPool(
@@ -251,7 +244,7 @@ class nasaAPTLambdaStack(core.Stack):
             value=user_pool.user_pool_id,
             description="User Pool ID",
         )
-        print("FRONTEND URLS: ", config.FRON)
+
         app_client = user_pool.add_client(
             f"{id}-apt-app-client",
             auth_flows=cognito.AuthFlow(user_password=True),
@@ -293,8 +286,7 @@ class nasaAPTLambdaStack(core.Stack):
         )
 
         lambda_function.add_environment(
-            key="USER_POOL_ID",
-            value=user_pool.user_pool_id,
+            key="USER_POOL_ID", value=user_pool.user_pool_id,
         )
         lambda_function.add_environment(
             key="APP_CLIENT_ID", value=app_client.user_pool_client_id

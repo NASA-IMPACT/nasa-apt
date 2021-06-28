@@ -6,10 +6,11 @@ from typing import Tuple, Union
 
 from boto3 import client
 
-from app.auth.saml import User, get_user
+from app.auth.cognito import get_user
 from app.config import AWS_RESOURCES_ENDPOINT
 from app.db.db_session import DbSession, get_session
 from app.logs import logger
+from app.schemas.users import User
 
 from fastapi import Depends, HTTPException
 
@@ -46,7 +47,8 @@ def get_db(
     default and `app_user` if the user is authenticated)
     """
     if user:
-        logger.info(f"User {user['user']} is authenticated. Elevating session")
+
+        logger.info(f"User {user['username']} is authenticated. Elevating session")
         db_session.execute("SET SESSION AUTHORIZATION app_user;")
 
     return db_session

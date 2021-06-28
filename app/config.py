@@ -70,3 +70,8 @@ POSTGRES_DB_NAME = pg_credentials["dbname"]
 POSTGRES_HOST = pg_credentials["host"]
 
 JWT_SECRET = secrets_manager.get_secret_value(SecretId=JWT_SECRET_ARN)["SecretString"]
+
+USER_POOL_ID = os.environ.get("USER_POOL_ID") or exit("USER_POOL_ID env var required")
+APP_CLIENT_ID = os.environ.get("APP_CLIENT_ID") or exit(
+    "APP_CLIENT_ID env var required"
+)

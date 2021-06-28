@@ -26,7 +26,6 @@ services:
      
     depends_on: 
       - db-ready
-     
       
   elastic:
     # Elastic db for local development only.
