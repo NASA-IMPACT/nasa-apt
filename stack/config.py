@@ -50,6 +50,9 @@ FRONTEND_URL = os.environ.get("APT_FRONTEND_URL") or exit(
     "APT_FRONTEND_URL env var required"
 )
 
+if STAGE != "prod":
+    FRONTEND_URL = f"{FRONTEND_URL},http://localhost:9000"
+
 BACKEND_CORS_ORIGINS = os.environ.get(
     "BACKEND_CORS_ORIGINS",
     default=f"*,http://localhost:9000,http://localhost:3006,{FRONTEND_URL}",

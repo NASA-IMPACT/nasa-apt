@@ -266,6 +266,7 @@ class nasaAPTLambdaStack(core.Stack):
             prevent_user_existence_errors=False,
             user_pool_client_name=f"{id}-apt-app-client",
         )
+
         core.CfnOutput(
             self,
             f"{id}-app-client-id",

@@ -15,6 +15,16 @@ from app.schemas.users import User
 from fastapi import Depends, HTTPException
 
 
+def cognito_client() -> client:
+    """
+    Returns a boto3 cognito client - configured to point at a specifc endpoint url if provided
+    """
+    if AWS_RESOURCES_ENDPOINT:
+        return client("cognito-idp", endpoint_url=AWS_RESOURCES_ENDPOINT)
+
+    return client("cognito-idp")
+
+
 def s3_client() -> client:
     """
     Returns a boto3 s3 client - configured to point at a specfic endpoint url if provided
