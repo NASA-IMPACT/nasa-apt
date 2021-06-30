@@ -8,6 +8,7 @@ import os
 
 import boto3
 
+AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 API_VERSION_STRING = os.environ.get("API_VERSION_STRING") or exit(
     "API_VERSION_STRING env var required"
 )

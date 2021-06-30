@@ -29,7 +29,7 @@ echo "USER POOL ID: $pool_id"
 echo "APP CLIENT ID: $client_id"
 
 
-user_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id $pool_id --username test@example.com --user-attributes Name=preferred_username,Value="Test User" | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+user_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id $pool_id --username test@example.com --user-attributes '[{"Name":"preferred_username","Value":"Test User"}, {"Name":"Email","Value":"test@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
 
 echo "USER SUB: $user_sub"
 

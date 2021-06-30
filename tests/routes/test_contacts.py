@@ -6,7 +6,11 @@ from app.db.models import Contacts
 
 
 def test_list_contacts(
-    test_client, db_session, contacts_factory, authenticated_headers
+    test_client,
+    mocked_validate_cognito_token,
+    db_session,
+    contacts_factory,
+    authenticated_headers,
 ):
 
     contact = contacts_factory.create()
@@ -35,6 +39,7 @@ def test_list_contacts(
 
 def test_get_contact_by_id(
     test_client,
+    mocked_validate_cognito_token,
     atbds_factory,
     atbd_versions_factory,
     versions_contacts_association_factory,
@@ -104,7 +109,11 @@ def test_get_contact_by_id(
 
 
 def test_create_contact(
-    test_client, db_session, contacts_factory, authenticated_headers
+    test_client,
+    mocked_validate_cognito_token,
+    db_session,
+    contacts_factory,
+    authenticated_headers,
 ):
     with pytest.raises(Exception):
         contact = contacts_factory.create()
@@ -164,7 +173,11 @@ def test_create_contact(
 
 
 def test_update_contact(
-    test_client, db_session, contacts_factory, authenticated_headers
+    test_client,
+    mocked_validate_cognito_token,
+    db_session,
+    contacts_factory,
+    authenticated_headers,
 ):
     contact = contacts_factory.create()
 
@@ -193,6 +206,7 @@ def test_update_contact(
 
 def test_delete_contact(
     test_client,
+    mocked_validate_cognito_token,
     db_session,
     contacts_factory,
     atbds_factory,
