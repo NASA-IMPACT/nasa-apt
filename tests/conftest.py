@@ -10,7 +10,7 @@ import pytest
 import testing.postgresql
 from factory import fuzzy
 from jose import jwt
-from moto import mock_s3, mock_secretsmanager
+from moto import mock_cognitoidp, mock_s3, mock_secretsmanager
 from sqlalchemy import create_engine, engine, text
 from sqlalchemy.orm import scoped_session
 
@@ -35,8 +35,8 @@ def monkeysession(request):
     mpatch.setenv("PROJECT_NAME", "project_name")
     mpatch.setenv("APT_FRONTEND_URL", "http://mocked_frontend_url")
     mpatch.setenv("S3_BUCKET", "mocked_bucket")
-    mpatch.setenv("USER_POOL_ID", "mock")
-    mpatch.setenv("APP_CLIENT_ID", "mock")
+    mpatch.setenv("USER_POOL_NAME", "mock")
+    mpatch.setenv("APP_CLIENT_NAME", "mock")
 
     yield mpatch
     mpatch.undo()
@@ -97,7 +97,7 @@ def test_db_engine(empty_db):
 
 
 @pytest.fixture
-def db_session(test_db_engine, secrets):
+def db_session(test_db_engine, secrets, cognito):
 
     from app.db.db_session import DbSession
 
@@ -114,7 +114,7 @@ def db_session(test_db_engine, secrets):
 
 
 @pytest.fixture
-def test_client(db_session):
+def test_client(db_session, cognito):
 
     from app.main import app
 
@@ -136,6 +136,20 @@ def s3_bucket(monkeysession, s3_resource):
 def s3_resource(monkeysession):
     with mock_s3():
         yield boto3.resource("s3", region_name="us-east-1")
+
+
+@pytest.fixture
+def cognito_client(monkeysession):
+    with mock_cognitoidp():
+        yield boto3.client("cognito-idp", region_name="us-east-1")
+
+
+@pytest.fixture
+def cognito(cognito_client):
+    user_pool = cognito_client.create_user_pool(PoolName="mock")
+    cognito_client.create_user_pool_client(
+        UserPoolId=user_pool["UserPool"]["Id"], ClientName="mock", CallbackURLs=["mock"]
+    )
 
 
 @pytest.fixture
