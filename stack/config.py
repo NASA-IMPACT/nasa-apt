@@ -42,9 +42,6 @@ MAX_CONCURRENT: int = 500 if STAGE == "prod" else 0
 #                                                                              #
 ################################################################################
 
-IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(
-    "IDP_METADATA_URL env var required"
-)
 
 FRONTEND_URL = os.environ.get("APT_FRONTEND_URL") or exit(
     "APT_FRONTEND_URL env var required"

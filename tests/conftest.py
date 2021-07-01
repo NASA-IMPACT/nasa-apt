@@ -33,11 +33,8 @@ def monkeysession(request):
     mpatch.setenv("POSTGRES_ADMIN_CREDENTIALS_ARN", "mocked_secrets_manager_arn")
     mpatch.setenv("API_VERSION_STRING", "/v2")
     mpatch.setenv("PROJECT_NAME", "project_name")
-    mpatch.setenv("FASTAPI_HOST", "mocked_api_host")
+    mpatch.setenv("APT_FRONTEND_URL", "http://mocked_frontend_url")
     mpatch.setenv("S3_BUCKET", "mocked_bucket")
-    mpatch.setenv("APT_FRONTEND_URL", "mocked_frontend_url")
-    mpatch.setenv("JWT_SECRET_ARN", "mocked_jwt_arn")
-    mpatch.setenv("IDP_METADATA_URL", "mock")
     mpatch.setenv("USER_POOL_ID", "mock")
     mpatch.setenv("APP_CLIENT_ID", "mock")
 

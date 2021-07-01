@@ -72,9 +72,6 @@ jobs:
           API_VERSION_STRING=/v2
           # Frontend Url used to set CORS origin for FastAPI
           APT_FRONTEND_URL=https://impact.earthdata.nasa.gov/apt/
-          # url for SAML IDP metadata
-          #IDP_METADATA_URL=https://auth.launchpad-sbx.nasa.gov/unauth/metadata/launchpad-sbx.idp.xml
-          IDP_METADATA_URL=mock
           EOF
       - name: Install APT dependencies
         run: |
@@ -117,9 +114,6 @@ jobs:
           API_VERSION_STRING=/v2
           # Frontend Url used to set CORS origin for FastAPI
           APT_FRONTEND_URL=https://impact.earthdata.nasa.gov/apt/
-          # url for SAML IDP metadata
-          #IDP_METADATA_URL=https://auth.launchpad-sbx.nasa.gov/unauth/metadata/launchpad-sbx.idp.xml
-          IDP_METADATA_URL=mock
           EOF
       - name: Install APT dependencies
         run: |
