@@ -41,7 +41,6 @@ MAX_CONCURRENT: int = 500 if STAGE == "prod" else 0
 #                                 API CONFIG                                   #
 #                                                                              #
 ################################################################################
-# JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
 
 IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(
     "IDP_METADATA_URL env var required"
@@ -50,6 +49,9 @@ IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(
 FRONTEND_URL = os.environ.get("APT_FRONTEND_URL") or exit(
     "APT_FRONTEND_URL env var required"
 )
+
+if STAGE != "prod":
+    FRONTEND_URL = f"{FRONTEND_URL},http://localhost:9000"
 
 BACKEND_CORS_ORIGINS = os.environ.get(
     "BACKEND_CORS_ORIGINS",

@@ -6,10 +6,12 @@ from sqlalchemy import exc
 
 from app.api.utils import get_db, require_user
 from app.api.v2.pdf import save_pdf_to_s3
-from app.auth.saml import User
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession
 from app.schemas import atbds
+
+# from app.auth.saml import User
+from app.schemas.users import User
 from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException

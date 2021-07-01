@@ -79,6 +79,7 @@ def update_atbd_version(
 
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+
     atbd_version: AtbdVersions
     [atbd_version] = atbd.versions
 

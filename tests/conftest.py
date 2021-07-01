@@ -21,7 +21,7 @@ from fastapi.testclient import TestClient
 
 @pytest.fixture
 def monkeysession(request):
-    """ Session-scoped monkey patch """
+    """Session-scoped monkey patch"""
     # https://github.com/pytest-dev/pytest/issues/363#issuecomment-406536200
     from _pytest.monkeypatch import MonkeyPatch
 
@@ -38,6 +38,8 @@ def monkeysession(request):
     mpatch.setenv("APT_FRONTEND_URL", "mocked_frontend_url")
     mpatch.setenv("JWT_SECRET_ARN", "mocked_jwt_arn")
     mpatch.setenv("IDP_METADATA_URL", "mock")
+    mpatch.setenv("USER_POOL_ID", "mock")
+    mpatch.setenv("APP_CLIENT_ID", "mock")
 
     yield mpatch
     mpatch.undo()
@@ -55,7 +57,7 @@ def database_connection():
 
 @pytest.fixture(scope="session")
 def empty_db(database_connection):
-    """ Bind DB engine for application user to TestSession """
+    """Bind DB engine for application user to TestSession"""
     url = engine.url.URL(
         "postgresql",
         username=database_connection["user"],
@@ -288,3 +290,13 @@ def mocked_send_to_elasticsearch():
         "app.search.elasticsearch.send_to_elastic"
     ) as mocked_send_to_elasticsearch:
         yield mocked_send_to_elasticsearch
+
+
+@pytest.fixture
+def mocked_validate_cognito_token():
+    with patch("app.auth.cognito.validate_token") as mocked_validate_cognito_token:
+        mocked_validate_cognito_token.return_value = {
+            "username": "magic mock",
+            "user": "magic mock",
+        }
+        yield mocked_validate_cognito_token

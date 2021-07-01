@@ -5,9 +5,11 @@ import botocore
 
 from app import config
 from app.api.utils import get_db, require_user, s3_client
-from app.auth.saml import User
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession
+
+# from app.auth.saml import User
+from app.schemas.users import User
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, responses
 

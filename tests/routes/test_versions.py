@@ -15,6 +15,7 @@ def test_check_version_exists(
     atbds_factory,
     atbd_versions_factory,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
     authenticated_headers,
 ):
     atbd = atbds_factory.create()
@@ -68,6 +69,7 @@ def test_get_version(
     atbds_factory,
     atbd_versions_factory,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
     authenticated_headers,
 ):
     atbd = atbds_factory.create()
@@ -106,6 +108,7 @@ def test_create_version(
     atbds_factory,
     atbd_versions_factory,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
     authenticated_headers,
 ):
 
@@ -146,6 +149,7 @@ def test_update_version(
     atbds_factory,
     atbd_versions_factory,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
     authenticated_headers,
 ):
 
@@ -178,6 +182,7 @@ def test_update_version(
 
     assert version.changelog == "updated changelog"
     mocked_send_to_elasticsearch.assert_called()
+    mocked_validate_cognito_token.assert_called()
 
     result = test_client.post(
         f"/v2/atbds/{atbd.id}/versions/v{version.major}.{version.minor}",
@@ -199,6 +204,7 @@ def test_update_version_contacts(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
 
     contact = contacts_factory.create()
@@ -296,6 +302,7 @@ def test_update_version_document(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
 
     atbd = atbds_factory.create()
@@ -370,6 +377,7 @@ def test_update_version_sections_completed(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
 
     atbd = atbds_factory.create()
@@ -421,6 +429,7 @@ def test_update_minor_version_number(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
     s3_bucket,
 ):
 
@@ -477,6 +486,7 @@ def test_delete_version(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
     atbd = atbds_factory.create()
     version = atbd_versions_factory.create(atbd_id=atbd.id, minor=1, status="Draft",)
@@ -507,6 +517,7 @@ def test_atbd_versions_ordering(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
 
     atbd1 = atbds_factory.create()

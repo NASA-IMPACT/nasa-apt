@@ -1,8 +1,9 @@
 version: '3.8'
 services:
+
   db:
     # Postgres db for local development only.
-    # For staging/production, see RDS instance in cloudformation.yaml
+    # For staging/production, see RDS instance in stack/app.py
     image: postgres:11.8
     ports:
       - "5432:5432"
@@ -11,22 +12,30 @@ services:
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
     command: postgres -c log_statement=all
-  db-bootstrapper: 
+  
+  bootstrapper: 
     build: 
       context: ./
-      dockerfile: ./db/local.Dockerfile
-    command: >
-      sh -c "
-        sqitch deploy --verify db:pg://masteruser:password@db:5432/nasadb &&
-        psql 'postgres://masteruser:password@db:5432/nasadb?options=--search_path%3dapt' -f /sqitch/testData.sql
-      "
+      dockerfile: ./fixture_data/bootstrapper.Dockerfile
+    command: "sh fixture_data/setup.sh"
     volumes: 
-      - ./db:/sqitch
+      - ./db:/db
       - ./db:/var/lib/postgresql/data
-     
+      - ./fixture_data/:/db/fixture_data
+    environment: 
+      AWS_ACCESS_KEY_ID: stub
+      AWS_SECRET_ACCESS_KEY: stub
+      AWS_DEFAULT_REGION: us-east-1
+      S3_BUCKET: nasa-apt-dev-files  
+      POSTGRES_DB: nasadb
+      POSTGRES_USER: masteruser
+      POSTGRES_PASSWORD: password
+      POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
+      JWT_SECRET_ARN: mocked_jwt_secret_arn
+      JWT_SECRET_VALUE: mock-jwt-secret-value-NOT-TO-BE-USED-IN-PRODUCTION
     depends_on: 
       - db-ready
-     
+      - localstack-ready
       
   elastic:
     # Elastic db for local development only.
@@ -42,15 +51,25 @@ services:
     ports:
       - "9200:9200"
   # localstack for local development only. AWS S3 used for staging/production
+  
+  mail: 
+    image: bytemark/smtp
+    restart: always
+  
   localstack:
     image: localstack/localstack:0.12.7
     environment:
-      SERVICES: s3,secretsmanager
+      LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
+      SERVICES: s3,secretsmanager,cognito
+      SMTP_HOST: mail
+      SMTP_USER: test@example.com
+      SMTP_PASS: secretpassword
+      SMTP_EMAIL: no-reply@example.com
+      HOSTNAME: localhost
+      HOSTNAME_EXTERNAL: localhost
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
       AWS_DEFAULT_REGION: us-east-1
-      HOSTNAME: localhost
-      HOSTNAME_EXTERNAL: localhost
       S3_BUCKET: nasa-apt-dev-files  
       POSTGRES_DB: nasadb
       POSTGRES_USER: masteruser
@@ -60,20 +79,12 @@ services:
       JWT_SECRET_VALUE: mock-jwt-secret-value-NOT-TO-BE-USED-IN-PRODUCTION
     ports:
       - "4566:4566"
-    volumes: 
-      - ./localstack/setup.sh:/docker-entrypoint-initaws.d/setup.sh
-      - ./localstack/figures:/figures
       
   api:
     build:
       context: ./
       dockerfile: app/local.Dockerfile
     image: nasa-apt/dev/app
-    # Same as above, I'm sure there's a better way to do this, than sleeping for an 
-    # arbitarty amount of time. All of the `wait-for-dependency` type scripts I've found 
-    # online consider the service to be ready once `nc -z $HOST $PORT` succeeds. However 
-    # in the case of localstack, those services will succeed before all of the necessary
-    # S3 and secretmanager resources have been built - so the API will still fail. 
     command: >
       sh -c "
         python wait_for_localstack_ready.py &&
@@ -83,8 +94,7 @@ services:
       - "8000:80"
     volumes:
       - ./app:/app/app
-      - ./localstack/wait_for_localstack_ready.py:/app/wait_for_localstack_ready.py
-
+      - ./fixture_data/wait_for_localstack_ready.py:/app/wait_for_localstack_ready.py
     environment:
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
       AWS_ACCESS_KEY_ID: stub
@@ -96,18 +106,17 @@ services:
       S3_BUCKET: nasa-apt-dev-files
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
       JWT_SECRET_ARN: mocked_jwt_secret_arn
-
       # This URL omits the "http://" in order to remain consistent
       # with the value of the URL returned by the ElasticSearch Domain 
       # CDK component
       ELASTICSEARCH_URL: elastic:9200
       IDP_METADATA_URL: $IDP_METADATA_URL
       FASTAPI_HOST: http://localhost:8000
-      JWT_SECRET: $JWT_SECRET
       APT_FRONTEND_URL: $APT_FRONTEND_URL
+      APP_CLIENT_ID: 3v15rnvglc8p9nkja4behaoijk
+      USER_POOL_ID: us-east-1_myPaDY9o1
     depends_on:
-      - localstack-ready
-      - db-bootstrapper
+      - bootstrapper
   swagger:
     image: swaggerapi/swagger-ui
     ports:
