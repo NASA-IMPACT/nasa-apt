@@ -4,10 +4,12 @@ from typing import List
 from sqlalchemy import orm
 
 from app.api.utils import get_db, require_user
-from app.auth.saml import User
 from app.crud.contacts import crud_contacts
 from app.db.db_session import DbSession
 from app.schemas import contacts
+
+# from app.auth.saml import User
+from app.schemas.users import User
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -100,7 +102,7 @@ def update_contact(
 def delete_contact(
     contact_id: int, db: DbSession = Depends(get_db), user: User = Depends(require_user)
 ):
-    """ Deletes a given contact. Raises an exception if the user isn't logged in."""
+    """Deletes a given contact. Raises an exception if the user isn't logged in."""
     contact = crud_contacts.get(db_session=db, obj_in=contacts.Lookup(id=contact_id))
     db.delete(contact)
     db.commit()

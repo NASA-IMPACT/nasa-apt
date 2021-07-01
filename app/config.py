@@ -8,6 +8,7 @@ import os
 
 import boto3
 
+AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 API_VERSION_STRING = os.environ.get("API_VERSION_STRING") or exit(
     "API_VERSION_STRING env var required"
 )
@@ -35,7 +36,6 @@ ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL") or exit(
     "ELASTICSEARCH_URL env var required"
 )
 
-# JWT_SECRET = os.environ.get("JWT_SECRET") or exit("JWT_SECRET ENV var required")
 HOST = os.environ.get("FASTAPI_HOST") or exit("FASTAPI_HOST env var required")
 
 IDP_METADATA_URL = os.environ.get("IDP_METADATA_URL") or exit(
@@ -71,3 +71,8 @@ POSTGRES_DB_NAME = pg_credentials["dbname"]
 POSTGRES_HOST = pg_credentials["host"]
 
 JWT_SECRET = secrets_manager.get_secret_value(SecretId=JWT_SECRET_ARN)["SecretString"]
+
+USER_POOL_ID = os.environ.get("USER_POOL_ID") or exit("USER_POOL_ID env var required")
+APP_CLIENT_ID = os.environ.get("APP_CLIENT_ID") or exit(
+    "APP_CLIENT_ID env var required"
+)

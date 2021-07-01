@@ -99,6 +99,27 @@ docker-compose up --build
 ```
 This will create several docker containers: one for the Postgres database, one for the REST API, one for the ElasticSearch instance and one for a Localstack instance, which mocks AWS resources locally. 
 
+The Localstack container will instantiate a cognito service. The cognito service is a PAID feature of localstack, so in order to authenticate (sign-in) when running the API locally, you'll need an API key for a localstack PRO account as an env variable (in the `.env` file): 
+
+```bash
+LOCALSTACK_API_KEY=...
+```
+
+When running the front-end locally, the `sign-up` functionality will still point to the hosted UI - meaning that it will not be possible to sign up. To mitigate this, users will be created when spinning up the APIl.
+
+Test users (and their passwords): 
+- TODO!
+
+In order to authenticated with the locally running instance of cognito, the frontend needs to know the User Pool ID and the User Pool Client ID to authenticate against. These values will be printed in the output of the locally running API, but can also be accessed with the following commands: 
+
+```bash
+# Grabs user pool id - won't produce any output
+pool_id=$(AWS_REGION=us-east-1 aws --endpoint-url http://localhost:4566 cognito-idp list-user-pools --no-sign-request --max-results 100 | jq -rc '.UserPools[0].Id')
+
+# Grab app client id and formats the output
+AWS_REGION=us-east-1 aws --endpoint-url http://localhost:4566 cognito-idp list-user-pool-clients --user-pool-id $pool_id  --no-sign-request --max-results 10 | jq -rc '.UserPoolClients[0] | {ClientId: .ClientId, UserPoolId: .UserPoolId}'
+```
+
 Upon spinning up, all necessary database migrations (see below) will be run, and the database will be pre-populated with a test ATBD, which has 2 versions, one with status `Published` and one with status `Draft`. The ElasticSearch instance will not be populated with data until the ATBD gets updated. 
 
 After running for the first time you can drop the `--build` flag (this flag forces the docker image to be re-built).

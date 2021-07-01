@@ -5,8 +5,6 @@ from sqlalchemy.exc import InvalidRequestError
 
 from app.db.models import Atbds
 
-# TODO: add test that elasticsearch indexing get's added to background tasks
-
 
 def test_list_atbds_unauthenticated(
     test_client,
@@ -14,6 +12,7 @@ def test_list_atbds_unauthenticated(
     atbds_factory,
     atbd_versions_factory,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
     assert json.loads(test_client.get("/v2/atbds").content) == []
 
@@ -48,6 +47,7 @@ def test_list_atbds_authenticated(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
     assert (
         json.loads(test_client.get("/v2/atbds", headers=authenticated_headers).content)
@@ -80,6 +80,7 @@ def test_get_atbd_by_id_unauthenticated(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
         result = test_client.get("/v2/atbds/1")
@@ -112,6 +113,7 @@ def test_get_atbd_by_id_authenticated(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
         result = test_client.get("/v2/atbds/1")
@@ -143,6 +145,7 @@ def test_get_atbd_by_alias_unauthenticated(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
         result = test_client.get("/v2/atbds/non-existent-alias")
@@ -175,6 +178,7 @@ def test_get_atbd_by_alias_authenticated(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
         result = test_client.get("/v2/atbds/non-existent-alias")
@@ -200,7 +204,9 @@ def test_get_atbd_by_alias_authenticated(
     assert set(v["version"] for v in result["versions"]) == {"v1.0", "v2.0"}
 
 
-def test_create_atbd_without_alias(test_client, db_session, authenticated_headers):
+def test_create_atbd_without_alias(
+    test_client, db_session, authenticated_headers, mocked_validate_cognito_token
+):
 
     with pytest.raises(Exception):
         result = test_client.post(
@@ -238,7 +244,9 @@ def test_create_atbd_without_alias(test_client, db_session, authenticated_header
     assert atbd.versions[0].created_by == atbd.versions[0].last_updated_by
 
 
-def test_create_atbd_with_alias(test_client, db_session, authenticated_headers):
+def test_create_atbd_with_alias(
+    test_client, db_session, authenticated_headers, mocked_validate_cognito_token
+):
     with pytest.raises(Exception):
         result = test_client.post(
             "/v2/atbds",
@@ -296,6 +304,7 @@ def test_update_atbd_by_id(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
 
     with pytest.raises(Exception):
@@ -354,6 +363,7 @@ def test_update_atbd_by_alias(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
 
     with pytest.raises(Exception):
@@ -413,6 +423,7 @@ def test_delete_atbd_by_id(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
         result = test_client.delete("/v2/atbds/1", headers=authenticated_headers)
@@ -440,6 +451,7 @@ def test_delete_atbd_by_alias(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
         result = test_client.delete(
@@ -470,6 +482,7 @@ def test_atbd_existence_check_by_id(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
 
     with pytest.raises(Exception):
@@ -498,6 +511,7 @@ def test_atbd_existence_check_by_alias(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
 
     with pytest.raises(Exception):
@@ -530,6 +544,7 @@ def test_publish_atbd_by_id(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
     s3_bucket,
 ):
 
@@ -604,6 +619,7 @@ def test_atbd_timestamps(
     atbd_versions_factory,
     authenticated_headers,
     mocked_send_to_elasticsearch,
+    mocked_validate_cognito_token,
 ):
 
     result = test_client.post(

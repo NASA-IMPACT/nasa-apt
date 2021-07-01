@@ -13,7 +13,7 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
     """CRUDAtbds."""
 
     def scan(self, db: DbSession):
-        """List operation - uses orm.containst_earger to join Versions only once,
+        """List operation - uses orm.contains_earger to join Versions only once,
         as opposed to re-loading the relation everytime the model is loaded."""
         query = (
             db.query(Atbds)

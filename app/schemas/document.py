@@ -29,7 +29,7 @@ class TypesEnum(str, Enum):
 
 
 class TextLeaf(BaseModel):
-    """Leaf Node: """
+    """Leaf Node:"""
 
     text: str
     underline: Optional[Union[str, bool]]

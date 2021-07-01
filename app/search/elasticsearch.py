@@ -59,7 +59,7 @@ def send_to_elastic(data: List[Dict]):
     return response.json()
 
 
-# TODO: re-implement this method
+# TODO: Dies the "update_index" method need to be re-implemented?
 
 # async def update_index(
 #     connection: asyncpg.connection,

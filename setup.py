@@ -55,8 +55,7 @@ inst_reqs = [
     "SQLAlchemy-Utils==0.37.0",
 ]
 extra_reqs = {
-    "dev": ["pre-commit"],
-    # "server": ["uvicorn", "click"],
+    "dev": ["pre-commit", "flake8", "black", "mypy", "isort"],
     "deploy": [
         "python-dotenv",
         "aws-cdk.core>=1.95.0",
@@ -70,6 +69,7 @@ extra_reqs = {
         "aws-cdk.aws_secretsmanager>=1.95.0",
         "aws-cdk.aws_ecs>=1.95.0",
         "aws-cdk.aws_elasticsearch>=1.95.0",
+        "aws-cdk.aws_cognito>=1.95.0",
     ],
     "test": [
         "moto==2.0.8",
