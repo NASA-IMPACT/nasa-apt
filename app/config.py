@@ -35,19 +35,22 @@ ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL") or exit(
 
 S3_BUCKET = os.environ.get("S3_BUCKET") or exit("S3_BUCKET env var required")
 
+
 AWS_RESOURCES_ENDPOINT = os.environ.get("AWS_RESOURCES_ENDPOINT")
 
-secrets_manager_client_params = dict(service_name="secretsmanager")
+cognito = boto3.client("cognito-idp")
+secrets_manager = boto3.client("secretsmanager")
 
-# Allows us to point the APP to the AWS secretsmanager instance
+
+# Allows us to point the APP to the AWS secretsmanager and cognito instances
 # running in localstack, when developing locally. This value
 # should be left blank when the APP is deployed in an AWS stack
 if AWS_RESOURCES_ENDPOINT:
-    secrets_manager_client_params.update(
-        dict(endpoint_url=os.environ.get("AWS_RESOURCES_ENDPOINT"))
+    secrets_manager = boto3.client(
+        "secretsmanager", endpoint_url=AWS_RESOURCES_ENDPOINT
     )
+    cognito = boto3.client("cognito-idp", endpoint_url=AWS_RESOURCES_ENDPOINT)
 
-secrets_manager = boto3.client(**secrets_manager_client_params)
 
 pg_credentials = json.loads(
     secrets_manager.get_secret_value(SecretId=POSTGRES_ADMIN_CREDENTIALS_ARN)[
@@ -61,8 +64,29 @@ POSTGRES_PORT = pg_credentials["port"]
 POSTGRES_DB_NAME = pg_credentials["dbname"]
 POSTGRES_HOST = pg_credentials["host"]
 
-
-USER_POOL_ID = os.environ.get("USER_POOL_ID") or exit("USER_POOL_ID env var required")
-APP_CLIENT_ID = os.environ.get("APP_CLIENT_ID") or exit(
-    "APP_CLIENT_ID env var required"
+USER_POOL_NAME = os.environ.get("USER_POOL_NAME") or exit(
+    "USER_POOL_NAME env var required"
 )
+APP_CLIENT_NAME = os.environ.get("APP_CLIENT_NAME") or exit(
+    "APP_CLIENT_NAME env var required"
+)
+
+
+[USER_POOL_ID] = [
+    x["Id"]
+    for x in cognito.list_user_pools(MaxResults=1000)["UserPools"]
+    if x["Name"] == USER_POOL_NAME
+]
+
+[APP_CLIENT_ID] = [
+    x["ClientId"]
+    for x in cognito.list_user_pool_clients(MaxResults=1000, UserPoolId=USER_POOL_ID)[
+        "UserPoolClients"
+    ]
+    if x["ClientName"] == APP_CLIENT_NAME
+]
+
+COGNITO_KEYS_URL = f"https://cognito-idp.{AWS_REGION}.amazonaws.com/{USER_POOL_ID}/.well-known/jwks.json"
+
+if AWS_RESOURCES_ENDPOINT:
+    COGNITO_KEYS_URL = f"{AWS_RESOURCES_ENDPOINT}/{USER_POOL_ID}/.well-known/jwks.json"

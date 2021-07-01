@@ -38,9 +38,7 @@ def validate_token(token: str) -> Dict:
     """
     print("TOKEN: ", token)
 
-    keys_url = f"https://cognito-idp.{config.AWS_REGION}.amazonaws.com/{config.USER_POOL_ID}/.well-known/jwks.json"
-
-    with urllib.request.urlopen(keys_url) as f:  # type: ignore
+    with urllib.request.urlopen(config.COGNITO_KEYS_URL) as f:  # type: ignore
         response = f.read()
 
     keys = json.loads(response.decode("utf-8"))["keys"]

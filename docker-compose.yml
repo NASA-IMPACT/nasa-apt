@@ -31,6 +31,8 @@ services:
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
+      USER_POOL_NAME: dev-users
+      APP_CLIENT_NAME: dev-client
     depends_on: 
       - db-ready
       - localstack-ready
@@ -68,11 +70,6 @@ services:
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
       AWS_DEFAULT_REGION: us-east-1
-      S3_BUCKET: nasa-apt-dev-files  
-      POSTGRES_DB: nasadb
-      POSTGRES_USER: masteruser
-      POSTGRES_PASSWORD: password
-      POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
     ports:
       - "4566:4566"
       
@@ -106,8 +103,10 @@ services:
       # CDK component
       ELASTICSEARCH_URL: elastic:9200
       APT_FRONTEND_URL: $APT_FRONTEND_URL
-      APP_CLIENT_ID: 3v15rnvglc8p9nkja4behaoijk
-      USER_POOL_ID: us-east-1_myPaDY9o1
+      USER_POOL_NAME: dev-users
+      APP_CLIENT_NAME: dev-client
+      #APP_CLIENT_ID: 3v15rnvglc8p9nkja4behaoijk
+      #USER_POOL_ID: us-east-1_myPaDY9o1
     depends_on:
       - bootstrapper
   swagger:

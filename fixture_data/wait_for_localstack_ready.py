@@ -25,7 +25,7 @@ def aws_resources_ready():
     )
     if not (
         {s["Name"] for s in sm.list_secrets()["SecretList"]}
-        == {"mocked_credentials_arn", "mocked_jwt_secret_arn"}
+        == {"mocked_credentials_arn"}
     ):
         return False
 

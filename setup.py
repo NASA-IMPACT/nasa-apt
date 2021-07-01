@@ -66,7 +66,6 @@ extra_reqs = {
         "aws-cdk.aws_rds>=1.95.0",
         "aws-cdk.aws_ssm>=1.95.0",
         "aws-cdk.aws_ec2>=1.95.0",
-        "aws-cdk.aws_secretsmanager>=1.95.0",
         "aws-cdk.aws_ecs>=1.95.0",
         "aws-cdk.aws_elasticsearch>=1.95.0",
         "aws-cdk.aws_cognito>=1.95.0",
