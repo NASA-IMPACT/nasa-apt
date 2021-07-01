@@ -8,8 +8,6 @@ from fastapi import APIRouter, Depends
 
 router = APIRouter()
 
-mockauth = config.IDP_METADATA_URL == "mock"
-
 
 @router.get("/user/{username}")
 def get_user(username: str, user: User = Depends(require_user)):

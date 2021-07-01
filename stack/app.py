@@ -157,8 +157,6 @@ class nasaAPTLambdaStack(core.Stack):
             BACKEND_CORS_ORIGINS=config.BACKEND_CORS_ORIGINS,
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             ELASTICSEARCH_URL=esdomain.domain_endpoint,
-            JWT_SECRET_ARN=jwt_secret.secret_arn,
-            IDP_METADATA_URL=config.IDP_METADATA_URL,
             S3_BUCKET=bucket.bucket_name,
         )
         lambda_env.update(dict(MODULE_NAME="nasa_apt.main", VARIABLE_NAME="app",))
