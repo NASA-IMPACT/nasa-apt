@@ -58,7 +58,7 @@ def get_db(
     """
     print("USER: ", user)
     if user:
-        logger.info(f"User {user['username']} is authenticated. Elevating session")
+        logger.info(f"User {user['sub']} is authenticated. Elevating session")
         db_session.execute("SET SESSION AUTHORIZATION app_user;")
 
     return db_session

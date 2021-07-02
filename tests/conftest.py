@@ -307,7 +307,6 @@ def mocked_send_to_elasticsearch():
 def mocked_validate_cognito_token():
     with patch("app.auth.cognito.validate_token") as mocked_validate_cognito_token:
         mocked_validate_cognito_token.return_value = {
-            "username": "magic mock",
-            "user": "magic mock",
+            "sub": "123abc456def",
         }
         yield mocked_validate_cognito_token
