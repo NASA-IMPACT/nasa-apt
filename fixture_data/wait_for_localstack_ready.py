@@ -29,6 +29,47 @@ def aws_resources_ready():
     ):
         return False
 
+    cognito = boto3.client(
+        "cognito-idp", endpoint_url=os.environ["AWS_RESOURCES_ENDPOINT"]
+    )
+    if not (
+        {u["Name"] for u in cognito.list_user_pools(MaxResults=60)["UserPools"]}
+        == {"dev-users"}
+    ):
+        print(
+            "User pools: ",
+            {u for u in cognito.list_user_pools(MaxResults=60)["UserPools"]},
+        )
+        return False
+    else:
+        print(
+            "User pools: ",
+            [u["Id"] for u in cognito.list_user_pools(MaxResults=60)["UserPools"]],
+        )
+        [user_pool_id] = [
+            x["Id"] for x in cognito.list_user_pools(MaxResults=60)["UserPools"]
+        ]
+
+        if not (
+            {
+                u["ClientName"]
+                for u in cognito.list_user_pool_clients(
+                    MaxResults=60, UserPoolId=user_pool_id
+                )["UserPoolClients"]
+            }
+            == {"dev-client"}
+        ):
+            print(
+                "User pool clients: ",
+                {
+                    u["ClientId"]
+                    for u in cognito.list_user_pool_clients(
+                        MaxResults=60, UserPoolId=user_pool_id
+                    )["UserPoolClients"]
+                },
+            )
+            return False
+
     print("All resources ready!")
     return True
 

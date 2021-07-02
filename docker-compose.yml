@@ -105,8 +105,7 @@ services:
       APT_FRONTEND_URL: $APT_FRONTEND_URL
       USER_POOL_NAME: dev-users
       APP_CLIENT_NAME: dev-client
-      #APP_CLIENT_ID: 3v15rnvglc8p9nkja4behaoijk
-      #USER_POOL_ID: us-east-1_myPaDY9o1
+     
     depends_on:
       - bootstrapper
   swagger:

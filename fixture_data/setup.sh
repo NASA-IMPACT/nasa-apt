@@ -17,9 +17,14 @@ aws --endpoint-url http://localstack:4566 s3 mb s3://"${S3_BUCKET}"
 aws --endpoint-url http://localstack:4566 s3 cp "fixture_data/figures/fullmoon.jpg" "s3://${S3_BUCKET}/1/images/fullmoon.jpg"
 aws --endpoint-url http://localstack:4566 s3 cp "fixture_data/figures/test-atbd-1-v1-0.pdf" "s3://${S3_BUCKET}/1/pdf/test-atbd-1-v1-0.pdf"
 aws --endpoint-url http://localstack:4566 s3 cp "fixture_data/figures/test-atbd-1-v1-0.pdf" "s3://${S3_BUCKET}/1/pdf/test-atbd-1-v1-1.pdf"
+aws --endpoint-url http://localstack:4566 s3 cp "fixture_data/figures/test-atbd-1-v1-0.pdf" "s3://${S3_BUCKET}/1/pdf/test-atbd-1-v1-0-journal.pdf"
+aws --endpoint-url http://localstack:4566 s3 cp "fixture_data/figures/test-atbd-1-v1-0.pdf" "s3://${S3_BUCKET}/1/pdf/test-atbd-1-v1-1-journal.pdf"
 
 wait_for_service "cognito-idp"
 wait_for_service "cognito-identity"
+
+#pool_id = $(aws --endpoint-url http://localstack:4566 cognito-idp list-user-pools --no-sign-request --max-results 60 | jq -rc "select(.UserPools|length==1)")
+
 # Cognito setup
 pool_id=$(aws --endpoint-url http://localstack:4566 cognito-idp create-user-pool --pool-name ${USER_POOL_NAME} | jq -rc ".UserPool.Id")
 client_id=$(aws --endpoint-url http://localstack:4566 cognito-idp create-user-pool-client --user-pool-id ${pool_id} --client-name ${APP_CLIENT_NAME} | jq -rc ".UserPoolClient.ClientId")
@@ -27,8 +32,7 @@ client_id=$(aws --endpoint-url http://localstack:4566 cognito-idp create-user-po
 echo "USER POOL ID: ${pool_id}"
 echo "APP CLIENT ID: ${client_id}"
 
-
-user_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username test@example.com --user-attributes '[{"Name":"preferred_username","Value":"Test User"}, {"Name":"Email","Value":"test@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+user_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username test@example.com --user-attributes '[{"Name":"preferred_username","Value":"Test User"}, {"Name":"email","Value":"test@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
 
 echo "USER SUB: ${user_sub}"
 

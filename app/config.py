@@ -74,13 +74,13 @@ APP_CLIENT_NAME = os.environ.get("APP_CLIENT_NAME") or exit(
 
 [USER_POOL_ID] = [
     x["Id"]
-    for x in cognito.list_user_pools(MaxResults=1000)["UserPools"]
+    for x in cognito.list_user_pools(MaxResults=60)["UserPools"]
     if x["Name"] == USER_POOL_NAME
 ]
 
 [APP_CLIENT_ID] = [
     x["ClientId"]
-    for x in cognito.list_user_pool_clients(MaxResults=1000, UserPoolId=USER_POOL_ID)[
+    for x in cognito.list_user_pool_clients(MaxResults=60, UserPoolId=USER_POOL_ID)[
         "UserPoolClients"
     ]
     if x["ClientName"] == APP_CLIENT_NAME

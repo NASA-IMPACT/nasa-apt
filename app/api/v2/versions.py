@@ -45,7 +45,7 @@ def create_new_version(atbd_id: str, db=Depends(get_db), user=Depends(require_us
     in the provided ATBD. Raises an exception if the latest version does
     NOT have status=`Published`.
     """
-    version = crud_versions.create(db=db, atbd_id=atbd_id, user=user["user"])
+    version = crud_versions.create(db=db, atbd_id=atbd_id, user=user["sub"])
     return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
 
 
@@ -136,7 +136,7 @@ def update_atbd_version(
             **version_input.sections_completed,
         }
 
-    atbd_version.last_updated_by = user["user"]
+    atbd_version.last_updated_by = user["sub"]
     atbd_version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     crud_versions.update(db=db, db_obj=atbd_version, obj_in=version_input)
 

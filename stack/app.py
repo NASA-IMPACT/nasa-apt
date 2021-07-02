@@ -221,6 +221,15 @@ class nasaAPTLambdaStack(core.Stack):
                 resources=[user_pool.user_pool_arn],
             )
         )
+        lambda_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "cognito-idp:ListUserPools",
+                    "cognito-idp:ListUserPoolClients",
+                ],
+                resources=["*"],
+            )
+        )
 
         core.CfnOutput(
             self,
