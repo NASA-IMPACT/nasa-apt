@@ -56,9 +56,9 @@ def get_db(
     Returns an db session with the correct permission level set (`anonymous` by
     default and `app_user` if the user is authenticated)
     """
+    print("USER: ", user)
     if user:
-
-        logger.info(f"User {user['username']} is authenticated. Elevating session")
+        logger.info(f"User {user['sub']} is authenticated. Elevating session")
         db_session.execute("SET SESSION AUTHORIZATION app_user;")
 
     return db_session

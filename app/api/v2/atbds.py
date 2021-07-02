@@ -63,7 +63,7 @@ def create_atbd(
 ):
     """Creates a new ATBD. Requires a title, optionally takes an alias.
     Raises 400 if the user is not logged in."""
-    output = crud_atbds.create(db, atbd_input, user["user"])
+    output = crud_atbds.create(db, atbd_input, user["sub"])
     return output
 
 
@@ -83,7 +83,7 @@ def update_atbd(
     is not logged in. Re-indexes all corresponding items in Elasticsearch
     with the new/updated values"""
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-    atbd.last_updated_by = user["user"]
+    atbd.last_updated_by = user["sub"]
     atbd.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     try:
         atbd = crud_atbds.update(db=db, db_obj=atbd, obj_in=atbd_input)
@@ -120,12 +120,12 @@ def publish_atbd(
         )
     now = datetime.datetime.now(datetime.timezone.utc)
     latest_version.status = "Published"
-    latest_version.published_by = user["user"]
+    latest_version.published_by = user["sub"]
     latest_version.published_at = now
 
     # Publishing a version counts as updating it, so we
     # update the timestamp and user
-    latest_version.last_updated_by = user["user"]
+    latest_version.last_updated_by = user["sub"]
     latest_version.last_updated_at = now
 
     if publish_input.changelog is not None and publish_input.changelog != "":

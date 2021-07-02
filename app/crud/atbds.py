@@ -80,8 +80,11 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
             raise HTTPException(
                 status_code=404, detail=f"No data found for id/alias: {atbd_id}"
             )
+
         return result
 
+    # TODO: migrate this from a custom Postgres function to a SQLAlchemy
+    # operation that executes within a single transaction
     def create(self, db: DbSession, atbd_input: Create, user: str):  # type: ignore
         """Creates a new ATBD (using a custom Postgres function, in order to also create the
         necessary Version)"""

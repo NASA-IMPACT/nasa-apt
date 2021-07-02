@@ -1,6 +1,11 @@
 
 name: Deploy APT API
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
 jobs: 
   lint:
     runs-on: ubuntu-latest
@@ -44,10 +49,8 @@ jobs:
   deploy-staging: 
     needs: [test]
     if: |
-      ${{
-        github.event.ref == 'refs/heads/develop' || 
-        github.event.ref == 'refs/heads/feature/api-v2'
-      }}
+      github.event.ref == 'refs/heads/develop' &&
+      github.event.pull_request.merged == 'true'
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
@@ -89,7 +92,9 @@ jobs:
         run: cdk deploy nasa-apt-api-lambda-dev --require-approval never
   deploy-prod: 
     needs: [test]
-    if: github.event.ref == 'refs/heads/master' 
+    if: |
+      github.event.ref == 'refs/heads/develop' &&
+      github.event.pull_request.merged == 'true' 
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2

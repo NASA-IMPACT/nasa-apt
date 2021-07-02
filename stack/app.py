@@ -13,7 +13,6 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
-from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_cdk import core
 
 
@@ -142,13 +141,7 @@ class nasaAPTLambdaStack(core.Stack):
             ],
             resources=["*"],
         )
-        jwt_secret = secretsmanager.Secret(
-            self,
-            f"{id}-jwt-secret",
-            description="Secret Key for signing JWT tokens",
-            removal_policy=core.RemovalPolicy.SNAPSHOT,
-            secret_name=f"{id}-jwt-secret",
-        )
+
         frontend_url = config.FRONTEND_URL
         lambda_env = dict(
             PROJECT_NAME=config.PROJECT_NAME,
@@ -181,7 +174,6 @@ class nasaAPTLambdaStack(core.Stack):
 
         lambda_function.add_to_role_policy(logs_access)
         database.secret.grant_read(lambda_function)
-        jwt_secret.grant_read(lambda_function)
         esdomain.grant_read_write(lambda_function)
         bucket.grant_read_write(lambda_function)
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
@@ -198,12 +190,6 @@ class nasaAPTLambdaStack(core.Stack):
             f"{id}-endpoint-url",
             value=api_gateway.api_endpoint,
             description="API Gateway endpoint for the APT API",
-        )
-
-        # Adds the "host" to the lambda function environment variables
-        # This is necessary for the saml authentication logic
-        lambda_function.add_environment(
-            key="FASTAPI_HOST", value=api_gateway.api_endpoint,
         )
 
         user_pool = cognito.UserPool(
@@ -233,6 +219,15 @@ class nasaAPTLambdaStack(core.Stack):
             iam.PolicyStatement(
                 actions=["cognito-idp:AdminGetUser"],
                 resources=[user_pool.user_pool_arn],
+            )
+        )
+        lambda_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "cognito-idp:ListUserPools",
+                    "cognito-idp:ListUserPoolClients",
+                ],
+                resources=["*"],
             )
         )
 
@@ -285,10 +280,10 @@ class nasaAPTLambdaStack(core.Stack):
         )
 
         lambda_function.add_environment(
-            key="USER_POOL_ID", value=user_pool.user_pool_id,
+            key="USER_POOL_NAME", value=user_pool.node.id,
         )
         lambda_function.add_environment(
-            key="APP_CLIENT_ID", value=app_client.user_pool_client_id
+            key="APP_CLIENT_NAME", value=app_client.user_pool_client_name
         )
 
 
