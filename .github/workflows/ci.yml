@@ -65,8 +65,8 @@ jobs:
       - name: Configure awscli
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.DS_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.DS_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Make .env file
         run: |
@@ -93,7 +93,7 @@ jobs:
   deploy-prod: 
     needs: [test]
     if: |
-      github.event.ref == 'refs/heads/develop' &&
+      github.event.ref == 'refs/heads/master' &&
       github.event.pull_request.merged == 'true' 
     runs-on: ubuntu-latest
     steps: 
@@ -109,8 +109,8 @@ jobs:
       - name: Configure awscli
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.UAH_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.UAH_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Make .env file
         run: |
