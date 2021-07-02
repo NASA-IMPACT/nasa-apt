@@ -43,11 +43,10 @@ jobs:
       run: pytest tests --cov app --cov-report term-missing --ignore=venev
   deploy-staging: 
     needs: [test]
-    if: |
-      ${{
-        github.event.ref == 'refs/heads/develop' || 
-        github.event.ref == 'refs/heads/feature/api-v2'
-      }}
+    push:
+      branches:
+        - develop
+    #if: github.event.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
@@ -89,7 +88,10 @@ jobs:
         run: cdk deploy nasa-apt-api-lambda-dev --require-approval never
   deploy-prod: 
     needs: [test]
-    if: github.event.ref == 'refs/heads/master' 
+    push:
+      branches:
+        - master
+    #if: github.event.ref == 'refs/heads/master' 
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
