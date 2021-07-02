@@ -43,10 +43,9 @@ jobs:
       run: pytest tests --cov app --cov-report term-missing --ignore=venev
   deploy-staging: 
     needs: [test]
-    push:
-      branches:
-        - develop
-    #if: github.event.ref == 'refs/heads/develop'
+    if: |
+      github.event.ref == 'refs/heads/develop' &&
+      github.event.pull_request.merged == 'true'
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
@@ -88,10 +87,9 @@ jobs:
         run: cdk deploy nasa-apt-api-lambda-dev --require-approval never
   deploy-prod: 
     needs: [test]
-    push:
-      branches:
-        - master
-    #if: github.event.ref == 'refs/heads/master' 
+    if: |
+      github.event.ref == 'refs/heads/develop' &&
+      github.event.pull_request.merged == 'true' 
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
