@@ -4,7 +4,12 @@ from typing import List
 
 from sqlalchemy import exc
 
-from app.api.utils import get_db, require_user
+from app.api.utils import (
+    get_active_user_principals,
+    get_db,
+    permissions_filter,
+    require_user,
+)
 from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession
@@ -14,6 +19,7 @@ from app.schemas import atbds
 from app.schemas.users import User
 from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
 
+import fastapi_permissions as permissions
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 router = APIRouter()
@@ -24,10 +30,15 @@ router = APIRouter()
     responses={200: dict(description="Return a list of all available ATBDs")},
     response_model=List[atbds.SummaryOutput],
 )
-def list_atbds(db: DbSession = Depends(get_db)):
+def list_atbds(
+    db: DbSession = Depends(get_db),
+    principals: List = Depends(get_active_user_principals),
+):
     """Lists all ATBDs with summary version info (only versions with status
     `Published` will be displayed if the user is not logged in)"""
-    return crud_atbds.scan(db=db)
+    return permissions_filter(principals, crud_atbds.scan(db=db))
+
+    # return crud_atbds.scan(db=db)
 
 
 @router.head(

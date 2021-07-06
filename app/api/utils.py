@@ -2,17 +2,53 @@
 Provides various utilities to the API classes
 """
 import re
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 
 from boto3 import client
 
 from app.auth.cognito import get_user
 from app.config import AWS_RESOURCES_ENDPOINT
 from app.db.db_session import DbSession, get_session
+from app.db.models import Atbds
 from app.logs import logger
 from app.schemas.users import User
 
+import fastapi_permissions as permissions
 from fastapi import Depends, HTTPException
+
+
+def get_active_user_principals(user: User = Depends(get_user)) -> List[str]:
+
+    print("user: ", user)
+    # TODO: check groups
+    principals = [permissions.Everyone]
+    if user:
+        principals.extend([permissions.Authenticated, f"user:{user['sub']}"])
+
+    return principals
+
+
+def permissions_filter(
+    principals: List[str],
+    atbds: List[Atbds],
+):
+
+    print("PRINCIPALS: ", principals)
+    result = []
+    for atbd in atbds:
+        for version in atbd.versions:
+            print(version.__acl__())
+        versions = [
+            version
+            for version in atbd.versions
+            if permissions.has_permission(principals, "view", version.__acl__())
+        ]
+        if not versions:
+            continue
+        atbd.versions = versions
+        result.append(atbd)
+
+    return result
 
 
 def cognito_client() -> client:
@@ -50,13 +86,13 @@ def require_user(user: User = Depends(get_user)) -> User:
 
 
 def get_db(
-    db_session: DbSession = Depends(get_session), user: User = Depends(get_user),
+    db_session: DbSession = Depends(get_session),
+    user: User = Depends(get_user),
 ) -> DbSession:
     """
     Returns an db session with the correct permission level set (`anonymous` by
     default and `app_user` if the user is authenticated)
     """
-    print("USER: ", user)
     if user:
         logger.info(f"User {user['sub']} is authenticated. Elevating session")
         db_session.execute("SET SESSION AUTHORIZATION app_user;")

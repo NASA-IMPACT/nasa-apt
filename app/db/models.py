@@ -1,4 +1,5 @@
 """SQLAlchemy models for interfacing with the database"""
+import fastapi_permissions as permissions
 from sqlalchemy import (
     JSON,
     CheckConstraint,
@@ -11,6 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
+from sqlalchemy.dialects import postgresql
 
 from app.db.base import Base
 from app.db.types import utcnow
@@ -20,7 +22,12 @@ class AtbdVersions(Base):
     """AtbdVersions"""
 
     __tablename__ = "atbd_versions"
-    atbd_id = Column(Integer(), ForeignKey("atbds.id"), primary_key=True, index=True,)
+    atbd_id = Column(
+        Integer(),
+        ForeignKey("atbds.id"),
+        primary_key=True,
+        index=True,
+    )
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="Draft", nullable=False)
@@ -35,6 +42,9 @@ class AtbdVersions(Base):
     changelog = Column(String())
     doi = Column(String())
     citation = Column(MutableDict.as_mutable(JSON), server_default="{}")
+    owner = Column(String())
+    authors = Column(postgresql.ARRAY(String))
+    reviewers = Column(postgresql.ARRAY(String))
 
     def __repr__(self):
         """String representation"""
@@ -44,8 +54,34 @@ class AtbdVersions(Base):
             f" sections_completed={self.sections_completed}, created_by={self.created_by},"
             f" created_at={self.created_at}, published_by={self.published_by},"
             f" published_at={self.published_by}, last_updated_at={self.last_updated_at}"
-            f" last_updated_by={self.last_updated_by})>"
+            f" last_updated_by={self.last_updated_by}), owner={self.owner}, authors={self.authors}>"
+            f" reviewers={self.reviewers}"
         )
+
+    def __acl__(self):
+        """ "Access Control List"""
+        acl = []
+
+        if self.status == "Published":
+            acl = [(permissions.Allow, permissions.Everyone, "view")]
+
+        [authors] = self.authors
+        for author in authors.split(","):
+            author = author.strip("()[]'")
+            acl.append((permissions.Allow, f"user:{author}", "view"))
+            acl.append((permissions.Allow, f"user:{author}", "comment"))
+            acl.append((permissions.Allow, f"user:{author}", "edit"))
+
+        [reviewers] = self.reviewers
+        for reviewer in reviewers.split(","):
+            reviewer = reviewer.strip("()[]'")
+            acl.append((permissions.Allow, f"user:{reviewer}", "view"))
+            acl.append((permissions.Allow, f"user:{reviewer}", "comment"))
+
+        acl.append((permissions.Allow, "role:curator", "view"))
+        acl.append((permissions.Allow, "role:curator", "comment"))
+
+        return acl
 
 
 class Atbds(Base):
@@ -119,8 +155,16 @@ class AtbdVersionsContactsAssociation(Base):
         ),
     )
 
-    atbd_id = Column(Integer(), nullable=False, primary_key=True,)
-    major = Column(Integer(), nullable=False, primary_key=True,)
+    atbd_id = Column(
+        Integer(),
+        nullable=False,
+        primary_key=True,
+    )
+    major = Column(
+        Integer(),
+        nullable=False,
+        primary_key=True,
+    )
 
     contact_id = Column(
         Integer(), ForeignKey("contacts.id"), nullable=False, primary_key=True

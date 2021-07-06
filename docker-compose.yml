@@ -14,6 +14,8 @@ services:
     command: postgres -c log_statement=all
   
   bootstrapper: 
+    # Sets up the necessary AWS resources in Localstack and 
+    # loads fixture data in the database
     build: 
       context: ./
       dockerfile: ./fixture_data/bootstrapper.Dockerfile
@@ -50,13 +52,14 @@ services:
       - http.cors.allow-credentials=true
     ports:
       - "9200:9200"
-  # localstack for local development only. AWS S3 used for staging/production
   
-  mail: 
-    image: bytemark/smtp
-    restart: always
+  # Mail server enables cognito to send account confirmation/password reset emails
+  # mail: 
+  #   image: bytemark/smtp
+  #   restart: always
   
   localstack:
+    # localstack for local development only. AWS S3 used for staging/production
     image: localstack/localstack:0.12.7
     environment:
       LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
@@ -104,25 +107,16 @@ services:
       ELASTICSEARCH_URL: elastic:9200
       APT_FRONTEND_URL: $APT_FRONTEND_URL
       USER_POOL_NAME: dev-users
-      APP_CLIENT_NAME: dev-client
-     
+      APP_CLIENT_NAME: dev-client 
     depends_on:
       - bootstrapper
-  swagger:
-    image: swaggerapi/swagger-ui
-    ports:
-      - "8080:8080"
-    expose:
-      - "8080"
-    environment:
-      API_URL: http://localhost:8000/atbds
-    depends_on:
-      - api
+
   db-ready:
     image: dadarek/wait-for-dependencies
     depends_on:
       - db
     command: db:5432
+
   localstack-ready:
     image: dadarek/wait-for-dependencies
     depends_on:

@@ -31,12 +31,51 @@ client_id=$(aws --endpoint-url http://localstack:4566 cognito-idp create-user-po
 
 echo "USER POOL ID: ${pool_id}"
 echo "APP CLIENT ID: ${client_id}"
+ 
+# Create test users (curators, authors, reviewers and an owner)
+curator_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username curator@example.com --user-attributes '[{"Name":"preferred_username","Value":"CuratorUser"}, {"Name":"email","Value":"curator@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username curator@example.com --password Password123! --permanent
+echo "Curator sub: ${curator_sub}"
 
-user_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username test@example.com --user-attributes '[{"Name":"preferred_username","Value":"Test User"}, {"Name":"email","Value":"test@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+owner_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username owner@example.com --user-attributes '[{"Name":"preferred_username","Value":"OwnerUser"}, {"Name":"email","Value":"owner@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username owner@example.com --password Password123! --permanent
+echo "Owner sub: ${owner_sub}"
 
-echo "USER SUB: ${user_sub}"
+author_sub_1=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username author1@example.com --user-attributes '[{"Name":"preferred_username","Value":"AuthorUser1"}, {"Name":"email","Value":"author1@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username author1@example.com --password Password123! --permanent
+echo "Author sub 1: ${author_sub_1}"
 
-aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username test@example.com --password Password123! --permanent
+author_sub_2=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username author2@example.com --user-attributes '[{"Name":"preferred_username","Value":"AuthorUser2"}, {"Name":"email","Value":"author2@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username author2@example.com --password Password123! --permanent
+echo "Author sub 2: ${author_sub_2}"
+
+author_sub_3=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username author3@example.com --user-attributes '[{"Name":"preferred_username","Value":"AuthorUser3"}, {"Name":"email","Value":"author3@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username author3@example.com --password Password123! --permanent
+echo "Author sub 3: ${author_sub_3}"
+
+reviewer_sub_1=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username reviewer1@example.com --user-attributes '[{"Name":"preferred_username","Value":"ReviewerUser1"}, {"Name":"email","Value":"reviwer1@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username reviewer1@example.com --password Password123! --permanent
+echo "Reviwers sub 1: ${reviewer_sub_1}"
+
+reviewer_sub_2=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username reviewer2@example.com --user-attributes '[{"Name":"preferred_username","Value":"ReviewerUser2"}, {"Name":"email","Value":"reviewer2@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username reviewer2@example.com --password Password123! --permanent
+echo "Reviewer sub 2: ${reviewer_sub_2}"
+
+reviewer_sub_3=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username reviewer3@example.com --user-attributes '[{"Name":"preferred_username","Value":"ReviewerUser3"}, {"Name":"email","Value":"reviewer3@example.com"}]' | jq -rc '.User.Attributes[] | select(.Name=="sub")| .Value')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username reviewer3@example.com --password Password123! --permanent
+echo "Reviewer sub 3: ${reviewer_sub_3}"
+
+# Create curator group and add curator user to it
+aws --endpoint-url http://localstack:4566 cognito-idp create-group --group-name curators --user-pool-id "${pool_id}"
+aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name curators --username curator@exmaple.com --user-pool-id "${pool_id}"
 
 sqitch deploy --verify db:pg://masteruser:password@db:5432/nasadb &&
-psql 'postgres://masteruser:password@db:5432/nasadb?options=--search_path%3dapt' -v user_sub="${user_sub}" -f fixture_data/testData.sql
+psql 'postgres://masteruser:password@db:5432/nasadb?options=--search_path%3dapt'  -f fixture_data/testData.sql \
+  -v owner_sub="${owner_sub}" \
+  -v author_sub_1="${author_sub_1}" \
+  -v author_sub_2="${author_sub_2}" \
+  -v reviewer_sub_1="${reviewer_sub_1}" \
+  -v reviewer_sub_2="${reviewer_sub_2}" 
+
+
+  

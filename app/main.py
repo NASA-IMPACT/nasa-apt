@@ -11,8 +11,8 @@ from starlette.middleware.gzip import GZipMiddleware
 
 app = FastAPI(
     title=config.PROJECT_NAME,
-    openapi_url="/api/v1/openapi.json",
-    description="A lightweight Cloud Optimized GeoTIFF tile server",
+    openapi_url="/api/v2/openapi.json",
+    description="Backend for the NASA Algorithm Publication Tool",
     version=config.API_VERSION_STRING,
 )
 
