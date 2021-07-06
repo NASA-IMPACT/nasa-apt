@@ -5,5 +5,14 @@ ecs/tex/Misc Test Files
 .idea
 venv
 .env
+.envrc
 .resources
 .vscode
+cdk.out/*
+*.pyc
+**/__pycache__/
+.mypy_cache/*
+Pipfile*
+*.egg-info*
+.coverage*
+.tox*

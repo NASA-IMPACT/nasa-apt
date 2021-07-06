@@ -1,9 +1,10 @@
 version: '3.8'
 services:
+
   db:
     # Postgres db for local development only.
-    # For staging/production, see RDS instance in cloudformation.yaml
-    image: postgres:11.1
+    # For staging/production, see RDS instance in stack/app.py
+    image: postgres:11.8
     ports:
       - "5432:5432"
     environment:
@@ -11,6 +12,31 @@ services:
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
     command: postgres -c log_statement=all
+  
+  bootstrapper: 
+    build: 
+      context: ./
+      dockerfile: ./fixture_data/bootstrapper.Dockerfile
+    command: "sh fixture_data/setup.sh"
+    volumes: 
+      - ./db:/db
+      - ./db:/var/lib/postgresql/data
+      - ./fixture_data/:/db/fixture_data
+    environment: 
+      AWS_ACCESS_KEY_ID: stub
+      AWS_SECRET_ACCESS_KEY: stub
+      AWS_DEFAULT_REGION: us-east-1
+      S3_BUCKET: nasa-apt-dev-files  
+      POSTGRES_DB: nasadb
+      POSTGRES_USER: masteruser
+      POSTGRES_PASSWORD: password
+      POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
+      USER_POOL_NAME: dev-users
+      APP_CLIENT_NAME: dev-client
+    depends_on: 
+      - db-ready
+      - localstack-ready
+      
   elastic:
     # Elastic db for local development only.
     # For staging/production, add elasticache instance
@@ -25,53 +51,63 @@ services:
     ports:
       - "9200:9200"
   # localstack for local development only. AWS S3 used for staging/production
+  
+  mail: 
+    image: bytemark/smtp
+    restart: always
+  
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:0.12.7
     environment:
-      - SERVICES=s3
-      - DATA_DIR=./figures
+      LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
+      SERVICES: s3,secretsmanager,cognito
+      SMTP_HOST: mail
+      SMTP_USER: test@example.com
+      SMTP_PASS: secretpassword
+      SMTP_EMAIL: no-reply@example.com
+      HOSTNAME: localhost
+      HOSTNAME_EXTERNAL: localhost
+      AWS_ACCESS_KEY_ID: stub
+      AWS_SECRET_ACCESS_KEY: stub
+      AWS_DEFAULT_REGION: us-east-1
     ports:
       - "4566:4566"
-      - "4572:4572"
-  rest-api:
-    image: postgrest/postgrest:v6.0.2
-    ports:
-      - "3000:3000"
-    environment:
-      PGRST_DB_URI: postgres://masteruser:password@db:5432/nasadb
-      PGRST_DB_SCHEMA: apt
-      PGRST_DB_ANON_ROLE: anonymous
-      PGRST_JWT_SECRET: $JWT_SECRET
-    depends_on:
-      - db
-  fastapi:
-    build: ./fastapi
-    image: nasa-apt/dev/fastapi
+      
+  api:
+    build:
+      context: ./
+      dockerfile: app/local.Dockerfile
+    image: nasa-apt/dev/app
+    command: >
+      sh -c "
+        python wait_for_localstack_ready.py &&
+        uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
+      "
     ports:
       - "8000:80"
     volumes:
-      - type: bind
-        source: ./fastapi/app
-        target: /app/app
+      - ./app:/app/app
+      - ./fixture_data/wait_for_localstack_ready.py:/app/wait_for_localstack_ready.py
     environment:
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
-      REST_API_ENDPOINT: $REST_API_ENDPOINT
-      S3_ENDPOINT: $S3_ENDPOINT
-      PDFS_S3_BUCKET: $PDFS_S3_BUCKET
-      FIGURES_S3_BUCKET: $FIGURES_S3_BUCKET
-      DBURL: postgres://masteruser:password@db:5432/nasadb
-      ELASTICURL: http://elastic:9200
-      IDP_METADATA_URL: $IDP_METADATA_URL
-      FASTAPI_HOST: http://localhost:8000
-      JWT_SECRET: $JWT_SECRET
+      AWS_DEFAULT_REGION: us-east-1
+      PROJECT_NAME: nasa-apt-api-local
+      API_VERSION_STRING: /v2
+      AWS_RESOURCES_ENDPOINT: http://localstack:4566
+      S3_BUCKET: nasa-apt-dev-files
+      POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
+      # This URL omits the "http://" in order to remain consistent
+      # with the value of the URL returned by the ElasticSearch Domain 
+      # CDK component
+      ELASTICSEARCH_URL: elastic:9200
       APT_FRONTEND_URL: $APT_FRONTEND_URL
+      USER_POOL_NAME: dev-users
+      APP_CLIENT_NAME: dev-client
+     
     depends_on:
-      - localstack
-      - rest-api
-    # links:
-    #   - "localstack:localhost"
+      - bootstrapper
   swagger:
     image: swaggerapi/swagger-ui
     ports:
@@ -79,9 +115,9 @@ services:
     expose:
       - "8080"
     environment:
-      API_URL: http://localhost:3000/
+      API_URL: http://localhost:8000/atbds
     depends_on:
-      - rest-api
+      - api
   db-ready:
     image: dadarek/wait-for-dependencies
     depends_on:
@@ -92,6 +128,4 @@ services:
     depends_on:
       - localstack
     command: localstack:4566
-
-
   

@@ -1,7 +1,7 @@
 -- Verify nasa-apt:tables on pg
 
 BEGIN;
-  SELECT contact_id
+    SELECT id
     FROM apt.contacts
-  WHERE FALSE;
-ROLLBACK;
+    WHERE FALSE;
+    ROLLBACK;
