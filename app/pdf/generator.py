@@ -149,9 +149,7 @@ TEXT_WRAPPERS = {
     "subscript": lambda e: f"\\textsubscript{{{e}}}",
     "underline": lambda e: f"\\underline{{{e}}}",
     "italic": lambda e: f"\\textit{{{e}}}",
-    "bold": lambda e: f"\\textbf{{{e}}}"
-    # "italic": lambda e: utils.italic(e),
-    # "bold": lambda e: utils.bold(e),
+    "bold": lambda e: f"\\textbf{{{e}}}",
 }
 
 
@@ -165,7 +163,6 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
 
     """
     e = utils.escape_latex(data["text"])
-    e = e.replace("\\u00A0", "\\nobreakspace")
 
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option):
@@ -540,14 +537,14 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
 
     latex_document.generate_pdf(
         filepath=filepath,
-        clean=True,
-        clean_tex=True,
+        clean=False,
+        clean_tex=False,
         # latexmk automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
         compiler="latexmk",
         # the `--pdf` flag loads a pacakge necessary for the compiler
         # to manage image positioning within the pdf document
-        compiler_args=["--pdf"],
+        compiler_args=["--pdfxe"],
     )
 
     return f"{filepath}.pdf"
