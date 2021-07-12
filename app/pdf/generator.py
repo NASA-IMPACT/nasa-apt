@@ -467,7 +467,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
         # Journal type pdfs
         if not journal and section_name in [
             "journal_acknowledgements",
-            "journal_dicsussion",
+            "journal_discussion",
         ]:
             continue
 
@@ -542,8 +542,9 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
         # latexmk automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
         compiler="latexmk",
-        # the `--pdf` flag loads a pacakge necessary for the compiler
-        # to manage image positioning within the pdf document
+        # the `--pdfxe` flag loads the Xelatex pacakge necessary for
+        # the compiler to manage image positioning within the pdf document
+        # and native unicode character handling
         compiler_args=["--pdfxe"],
     )
 
