@@ -164,7 +164,9 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
     then `wrap_text(data)` will return: `\\bold{\\italic{text to format}}`
 
     """
-    e = data["text"]
+    e = utils.escape_latex(data["text"])
+    e = e.replace("\\u00A0", "\\nobreakspace")
+
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option):
             e = command(e)
@@ -539,7 +541,7 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     latex_document.generate_pdf(
         filepath=filepath,
         clean=True,
-        clean_tex=False,
+        clean_tex=True,
         # latexmk automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
         compiler="latexmk",
