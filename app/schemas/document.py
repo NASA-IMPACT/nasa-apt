@@ -298,7 +298,7 @@ class Document(BaseModel):
     data_access_input_data: Optional[List[DataAccessUrl]]
     data_access_output_data: Optional[List[DataAccessUrl]]
     data_access_related_urls: Optional[List[DataAccessUrl]]
-    journal_dicsussion: Optional[SectionWrapper]
+    journal_discussion: Optional[SectionWrapper]
     journal_acknowledgements: Optional[SectionWrapper]
     publication_references: Optional[List[PublicationReference]]
 
