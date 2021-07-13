@@ -157,7 +157,10 @@ class nasaAPTLambdaStack(core.Stack):
         lambda_function_props = dict(
             runtime=_lambda.Runtime.FROM_IMAGE,
             code=_lambda.Code.from_asset_image(
-                directory=code_dir, file="app/lambda.Dockerfile"
+                directory=code_dir,
+                file="app/Dockerfile",
+                entrypoint=["/usr/local/bin/python", "-m", "awslambdaric"],
+                cmd=["handler.handler"],
             ),
             handler=_lambda.Handler.FROM_IMAGE,
             memory_size=memory,
