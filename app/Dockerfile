@@ -9,7 +9,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
-# install python packages (note fastapi and uvicorn should already by satisfied from the prod target)
 
 WORKDIR /app/
 
@@ -19,10 +18,8 @@ COPY ./setup.py /app/setup.py
 
 
 RUN pip install --upgrade pip
-RUN pip install /app/. "mangum>=0.9.0" -t . --no-binary xmlsec numpy pydantic
+RUN pip install . -t .
 
 
-#FROM prod as dev
-#CMD ["/start-reload.sh"]
-
+COPY lambda/handler.py ./handler.py
 

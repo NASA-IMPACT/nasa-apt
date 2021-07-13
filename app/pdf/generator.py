@@ -165,8 +165,9 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
     e = utils.escape_latex(data["text"])
 
     for option, command in TEXT_WRAPPERS.items():
-        if data.get(option):
+        if data.get(option) and e.strip(" ") != "":
             e = command(e)
+
     # TODO: should this be wrapped with NoEscape?
     return NoEscape(e)
 
@@ -265,11 +266,16 @@ def process_table(data: document.TableNode, caption: str) -> NoEscape:
     ]
 
     dataframe = pd.DataFrame(rows[1:], columns=rows[0])
+
+    column_formats = [f"p{{{1/len(rows[0])}\\linewidth}}" for _ in rows[0]]
+    column_format = "".join(column_formats)
+
+    pd.set_option("max_colwidth", None)
     latex_table = dataframe.to_latex(
         index=False,
         escape=False,
         na_rep=" ",
-        columns=rows[0],
+        column_format=column_format,
         caption=caption,
         position="H",
     )
@@ -412,12 +418,11 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
     for p in [
         "color",
         "url",
-        "booktabs",
         "graphicx",
         "float",
         "amsmath",
         "array",
-        "fixltx2e",
+        "booktabs",
     ]:
         doc.packages.append(Package(p))
 
