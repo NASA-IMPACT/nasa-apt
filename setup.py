@@ -51,6 +51,8 @@ inst_reqs = [
     # "typing-extensions==3.7.4.3",
     "aiofiles==0.6.0",
     "pylatex==1.4.1",
+    "mangum>=0.9.0",
+    "awslambdaric==1.2.0"
     # "SQLAlchemy-Utils==0.37.0",
 ]
 extra_reqs = {

@@ -263,7 +263,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, last_updated_by, major, minor, d
   "performance_assessment_validation_errors": null ,
   "algorithm_implementations": [
     {
-      "url": "https://developmentseed.org",
+      "url": "https://developmentseed.org/",
       "description": "This is our website"
     }
   ],
@@ -905,7 +905,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, last_updated_by, major, minor, d
   "performance_assessment_validation_errors": null,
   "algorithm_implementations": [
     {
-      "url": "https://developmentseed.org",
+      "url": "https://developmentseed.org/this-is-a-verylongwebsiteurl?with=parameters&that=aresuperlong-and-have-hyphens&123=4567891011121314151617181920",
       "description": "This is our website"
     }
   ],

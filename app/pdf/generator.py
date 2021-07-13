@@ -149,9 +149,7 @@ TEXT_WRAPPERS = {
     "subscript": lambda e: f"\\textsubscript{{{e}}}",
     "underline": lambda e: f"\\underline{{{e}}}",
     "italic": lambda e: f"\\textit{{{e}}}",
-    "bold": lambda e: f"\\textbf{{{e}}}"
-    # "italic": lambda e: utils.italic(e),
-    # "bold": lambda e: utils.bold(e),
+    "bold": lambda e: f"\\textbf{{{e}}}",
 }
 
 
@@ -164,10 +162,12 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
     then `wrap_text(data)` will return: `\\bold{\\italic{text to format}}`
 
     """
-    e = data["text"]
+    e = utils.escape_latex(data["text"])
+
     for option, command in TEXT_WRAPPERS.items():
-        if data.get(option):
+        if data.get(option) and e.strip(" ") != "":
             e = command(e)
+
     # TODO: should this be wrapped with NoEscape?
     return NoEscape(e)
 
@@ -266,11 +266,16 @@ def process_table(data: document.TableNode, caption: str) -> NoEscape:
     ]
 
     dataframe = pd.DataFrame(rows[1:], columns=rows[0])
+
+    column_formats = [f"p{{{1/len(rows[0])}\\linewidth}}" for _ in rows[0]]
+    column_format = "".join(column_formats)
+
+    pd.set_option("max_colwidth", None)
     latex_table = dataframe.to_latex(
         index=False,
         escape=False,
         na_rep=" ",
-        columns=rows[0],
+        column_format=column_format,
         caption=caption,
         position="H",
     )
@@ -413,12 +418,11 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
     for p in [
         "color",
         "url",
-        "booktabs",
         "graphicx",
         "float",
         "amsmath",
         "array",
-        "fixltx2e",
+        "booktabs",
     ]:
         doc.packages.append(Package(p))
 
@@ -468,7 +472,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
         # Journal type pdfs
         if not journal and section_name in [
             "journal_acknowledgements",
-            "journal_dicsussion",
+            "journal_discussion",
         ]:
             continue
 
@@ -538,14 +542,15 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
 
     latex_document.generate_pdf(
         filepath=filepath,
-        clean=True,
+        clean=False,
         clean_tex=False,
         # latexmk automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
         compiler="latexmk",
-        # the `--pdf` flag loads a pacakge necessary for the compiler
-        # to manage image positioning within the pdf document
-        compiler_args=["--pdf"],
+        # the `--pdfxe` flag loads the Xelatex pacakge necessary for
+        # the compiler to manage image positioning within the pdf document
+        # and native unicode character handling
+        compiler_args=["--pdfxe"],
     )
 
     return f"{filepath}.pdf"

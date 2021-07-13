@@ -76,7 +76,7 @@ services:
   api:
     build:
       context: ./
-      dockerfile: app/local.Dockerfile
+      dockerfile: app/Dockerfile
     image: nasa-apt/dev/app
     command: >
       sh -c "
