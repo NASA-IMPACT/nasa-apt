@@ -1,7 +1,7 @@
 """Pydantic models for AtbdVersions"""
 import enum
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, validator
 
@@ -15,6 +15,40 @@ class StatusEnum(enum.Enum):
     draft = "Draft"
     review = "Review"
     published = "Published"
+
+
+class CognitoUser(BaseModel):
+    """User contributing to an ATBD Version, as returned by Cognito"""
+
+    username: str
+    sub: str
+    preferred_username: str
+    email: str
+
+
+class AnonymousUser(BaseModel):
+    """Obfuscated user contributing to an ATBD Version"""
+
+    preferred_username: str
+
+
+class ReviewerUser(CognitoUser):
+    """
+    Cognito user reviewing an ATBD Version (including the user's review
+    status)
+    """
+
+    # TODO: make this enum ["in_progress", "done"]
+    review_status: str
+
+
+class AnonymousReviewerUser(AnonymousUser):
+    """
+    Obfuscated user reviewing an ATBD Version (including the user's review
+    status)
+    """
+
+    review_status: str
 
 
 class AtbdVersionSummaryOutput(BaseModel):
@@ -34,6 +68,9 @@ class AtbdVersionSummaryOutput(BaseModel):
     last_updated_at: datetime
     citation: Optional[dict]
     changelog: Optional[str]
+    owner: Union[CognitoUser, AnonymousUser]
+    authors: Union[List[CognitoUser], List[AnonymousUser]]
+    reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]
 
     @validator("version", always=True)
     def _generate_semver(cls, v, values) -> str:

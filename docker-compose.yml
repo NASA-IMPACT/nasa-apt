@@ -53,11 +53,6 @@ services:
     ports:
       - "9200:9200"
   
-  # Mail server enables cognito to send account confirmation/password reset emails
-  # mail: 
-  #   image: bytemark/smtp
-  #   restart: always
-  
   localstack:
     # localstack for local development only. AWS S3 used for staging/production
     image: localstack/localstack:0.12.7

@@ -1,7 +1,15 @@
 """ATBD Versions endpoint."""
 import datetime
+from typing import List
 
-from app.api.utils import get_db, get_major_from_version_string, require_user
+from app.api.utils import (
+    atbd_permissions_filter,
+    get_active_user_principals,
+    get_db,
+    get_major_from_version_string,
+    get_user,
+    require_user,
+)
 from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
 from app.crud.contacts import crud_contacts_associations
@@ -9,6 +17,7 @@ from app.crud.versions import crud_versions
 from app.db.db_session import DbSession
 from app.db.models import AtbdVersions
 from app.schemas import atbds, versions, versions_contacts
+from app.schemas.users import User
 from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -20,26 +29,50 @@ router = APIRouter()
     "/atbds/{atbd_id}/versions/{version}",
     responses={200: dict(description="Atbd with given ID/alias exists in backend")},
 )
-def version_exists(atbd_id: str, version: str, db: DbSession = Depends(get_db)):
+def version_exists(
+    atbd_id: str,
+    version: str,
+    db: DbSession = Depends(get_db),
+    user: User = Depends(get_user),
+    principals: List[str] = Depends(get_active_user_principals),
+):
     """
     Returns HTTP Code 200 if the requested atbd/version exists, otherwise
     raises a 404 Exception.
     """
     major, _ = get_major_from_version_string(version)
-    return crud_atbds.exists(db=db, atbd_id=atbd_id, version=major)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+    if not atbd_permissions_filter(principals, atbd, "view"):
+        raise HTTPException(
+            status_code=404, detail=f"No data found for id/alias: {atbd_id}"
+        )
+    return True
 
 
 @router.get("/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput)
-def get_version(atbd_id: str, version: str, db=Depends(get_db)):
+def get_version(
+    atbd_id: str,
+    version: str,
+    db: DbSession = Depends(get_db),
+    user: User = Depends(get_user),
+    principals: List[str] = Depends(get_active_user_principals),
+):
     """
     Returns an ATBD with a single version
     """
     major, _ = get_major_from_version_string(version)
-    return crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+    if not atbd_permissions_filter(principals, atbd, "view"):
+        raise HTTPException(
+            status_code=404, detail=f"No data found for id/alias: {atbd_id}"
+        )
+    return atbd
 
 
 @router.post("/atbds/{atbd_id}/versions", response_model=atbds.FullOutput)
-def create_new_version(atbd_id: str, db=Depends(get_db), user=Depends(require_user)):
+def create_new_version(
+    atbd_id: str, db: DbSession = Depends(get_db), user=Depends(require_user)
+):
     """
     Creates a new version (with `Draft` status) from the latest version
     in the provided ATBD. Raises an exception if the latest version does
@@ -56,7 +89,7 @@ def update_atbd_version(
     version_input: versions.Update,
     background_tasks: BackgroundTasks,
     overwrite: bool = False,
-    db=Depends(get_db),
+    db: DbSession = Depends(get_db),
     user=Depends(require_user),
 ):
     """
@@ -156,7 +189,7 @@ def delete_atbd_version(
     atbd_id: str,
     version: str,
     background_tasks: BackgroundTasks,
-    db=Depends(get_db),
+    db: DbSession = Depends(get_db),
     user=Depends(require_user),
 ):
 

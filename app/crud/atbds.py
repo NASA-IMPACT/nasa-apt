@@ -12,7 +12,7 @@ from fastapi import HTTPException
 class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
     """CRUDAtbds."""
 
-    def scan(self, db: DbSession):
+    def scan(self, db: DbSession, status: str = None, role: str = None):
         """List operation - uses orm.contains_earger to join Versions only once,
         as opposed to re-loading the relation everytime the model is loaded."""
         query = (
@@ -20,6 +20,21 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
             .join(AtbdVersions, Atbds.id == AtbdVersions.atbd_id)
             .options(orm.contains_eager(Atbds.versions))
         )
+
+        if status:
+            query = query.filter(AtbdVersions.status == status)
+
+        if role:
+            [role, sub] = role.split(":")
+        if role == "owner":
+            query = query.filter(AtbdVersions.owner == sub)
+        if role == "author":
+            query = query.filter(AtbdVersions.authors.any(sub))
+        if role == "reviewer":
+
+            query = query.filter(
+                AtbdVersions.reviewers.op("@>")(f'[{{"sub": "{sub}"}}]')
+            )
 
         return query.all()
 
@@ -71,17 +86,17 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
                 status_code=404, detail=f"No data found for id/alias: {atbd_id}"
             )
 
-    def exists(self, db: DbSession, atbd_id: str, version: int = None):  # type: ignore
-        """Raise exception if ATBD is not found in DB, otherwise returns 200."""
+    # def exists(self, db: DbSession, atbd_id: str, version: int = None):  # type: ignore
+    #     """Raise exception if ATBD is not found in DB, otherwise returns 200."""
 
-        lookup = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
-        result = db.query(lookup.exists()).scalar()
-        if not result:
-            raise HTTPException(
-                status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-            )
+    #     lookup = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
+    #     result = db.query(lookup.exists()).scalar()
+    #     if not result:
+    #         raise HTTPException(
+    #             status_code=404, detail=f"No data found for id/alias: {atbd_id}"
+    #         )
 
-        return result
+    #     return result
 
     # TODO: migrate this from a custom Postgres function to a SQLAlchemy
     # operation that executes within a single transaction

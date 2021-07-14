@@ -66,8 +66,19 @@ aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --
 echo "Reviewer sub 3: ${reviewer_sub_3}"
 
 # Create curator group and add curator user to it
-aws --endpoint-url http://localstack:4566 cognito-idp create-group --group-name curators --user-pool-id "${pool_id}"
-aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name curators --username curator@exmaple.com --user-pool-id "${pool_id}"
+aws --endpoint-url http://localstack:4566 cognito-idp create-group --group-name curator --user-pool-id "${pool_id}"
+aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name curator --username curator@example.com --user-pool-id "${pool_id}"
+
+# Create contributor group and add authors and reviewers to it
+aws --endpoint-url http://localstack:4566 cognito-idp create-group --group-name contributor --user-pool-id "${pool_id}"
+
+aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username author1@example.com --user-pool-id "${pool_id}"
+aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username author2@example.com --user-pool-id "${pool_id}"
+aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username author3@example.com --user-pool-id "${pool_id}"
+
+aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username reviewer1@example.com --user-pool-id "${pool_id}"
+aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username reviewer2@example.com --user-pool-id "${pool_id}"
+aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username reviewer3@example.com --user-pool-id "${pool_id}"
 
 sqitch deploy --verify db:pg://masteruser:password@db:5432/nasadb &&
 psql 'postgres://masteruser:password@db:5432/nasadb?options=--search_path%3dapt'  -f fixture_data/testData.sql \

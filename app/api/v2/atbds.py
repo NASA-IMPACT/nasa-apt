@@ -5,21 +5,20 @@ from typing import List
 from sqlalchemy import exc
 
 from app.api.utils import (
+    atbd_permissions_filter,
     get_active_user_principals,
     get_db,
-    permissions_filter,
+    get_user,
     require_user,
+    update_contributor_info,
 )
 from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession
 from app.schemas import atbds
-
-# from app.auth.saml import User
 from app.schemas.users import User
 from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
 
-import fastapi_permissions as permissions
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 router = APIRouter()
@@ -31,24 +30,58 @@ router = APIRouter()
     response_model=List[atbds.SummaryOutput],
 )
 def list_atbds(
+    role: str = None,
+    status: str = None,
+    user: User = Depends(get_user),
     db: DbSession = Depends(get_db),
-    principals: List = Depends(get_active_user_principals),
+    principals: List[str] = Depends(get_active_user_principals),
 ):
     """Lists all ATBDs with summary version info (only versions with status
     `Published` will be displayed if the user is not logged in)"""
-    return permissions_filter(principals, crud_atbds.scan(db=db))
 
-    # return crud_atbds.scan(db=db)
+    if role:
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail=f"User must be logged in to filter by role: {role}",
+            )
+        role = f"{role}:{user['sub']}"
+
+    # apply permissions filter to remove any versions/
+    # ATBDs that the user does not have access to
+    # TODO: use a generator and only yield non `None` objects
+    atbds = [
+        atbd_permissions_filter(principals, atbd, "view")
+        for atbd in crud_atbds.scan(db=db, role=role, status=status)
+        if atbd_permissions_filter(principals, atbd, "view") is not None
+    ]
+
+    for atbd in atbds:
+        atbd = update_contributor_info(principals, atbd)
+
+    return atbds
 
 
 @router.head(
     "/atbds/{atbd_id}",
     responses={200: dict(description="Atbd with given ID/alias exists in backend")},
 )
-def atbd_exists(atbd_id: str, db: DbSession = Depends(get_db)):
+def atbd_exists(
+    atbd_id: str,
+    user: User = Depends(get_user),
+    db: DbSession = Depends(get_db),
+    principals: List[str] = Depends(get_active_user_principals),
+):
     """Returns status 200 if ATBD exsits and raises 404 if not (or if the user is
     not logged in and the ATBD has no versions with status `Published`)"""
-    return crud_atbds.exists(db=db, atbd_id=atbd_id)
+
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
+
+    if not atbd_permissions_filter(principals, atbd, "view"):
+        raise HTTPException(
+            status_code=404, detail=f"No data found for id/alias: {atbd_id}"
+        )
+    return True
 
 
 @router.get(
@@ -56,10 +89,21 @@ def atbd_exists(atbd_id: str, db: DbSession = Depends(get_db)):
     responses={200: dict(description="Return a single ATBD")},
     response_model=atbds.SummaryOutput,
 )
-def get_atbd(atbd_id: str, db: DbSession = Depends(get_db)):
+def get_atbd(
+    atbd_id: str,
+    db: DbSession = Depends(get_db),
+    user: User = Depends(get_user),
+    principals: List[str] = Depends(get_active_user_principals),
+):
     """Returns a single ATBD (raises 404 if the ATBD has no versions with
     status `Published` and the user is not logged in)"""
-    return crud_atbds.get(db=db, atbd_id=atbd_id)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
+
+    if not atbd_permissions_filter(principals, atbd, "view"):
+        raise HTTPException(
+            status_code=404, detail=f"No data found for id/alias: {atbd_id}"
+        )
+    return atbd
 
 
 @router.post(
