@@ -42,10 +42,7 @@ def get_image(atbd_id: str, image_key: str, db: DbSession = Depends(get_db)):
     is not included in any ATBD Versions with status `Published` AND the user
     is not logged in.
     """
-    if not crud_atbds.exists(db=db, atbd_id=atbd_id):
-        raise HTTPException(
-            status_code=404, detail=f"ATBD {atbd_id} not found in database",
-        )
+
     key = f"{atbd_id}/images/{image_key}"
     try:
         return responses.StreamingResponse(
