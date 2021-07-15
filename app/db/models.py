@@ -77,7 +77,6 @@ class AtbdVersions(Base):
             acl.append((permissions.Allow, f"user:{author}", "view_owner"))
 
         for reviewer in [r["sub"] for r in self.reviewers]:
-            print("REVIeWER: ", reviewer)
             acl.append((permissions.Allow, f"user:{reviewer}", "view"))
             acl.append((permissions.Allow, f"user:{reviewer}", "comment"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_authors"))

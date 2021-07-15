@@ -7,7 +7,7 @@ ALTER TABLE apt.atbd_versions
     ADD COLUMN authors VARCHAR[],
     -- Reviewers will be a jsonb field with format
     -- { <cognito_sub> : "in_progress | done" }
-    ADD COLUMN reviewers jsonb DEFAULT '{}';
+    ADD COLUMN reviewers jsonb[];
 -- Update `owner` column to match what is currently in the
 -- `created_by` column
 UPDATE

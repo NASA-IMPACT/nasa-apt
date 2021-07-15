@@ -38,7 +38,6 @@ def list_atbds(
 ):
     """Lists all ATBDs with summary version info (only versions with status
     `Published` will be displayed if the user is not logged in)"""
-
     if role:
         if not user:
             raise HTTPException(
@@ -49,7 +48,8 @@ def list_atbds(
 
     # apply permissions filter to remove any versions/
     # ATBDs that the user does not have access to
-    # TODO: use a generator and only yield non `None` objects
+    # TODO: use a generator and only yield non `None` objects?
+
     atbds = [
         atbd_permissions_filter(principals, atbd, "view")
         for atbd in crud_atbds.scan(db=db, role=role, status=status)
@@ -68,7 +68,6 @@ def list_atbds(
 )
 def atbd_exists(
     atbd_id: str,
-    user: User = Depends(get_user),
     db: DbSession = Depends(get_db),
     principals: List[str] = Depends(get_active_user_principals),
 ):
@@ -92,7 +91,6 @@ def atbd_exists(
 def get_atbd(
     atbd_id: str,
     db: DbSession = Depends(get_db),
-    user: User = Depends(get_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Returns a single ATBD (raises 404 if the ATBD has no versions with
@@ -103,6 +101,7 @@ def get_atbd(
         raise HTTPException(
             status_code=404, detail=f"No data found for id/alias: {atbd_id}"
         )
+    atbd = update_contributor_info(principals, atbd)
     return atbd
 
 

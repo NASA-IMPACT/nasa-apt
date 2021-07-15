@@ -9,6 +9,7 @@ from app.api.utils import (
     get_major_from_version_string,
     get_user,
     require_user,
+    update_contributor_info,
 )
 from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
@@ -66,6 +67,7 @@ def get_version(
         raise HTTPException(
             status_code=404, detail=f"No data found for id/alias: {atbd_id}"
         )
+    atbd = update_contributor_info(principals, atbd)
     return atbd
 
 

@@ -52,6 +52,7 @@ def update_contributor_info(principals: List[str], atbd: Atbds):
 
     for version in atbd.versions:
         version_acl = version.__acl__()
+
         if permissions.has_permission(principals, "view_owner", version_acl):
             [version.owner] = [
                 CognitoUser(**app_user)
@@ -126,6 +127,7 @@ def atbd_permissions_filter(principals: List[str], atbd: Atbds, action: str = "v
     that the user is allowed to see. If an ATBD has NO versions that the user is
     allowed to access, then the filter returns `None`.
     """
+
     versions = [
         version
         for version in atbd.versions

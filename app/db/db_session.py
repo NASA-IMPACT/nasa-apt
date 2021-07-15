@@ -28,7 +28,7 @@ engine = create_engine(
 )
 
 
-DbSession = sessionmaker(autocommit=False, bind=engine)
+DbSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 # TODO: should this remain async?
