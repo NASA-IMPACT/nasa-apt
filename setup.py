@@ -44,7 +44,7 @@ inst_reqs = [
     # "yarg==0.1.9",
     # "itsdangerous==1.1.0",
     # "python3-saml==1.9.0",
-    # "python-multipart==0.0.5",
+    "python-multipart==0.0.5",
     "python-jose==3.2.0",
     "SQLAlchemy==1.3.23",
     "psycopg2-binary==2.8.6",
