@@ -1,6 +1,7 @@
 """Provide functionality for indexing and searching documents in ElasticSearch"""
+import datetime
 import json
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import boto3
 import requests
@@ -33,13 +34,19 @@ def aws_auth():
     return awsauth
 
 
+def _default(i: Any):
+    if isinstance(i, (datetime.date, datetime.datetime)):
+        return i.isoformat()
+    return str(i)
+
+
 def send_to_elastic(data: List[Dict]):
     """
     POST json to elastic endpoint.
     TODO: update this to use the `elasticsearch-py` python client
     """
     # bulk commands must end with newline
-    data_string = "\n".join(json.dumps(d) for d in data) + "\n"
+    data_string = "\n".join(json.dumps(d, default=_default) for d in data) + "\n"
 
     url = f"http://{config.ELASTICSEARCH_URL}/atbd/_bulk"
 
