@@ -19,6 +19,7 @@ from app.schemas import atbds
 from app.schemas.users import User
 from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
 
+import fastapi_permissions as permissions
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 router = APIRouter()
@@ -114,11 +115,17 @@ def create_atbd(
     atbd_input: atbds.Create,
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
+    principals: List[str] = Depends(get_active_user_principals),
 ):
     """Creates a new ATBD. Requires a title, optionally takes an alias.
     Raises 400 if the user is not logged in."""
-    output = crud_atbds.create(db, atbd_input, user["sub"])
-    return output
+    if "role:contributor" not in principals:
+        raise HTTPException(
+            status_code=400, detail="User is not allowed to create a new ATBD"
+        )
+    atbd = crud_atbds.create(db, atbd_input, user["sub"])
+    atbd = update_contributor_info(principals, atbd)
+    return atbd
 
 
 @router.post(
@@ -132,11 +139,26 @@ def update_atbd(
     background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
+    principals: List[str] = Depends(get_active_user_principals),
 ):
     """Updates an ATBD (eiither Title or Alias). Raises 400 if the user
     is not logged in. Re-indexes all corresponding items in Elasticsearch
     with the new/updated values"""
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
+
+    # Get latest version - ability to udpate an atbd is given
+    # to whoever is allowed to update the latest version of that atbd
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1)
+
+    if not all(
+        [
+            permissions.has_permission(principals, "update", version.__acl__())
+            for version in atbd.versions
+        ]
+    ):
+        raise HTTPException(
+            status_code=404, detail=f"Update for ATBD id/alias: {atbd_id} not allowed"
+        )
+
     atbd.last_updated_by = user["sub"]
     atbd.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     try:
@@ -149,9 +171,11 @@ def update_atbd(
             )
 
     background_tasks.add_task(add_atbd_to_index, atbd)
+    atbd = update_contributor_info(principals, atbd)
     return atbd
 
 
+# TODO: migrate to the `/events` endpoint
 @router.post("/atbds/{atbd_id}/publish", response_model=atbds.FullOutput)
 def publish_atbd(
     atbd_id: str,
@@ -200,9 +224,16 @@ def delete_atbd(
     background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db),
     user: User = Depends(require_user),
+    principals: List[str] = Depends(get_active_user_principals),
 ):
     """Deletes an ATBD (and all child versions). Removes all associated
     items in the Elasticsearch index."""
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
+
+    if "role:curator" not in principals:
+        raise HTTPException(
+            status_code=400, detail=f"User not allowed to delete ATBD (id:{atbd_id})"
+        )
     atbd = crud_atbds.remove(db=db, atbd_id=atbd_id)
 
     background_tasks.add_task(remove_atbd_from_index, atbd=atbd)

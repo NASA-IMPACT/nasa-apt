@@ -59,12 +59,6 @@ def get_image(
     is not included in any ATBD Versions with status `Published` AND the user
     is not logged in.
     """
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-
-    if not atbd_permissions_filter(principals, atbd, "view"):
-        raise HTTPException(
-            status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-        )
 
     key = f"{atbd_id}/images/{image_key}"
     try:

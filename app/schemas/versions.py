@@ -96,6 +96,13 @@ class Create(BaseModel):
     """Create new version (empty since new versions get created blank and then their content gets updated)"""
 
     atbd_id: str
+    major: int
+    minor: int
+    status: str  # TODO: make this enum
+    document: Document
+    created_by: str
+    last_updated_by: str
+    owner: str
 
 
 class Lookup(BaseModel):
@@ -166,6 +173,7 @@ class Update(BaseModel):
     citation: Optional[Citation]
     status: Optional[str]
     contacts: Optional[List[versions_contacts.ContactsLinkInput]]
+    owner: Optional[str]
 
     @validator("document", always=True)
     def _ensure_either_minor_or_document(

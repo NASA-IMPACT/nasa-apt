@@ -40,8 +40,8 @@ class AtbdVersions(Base):
     doi = Column(String())
     citation = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
     owner = Column(String(), nullable=False)
-    authors = Column(postgresql.ARRAY(String))
-    reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{}")
+    authors = Column(postgresql.ARRAY(String), server_default="[]")
+    reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="[]")
 
     def __repr__(self):
         """String representation"""
@@ -59,37 +59,52 @@ class AtbdVersions(Base):
         """ "Access Control List"""
         acl = []
         if self.status == "Published":
-            acl = [(permissions.Allow, permissions.Everyone, "view")]
+            acl.append((permissions.Allow, permissions.Everyone, "view"))
+            acl.append((permissions.Allow, f"user:{self.owner}", "create_new_version"))
+        if self.status == "Draft":
+            acl.append((permissions.Allow, f"user:{self.owner}", "delete"))
 
         acl.append((permissions.Allow, f"user:{self.owner}", "view"))
         acl.append((permissions.Allow, f"user:{self.owner}", "comment"))
         acl.append((permissions.Allow, f"user:{self.owner}", "edit"))
         acl.append((permissions.Allow, f"user:{self.owner}", "invite_authors"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "transfer_ownership"))
+        acl.append((permissions.Allow, f"user:{self.owner}", "offer_ownership"))
         acl.append((permissions.Allow, f"user:{self.owner}", "view_authors"))
         acl.append((permissions.Allow, f"user:{self.owner}", "view_owner"))
+        acl.append((permissions.Allow, f"user:{self.owner}", "update"))
 
         for author in self.authors:
+
+            acl.append((permissions.Deny, f"user:{author}", "receive_ownership"))
             acl.append((permissions.Allow, f"user:{author}", "view"))
             acl.append((permissions.Allow, f"user:{author}", "comment"))
             acl.append((permissions.Allow, f"user:{author}", "edit"))
             acl.append((permissions.Allow, f"user:{author}", "view_authors"))
             acl.append((permissions.Allow, f"user:{author}", "view_owner"))
+            if self.status == "Published":
+                acl.append((permissions.Allow, f"user:{author}", "create_new_version"))
+            acl.append((permissions.Allow, f"user:{author}", "update"))
 
         for reviewer in [r["sub"] for r in self.reviewers]:
+            acl.append((permissions.Deny, f"user:{author}", "receive_ownership"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view"))
             acl.append((permissions.Allow, f"user:{reviewer}", "comment"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_authors"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_owner"))
-            acl.append((permissions.Allow, f"user:{reviewer}", "view_reviewers"))
 
         acl.append((permissions.Allow, "role:curator", "view"))
         acl.append((permissions.Allow, "role:curator", "comment"))
         acl.append((permissions.Allow, "role:curator", "invite_authors"))
-        acl.append((permissions.Allow, "role:curator", "transfer_ownership"))
+        acl.append((permissions.Allow, "role:curator", "offer_ownership"))
         acl.append((permissions.Allow, "role:curator", "view_authors"))
         acl.append((permissions.Allow, "role:curator", "view_owner"))
         acl.append((permissions.Allow, "role:curator", "view_reviewers"))
+        acl.append((permissions.Allow, "role:curator", "delete"))
+        acl.append((permissions.Allow, "role:curator", "delete_atbd"))
+
+        # Denying the "recieve_ownership" permission for each author and reviewer
+        # ALREADY assigned to the document MUST happen before the following line.
+        acl.append((permissions.Allow, "role:contributor", "receive_ownership"))
 
         return acl
 

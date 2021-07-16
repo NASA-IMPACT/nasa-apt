@@ -21,6 +21,7 @@ from app.schemas import atbds, versions, versions_contacts
 from app.schemas.users import User
 from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
 
+import fastapi_permissions as permissions
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 router = APIRouter()
@@ -73,15 +74,38 @@ def get_version(
 
 @router.post("/atbds/{atbd_id}/versions", response_model=atbds.FullOutput)
 def create_new_version(
-    atbd_id: str, db: DbSession = Depends(get_db), user=Depends(require_user)
+    atbd_id: str,
+    db: DbSession = Depends(get_db),
+    user=Depends(require_user),
+    principals=Depends(get_active_user_principals),
 ):
     """
     Creates a new version (with `Draft` status) from the latest version
     in the provided ATBD. Raises an exception if the latest version does
     NOT have status=`Published`.
     """
-    version = crud_versions.create(db=db, atbd_id=atbd_id, user=user["sub"])
-    return crud_atbds.get(db=db, atbd_id=atbd_id, version=version.major)
+    [latest_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1).versions
+    if not permissions.has_permission(
+        principals, "create_new_version", latest_version.__acl__()
+    ):
+        raise HTTPException(
+            status_code=400, detail=f"Cannot create a new version for ATBD {atbd_id}"
+        )
+    new_version_input = versions.Create(
+        atbd_id=latest_version.atbd_id,
+        major=latest_version.major + 1,
+        minor=0,
+        status="Draft",
+        document=latest_version.document,
+        created_by=user["sub"],
+        last_updated_by=user["sub"],
+        owner=user["sub"],
+    )
+    new_version = crud_versions.create(db_session=db, obj_in=new_version_input)
+    # version = crud_versions.create(db=db, atbd_id=atbd_id, user=user["sub"])
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=new_version.major)
+    atbd = update_contributor_info(principals, atbd)
+    return atbd
 
 
 @router.post("/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput)
@@ -93,6 +117,7 @@ def update_atbd_version(
     overwrite: bool = False,
     db: DbSession = Depends(get_db),
     user=Depends(require_user),
+    principals=Depends(get_active_user_principals),
 ):
     """
     Updates an ATBD versions. If `overwrite` is True then the data supplied under
@@ -159,6 +184,14 @@ def update_atbd_version(
         background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
         background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
 
+    if version_input.owner and version_input.owner != atbd_version.owner:
+        if permissions.has_permission(
+            principals, "offer_ownership", atbd_version.__acl__()
+        ) and permissions.has_permission(
+            [f"user:{version_input.owner}"], "receive_ownership", atbd_version.__acl__()
+        ):
+            atbd_version.owner = version_input.owner
+
     if version_input.document and not overwrite:
         version_input.document = {
             **atbd_version.document,
@@ -175,11 +208,13 @@ def update_atbd_version(
     atbd_version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     crud_versions.update(db=db, db_obj=atbd_version, obj_in=version_input)
 
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=atbd_version.major)
-
     # Indexes the updated vesion as well as atbd info
     # (title, alias, etc)
     background_tasks.add_task(add_atbd_to_index, atbd)
+
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=atbd_version.major)
+    atbd = update_contributor_info(principals, atbd)
+
     return atbd
 
 
@@ -193,20 +228,28 @@ def delete_atbd_version(
     background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db),
     user=Depends(require_user),
+    principals=Depends(get_active_user_principals),
 ):
 
     """
     Deletes the version only if it is unpublished
     """
     major, _ = get_major_from_version_string(version)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     atbd_version: AtbdVersions
-    [atbd_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
-    if atbd_version.status == "Published":
+    [atbd_version] = atbd.versions
+    if not permissions.has_permission(principals, "delete", atbd_version.__acl__()):
         raise HTTPException(
             status_code=400,
             detail="Cannot delete an atbd version with status `Published`",
         )
     db.delete(atbd_version)
     db.commit()
+    db.refresh(atbd)
+
+    if len(atbd.versions) == 0:
+        db.remove(atbd)
+        db.commit()
+
     background_tasks.add_task(remove_atbd_from_index, version=atbd_version)
     return {}
