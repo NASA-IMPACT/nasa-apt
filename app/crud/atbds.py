@@ -40,7 +40,6 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
                     ]
                 )
             )
-
         return query.all()
 
     def _build_lookup_query(self, db: DbSession, atbd_id: str, version: int = None):
