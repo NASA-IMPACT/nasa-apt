@@ -207,7 +207,37 @@ def update_atbd_version(
         # Checks did not fail - perform ownership transfer
         atbd_version.owner = version_input.owner
 
-    # if version_input.authors:
+    if version_input.reviewers:
+        if not permissions.has_permission(
+            principals, "invite_reviewers", atbd_version.__acl__()
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail=f"User {user['preferred_username']} is not allowed to add reviewers this document",
+            )
+        atbd_version.reviewers = [
+            {"sub": reviewer, "review_status": "in_progress"}
+            for reviewer in version_input.reviewers
+            if permissions.has_permission(
+                [f"user:{reviewer}"], "join_reviewers", atbd_version.__acl__()
+            )
+        ]
+
+    if version_input.authors:
+        if not permissions.has_permission(
+            principals, "invite_authors", atbd_version.__acl__()
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail=f"User {user['preferred_username']} is not allowed to add authors this document",
+            )
+        atbd_version.authors = [
+            author
+            for author in version_input.authors
+            if permissions.has_permission(
+                [f"user:{author}"], "join_authors", atbd_version.__acl__()
+            )
+        ]
 
     if version_input.document and not overwrite:
         version_input.document = {

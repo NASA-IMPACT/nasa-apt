@@ -64,7 +64,11 @@ class AtbdVersions(Base):
         if self.status == "Draft":
             acl.append((permissions.Allow, f"user:{self.owner}", "delete"))
 
-        acl.append((permissions.Allow, "role:contributor", "view"))
+        acl.append((permissions.Allow, permissions.Authenticated, "view"))
+
+        acl.append((permissions.Deny, f"user:{self.owner}", "receive_ownership"))
+        acl.append((permissions.Deny, f"user:{self.owner}", "join_authors"))
+        acl.append((permissions.Deny, f"user:{self.owner}", "join_reviewers"))
 
         acl.append((permissions.Allow, f"user:{self.owner}", "comment"))
         acl.append((permissions.Allow, f"user:{self.owner}", "edit"))
@@ -73,28 +77,39 @@ class AtbdVersions(Base):
         acl.append((permissions.Allow, f"user:{self.owner}", "view_authors"))
         acl.append((permissions.Allow, f"user:{self.owner}", "view_owner"))
         acl.append((permissions.Allow, f"user:{self.owner}", "update"))
+        acl.append((permissions.Allow, f"user:{self.owner}", "invite_authors"))
 
         for author in self.authors:
 
             acl.append((permissions.Deny, f"user:{author}", "receive_ownership"))
-            # acl.append((permissions.Allow, f"user:{author}", "view"))
+            acl.append((permissions.Deny, f"user:{author}", "join_authors"))
+            acl.append((permissions.Deny, f"user:{author}", "join_reviewers"))
+
             acl.append((permissions.Allow, f"user:{author}", "comment"))
             acl.append((permissions.Allow, f"user:{author}", "edit"))
             acl.append((permissions.Allow, f"user:{author}", "view_authors"))
             acl.append((permissions.Allow, f"user:{author}", "view_owner"))
+
             if self.status == "Published":
                 acl.append((permissions.Allow, f"user:{author}", "create_new_version"))
+
             acl.append((permissions.Allow, f"user:{author}", "update"))
 
         for reviewer in [r["sub"] for r in self.reviewers]:
-            acl.append((permissions.Deny, f"user:{author}", "receive_ownership"))
-            # acl.append((permissions.Allow, f"user:{reviewer}", "view"))
+            acl.append((permissions.Deny, f"user:{reviewer}", "receive_ownership"))
+            acl.append((permissions.Deny, f"user:{reviewer}", "join_authors"))
+            acl.append((permissions.Deny, f"user:{reviewer}", "join_reviewers"))
+
             acl.append((permissions.Allow, f"user:{reviewer}", "comment"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_authors"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_owner"))
 
-        acl.append((permissions.Allow, "role:curator", "view"))
+        acl.append((permissions.Deny, "role:curator", "join_authors"))
+        acl.append((permissions.Deny, "role:curator", "join_reviewers"))
+        acl.append((permissions.Deny, "role:curator", "receive_ownership"))
+
         acl.append((permissions.Allow, "role:curator", "comment"))
+        acl.append((permissions.Allow, "role:curator", "invite_reviewers"))
         acl.append((permissions.Allow, "role:curator", "invite_authors"))
         acl.append((permissions.Allow, "role:curator", "offer_ownership"))
         acl.append((permissions.Allow, "role:curator", "view_authors"))
