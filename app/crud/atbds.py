@@ -35,7 +35,6 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
             query = query.filter(
                 AtbdVersions.reviewers.op("@>")(f'[{{"sub": "{sub}"}}]')
             )
-
         return query.all()
 
     def _build_lookup_query(self, db: DbSession, atbd_id: str, version: int = None):

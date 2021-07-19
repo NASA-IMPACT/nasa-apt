@@ -145,10 +145,10 @@ def update_atbd_version(
 
     if version_input.contacts and len(version_input.contacts):
 
+        # Overwrite any existing `ContactAssociation` items
+        # in the database - this makes updating roles on an existing
+        # contacts_link item possible.
         for contact in version_input.contacts:
-            # This will overwrite an existing `ContactAssociation` items
-            # in the database - this makes updating roles on an existing
-            # contacts_link item possible
             crud_contacts_associations.upsert(
                 db_session=db,
                 obj_in=versions_contacts.ContactsAssociation(
@@ -159,13 +159,14 @@ def update_atbd_version(
                 ),
             )
 
+        # Remove contacts not in the input data contacts
         for contact in atbd_version.contacts_link:
             if contact.contact_id in [c.id for c in version_input.contacts]:
                 continue
             crud_contacts_associations.remove(
                 db_session=db, id=(atbd_id, major, contact.contact_id)  # type: ignore
             )
-
+    # TODO: move bumping minor versions to the `/events` endpoint
     if version_input.minor and atbd_version.status != "Published":
         raise HTTPException(
             status_code=400,
@@ -185,12 +186,28 @@ def update_atbd_version(
         background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
 
     if version_input.owner and version_input.owner != atbd_version.owner:
-        if permissions.has_permission(
+        # User performing transfer ownership operation is not allowed
+        if not permissions.has_permission(
             principals, "offer_ownership", atbd_version.__acl__()
-        ) and permissions.has_permission(
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail=f"User {user['preferred_username']} is not allowed to transfer ownership to another user",
+            )
+        # User being transferred ownership to, is not allowed (either because
+        # they are a reviewer of the document, or a curator)
+        if not permissions.has_permission(
             [f"user:{version_input.owner}"], "receive_ownership", atbd_version.__acl__()
         ):
-            atbd_version.owner = version_input.owner
+            raise HTTPException(
+                status_code=400,
+                detail=f"User {version_input.owner} is not allowed to receive ownership of this document",
+            )
+
+        # Checks did not fail - perform ownership transfer
+        atbd_version.owner = version_input.owner
+
+    # if version_input.authors:
 
     if version_input.document and not overwrite:
         version_input.document = {
@@ -248,7 +265,7 @@ def delete_atbd_version(
     db.refresh(atbd)
 
     if len(atbd.versions) == 0:
-        db.remove(atbd)
+        db.delete(atbd)
         db.commit()
 
     background_tasks.add_task(remove_atbd_from_index, version=atbd_version)

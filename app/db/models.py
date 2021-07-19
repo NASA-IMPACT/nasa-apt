@@ -64,7 +64,8 @@ class AtbdVersions(Base):
         if self.status == "Draft":
             acl.append((permissions.Allow, f"user:{self.owner}", "delete"))
 
-        acl.append((permissions.Allow, f"user:{self.owner}", "view"))
+        acl.append((permissions.Allow, "role:contributor", "view"))
+
         acl.append((permissions.Allow, f"user:{self.owner}", "comment"))
         acl.append((permissions.Allow, f"user:{self.owner}", "edit"))
         acl.append((permissions.Allow, f"user:{self.owner}", "invite_authors"))
@@ -76,7 +77,7 @@ class AtbdVersions(Base):
         for author in self.authors:
 
             acl.append((permissions.Deny, f"user:{author}", "receive_ownership"))
-            acl.append((permissions.Allow, f"user:{author}", "view"))
+            # acl.append((permissions.Allow, f"user:{author}", "view"))
             acl.append((permissions.Allow, f"user:{author}", "comment"))
             acl.append((permissions.Allow, f"user:{author}", "edit"))
             acl.append((permissions.Allow, f"user:{author}", "view_authors"))
@@ -87,7 +88,7 @@ class AtbdVersions(Base):
 
         for reviewer in [r["sub"] for r in self.reviewers]:
             acl.append((permissions.Deny, f"user:{author}", "receive_ownership"))
-            acl.append((permissions.Allow, f"user:{reviewer}", "view"))
+            # acl.append((permissions.Allow, f"user:{reviewer}", "view"))
             acl.append((permissions.Allow, f"user:{reviewer}", "comment"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_authors"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_owner"))
