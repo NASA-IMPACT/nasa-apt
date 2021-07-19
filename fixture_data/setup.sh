@@ -72,6 +72,8 @@ aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --
 # Create contributor group and add authors and reviewers to it
 aws --endpoint-url http://localstack:4566 cognito-idp create-group --group-name contributor --user-pool-id "${pool_id}"
 
+aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username owner@example.com --user-pool-id "${pool_id}"
+
 aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username author1@example.com --user-pool-id "${pool_id}"
 aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username author2@example.com --user-pool-id "${pool_id}"
 aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username author3@example.com --user-pool-id "${pool_id}"

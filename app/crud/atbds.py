@@ -33,7 +33,12 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         if role == "reviewer":
 
             query = query.filter(
-                AtbdVersions.reviewers.op("@>")(f'[{{"sub": "{sub}"}}]')
+                AtbdVersions.reviewers.op("&&")(
+                    [
+                        {"sub": f"{sub}", "review_status": "in_progress"},
+                        {"sub": f"{sub}", "review_status": "done"},
+                    ]
+                )
             )
 
         return query.all()
