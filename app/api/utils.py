@@ -70,7 +70,7 @@ def update_contributor_info(principals: List[str], atbd: Atbds):
             ]
         else:
             version.authors = [
-                AnonymousUser(preferred_username=f"Author {str(i)}")
+                AnonymousUser(preferred_username=f"Author {str(i+1)}")
                 for i, _ in enumerate(version.authors)
             ]
 
@@ -84,7 +84,7 @@ def update_contributor_info(principals: List[str], atbd: Atbds):
         else:
             version.reviewers = [
                 AnonymousReviewerUser(
-                    preferred_username=f"Reviewer {str(i)}",
+                    preferred_username=f"Reviewer {str(i+1)}",
                     review_status=v["review_status"],
                 )
                 for i, v in enumerate(version.reviewers)
@@ -194,7 +194,8 @@ def require_user(user: User = Depends(get_user)) -> User:
 
 
 def get_db(
-    db_session: DbSession = Depends(get_session), user: User = Depends(get_user),
+    db_session: DbSession = Depends(get_session),
+    user: User = Depends(get_user),
 ) -> DbSession:
     """
     Returns an db session with the correct permission level set (`anonymous` by
