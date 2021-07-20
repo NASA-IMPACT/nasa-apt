@@ -27,8 +27,7 @@ from fastapi import Depends, HTTPException
 def get_active_user_principals(user: User = Depends(get_user)) -> List[str]:
     """Returns the principals for a user, to be used when validating permissions
     to perform certain actions or requests"""
-    print("user: ", user)
-    # TODO: check groups
+
     principals = [permissions.Everyone]
     if user:
         principals.extend([permissions.Authenticated, f"user:{user['sub']}"])
@@ -99,26 +98,47 @@ def list_cognito_users():
     Returns a list of ALL cognito users, to be filtered against the
     users of a document (authors, reviewers, owner)
     """
-    list_user_params = dict(
-        UserPoolId=config.USER_POOL_ID,
-        AttributesToGet=["email", "sub", "preferred_username"],
-        Limit=500,
-    )
-    users = []
+    # We need the cognito groups in the user info returned, in order to
+    # verify certain operations (eg: users can only be added as co-authors
+    # if they are part of the contributor user group, not the curator).
+    # The `list_users` operation does not return the groups the user belongs
+    # to, so instead we are listing the users in each group and adding
+    # the group manually to returned data. It's not pretty. I know.
+    app_users = []
     client = cognito_client()
-    response = client.list_users(**list_user_params)
-    users.extend(response.get("Users", []))
-    while response.get("PaginationToken"):
-        list_user_params["PaginationToken"] = response["PaginationToken"]
-        response = client.list_users(**list_user_params)
-        users.extend(response.get("Users", []))
+    for group in ["curator", "contributor"]:
+        params = dict(UserPoolId=config.USER_POOL_ID, GroupName=group)
+        users = []
+        response = client.list_users_in_group(**params)
+        users.extend(
+            {**user, "cognito:groups": [group]} for user in response.get("Users", [])
+        )
+        while response.get("PaginationToken"):
+            params["PaginationToken"] = response["PaginationToken"]
+            response = client.list_users_in_group(**params)
+            users.extend(
+                {**user, "cognito:groups": [group]}
+                for user in response.get("Users", [])
+            )
 
-    for user in users:
-        for attribute in user["Attributes"]:
-            user[attribute["Name"]] = attribute["Value"]
-        del user["Attributes"]
+        for user in users:
+            for attribute in user["Attributes"]:
+                if attribute["Name"] not in [
+                    "email",
+                    "sub",
+                    "preferred_username",
+                    "username",
+                ]:
+                    continue
+                user[attribute["Name"]] = attribute["Value"]
+            # TODO: figure out a better way to do this
+            user["username"] = user["Username"]
+            del user["Username"]
 
-    return users
+            del user["Attributes"]
+        app_users.extend(users)
+
+    return app_users
 
 
 def atbd_permissions_filter(principals: List[str], atbd: Atbds, action: str = "view"):

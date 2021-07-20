@@ -7,6 +7,13 @@ from pydantic import BaseModel, validator
 
 from app.schemas import versions_contacts
 from app.schemas.document import Document
+from app.schemas.users import (
+    AnonymousReviewerUser,
+    AnonymousUser,
+    CognitoUser,
+    ReviewerUser,
+    ReviewerUserInput,
+)
 
 
 class StatusEnum(enum.Enum):
@@ -15,40 +22,6 @@ class StatusEnum(enum.Enum):
     draft = "Draft"
     review = "Review"
     published = "Published"
-
-
-class CognitoUser(BaseModel):
-    """User contributing to an ATBD Version, as returned by Cognito"""
-
-    username: str
-    sub: str
-    preferred_username: str
-    email: str
-
-
-class AnonymousUser(BaseModel):
-    """Obfuscated user contributing to an ATBD Version"""
-
-    preferred_username: str
-
-
-class ReviewerUser(CognitoUser):
-    """
-    Cognito user reviewing an ATBD Version (including the user's review
-    status)
-    """
-
-    # TODO: make this enum ["in_progress", "done"]
-    review_status: str
-
-
-class AnonymousReviewerUser(AnonymousUser):
-    """
-    Obfuscated user reviewing an ATBD Version (including the user's review
-    status)
-    """
-
-    review_status: str
 
 
 class AtbdVersionSummaryOutput(BaseModel):
@@ -174,6 +147,8 @@ class Update(BaseModel):
     status: Optional[str]
     contacts: Optional[List[versions_contacts.ContactsLinkInput]]
     owner: Optional[str]
+    authors: Optional[List[str]]
+    reviewers: Optional[List[ReviewerUserInput]]
 
     @validator("document", always=True)
     def _ensure_either_minor_or_document(

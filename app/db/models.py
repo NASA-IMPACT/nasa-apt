@@ -82,7 +82,6 @@ class AtbdVersions(Base):
         for author in self.authors:
 
             acl.append((permissions.Deny, f"user:{author}", "receive_ownership"))
-            acl.append((permissions.Deny, f"user:{author}", "join_authors"))
             acl.append((permissions.Deny, f"user:{author}", "join_reviewers"))
 
             acl.append((permissions.Allow, f"user:{author}", "comment"))
@@ -96,13 +95,17 @@ class AtbdVersions(Base):
             acl.append((permissions.Allow, f"user:{author}", "update"))
 
         for reviewer in [r["sub"] for r in self.reviewers]:
+
             acl.append((permissions.Deny, f"user:{reviewer}", "receive_ownership"))
             acl.append((permissions.Deny, f"user:{reviewer}", "join_authors"))
-            acl.append((permissions.Deny, f"user:{reviewer}", "join_reviewers"))
 
             acl.append((permissions.Allow, f"user:{reviewer}", "comment"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_authors"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_owner"))
+
+        acl.append((permissions.Allow, "role:contributor", "receive_ownership"))
+        acl.append((permissions.Allow, "role:contributor", "join_authors"))
+        acl.append((permissions.Allow, "role:contributor", "join_reviewers"))
 
         acl.append((permissions.Deny, "role:curator", "join_authors"))
         acl.append((permissions.Deny, "role:curator", "join_reviewers"))
