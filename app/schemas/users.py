@@ -25,9 +25,6 @@ class User(BaseModel):
 class CognitoUser(BaseModel):
     """User contributing to an ATBD Version, as returned by Cognito"""
 
-    # TODO: figure out how to switch this back to lowercase
-    # Username: Optional[str]  # = Field(..., alias="Username")
-    # username: str = Field(..., alias="Username")
     username: str
     sub: str
     preferred_username: str
@@ -38,13 +35,6 @@ class AnonymousUser(BaseModel):
     """Obfuscated user contributing to an ATBD Version"""
 
     preferred_username: str
-
-
-class ReviewerUserInput(BaseModel):
-    """Model for input when updating reviewers in an ATBD Version"""
-
-    sub: str
-    review_status: str
 
 
 class ReviewerUser(CognitoUser):

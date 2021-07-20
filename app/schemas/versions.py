@@ -12,7 +12,6 @@ from app.schemas.users import (
     AnonymousUser,
     CognitoUser,
     ReviewerUser,
-    ReviewerUserInput,
 )
 
 
@@ -148,7 +147,7 @@ class Update(BaseModel):
     contacts: Optional[List[versions_contacts.ContactsLinkInput]]
     owner: Optional[str]
     authors: Optional[List[str]]
-    reviewers: Optional[List[ReviewerUserInput]]
+    reviewers: Optional[List[str]]
 
     @validator("document", always=True)
     def _ensure_either_minor_or_document(

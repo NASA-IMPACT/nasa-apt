@@ -214,9 +214,6 @@ def update_atbd_version(
                 detail=f"User {cognito_owner['preferred_username']} is not allowed to receive ownership of this document",
             )
 
-        # Checks did not fail - perform ownership transfer
-        atbd_version.owner = version_input.owner
-
     if version_input.reviewers:
         if not permissions.has_permission(principals, "invite_reviewers", version_acl):
             raise HTTPException(
@@ -225,9 +222,8 @@ def update_atbd_version(
             )
 
         for reviewer in version_input.reviewers:
-            print("REVIEWER SUB: ", reviewer.sub)
-            print("USERS: ", [user["sub"] for user in app_users])
-            [cognito_user] = [user for user in app_users if user["sub"] == reviewer.sub]
+
+            [cognito_user] = [user for user in app_users if user["sub"] == reviewer]
             if not permissions.has_permission(
                 get_active_user_principals(cognito_user), "join_reviewers", version_acl,
             ):
@@ -236,7 +232,18 @@ def update_atbd_version(
                     detail=f"User {cognito_user['preferred_username']} cannot be added as a reviewer of this document",
                 )
 
-        atbd_version.reviewers = version_input.reviewers
+        reviewers = [
+            x for x in atbd_version.reviewers if x["sub"] in version_input.reviewers
+        ]
+
+        reviewers.extend(
+            [
+                {"sub": r, "review_status": "in_progress"}
+                for r in version_input.reviewers
+                if r not in [_r["sub"] for _r in atbd_version.reviewers]
+            ]
+        )
+        version_input.reviewers = reviewers
 
     if version_input.authors:
         if not permissions.has_permission(principals, "invite_authors", version_acl):
