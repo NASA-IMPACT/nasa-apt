@@ -207,16 +207,18 @@ def update_atbd_version(
         # User being transferred ownership to, is not allowed (either because
         # they are a reviewer of the document, or a curator)
         if not permissions.has_permission(
-            get_active_user_principals(cognito_owner),
-            "receive_ownership",
-            version_acl,
+            get_active_user_principals(cognito_owner), "receive_ownership", version_acl,
         ):
             raise HTTPException(
                 status_code=400,
                 detail=f"User {cognito_owner['preferred_username']} is not allowed to receive ownership of this document",
             )
+        print("AUTHORS: ", atbd_version.authors)
+        print("NEW OWNER: ", version_input.owner)
 
-        version_input.authors.remove(version_input.owner)
+        version_input.authors = [
+            a for a in atbd_version.authors if a != version_input.owner
+        ]
 
     if version_input.reviewers:
         if not permissions.has_permission(principals, "invite_reviewers", version_acl):
@@ -229,9 +231,7 @@ def update_atbd_version(
 
             [cognito_user] = [user for user in app_users if user["sub"] == reviewer]
             if not permissions.has_permission(
-                get_active_user_principals(cognito_user),
-                "join_reviewers",
-                version_acl,
+                get_active_user_principals(cognito_user), "join_reviewers", version_acl,
             ):
                 raise HTTPException(
                     status_code=400,
@@ -252,6 +252,7 @@ def update_atbd_version(
         version_input.reviewers = reviewers
 
     if version_input.authors:
+
         if not permissions.has_permission(principals, "invite_authors", version_acl):
             raise HTTPException(
                 status_code=400,
@@ -260,16 +261,18 @@ def update_atbd_version(
 
         for author in version_input.authors:
             [cognito_author] = [user for user in app_users if user["sub"] == author]
+            print(
+                "AUTHOR principals; ", get_active_user_principals(cognito_author),
+            )
+            print("VERSION ACL: ", version_acl)
+
             if not permissions.has_permission(
-                get_active_user_principals(cognito_author),
-                "join_authors",
-                version_acl,
+                get_active_user_principals(cognito_author), "join_authors", version_acl,
             ):
                 raise HTTPException(
                     status_code=400,
                     detail=f"User {cognito_author['preferred_username']} cannot be added as an author of this document",
                 )
-        atbd_version.authors = version_input.authors
 
     if version_input.document and not overwrite:
         version_input.document = {

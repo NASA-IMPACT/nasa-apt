@@ -22,12 +22,7 @@ class AtbdVersions(Base):
     """AtbdVersions"""
 
     __tablename__ = "atbd_versions"
-    atbd_id = Column(
-        Integer(),
-        ForeignKey("atbds.id"),
-        primary_key=True,
-        index=True,
-    )
+    atbd_id = Column(Integer(), ForeignKey("atbds.id"), primary_key=True, index=True,)
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="Draft", nullable=False)
@@ -86,7 +81,6 @@ class AtbdVersions(Base):
         for author in self.authors:
 
             acl.append((permissions.Deny, f"user:{author}", "join_reviewers"))
-
             acl.append((permissions.Allow, f"user:{author}", "comment"))
             acl.append((permissions.Allow, f"user:{author}", "edit"))
             acl.append((permissions.Allow, f"user:{author}", "view_authors"))
@@ -202,16 +196,8 @@ class AtbdVersionsContactsAssociation(Base):
         ),
     )
 
-    atbd_id = Column(
-        Integer(),
-        nullable=False,
-        primary_key=True,
-    )
-    major = Column(
-        Integer(),
-        nullable=False,
-        primary_key=True,
-    )
+    atbd_id = Column(Integer(), nullable=False, primary_key=True,)
+    major = Column(Integer(), nullable=False, primary_key=True,)
 
     contact_id = Column(
         Integer(), ForeignKey("contacts.id"), nullable=False, primary_key=True
