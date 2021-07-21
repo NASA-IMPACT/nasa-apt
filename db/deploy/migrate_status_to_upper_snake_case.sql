@@ -32,7 +32,7 @@ UPDATE
 SET
     "status" = 'DRAFT'
 WHERE
-    status_bkp IS NULL;
+    "status" IS NULL;
 ALTER TABLE apt.atbd_versions
     ALTER COLUMN status SET DEFAULT 'DRAFT';
 ALTER TABLE apt.atbd_versions
