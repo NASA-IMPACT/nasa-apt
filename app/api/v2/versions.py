@@ -251,7 +251,7 @@ def update_atbd_version(
         for author in version_input.authors:
             [cognito_author] = [user for user in app_users if user["sub"] == author]
             check_permissions(
-                principals=get_active_user_principals(cognito_owner),
+                principals=get_active_user_principals(cognito_author),
                 action="join_authors",
                 acl=version_acl,
             )
