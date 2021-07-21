@@ -9,9 +9,7 @@ from boto3 import client
 from app import config
 from app.auth.cognito import get_user
 from app.config import AWS_RESOURCES_ENDPOINT
-from app.db.db_session import DbSession, get_session
 from app.db.models import Atbds
-from app.logs import logger
 from app.permissions import check_permissions
 from app.schemas.users import User
 from app.schemas.versions import (
@@ -183,18 +181,16 @@ def require_user(user: User = Depends(get_user)) -> User:
     return user
 
 
-def get_db(
-    db_session: DbSession = Depends(get_session), user: User = Depends(get_user),
-) -> DbSession:
-    """
-    Returns an db session with the correct permission level set (`anonymous` by
-    default and `app_user` if the user is authenticated)
-    """
-    if user:
-        logger.info(f"User {user['sub']} is authenticated. Elevating session")
-        db_session.execute("SET SESSION AUTHORIZATION app_user;")
+# def get_db(
+#     db_session: DbSession = Depends(get_session),
+#     user: User = Depends(get_user),
+# ) -> DbSession:
+#     """
+#     Returns an db session with the correct permission level set (`anonymous` by
+#     default and `app_user` if the user is authenticated)
+#     """
 
-    return db_session
+#     return db_session
 
 
 def get_major_from_version_string(version: str) -> Tuple[int, Union[int, None]]:

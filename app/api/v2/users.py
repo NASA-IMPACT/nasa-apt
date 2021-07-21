@@ -3,13 +3,12 @@ from typing import List
 
 from app.api.utils import (
     get_active_user_principals,
-    get_db,
     get_major_from_version_string,
     list_cognito_users,
     require_user,
 )
 from app.crud.atbds import crud_atbds
-from app.db.db_session import DbSession
+from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_permissions
 from app.schemas import users
 from app.schemas.users import User
@@ -29,7 +28,7 @@ def list_users(
     atbd_id: str,
     version: str,
     user_filter: str,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     user: User = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):

@@ -4,7 +4,6 @@ from typing import List
 
 from app.api.utils import (
     get_active_user_principals,
-    get_db,
     get_major_from_version_string,
     get_user,
     list_cognito_users,
@@ -15,7 +14,7 @@ from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
 from app.crud.contacts import crud_contacts_associations
 from app.crud.versions import crud_versions
-from app.db.db_session import DbSession
+from app.db.db_session import DbSession, get_db_session
 from app.db.models import AtbdVersions
 from app.permissions import check_permissions, filter_atbds
 from app.schemas import atbds, versions, versions_contacts
@@ -35,7 +34,7 @@ router = APIRouter()
 def version_exists(
     atbd_id: str,
     version: str,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     user: User = Depends(get_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
@@ -57,7 +56,7 @@ def version_exists(
 def get_version(
     atbd_id: str,
     version: str,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     user: User = Depends(get_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
@@ -78,7 +77,7 @@ def get_version(
 @router.post("/atbds/{atbd_id}/versions", response_model=atbds.FullOutput)
 def create_new_version(
     atbd_id: str,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     user=Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
@@ -117,7 +116,7 @@ def update_atbd_version(
     version_input: versions.Update,
     background_tasks: BackgroundTasks,
     overwrite: bool = False,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     user=Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
@@ -208,7 +207,7 @@ def update_atbd_version(
 
         check_permissions(
             principals=get_active_user_principals(cognito_owner),
-            action="recieve_ownership",
+            action="receive_ownership",
             acl=version_acl,
         )
 
@@ -291,7 +290,7 @@ def delete_atbd_version(
     atbd_id: str,
     version: str,
     background_tasks: BackgroundTasks,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     user=Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):

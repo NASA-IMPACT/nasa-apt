@@ -32,7 +32,7 @@ DbSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 # TODO: should this remain async?
-async def get_session():
+async def get_db_session():
     """
     Yields a SQLAlchemy database session, with the authorization level
     set to `anonymous`. Upon successfull authenticating a JWT, the
@@ -40,7 +40,6 @@ async def get_session():
     """
     try:
         db = DbSession()
-        db.execute("SET SESSION AUTHORIZATION anonymous;")
         yield db
     finally:
         db.rollback()

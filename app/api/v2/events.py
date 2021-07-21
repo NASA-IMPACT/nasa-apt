@@ -2,7 +2,8 @@
 
 from typing import List
 
-from app.api.utils import DbSession, get_active_user_principals, get_db, get_user
+from app.api.utils import get_active_user_principals, get_user
+from app.db.db_session import DbSession, get_db_session
 from app.schemas.users import User
 
 from fastapi import APIRouter, Depends
@@ -18,7 +19,7 @@ def new_event(
     atbd_id: str,
     version: str,
     user: User = Depends(get_user),
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """."""

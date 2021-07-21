@@ -98,6 +98,7 @@ class AtbdVersions(Base):
             acl.append((permissions.Allow, f"user:{reviewer}", "comment"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_authors"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_owner"))
+            acl.append((permissions.Allow, f"user:{reviewer}", "view_reviewers"))
 
         acl.append((permissions.Allow, "role:contributor", "receive_ownership"))
         acl.append((permissions.Allow, "role:contributor", "join_authors"))

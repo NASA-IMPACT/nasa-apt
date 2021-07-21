@@ -41,6 +41,19 @@ def check_atbd_permissions(
     ALL atbd versions. Can also be configured to either raise an exception
     or return a boolean depending on the outcome.
     """
+
+    if action == "create_atbd":
+        if not check_permissions(
+            principals=principals,
+            action=action,
+            acl=[(fastapi_permissions.Allow, "role:contributor", "create_atbd")],
+            error=False,
+        ):
+            raise HTTPException(
+                status_code=403, detail="User is not allowed to create a new ATBD"
+            )
+        return True
+
     permissions = [
         check_permissions(
             principals=principals, action=action, acl=version.__acl__(), error=False

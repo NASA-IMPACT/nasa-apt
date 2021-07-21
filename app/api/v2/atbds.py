@@ -6,14 +6,13 @@ from sqlalchemy import exc
 
 from app.api.utils import (
     get_active_user_principals,
-    get_db,
     get_user,
     require_user,
     update_contributor_info,
 )
 from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
-from app.db.db_session import DbSession
+from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_atbd_permissions, filter_atbds
 from app.schemas import atbds
 from app.schemas.users import User
@@ -33,7 +32,7 @@ def list_atbds(
     role: str = None,
     status: str = None,
     user: User = Depends(get_user),
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Lists all ATBDs with summary version info (only versions with status
@@ -68,7 +67,7 @@ def list_atbds(
 )
 def atbd_exists(
     atbd_id: str,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Returns status 200 if ATBD exsits and raises 404 if not (or if the user is
@@ -76,10 +75,7 @@ def atbd_exists(
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
     atbd = filter_atbds(principals, atbd)
-    # if not filter_atbds(principals, atbd, "view"):
-    #     raise HTTPException(
-    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-    #     )
+
     return True
 
 
@@ -90,7 +86,7 @@ def atbd_exists(
 )
 def get_atbd(
     atbd_id: str,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Returns a single ATBD (raises 404 if the ATBD has no versions with
@@ -112,16 +108,17 @@ def get_atbd(
 )
 def create_atbd(
     atbd_input: atbds.Create,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     user: User = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Creates a new ATBD. Requires a title, optionally takes an alias.
     Raises 400 if the user is not logged in."""
-    if "role:contributor" not in principals:
-        raise HTTPException(
-            status_code=400, detail="User is not allowed to create a new ATBD"
-        )
+    # if "role:contributor" not in principals:
+    #     raise HTTPException(
+    #         status_code=400, detail="User is not allowed to create a new ATBD"
+    #     )
+    check_atbd_permissions(principals=principals, action="create_atbd", atbd=None)
     atbd = crud_atbds.create(db, atbd_input, user["sub"])
     atbd = update_contributor_info(principals, atbd)
     return atbd
@@ -136,7 +133,7 @@ def update_atbd(
     atbd_id: str,
     atbd_input: atbds.Update,
     background_tasks: BackgroundTasks,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     user: User = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
@@ -171,7 +168,7 @@ def publish_atbd(
     atbd_id: str,
     publish_input: atbds.PublishInput,
     background_tasks: BackgroundTasks,
-    db=Depends(get_db),
+    db=Depends(get_db_session),
     user=Depends(require_user),
 ):
     """Publishes an ATBD. Raises 400 if the `latest` version does NOT have
@@ -212,7 +209,7 @@ def publish_atbd(
 def delete_atbd(
     atbd_id: str,
     background_tasks: BackgroundTasks,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     user: User = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):

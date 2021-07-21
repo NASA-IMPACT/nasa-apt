@@ -6,9 +6,9 @@ from typing import List
 import botocore
 
 from app import config
-from app.api.utils import get_active_user_principals, get_db, require_user, s3_client
+from app.api.utils import get_active_user_principals, require_user, s3_client
 from app.crud.atbds import crud_atbds
-from app.db.db_session import DbSession
+from app.db.db_session import DbSession, get_db_session
 from app.permissions import filter_atbds
 from app.schemas.users import User
 
@@ -22,7 +22,7 @@ def upload_image(
     atbd_id: str,
     image_key: str,
     file: UploadFile = File(...),
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     user: User = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
@@ -45,7 +45,7 @@ def upload_image(
 def get_image(
     atbd_id: str,
     image_key: str,
-    db: DbSession = Depends(get_db),
+    db: DbSession = Depends(get_db_session),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Returns an image belonging to an ATBD. Raises an exception if the image

@@ -2,8 +2,9 @@
 import os
 
 from app import config
-from app.api.utils import get_db, get_major_from_version_string, s3_client
+from app.api.utils import get_major_from_version_string, s3_client
 from app.crud.atbds import crud_atbds
+from app.db.db_session import DbSession, get_db_session
 from app.db.models import Atbds, AtbdVersions
 from app.pdf.generator import generate_pdf
 
@@ -51,7 +52,7 @@ def get_pdf(
     version: str,
     journal: bool = False,
     background_tasks: BackgroundTasks = None,
-    db=Depends(get_db),
+    db: DbSession = Depends(get_db_session),
 ):
     """
     Returns a PDF to the user - either as a stream of Bytes from S3 or as a
