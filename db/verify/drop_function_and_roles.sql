@@ -1,4 +1,4 @@
--- Verify nasa-apt:upper_snake_case_statuses on pg
+-- Verify nasa-apt:drop_function_and_roles on pg
 
 BEGIN;
 

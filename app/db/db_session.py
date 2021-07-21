@@ -40,6 +40,7 @@ async def get_db_session():
     """
     try:
         db = DbSession()
+        db.execute("SET SESSION AUTHORIZATION app_user;")
         yield db
     finally:
         db.rollback()
