@@ -666,7 +666,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
     }
   ]
 }'::jsonb, '{
-  "creators": "Leo Thomas, Daniel da Silva, Ricardo Mestre",
+  "creators": "Leo Thomas and Daniel da Silva and Ricardo Mestre",
   "editors": "Olaf Veerman",
   "title": "A full atbd for testing",
   "series_name": "Tests of content",
@@ -1308,7 +1308,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
     }
   ]
 }'::jsonb, '{
-  "creators": "Leo Thomas, Daniel da Silva, Ricardo Mestre",
+  "creators": "Leo Thomas and Daniel da Silva and Ricardo Mestre",
   "editors": "Olaf Veerman",
   "title": "A full atbd for testing",
   "series_name": "Tests of content",
