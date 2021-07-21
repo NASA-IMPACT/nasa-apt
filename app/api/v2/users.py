@@ -52,7 +52,7 @@ def list_users(
             user
             for user in app_users
             if permissions.has_permission(
-                get_active_user_principals(user), "recieve_ownership", version_acl
+                get_active_user_principals(user), "receive_ownership", version_acl
             )
         ]
     if user_filter == "invite_authors":
