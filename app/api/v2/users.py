@@ -87,4 +87,4 @@ def list_users(
             )
         ]
 
-    return eligible_users
+    return sorted(eligible_users, key=lambda x: x["preferred_username"].lower())
