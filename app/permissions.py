@@ -1,4 +1,5 @@
 """Functionality related to permissions model"""
+
 from typing import List, Tuple
 
 from app.db.models import Atbds

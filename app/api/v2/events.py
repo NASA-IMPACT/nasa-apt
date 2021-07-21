@@ -22,4 +22,3 @@ def new_event(
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """."""
-    raise NotImplementedError

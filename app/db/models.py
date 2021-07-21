@@ -57,7 +57,8 @@ class AtbdVersions(Base):
 
     def __acl__(self):
         """ "Access Control List"""
-        acl = []
+        acl = [(permissions.Allow, permissions.Authenticated, "view")]
+
         if self.status == "Published":
             acl.append((permissions.Allow, permissions.Everyone, "view"))
             acl.append((permissions.Allow, f"user:{self.owner}", "create_new_version"))
@@ -79,17 +80,15 @@ class AtbdVersions(Base):
         acl.append((permissions.Allow, f"user:{self.owner}", "invite_authors"))
 
         for author in self.authors:
-
             acl.append((permissions.Deny, f"user:{author}", "join_reviewers"))
             acl.append((permissions.Allow, f"user:{author}", "comment"))
             acl.append((permissions.Allow, f"user:{author}", "edit"))
             acl.append((permissions.Allow, f"user:{author}", "view_authors"))
             acl.append((permissions.Allow, f"user:{author}", "view_owner"))
+            acl.append((permissions.Allow, f"user:{author}", "update"))
 
             if self.status == "Published":
                 acl.append((permissions.Allow, f"user:{author}", "create_new_version"))
-
-            acl.append((permissions.Allow, f"user:{author}", "update"))
 
         for reviewer in [r["sub"] for r in self.reviewers]:
 
