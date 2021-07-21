@@ -10,11 +10,11 @@ from app.api.utils import (
 )
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession
+from app.permissions import check_permissions
 from app.schemas import users
 from app.schemas.users import User
 
-import fastapi_permissions as permissions
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 router = APIRouter()
 
@@ -42,46 +42,48 @@ def list_users(
     app_users = list_cognito_users()
 
     if user_filter == "transfer_ownership":
-        if not permissions.has_permission(principals, "offer_ownership", version_acl):
-            raise HTTPException(
-                status_code=400,
-                detail=f"User {user['username']} is not allowed to transfer ownership",
-            )
+        check_permissions(
+            principals=principals, action="offer_ownership", acl=version_acl
+        )
 
         eligible_users = [
             user
             for user in app_users
-            if permissions.has_permission(
-                get_active_user_principals(user), "receive_ownership", version_acl
+            if check_permissions(
+                principals=get_active_user_principals(user),
+                action="receive_ownership",
+                acl=version_acl,
+                error=False,
             )
         ]
     if user_filter == "invite_authors":
-        if not permissions.has_permission(principals, "invite_authors", version_acl):
-            raise HTTPException(
-                status_code=400,
-                detail=f"User {user['username']} is not allowed to invite authors",
-            )
+        check_permissions(
+            principals=principals, action="invite_authors", acl=version_acl
+        )
 
         eligible_users = [
             user
             for user in app_users
-            if permissions.has_permission(
-                get_active_user_principals(user), "join_authors", version_acl
+            if check_permissions(
+                principals=get_active_user_principals(user),
+                action="join_authors",
+                acl=version_acl,
+                error=False,
             )
         ]
-    print("USER: ", user)
     if user_filter == "invite_reviewers":
-        if not permissions.has_permission(principals, "invite_reviewers", version_acl):
-            raise HTTPException(
-                status_code=400,
-                detail=f"User {user['username']} is not allowed to invite reviewers",
-            )
+        check_permissions(
+            principals=principals, action="invite_reviewers", acl=version_acl
+        )
 
         eligible_users = [
             user
             for user in app_users
-            if permissions.has_permission(
-                get_active_user_principals(user), "join_reviewers", version_acl
+            if check_permissions(
+                principals=get_active_user_principals(user),
+                action="join_reviewers",
+                acl=version_acl,
+                error=False,
             )
         ]
 

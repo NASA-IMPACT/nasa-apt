@@ -23,7 +23,6 @@ aws --endpoint-url http://localstack:4566 s3 cp "fixture_data/figures/test-atbd-
 wait_for_service "cognito-idp"
 wait_for_service "cognito-identity"
 
-#pool_id = $(aws --endpoint-url http://localstack:4566 cognito-idp list-user-pools --no-sign-request --max-results 60 | jq -rc "select(.UserPools|length==1)")
 
 # Cognito setup
 pool_id=$(aws --endpoint-url http://localstack:4566 cognito-idp create-user-pool --pool-name ${USER_POOL_NAME} | jq -rc ".UserPool.Id")

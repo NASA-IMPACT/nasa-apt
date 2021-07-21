@@ -12,6 +12,7 @@ from app.config import AWS_RESOURCES_ENDPOINT
 from app.db.db_session import DbSession, get_session
 from app.db.models import Atbds
 from app.logs import logger
+from app.permissions import check_permissions
 from app.schemas.users import User
 from app.schemas.versions import (
     AnonymousReviewerUser,
@@ -52,7 +53,10 @@ def update_contributor_info(principals: List[str], atbd: Atbds):
     for version in atbd.versions:
         version_acl = version.__acl__()
 
-        if permissions.has_permission(principals, "view_owner", version_acl):
+        if check_permissions(
+            principals=principals, action="view_owner", acl=version_acl, error=False
+        ):
+
             [version.owner] = [
                 CognitoUser(**app_user)
                 for app_user in app_users
@@ -61,7 +65,9 @@ def update_contributor_info(principals: List[str], atbd: Atbds):
         else:
             version.owner = AnonymousUser(preferred_username="Owner")
 
-        if permissions.has_permission(principals, "view_authors", version_acl):
+        if check_permissions(
+            principals=principals, action="view_authors", acl=version_acl, error=False
+        ):
 
             version.authors = [
                 CognitoUser(**app_user)
@@ -74,7 +80,9 @@ def update_contributor_info(principals: List[str], atbd: Atbds):
                 for i, _ in enumerate(version.authors)
             ]
 
-        if permissions.has_permission(principals, "view_reviewers", version_acl):
+        if check_permissions(
+            principals=principals, action="view_reviewers", acl=version_acl, error=False
+        ):
             version.reviewers = [
                 ReviewerUser(**app_user, review_status=reviewer["review_status"])
                 for reviewer in version.reviewers
@@ -141,24 +149,6 @@ def list_cognito_users():
     return app_users
 
 
-def atbd_permissions_filter(principals: List[str], atbd: Atbds, action: str = "view"):
-    """
-    Applies a permission check to a list of ATBDs, returning only the versions
-    that the user is allowed to see. If an ATBD has NO versions that the user is
-    allowed to access, then the filter returns `None`.
-    """
-
-    versions = [
-        version
-        for version in atbd.versions
-        if permissions.has_permission(principals, action, version.__acl__())
-    ]
-    if not versions:
-        return None
-    atbd.versions = versions
-    return atbd
-
-
 def cognito_client() -> client:
     """
     Returns a boto3 cognito client - configured to point at a specifc endpoint url if provided
@@ -194,8 +184,7 @@ def require_user(user: User = Depends(get_user)) -> User:
 
 
 def get_db(
-    db_session: DbSession = Depends(get_session),
-    user: User = Depends(get_user),
+    db_session: DbSession = Depends(get_session), user: User = Depends(get_user),
 ) -> DbSession:
     """
     Returns an db session with the correct permission level set (`anonymous` by

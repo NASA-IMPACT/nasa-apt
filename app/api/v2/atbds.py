@@ -5,7 +5,6 @@ from typing import List
 from sqlalchemy import exc
 
 from app.api.utils import (
-    atbd_permissions_filter,
     get_active_user_principals,
     get_db,
     get_user,
@@ -15,11 +14,11 @@ from app.api.utils import (
 from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession
+from app.permissions import check_atbd_permissions, filter_atbds
 from app.schemas import atbds
 from app.schemas.users import User
 from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
 
-import fastapi_permissions as permissions
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 router = APIRouter()
@@ -52,9 +51,9 @@ def list_atbds(
     # TODO: use a generator and only yield non `None` objects?
 
     atbds = [
-        atbd_permissions_filter(principals, atbd, "view")
+        filter_atbds(principals, atbd, error=False)
         for atbd in crud_atbds.scan(db=db, role=role, status=status)
-        if atbd_permissions_filter(principals, atbd, "view") is not None
+        if filter_atbds(principals, atbd, error=False) is not None
     ]
 
     for atbd in atbds:
@@ -76,11 +75,11 @@ def atbd_exists(
     not logged in and the ATBD has no versions with status `Published`)"""
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-
-    if not atbd_permissions_filter(principals, atbd, "view"):
-        raise HTTPException(
-            status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-        )
+    atbd = filter_atbds(principals, atbd)
+    # if not filter_atbds(principals, atbd, "view"):
+    #     raise HTTPException(
+    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
+    #     )
     return True
 
 
@@ -97,11 +96,11 @@ def get_atbd(
     """Returns a single ATBD (raises 404 if the ATBD has no versions with
     status `Published` and the user is not logged in)"""
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-
-    if not atbd_permissions_filter(principals, atbd, "view"):
-        raise HTTPException(
-            status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-        )
+    filter_atbds(principals, atbd)
+    # if not filter_atbds(principals, atbd, "view"):
+    #     raise HTTPException(
+    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
+    #     )
     atbd = update_contributor_info(principals, atbd)
     return atbd
 
@@ -148,16 +147,7 @@ def update_atbd(
     # Get latest version - ability to udpate an atbd is given
     # to whoever is allowed to update the latest version of that atbd
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1)
-
-    if not all(
-        [
-            permissions.has_permission(principals, "update", version.__acl__())
-            for version in atbd.versions
-        ]
-    ):
-        raise HTTPException(
-            status_code=404, detail=f"Update for ATBD id/alias: {atbd_id} not allowed"
-        )
+    check_atbd_permissions(principals=principals, action="update", atbd=atbd)
 
     atbd.last_updated_by = user["sub"]
     atbd.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
@@ -229,11 +219,11 @@ def delete_atbd(
     """Deletes an ATBD (and all child versions). Removes all associated
     items in the Elasticsearch index."""
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-
-    if "role:curator" not in principals:
-        raise HTTPException(
-            status_code=400, detail=f"User not allowed to delete ATBD (id:{atbd_id})"
-        )
+    check_atbd_permissions(principals=principals, action="delete", atbd=atbd)
+    # if "role:curator" not in principals:
+    #     raise HTTPException(
+    #         status_code=400, detail=f"User not allowed to delete ATBD (id:{atbd_id})"
+    #     )
     atbd = crud_atbds.remove(db=db, atbd_id=atbd_id)
 
     background_tasks.add_task(remove_atbd_from_index, atbd=atbd)

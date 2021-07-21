@@ -6,17 +6,10 @@ from typing import List
 import botocore
 
 from app import config
-from app.api.utils import (
-    atbd_permissions_filter,
-    get_active_user_principals,
-    get_db,
-    require_user,
-    s3_client,
-)
+from app.api.utils import get_active_user_principals, get_db, require_user, s3_client
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession
-
-# from app.auth.saml import User
+from app.permissions import filter_atbds
 from app.schemas.users import User
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, responses
@@ -37,11 +30,11 @@ def upload_image(
     an ATBD id. Raises a 404 exception if the ATBD doesn't exist"""
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-
-    if not atbd_permissions_filter(principals, atbd, "view"):
-        raise HTTPException(
-            status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-        )
+    atbd = filter_atbds(principals, atbd)
+    # if not filter_atbds(principals, atbd, "view"):
+    #     raise HTTPException(
+    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
+    #     )
 
     key = f"{atbd_id}/images/{image_key}"
 

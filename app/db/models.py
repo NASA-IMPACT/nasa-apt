@@ -116,11 +116,6 @@ class AtbdVersions(Base):
         acl.append((permissions.Allow, "role:curator", "view_owner"))
         acl.append((permissions.Allow, "role:curator", "view_reviewers"))
         acl.append((permissions.Allow, "role:curator", "delete"))
-        acl.append((permissions.Allow, "role:curator", "delete_atbd"))
-
-        # Denying the "recieve_ownership" permission for each author and reviewer
-        # ALREADY assigned to the document MUST happen before the following line.
-        acl.append((permissions.Allow, "role:contributor", "receive_ownership"))
 
         return acl
 
