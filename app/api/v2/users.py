@@ -45,7 +45,7 @@ def list_users(
         if not permissions.has_permission(principals, "offer_ownership", version_acl):
             raise HTTPException(
                 status_code=400,
-                detail=f"User {user['preferred_username']} is not allowed to transfer ownership",
+                detail=f"User {user['username']} is not allowed to transfer ownership",
             )
 
         eligible_users = [
@@ -59,7 +59,7 @@ def list_users(
         if not permissions.has_permission(principals, "invite_authors", version_acl):
             raise HTTPException(
                 status_code=400,
-                detail=f"User {user['preferred_username']} is not allowed to invite authors",
+                detail=f"User {user['username']} is not allowed to invite authors",
             )
 
         eligible_users = [
@@ -69,11 +69,12 @@ def list_users(
                 get_active_user_principals(user), "join_authors", version_acl
             )
         ]
+    print("USER: ", user)
     if user_filter == "invite_reviewers":
         if not permissions.has_permission(principals, "invite_reviewers", version_acl):
             raise HTTPException(
                 status_code=400,
-                detail=f"User {user['preferred_username']} is not allowed to invite reviewers",
+                detail=f"User {user['username']} is not allowed to invite reviewers",
             )
 
         eligible_users = [
