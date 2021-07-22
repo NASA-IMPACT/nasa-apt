@@ -210,10 +210,13 @@ def update_atbd_version(
             action="receive_ownership",
             acl=version_acl,
         )
-
+        # Remove new owner from authors list
         version_input.authors = [
             a for a in atbd_version.authors if a != version_input.owner
         ]
+
+        # Owner becomes an author
+        version_input.authors.append(atbd_version.owner)
 
     if version_input.reviewers:
         check_permissions(
