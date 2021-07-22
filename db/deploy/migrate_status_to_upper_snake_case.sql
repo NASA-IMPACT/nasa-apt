@@ -15,8 +15,8 @@ CREATE TYPE apt.atbd_version_status AS ENUM (
     'DRAFT',
     'CLOSED_REVIEW_REQUESTED',
     'OPEN_REVIEW',
-    'CURATION_REQUESTED',
-    'CURATION',
+    'PUBLICATION_REQUESTED',
+    'PUBLICATION',
     'PUBLISHED'
 );
 ALTER TABLE apt.atbd_versions

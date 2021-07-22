@@ -677,7 +677,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
   "issue": "alpha2",
   "additional_details": "",
   "online_resource": "http://nasa-apt2-staging.s3-website-us-east-1.amazonaws.com/"
-}'::jsonb, 'Published');
+}'::jsonb, 'PUBLISHED');
 
 INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation)
   VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'in_progress']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'in_progress']::text[])]::jsonb[], :'author_sub_1', 2, 0, '{
