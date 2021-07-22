@@ -55,7 +55,7 @@ services:
   
   localstack:
     # localstack for local development only. AWS S3 used for staging/production
-    image: localstack/localstack:0.12.14
+    image: localstack/localstack:0.12.13
     environment:
       LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
       SERVICES: s3,secretsmanager,cognito
