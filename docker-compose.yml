@@ -56,24 +56,13 @@ services:
   localstack:
     # localstack for local development only. AWS S3 used for staging/production
     image: localstack/localstack:0.12.13
-    #image: localstack/localstack
     environment:
       LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
       SERVICES: s3,secretsmanager,cognito
-      # SMTP_HOST: mail
-      # SMTP_USER: test@example.com
-      # SMTP_PASS: secretpassword
-      # SMTP_EMAIL: no-reply@example.com
-      # HOSTNAME: localhost
-      # HOSTNAME_EXTERNAL: localhost
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
-      AWS_DEFAULT_REGION: us-east-1
-      #EXTRA_CORS_ALLOWED_HEADERS: Access-Control-Allow-Origin
-      #EXTRA_CORS_ALLOWED_HEADERS: X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
-      #EXTRA_CORS_ALLOWED_HEADERS: 
+      AWS_DEFAULT_REGION: us-east-1     
       #EXTRA_CORS_ALLOWED_ORIGINS: http://localhost:9000,http://localhost:8000
-      #EXTRA_CORS_ALLOWED_ORIGINS: "*"
     ports:
       - "4566:4566"
       
