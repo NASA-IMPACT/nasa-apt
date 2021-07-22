@@ -284,6 +284,8 @@ aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --
 echo "Reviewer sub 2: ${reviewer_sub_2}"
 
 reviewer_sub_3=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username reviewer3@example.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Rita Reviewer"}, {"Name":"email","Value":"reviewer3@example.com"}]' | jq -rc '.User.Username')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username reviewer3@example.com --password Password123! --permanent
+
 
 
 # Create curator group and add curator user to it

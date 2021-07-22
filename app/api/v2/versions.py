@@ -210,13 +210,22 @@ def update_atbd_version(
             action="receive_ownership",
             acl=version_acl,
         )
+        print(
+            "USER CAN RECIEVE OWNERHISP: ",
+            check_permissions(
+                principals=get_active_user_principals(cognito_owner),
+                action="receive_ownership",
+                acl=version_acl,
+            ),
+        )
         # Remove new owner from authors list
         version_input.authors = [
             a for a in atbd_version.authors if a != version_input.owner
         ]
 
-        # Owner becomes an author
+        # Set old owner as author
         version_input.authors.append(atbd_version.owner)
+        print("VERSION INPUT: ", version_input.authors)
 
     if version_input.reviewers:
         check_permissions(
@@ -272,6 +281,7 @@ def update_atbd_version(
 
     atbd_version.last_updated_by = user["sub"]
     atbd_version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
+    print("READY FOR UPDATE: ",)
     crud_versions.update(db=db, db_obj=atbd_version, obj_in=version_input)
 
     # Indexes the updated vesion as well as atbd info

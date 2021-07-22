@@ -67,7 +67,7 @@ class AtbdVersions(Base):
 
         acl.append((permissions.Allow, permissions.Authenticated, "view"))
 
-        acl.append((permissions.Deny, f"user:{self.owner}", "join_authors"))
+        # acl.append((permissions.Deny, f"user:{self.owner}", "join_authors"))
         acl.append((permissions.Deny, f"user:{self.owner}", "join_reviewers"))
 
         acl.append((permissions.Allow, f"user:{self.owner}", "comment"))
