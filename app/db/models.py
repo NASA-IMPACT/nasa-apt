@@ -1,6 +1,5 @@
 """SQLAlchemy models for interfacing with the database"""
 from sqlalchemy import (
-    JSON,
     CheckConstraint,
     Column,
     ForeignKey,
@@ -9,11 +8,14 @@ from sqlalchemy import (
     String,
     types,
 )
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
 
 from app.db.base import Base
 from app.db.types import utcnow
+
+import fastapi_permissions as permissions
 
 
 class AtbdVersions(Base):
@@ -24,8 +26,10 @@ class AtbdVersions(Base):
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="Draft", nullable=False)
-    document = Column(MutableDict.as_mutable(JSON), server_default="{}")
-    sections_completed = Column(MutableDict.as_mutable(JSON), server_default="{}")
+    document = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
+    sections_completed = Column(
+        MutableDict.as_mutable(postgresql.JSON), server_default="{}"
+    )
     published_by = Column(String())
     published_at = Column(types.DateTime)
     created_by = Column(String(), nullable=False)
@@ -34,7 +38,10 @@ class AtbdVersions(Base):
     last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
     changelog = Column(String())
     doi = Column(String())
-    citation = Column(MutableDict.as_mutable(JSON), server_default="{}")
+    citation = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
+    owner = Column(String(), nullable=False)
+    authors = Column(postgresql.ARRAY(String), server_default="[]")
+    reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="[]")
 
     def __repr__(self):
         """String representation"""
@@ -44,8 +51,73 @@ class AtbdVersions(Base):
             f" sections_completed={self.sections_completed}, created_by={self.created_by},"
             f" created_at={self.created_at}, published_by={self.published_by},"
             f" published_at={self.published_by}, last_updated_at={self.last_updated_at}"
-            f" last_updated_by={self.last_updated_by})>"
+            f" last_updated_by={self.last_updated_by}), owner={self.owner}, authors={self.authors}>"
+            f" reviewers={self.reviewers}"
         )
+
+    def __acl__(self):
+        """ "Access Control List"""
+        acl = [(permissions.Allow, permissions.Authenticated, "view")]
+
+        if self.status == "Published":
+            acl.append((permissions.Allow, permissions.Everyone, "view"))
+            acl.append((permissions.Allow, f"user:{self.owner}", "create_new_version"))
+        if self.status == "Draft":
+            acl.append((permissions.Allow, f"user:{self.owner}", "delete"))
+
+        acl.append((permissions.Allow, permissions.Authenticated, "view"))
+
+        # acl.append((permissions.Deny, f"user:{self.owner}", "join_authors"))
+        acl.append((permissions.Deny, f"user:{self.owner}", "join_reviewers"))
+
+        acl.append((permissions.Allow, f"user:{self.owner}", "comment"))
+        acl.append((permissions.Allow, f"user:{self.owner}", "edit"))
+        acl.append((permissions.Allow, f"user:{self.owner}", "invite_authors"))
+        acl.append((permissions.Allow, f"user:{self.owner}", "offer_ownership"))
+        acl.append((permissions.Allow, f"user:{self.owner}", "view_authors"))
+        acl.append((permissions.Allow, f"user:{self.owner}", "view_owner"))
+        acl.append((permissions.Allow, f"user:{self.owner}", "update"))
+        acl.append((permissions.Allow, f"user:{self.owner}", "invite_authors"))
+
+        for author in self.authors:
+            acl.append((permissions.Deny, f"user:{author}", "join_reviewers"))
+            acl.append((permissions.Allow, f"user:{author}", "comment"))
+            acl.append((permissions.Allow, f"user:{author}", "edit"))
+            acl.append((permissions.Allow, f"user:{author}", "view_authors"))
+            acl.append((permissions.Allow, f"user:{author}", "view_owner"))
+            acl.append((permissions.Allow, f"user:{author}", "update"))
+
+            if self.status == "Published":
+                acl.append((permissions.Allow, f"user:{author}", "create_new_version"))
+
+        for reviewer in [r["sub"] for r in self.reviewers]:
+
+            acl.append((permissions.Deny, f"user:{reviewer}", "receive_ownership"))
+            acl.append((permissions.Deny, f"user:{reviewer}", "join_authors"))
+
+            acl.append((permissions.Allow, f"user:{reviewer}", "comment"))
+            acl.append((permissions.Allow, f"user:{reviewer}", "view_authors"))
+            acl.append((permissions.Allow, f"user:{reviewer}", "view_owner"))
+            acl.append((permissions.Allow, f"user:{reviewer}", "view_reviewers"))
+
+        acl.append((permissions.Allow, "role:contributor", "receive_ownership"))
+        acl.append((permissions.Allow, "role:contributor", "join_authors"))
+        acl.append((permissions.Allow, "role:contributor", "join_reviewers"))
+
+        acl.append((permissions.Deny, "role:curator", "join_authors"))
+        acl.append((permissions.Deny, "role:curator", "join_reviewers"))
+        acl.append((permissions.Deny, "role:curator", "receive_ownership"))
+
+        acl.append((permissions.Allow, "role:curator", "comment"))
+        acl.append((permissions.Allow, "role:curator", "invite_reviewers"))
+        acl.append((permissions.Allow, "role:curator", "invite_authors"))
+        acl.append((permissions.Allow, "role:curator", "offer_ownership"))
+        acl.append((permissions.Allow, "role:curator", "view_authors"))
+        acl.append((permissions.Allow, "role:curator", "view_owner"))
+        acl.append((permissions.Allow, "role:curator", "view_reviewers"))
+        acl.append((permissions.Allow, "role:curator", "delete"))
+
+        return acl
 
 
 class Atbds(Base):

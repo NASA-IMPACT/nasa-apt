@@ -7,3 +7,6 @@ tables 2021-02-15T18:07:13Z Leo Thomas <leo@MacBook-Pro> # Add tables for NASA-A
 anonymous 2021-02-17T03:12:13Z Leo Thomas <leo@MacBook-Pro> # Add role for unauthenticated user
 functions 2021-03-01T21:04:22Z Leo Thomas <leo@MacBook-Pro.local> # Adds functions for NASA-APT
 @v2.0.0-beta1 2021-07-07T13:32:04Z Leo Thomas <leo@MacBook-Pro.local> # Tag v2.0.0-beta1.
+owner_authors_reviewers [tables] 2021-07-07T00:35:47Z Leo Thomas <leo@MacBook-Pro.lan> # Adds columns for owner, authors and reviewers to the atbd_versions table
+drop_function_and_roles [appschema] 2021-07-21T15:45:37Z Leo Thomas <leo@MacBook-Pro> # Drop create atbd function and app_user/anonymous roles since all of those funcitionalities are no implemented in the API code
+migrate_status_to_upper_snake_case [tables] 2021-07-21T16:02:38Z Leo Thomas <leo@MacBook-Pro> # Migrate atbd version status to UPPER_SNAKE_CASE

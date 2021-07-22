@@ -1,12 +1,18 @@
 """Pydantic models for AtbdVersions"""
 import enum
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, validator
 
 from app.schemas import versions_contacts
 from app.schemas.document import Document
+from app.schemas.users import (
+    AnonymousReviewerUser,
+    AnonymousUser,
+    CognitoUser,
+    ReviewerUser,
+)
 
 
 class StatusEnum(enum.Enum):
@@ -34,6 +40,9 @@ class AtbdVersionSummaryOutput(BaseModel):
     last_updated_at: datetime
     citation: Optional[dict]
     changelog: Optional[str]
+    owner: Union[CognitoUser, AnonymousUser]
+    authors: Union[List[CognitoUser], List[AnonymousUser]]
+    reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]
 
     @validator("version", always=True)
     def _generate_semver(cls, v, values) -> str:
@@ -59,6 +68,13 @@ class Create(BaseModel):
     """Create new version (empty since new versions get created blank and then their content gets updated)"""
 
     atbd_id: str
+    major: int
+    minor: int
+    status: str  # TODO: make this enum
+    document: Document
+    created_by: str
+    last_updated_by: str
+    owner: str
 
 
 class Lookup(BaseModel):
@@ -129,6 +145,9 @@ class Update(BaseModel):
     citation: Optional[Citation]
     status: Optional[str]
     contacts: Optional[List[versions_contacts.ContactsLinkInput]]
+    owner: Optional[str]
+    authors: Optional[List[str]]
+    reviewers: Optional[List[str]]
 
     @validator("document", always=True)
     def _ensure_either_minor_or_document(
