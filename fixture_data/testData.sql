@@ -37,8 +37,8 @@ WHERE
 INSERT INTO atbds (title, alias, created_by, last_updated_by)
   VALUES ('Test ATBD 1', 'test-atbd-1', 'LeoThomas123', 'LeoThomas123');
 
-INSERT INTO atbd_versions (atbd_id, created_by, last_updated_by, major, minor, document, citation, status)
-  VALUES (1, :'user_sub', 'LeoThomas123', 1, 1, '{
+INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation, status)
+  VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'in_progress']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'in_progress']::text[])]::jsonb[], :'author_sub_1', 1, 1, '{
   "introduction": null,
   "historical_perspective": null,
   "mathematical_theory": {
@@ -665,8 +665,8 @@ INSERT INTO atbd_versions (atbd_id, created_by, last_updated_by, major, minor, d
       "year": "1995"
     }
   ]
-}', '{
-  "creators": "Leo Thomas, Daniel da Silva, Ricardo Mestre",
+}'::jsonb, '{
+  "creators": "Leo Thomas and Daniel da Silva and Ricardo Mestre",
   "editors": "Olaf Veerman",
   "title": "A full atbd for testing",
   "series_name": "Tests of content",
@@ -677,10 +677,10 @@ INSERT INTO atbd_versions (atbd_id, created_by, last_updated_by, major, minor, d
   "issue": "alpha2",
   "additional_details": "",
   "online_resource": "http://nasa-apt2-staging.s3-website-us-east-1.amazonaws.com/"
-}', 'Published');
+}'::jsonb, 'PUBLISHED');
 
-INSERT INTO atbd_versions (atbd_id, created_by, last_updated_by, major, minor, document, citation)
-  VALUES (1, :'user_sub', 'LeoThomas123', 2, 0, '{
+INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation)
+  VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'in_progress']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'in_progress']::text[])]::jsonb[], :'author_sub_1', 2, 0, '{
   "introduction": null,
   "historical_perspective": null,
   "mathematical_theory": {
@@ -1307,8 +1307,8 @@ INSERT INTO atbd_versions (atbd_id, created_by, last_updated_by, major, minor, d
       "year": "1995"
     }
   ]
-}', '{
-  "creators": "Leo Thomas, Daniel da Silva, Ricardo Mestre",
+}'::jsonb, '{
+  "creators": "Leo Thomas and Daniel da Silva and Ricardo Mestre",
   "editors": "Olaf Veerman",
   "title": "A full atbd for testing",
   "series_name": "Tests of content",
@@ -1319,7 +1319,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, last_updated_by, major, minor, d
   "issue": "alpha2",
   "additional_details": "",
   "online_resource": "http://nasa-apt2-staging.s3-website-us-east-1.amazonaws.com/"
-}');
+}'::jsonb);
 
 INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
   VALUES (1, 1, 1, ARRAY['Science contact', 'Metadata author']::e_contact_role_type[]);

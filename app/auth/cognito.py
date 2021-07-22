@@ -45,14 +45,8 @@ def validate_token(token: str) -> Dict:
     Does the ground work of unpacking the token, decrypting it using
     cognito's public key, and returning the claims contained within
     """
-    print("TOKEN: ", token)
-
-    # with urllib.request.urlopen(config.COGNITO_KEYS_URL) as f:  # type: ignore
-    #    response = f.read()
 
     keys = requests.get(config.COGNITO_KEYS_URL).json()["keys"]
-
-    # keys = json.loads(response.decode("utf-8"))["keys"]
 
     headers = jwt.get_unverified_headers(token)
 
