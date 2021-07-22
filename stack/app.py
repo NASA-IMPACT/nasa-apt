@@ -229,6 +229,7 @@ class nasaAPTLambdaStack(core.Stack):
                 actions=[
                     "cognito-idp:ListUserPools",
                     "cognito-idp:ListUserPoolClients",
+                    "cognito-idp:ListUsersInGroup",
                 ],
                 resources=["*"],
             )
