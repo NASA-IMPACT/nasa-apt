@@ -59,14 +59,39 @@ class AtbdVersions(Base):
         """ "Access Control List"""
         acl = [(permissions.Allow, permissions.Authenticated, "view")]
 
-        if self.status == "Published":
+        if self.status == "PUBLISHED":
             acl.append((permissions.Allow, permissions.Everyone, "view"))
             acl.append((permissions.Allow, f"user:{self.owner}", "create_new_version"))
-        if self.status == "Draft":
+
+        if self.status == "DRAFT":
             acl.append((permissions.Allow, f"user:{self.owner}", "delete"))
+            acl.append((permissions.Allow, f"user:{self.owner}", "request_review"))
+
+        if self.status == "CLOSED_REVIEW_REQUESTED":
+            acl.append(
+                (
+                    permissions.Allow,
+                    f"user:{self.owner}",
+                    "cancel_closed_review_request",
+                )
+            )
+        if self.status == "OPEN_REVIEW":
+            acl.append((permissions.Allow, f"user:{self.owner}", "request_publication"))
+
+        if self.status == "PUBLICATION_REQUESTED":
+            acl.append(
+                (permissions.Allow, f"user:{self.owner}", "cancel_publication_request")
+            )
 
         acl.append((permissions.Allow, permissions.Authenticated, "view"))
 
+        # This is commented out, because technically the owner is allowed
+        # to join_authors, only when they are transferring owernship to
+        # another author. However, removing this permission, technically
+        # allows for the possibility of someone adding the owner to the
+        # authors, if they go through the API. It's a lot of work, I don't
+        # really see any point in doing that, so we'll leave this permission
+        # as is for the time being.
         # acl.append((permissions.Deny, f"user:{self.owner}", "join_authors"))
         acl.append((permissions.Deny, f"user:{self.owner}", "join_reviewers"))
 
@@ -87,7 +112,7 @@ class AtbdVersions(Base):
             acl.append((permissions.Allow, f"user:{author}", "view_owner"))
             acl.append((permissions.Allow, f"user:{author}", "update"))
 
-            if self.status == "Published":
+            if self.status == "PUBLISHED":
                 acl.append((permissions.Allow, f"user:{author}", "create_new_version"))
 
         for reviewer in [r["sub"] for r in self.reviewers]:
@@ -117,6 +142,22 @@ class AtbdVersions(Base):
         acl.append((permissions.Allow, "role:curator", "view_reviewers"))
         acl.append((permissions.Allow, "role:curator", "delete"))
 
+        if self.status == "CLOSED_REVIEW_REQUESTED":
+            acl.append(
+                (permissions.Allow, "role:curator", "deny_closed_review_request")
+            )
+            acl.append((permissions.Allow, "role:curator", "accept_closed_review"))
+
+        if self.status == "CLOSED_REVIEW":
+            acl.append((permissions.Allow, "role:curator", "open_review"))
+
+        if self.status == "PUBLICATION_REQUESTED":
+            acl.append((permissions.Allow, "role:curator", "deny_publication_request"))
+            acl.append(
+                (permissions.Allow, "role:curator", "accept_publication_request")
+            )
+        if self.status == "PUBLICATION":
+            acl.append((permissions.Allow, "role:curator", "publish"))
         return acl
 
 

@@ -45,10 +45,7 @@ def version_exists(
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     atbd = filter_atbds(principals, atbd)
-    # if not filter_atbds(principals, atbd, "view"):
-    #     raise HTTPException(
-    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-    #     )
+
     return True
 
 
@@ -66,10 +63,7 @@ def get_version(
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     atbd = filter_atbds(principals, atbd)
-    # if not filter_atbds(principals, atbd, "view"):
-    #     raise HTTPException(
-    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-    #     )
+
     atbd = update_contributor_info(principals, atbd)
     return atbd
 
@@ -307,18 +301,11 @@ def delete_atbd_version(
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     atbd_version: AtbdVersions
     [atbd_version] = atbd.versions
-    if not permissions.has_permission(principals, "delete", atbd_version.__acl__()):
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot delete an atbd version with status `Published`",
-        )
-    db.delete(atbd_version)
-    db.commit()
-    db.refresh(atbd)
+    check_permissions(
+        principals=principals, action="delete", acl=atbd_version.__acl__()
+    )
 
-    if len(atbd.versions) == 0:
-        db.delete(atbd)
-        db.commit()
+    crud_versions.delete(db=db, atbd=atbd, version=atbd_version)
 
     background_tasks.add_task(remove_atbd_from_index, version=atbd_version)
     return {}

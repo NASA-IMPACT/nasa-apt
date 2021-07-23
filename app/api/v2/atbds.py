@@ -93,10 +93,7 @@ def get_atbd(
     status `Published` and the user is not logged in)"""
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
     filter_atbds(principals, atbd)
-    # if not filter_atbds(principals, atbd, "view"):
-    #     raise HTTPException(
-    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-    #     )
+
     atbd = update_contributor_info(principals, atbd)
     return atbd
 
@@ -114,10 +111,7 @@ def create_atbd(
 ):
     """Creates a new ATBD. Requires a title, optionally takes an alias.
     Raises 400 if the user is not logged in."""
-    # if "role:contributor" not in principals:
-    #     raise HTTPException(
-    #         status_code=400, detail="User is not allowed to create a new ATBD"
-    #     )
+
     check_atbd_permissions(principals=principals, action="create_atbd", atbd=None)
     atbd = crud_atbds.create(db, atbd_input, user["sub"])
     atbd = update_contributor_info(principals, atbd)

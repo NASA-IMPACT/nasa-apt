@@ -1,6 +1,15 @@
 """NASA-APT API router"""
 
-from app.api.v2 import atbds, contacts, elasticsearch, images, pdf, users, versions
+from app.api.v2 import (
+    atbds,
+    contacts,
+    elasticsearch,
+    events,
+    images,
+    pdf,
+    users,
+    versions,
+)
 
 from fastapi import APIRouter
 
@@ -12,3 +21,4 @@ api_router.include_router(pdf.router, tags=["pdfs"])
 api_router.include_router(elasticsearch.router, tags=["elasticsearch"])
 api_router.include_router(contacts.router, tags=["contacts"])
 api_router.include_router(users.router, tags=["users"])
+api_router.include_router(events.router, tags=["events"])
