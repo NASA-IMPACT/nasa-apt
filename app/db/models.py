@@ -59,10 +59,6 @@ class AtbdVersions(Base):
         """ "Access Control List"""
         acl = [(permissions.Allow, permissions.Authenticated, "view")]
 
-        if self.status == "PUBLISHED":
-            acl.append((permissions.Allow, permissions.Everyone, "view"))
-            acl.append((permissions.Allow, f"user:{self.owner}", "create_new_version"))
-
         if self.status == "DRAFT":
             acl.append((permissions.Allow, f"user:{self.owner}", "delete"))
             acl.append((permissions.Allow, f"user:{self.owner}", "request_review"))
@@ -82,8 +78,10 @@ class AtbdVersions(Base):
             acl.append(
                 (permissions.Allow, f"user:{self.owner}", "cancel_publication_request")
             )
-
-        acl.append((permissions.Allow, permissions.Authenticated, "view"))
+        if self.status == "PUBLISHED":
+            acl.append((permissions.Allow, permissions.Everyone, "view"))
+            acl.append((permissions.Allow, f"user:{self.owner}", "create_new_version"))
+            acl.append((permissions.Allow, f"user:{self.owner}", "bump_minor_version"))
 
         # This is commented out, because technically the owner is allowed
         # to join_authors, only when they are transferring owernship to
@@ -114,6 +112,7 @@ class AtbdVersions(Base):
 
             if self.status == "PUBLISHED":
                 acl.append((permissions.Allow, f"user:{author}", "create_new_version"))
+                acl.append((permissions.Allow, f"user:{author}", "bump_minor_version"))
 
         for reviewer in [r["sub"] for r in self.reviewers]:
 
@@ -124,6 +123,8 @@ class AtbdVersions(Base):
             acl.append((permissions.Allow, f"user:{reviewer}", "view_authors"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_owner"))
             acl.append((permissions.Allow, f"user:{reviewer}", "view_reviewers"))
+            if self.status == "CLOSED_REVIEW":
+                acl.append((permissions.Allow, f"user:{reviewer}", "mark_review_done"))
 
         acl.append((permissions.Allow, "role:contributor", "receive_ownership"))
         acl.append((permissions.Allow, "role:contributor", "join_authors"))
