@@ -39,7 +39,9 @@ def bump_minor_version_handler(
 
 
 def mark_review_done_handler(
-    atbd: Atbds, user: User, db: DbSession = Depends(get_db_session),
+    atbd: Atbds,
+    user: User,
+    db: DbSession = Depends(get_db_session),
 ):
     [version] = atbd.versions
     version_update: Dict[str, Any] = {
@@ -49,7 +51,7 @@ def mark_review_done_handler(
         ]
     }
 
-    if all([r["review_status"] == "DONE" for r in version.reviewers]):
+    if all([r["review_status"] == "DONE" for r in version_update["reviewers"]]):
         version_update["status"] = "OPEN_REVIEW"
 
     crud_versions.update(db=db, db_obj=version, obj_in=VersionUpdate(**version_update))
@@ -68,6 +70,7 @@ ACTIONS: Dict[str, Dict[str, Any]] = {
     "accept_publication_request": {"next_status": "PUBLICATION"},
     "publish": {"next_status": "PUBLISHED"},
     "bump_minor_version": {"custom_handler": bump_minor_version_handler},
+    "mark_review_done": {"custom_handler": mark_review_done_handler},
 }
 
 
