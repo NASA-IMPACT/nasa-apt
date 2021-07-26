@@ -26,7 +26,7 @@ class AtbdVersions(Base):
     atbd_id = Column(Integer(), ForeignKey("atbds.id"), primary_key=True, index=True,)
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
-    status = Column(String(), server_default="Draft", nullable=False)
+    status = Column(String(), server_default="DRAFT", nullable=False)
     document = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
     sections_completed = Column(
         MutableDict.as_mutable(postgresql.JSON), server_default="{}"
@@ -43,6 +43,7 @@ class AtbdVersions(Base):
     owner = Column(String(), nullable=False)
     authors = Column(postgresql.ARRAY(String), server_default="[]")
     reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="[]")
+    journal_status = Column(String())
 
     def __repr__(self):
         """String representation"""
@@ -71,7 +72,7 @@ class AtbdVersions(Base):
 
             for action in actions:
 
-                if action.get("status") and action["status"] != self.status:
+                if action.get("status") and self.status not in action["status"]:
                     continue
 
                 permission = (
@@ -83,7 +84,8 @@ class AtbdVersions(Base):
 
                 if isinstance(grantee, list):
                     for g in grantee:
-                        acl.append((permission, grantee, action["action"]))
+                        acl.append((permission, g, action["action"]))
+
         return acl
 
 

@@ -6,7 +6,7 @@ ALTER TABLE apt.atbd_versions
     ADD COLUMN "owner" VARCHAR(1024),
     ADD COLUMN authors VARCHAR[] DEFAULT '{}',
     -- Reviewers will be an array of json with format:
-    -- [{"sub": <cognito_sub>, "review_status" : "in_progress|done"}]
+    -- [{"sub": <cognito_sub>, "review_status" : "IN_PROGRESS|DONE"}]
     ADD COLUMN reviewers jsonb[] DEFAULT '{}';
 -- Update `owner` column to match what is currently in the
 -- `created_by` column

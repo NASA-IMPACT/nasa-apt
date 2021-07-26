@@ -10,7 +10,6 @@ from app.api.utils import (
     require_user,
     update_contributor_info,
 )
-from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
 from app.crud.contacts import crud_contacts_associations
 from app.crud.versions import crud_versions
@@ -21,7 +20,7 @@ from app.schemas import atbds, versions, versions_contacts
 from app.schemas.users import User
 from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends
 
 router = APIRouter()
 
@@ -161,24 +160,6 @@ def update_atbd_version(  # noqa : C901
             crud_contacts_associations.remove(
                 db_session=db, id=(atbd_id, major, contact.contact_id)  # type: ignore
             )
-    # TODO: move bumping minor versions to the `/events` endpoint
-    if version_input.minor and atbd_version.status != "Published":
-        raise HTTPException(
-            status_code=400,
-            detail="ATBD must have status `published` in order to increment the minor version number",
-        )
-
-    if version_input.minor and version_input.minor != atbd_version.minor + 1:
-        raise HTTPException(
-            status_code=400,
-            detail="New version number must be exactly 1 greater than previous",
-        )
-
-    if version_input.minor:
-        # A new version has been created - generate a cache a PDF for both the regular
-        # PDF format, and the journal PDF format
-        background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
-        background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
 
     app_users = []
     if version_input.owner or version_input.reviewers or version_input.authors:
@@ -232,7 +213,7 @@ def update_atbd_version(  # noqa : C901
 
         reviewers.extend(
             [
-                {"sub": r, "review_status": "in_progress"}
+                {"sub": r, "review_status": "IN_PROGRESS"}
                 for r in version_input.reviewers
                 if r not in [_r["sub"] for _r in atbd_version.reviewers]
             ]
@@ -251,6 +232,14 @@ def update_atbd_version(  # noqa : C901
                 action="join_authors",
                 acl=version_acl,
             )
+
+    if version_input.journal_status:
+        check_permissions(
+            principals=principals, action="update_journal_status", acl=version_acl
+        )
+
+    # blanket update permission check
+    check_permissions(principals=principals, action="update", acl=version_acl)
 
     if version_input.document and not overwrite:
         version_input.document = {

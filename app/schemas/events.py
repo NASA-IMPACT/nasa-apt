@@ -16,12 +16,15 @@ class EventInput(BaseModel):
             "request_closed_review",
             "cancel_closed_review_request",
             "deny_closed_review_request",
-            "accept_closed_review",
+            "accept_closed_review_request",
             "open_review",
             "request_publication",
             "cancel_publication_request",
             "deny_publication_request",
-            "accept_publication_request" "publish",
+            "accept_publication_request",
+            "publish",
+            "bump_minor_version",
+            "update_review_status",
         ]:
             raise ValueError("Unrecognized action")
         return v
