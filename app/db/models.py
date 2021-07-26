@@ -12,6 +12,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
 
+from app.acls import ACLS
 from app.db.base import Base
 from app.db.types import utcnow
 
@@ -56,109 +57,33 @@ class AtbdVersions(Base):
         )
 
     def __acl__(self):
-        """ "Access Control List"""
-        acl = [(permissions.Allow, permissions.Authenticated, "view")]
+        acl = []
+        for grantee, actions in ACLS.items():
 
-        if self.status == "DRAFT":
-            acl.append((permissions.Allow, f"user:{self.owner}", "delete"))
-            acl.append((permissions.Allow, f"user:{self.owner}", "request_review"))
+            if grantee == "owner":
+                grantee = f"user:{self.owner}"
 
-        if self.status == "CLOSED_REVIEW_REQUESTED":
-            acl.append(
-                (
-                    permissions.Allow,
-                    f"user:{self.owner}",
-                    "cancel_closed_review_request",
+            if grantee == "reviewers":
+                grantee = [f"user:{r['sub']}" for r in self.reviewers]
+
+            if grantee == "authors":
+                grantee = [f"user:{a}" for a in self.authors]
+
+            for action in actions:
+
+                if action.get("status") and action["status"] != self.status:
+                    continue
+
+                permission = (
+                    permissions.Deny if action.get("deny") else permissions.Allow
                 )
-            )
-        if self.status == "OPEN_REVIEW":
-            acl.append((permissions.Allow, f"user:{self.owner}", "request_publication"))
 
-        if self.status == "PUBLICATION_REQUESTED":
-            acl.append(
-                (permissions.Allow, f"user:{self.owner}", "cancel_publication_request")
-            )
-        if self.status == "PUBLISHED":
-            acl.append((permissions.Allow, permissions.Everyone, "view"))
-            acl.append((permissions.Allow, f"user:{self.owner}", "create_new_version"))
-            acl.append((permissions.Allow, f"user:{self.owner}", "bump_minor_version"))
+                if isinstance(grantee, str):
+                    acl.append((permission, grantee, action["action"]))
 
-        # This is commented out, because technically the owner is allowed
-        # to join_authors, only when they are transferring owernship to
-        # another author. However, removing this permission, technically
-        # allows for the possibility of someone adding the owner to the
-        # authors, if they go through the API. It's a lot of work, I don't
-        # really see any point in doing that, so we'll leave this permission
-        # as is for the time being.
-        # acl.append((permissions.Deny, f"user:{self.owner}", "join_authors"))
-        acl.append((permissions.Deny, f"user:{self.owner}", "join_reviewers"))
-
-        acl.append((permissions.Allow, f"user:{self.owner}", "comment"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "edit"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "invite_authors"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "offer_ownership"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "view_authors"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "view_owner"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "update"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "invite_authors"))
-
-        for author in self.authors:
-            acl.append((permissions.Deny, f"user:{author}", "join_reviewers"))
-            acl.append((permissions.Allow, f"user:{author}", "comment"))
-            acl.append((permissions.Allow, f"user:{author}", "edit"))
-            acl.append((permissions.Allow, f"user:{author}", "view_authors"))
-            acl.append((permissions.Allow, f"user:{author}", "view_owner"))
-            acl.append((permissions.Allow, f"user:{author}", "update"))
-
-            if self.status == "PUBLISHED":
-                acl.append((permissions.Allow, f"user:{author}", "create_new_version"))
-                acl.append((permissions.Allow, f"user:{author}", "bump_minor_version"))
-
-        for reviewer in [r["sub"] for r in self.reviewers]:
-
-            acl.append((permissions.Deny, f"user:{reviewer}", "receive_ownership"))
-            acl.append((permissions.Deny, f"user:{reviewer}", "join_authors"))
-
-            acl.append((permissions.Allow, f"user:{reviewer}", "comment"))
-            acl.append((permissions.Allow, f"user:{reviewer}", "view_authors"))
-            acl.append((permissions.Allow, f"user:{reviewer}", "view_owner"))
-            acl.append((permissions.Allow, f"user:{reviewer}", "view_reviewers"))
-            if self.status == "CLOSED_REVIEW":
-                acl.append((permissions.Allow, f"user:{reviewer}", "mark_review_done"))
-
-        acl.append((permissions.Allow, "role:contributor", "receive_ownership"))
-        acl.append((permissions.Allow, "role:contributor", "join_authors"))
-        acl.append((permissions.Allow, "role:contributor", "join_reviewers"))
-
-        acl.append((permissions.Deny, "role:curator", "join_authors"))
-        acl.append((permissions.Deny, "role:curator", "join_reviewers"))
-        acl.append((permissions.Deny, "role:curator", "receive_ownership"))
-
-        acl.append((permissions.Allow, "role:curator", "comment"))
-        acl.append((permissions.Allow, "role:curator", "invite_reviewers"))
-        acl.append((permissions.Allow, "role:curator", "invite_authors"))
-        acl.append((permissions.Allow, "role:curator", "offer_ownership"))
-        acl.append((permissions.Allow, "role:curator", "view_authors"))
-        acl.append((permissions.Allow, "role:curator", "view_owner"))
-        acl.append((permissions.Allow, "role:curator", "view_reviewers"))
-        acl.append((permissions.Allow, "role:curator", "delete"))
-
-        if self.status == "CLOSED_REVIEW_REQUESTED":
-            acl.append(
-                (permissions.Allow, "role:curator", "deny_closed_review_request")
-            )
-            acl.append((permissions.Allow, "role:curator", "accept_closed_review"))
-
-        if self.status == "CLOSED_REVIEW":
-            acl.append((permissions.Allow, "role:curator", "open_review"))
-
-        if self.status == "PUBLICATION_REQUESTED":
-            acl.append((permissions.Allow, "role:curator", "deny_publication_request"))
-            acl.append(
-                (permissions.Allow, "role:curator", "accept_publication_request")
-            )
-        if self.status == "PUBLICATION":
-            acl.append((permissions.Allow, "role:curator", "publish"))
+                if isinstance(grantee, list):
+                    for g in grantee:
+                        acl.append((permission, grantee, action["action"]))
         return acl
 
 

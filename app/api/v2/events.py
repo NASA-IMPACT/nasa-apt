@@ -39,10 +39,13 @@ def bump_minor_version_handler(
 
 
 def mark_review_done_handler(
-    atbd: Atbds,
-    user: User,
-    db: DbSession = Depends(get_db_session),
+    atbd: Atbds, user: User, db: DbSession = Depends(get_db_session),
 ):
+    """Loops through the `reviewers` array, setting `review_status` to done
+    where the reviewer sub is equal to the sub of the user performing the request
+    (ensures that reviewers can only update their own review status). Then checks
+    if ALL the reviewers have marked their review as done, and if so, sets the
+    atbd version status to `OPEN_REVIEW`"""
     [version] = atbd.versions
     version_update: Dict[str, Any] = {
         "reviewers": [

@@ -10,7 +10,6 @@ from app.api.utils import (
     require_user,
     update_contributor_info,
 )
-from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_atbd_permissions, filter_atbds
@@ -156,47 +155,47 @@ def update_atbd(
     return atbd
 
 
-# TODO: migrate to the `/events` endpoint
-@router.post("/atbds/{atbd_id}/publish", response_model=atbds.FullOutput)
-def publish_atbd(
-    atbd_id: str,
-    publish_input: atbds.PublishInput,
-    background_tasks: BackgroundTasks,
-    db=Depends(get_db_session),
-    user=Depends(require_user),
-):
-    """Publishes an ATBD. Raises 400 if the `latest` version does NOT have
-    status `Published` or if the user is not logged in.
+# # TODO: migrate to the `/events` endpoint
+# @router.post("/atbds/{atbd_id}/publish", response_model=atbds.FullOutput)
+# def publish_atbd(
+#     atbd_id: str,
+#     publish_input: atbds.PublishInput,
+#     background_tasks: BackgroundTasks,
+#     db=Depends(get_db_session),
+#     user=Depends(require_user),
+# ):
+#     """Publishes an ATBD. Raises 400 if the `latest` version does NOT have
+#     status `Published` or if the user is not logged in.
 
-    Adds PDF generation (and serialization to S3) to background tasks.
-    """
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1)
-    [latest_version] = atbd.versions
-    if latest_version.status == "Published":
-        raise HTTPException(
-            status_code=400,
-            detail=f"Latest version of atbd {atbd_id} already has status: `Published`",
-        )
-    now = datetime.datetime.now(datetime.timezone.utc)
-    latest_version.status = "Published"
-    latest_version.published_by = user["sub"]
-    latest_version.published_at = now
+#     Adds PDF generation (and serialization to S3) to background tasks.
+#     """
+#     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1)
+#     [latest_version] = atbd.versions
+#     if latest_version.status == "Published":
+#         raise HTTPException(
+#             status_code=400,
+#             detail=f"Latest version of atbd {atbd_id} already has status: `Published`",
+#         )
+#     now = datetime.datetime.now(datetime.timezone.utc)
+#     latest_version.status = "Published"
+#     latest_version.published_by = user["sub"]
+#     latest_version.published_at = now
 
-    # Publishing a version counts as updating it, so we
-    # update the timestamp and user
-    latest_version.last_updated_by = user["sub"]
-    latest_version.last_updated_at = now
+#     # Publishing a version counts as updating it, so we
+#     # update the timestamp and user
+#     latest_version.last_updated_by = user["sub"]
+#     latest_version.last_updated_at = now
 
-    if publish_input.changelog is not None and publish_input.changelog != "":
-        latest_version.changelog = publish_input.changelog
+#     if publish_input.changelog is not None and publish_input.changelog != "":
+#         latest_version.changelog = publish_input.changelog
 
-    db.commit()
-    db.refresh(latest_version)
+#     db.commit()
+#     db.refresh(latest_version)
 
-    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
-    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
+#     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
+#     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
 
-    return crud_atbds.get(db=db, atbd_id=atbd_id, version=latest_version.major)
+#     return crud_atbds.get(db=db, atbd_id=atbd_id, version=latest_version.major)
 
 
 @router.delete("/atbds/{atbd_id}", responses={204: dict(description="ATBD deleted")})
