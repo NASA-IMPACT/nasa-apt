@@ -15,7 +15,7 @@ from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_atbd_permissions, filter_atbds
 from app.schemas import atbds
 from app.schemas.users import User
-from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
+from app.search.elasticsearch import remove_atbd_from_index
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
@@ -150,7 +150,6 @@ def update_atbd(
                 detail=f"Alias {atbd_input.alias} already exists in database",
             )
 
-    background_tasks.add_task(add_atbd_to_index, atbd)
     atbd = update_contributor_info(principals, atbd)
     return atbd
 

@@ -1,6 +1,8 @@
+from typing import Dict, List, Tuple
+
 import fastapi_permissions
 
-ACLS = {
+ATBD_VERSION_ACLS: Dict = {
     fastapi_permissions.Everyone: [{"action": "view", "status": "PUBLISHED"}],
     "owner": [
         {"action": "view"},
@@ -95,3 +97,11 @@ ACLS = {
         {"action": "publish", "status": ["PUBLICATION"]},
     ],
 }
+
+CONTACT_ACLS: List[Tuple] = [
+    (fastapi_permissions.Allow, fastapi_permissions.Authenticated, "create_contacts"),
+    (fastapi_permissions.Allow, fastapi_permissions.Authenticated, "list_contacts"),
+    (fastapi_permissions.Allow, fastapi_permissions.Authenticated, "get_contact"),
+    (fastapi_permissions.Allow, fastapi_permissions.Authenticated, "update_contact"),
+    (fastapi_permissions.Allow, fastapi_permissions.Authenticated, "delete_contact"),
+]

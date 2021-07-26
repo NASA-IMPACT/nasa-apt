@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
 
-from app.acls import ACLS
+from app.acls import ATBD_VERSION_ACLS
 from app.db.base import Base
 from app.db.types import utcnow
 
@@ -59,7 +59,7 @@ class AtbdVersions(Base):
 
     def __acl__(self):
         acl = []
-        for grantee, actions in ACLS.items():
+        for grantee, actions in ATBD_VERSION_ACLS.items():
 
             if grantee == "owner":
                 grantee = f"user:{self.owner}"

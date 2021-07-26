@@ -18,7 +18,7 @@ from app.db.models import AtbdVersions
 from app.permissions import check_permissions, filter_atbds
 from app.schemas import atbds, versions, versions_contacts
 from app.schemas.users import User
-from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
+from app.search.elasticsearch import remove_atbd_from_index
 
 from fastapi import APIRouter, BackgroundTasks, Depends
 
@@ -137,6 +137,10 @@ def update_atbd_version(  # noqa : C901
     [atbd_version] = atbd.versions
     version_acl = atbd_version.__acl__()
 
+    # blanket update permission check - more specific permissions checks will
+    # occer later
+    check_permissions(principals=principals, action="update", acl=version_acl)
+
     if version_input.contacts and len(version_input.contacts):
 
         # Overwrite any existing `ContactAssociation` items
@@ -238,9 +242,6 @@ def update_atbd_version(  # noqa : C901
             principals=principals, action="update_journal_status", acl=version_acl
         )
 
-    # blanket update permission check
-    check_permissions(principals=principals, action="update", acl=version_acl)
-
     if version_input.document and not overwrite:
         version_input.document = {
             **atbd_version.document,
@@ -257,10 +258,6 @@ def update_atbd_version(  # noqa : C901
     atbd_version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
 
     crud_versions.update(db=db, db_obj=atbd_version, obj_in=version_input)
-
-    # Indexes the updated vesion as well as atbd info
-    # (title, alias, etc)
-    background_tasks.add_task(add_atbd_to_index, atbd)
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=atbd_version.major)
 

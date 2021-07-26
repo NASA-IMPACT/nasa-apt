@@ -17,6 +17,7 @@ from app.permissions import check_permissions, filter_atbds
 from app.schemas.events import EventInput
 from app.schemas.users import User
 from app.schemas.versions import AdminUpdate as VersionUpdate
+from app.search.elasticsearch import add_atbd_to_index
 
 from fastapi import APIRouter, BackgroundTasks, Depends
 
@@ -37,6 +38,7 @@ def publish_handler(
     )
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
+    background_tasks.add_task(add_atbd_to_index, atbd)
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd.id, version=version.major)
     atbd = filter_atbds(principals, atbd)
@@ -56,12 +58,13 @@ def bump_minor_version_handler(
     background_tasks: BackgroundTasks,
 ):
     [version] = atbd.versions
-    print("UPDATE: ", VersionUpdate(minor=version.minor + 1))
+
     crud_versions.update(
         db=db, db_obj=version, obj_in=VersionUpdate(minor=version.minor + 1)
     )
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
+    background_tasks.add_task(add_atbd_to_index, atbd)
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd.id, version=version.major)
     atbd = filter_atbds(principals, atbd)

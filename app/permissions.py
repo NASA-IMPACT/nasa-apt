@@ -14,18 +14,6 @@ def filter_atbds(principals: List[str], atbd: Atbds, error=True) -> Atbds:
     that the user is allowed to see. If an ATBD has NO versions that the user is
     allowed to access, then the filter returns `None`.
     """
-    for version in atbd.versions:
-        print("principals: ", principals)
-        print("OWNER: ", version.owner)
-        print("AUTHORS: ", version.authors)
-        print("REVIEWERS: ", version.reviewers)
-        print(
-            "PERMIT? ",
-            check_permissions(
-                principals=principals, action="view", acl=version.__acl__(), error=False
-            ),
-        )
-        print("ACL: ", version.__acl__())
 
     versions = [
         version
