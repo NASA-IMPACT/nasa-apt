@@ -25,7 +25,7 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "update"},
         {"action": "invite_authors"},
         {"action": "view_owner"},
-        {"action": "view_author"},
+        {"action": "view_authors"},
     ],
     "authors": [
         {"action": "join_reviewers", "deny": True},
@@ -46,7 +46,7 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "bump_minor_version", "status": ["PUBLISHED"]},
         {"action": "update_journal_status", "status": ["PUBLISHED"]},
         {"action": "view_owner"},
-        {"action": "view_author"},
+        {"action": "view_authors"},
     ],
     "reviewers": [
         {"action": "view"},
@@ -55,7 +55,7 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "comment"},
         {"action": "update_review_status", "status": ["CLOSED_REVIEW"]},
         {"action": "view_owner"},
-        {"action": "view_author"},
+        {"action": "view_authors"},
         {"action": "view_reviewers"},
     ],
     "role:contributor": [
@@ -76,6 +76,7 @@ ATBD_VERSION_ACLS: Dict = {
         {
             "action": "invite_reviewers",
             "status": [
+                "CLOSED_REVIEW_REQUESTED",
                 "CLOSED_REVIEW",
                 "OPEN_REVIEW",
                 "PUBLICATION_REQUESTED",
@@ -99,7 +100,7 @@ ATBD_VERSION_ACLS: Dict = {
 }
 
 CONTACT_ACLS: List[Tuple] = [
-    (fastapi_permissions.Allow, fastapi_permissions.Authenticated, "create_contacts"),
+    (fastapi_permissions.Allow, fastapi_permissions.Authenticated, "create_contact"),
     (fastapi_permissions.Allow, fastapi_permissions.Authenticated, "list_contacts"),
     (fastapi_permissions.Allow, fastapi_permissions.Authenticated, "get_contact"),
     (fastapi_permissions.Allow, fastapi_permissions.Authenticated, "update_contact"),

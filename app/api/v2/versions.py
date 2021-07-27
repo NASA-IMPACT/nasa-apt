@@ -89,7 +89,7 @@ def create_new_version(
         atbd_id=latest_version.atbd_id,
         major=latest_version.major + 1,
         minor=0,
-        status="Draft",
+        status="DRAFT",
         document=latest_version.document,
         created_by=user["sub"],
         last_updated_by=user["sub"],
@@ -165,77 +165,12 @@ def update_atbd_version(  # noqa : C901
                 db_session=db, id=(atbd_id, major, contact.contact_id)  # type: ignore
             )
 
-    app_users = []
     if version_input.owner or version_input.reviewers or version_input.authors:
-        app_users = list_cognito_users()
-
-    if version_input.owner and version_input.owner != atbd_version.owner:
-
-        # User performing transfer ownership operation is not allowed
-        check_permissions(
-            principals=principals, action="offer_ownership", acl=version_acl,
+        version_input = process_users_input(
+            version_input=version_input,
+            atbd_version=atbd_version,
+            principals=principals,
         )
-
-        [cognito_owner] = [
-            user for user in app_users if user["sub"] == version_input.owner
-        ]
-
-        # User being transferred ownership to, is not allowed (either because
-        # they are a reviewer of the document, or a curator)
-
-        check_permissions(
-            principals=get_active_user_principals(cognito_owner),
-            action="receive_ownership",
-            acl=version_acl,
-        )
-
-        # Remove new owner from authors list
-        version_input.authors = [
-            a for a in atbd_version.authors if a != version_input.owner
-        ]
-
-        # Set old owner as author
-        version_input.authors.append(atbd_version.owner)
-
-    if version_input.reviewers:
-        check_permissions(
-            principals=principals, action="invite_reviewers", acl=version_acl,
-        )
-
-        for reviewer in version_input.reviewers:
-
-            [cognito_user] = [user for user in app_users if user["sub"] == reviewer]
-            check_permissions(
-                principals=get_active_user_principals(cognito_user),
-                action="join_reviewers",
-                acl=version_acl,
-            )
-
-        reviewers = [
-            x for x in atbd_version.reviewers if x["sub"] in version_input.reviewers
-        ]
-
-        reviewers.extend(
-            [
-                {"sub": r, "review_status": "IN_PROGRESS"}
-                for r in version_input.reviewers
-                if r not in [_r["sub"] for _r in atbd_version.reviewers]
-            ]
-        )
-        version_input.reviewers = reviewers
-
-    if version_input.authors:
-        check_permissions(
-            principals=principals, action="invite_authors", acl=version_acl,
-        )
-
-        for author in version_input.authors:
-            [cognito_author] = [user for user in app_users if user["sub"] == author]
-            check_permissions(
-                principals=get_active_user_principals(cognito_author),
-                action="join_authors",
-                acl=version_acl,
-            )
 
     if version_input.journal_status:
         check_permissions(
@@ -294,3 +229,81 @@ def delete_atbd_version(
 
     background_tasks.add_task(remove_atbd_from_index, version=atbd_version)
     return {}
+
+
+def process_users_input(
+    version_input: versions.Update, atbd_version: AtbdVersions, principals: List[str]
+):
+    app_users = list_cognito_users()
+
+    if version_input.owner and version_input.owner != atbd_version.owner:
+        # User performing transfer ownership operation is not allowed
+        check_permissions(
+            principals=principals, action="offer_ownership", acl=atbd_version.__acl__(),
+        )
+
+        [cognito_owner] = [
+            user for user in app_users if user["sub"] == version_input.owner
+        ]
+
+        # User being transferred ownership to, is not allowed (either because
+        # they are a reviewer of the document, or a curator)
+
+        check_permissions(
+            principals=get_active_user_principals(cognito_owner),
+            action="receive_ownership",
+            acl=atbd_version.__acl__(),
+        )
+
+        # Remove new owner from authors list
+        version_input.authors = [
+            a for a in atbd_version.authors if a != version_input.owner
+        ]
+
+        # Set old owner as author
+        version_input.authors.append(atbd_version.owner)
+
+    if version_input.reviewers:
+
+        check_permissions(
+            principals=principals,
+            action="invite_reviewers",
+            acl=atbd_version.__acl__(),
+        )
+
+        for reviewer in version_input.reviewers:
+
+            [cognito_user] = [user for user in app_users if user["sub"] == reviewer]
+
+            check_permissions(
+                principals=get_active_user_principals(cognito_user),
+                action="join_reviewers",
+                acl=atbd_version.__acl__(),
+            )
+
+        reviewers = [
+            x for x in atbd_version.reviewers if x["sub"] in version_input.reviewers
+        ]
+
+        reviewers.extend(
+            [
+                {"sub": r, "review_status": "IN_PROGRESS"}
+                for r in version_input.reviewers
+                if r not in [_r["sub"] for _r in atbd_version.reviewers]
+            ]
+        )
+        version_input.reviewers = reviewers
+
+    if version_input.authors:
+        check_permissions(
+            principals=principals, action="invite_authors", acl=atbd_version.__acl__(),
+        )
+
+        for author in version_input.authors:
+            [cognito_author] = [user for user in app_users if user["sub"] == author]
+            check_permissions(
+                principals=get_active_user_principals(cognito_author),
+                action="join_authors",
+                acl=atbd_version.__acl__(),
+            )
+    return version_input

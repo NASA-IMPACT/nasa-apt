@@ -9,6 +9,7 @@ from app.api.utils import (
     update_contributor_info,
 )
 from app.api.v2.pdf import save_pdf_to_s3
+from app.api.v2.versions import process_users_input
 from app.crud.atbds import crud_atbds
 from app.crud.versions import crud_versions
 from app.db.db_session import DbSession, get_db_session
@@ -19,9 +20,37 @@ from app.schemas.users import User
 from app.schemas.versions import AdminUpdate as VersionUpdate
 from app.search.elasticsearch import add_atbd_to_index
 
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 router = APIRouter()
+
+
+def accept_closed_review_request_handler(
+    atbd: Atbds,
+    user: User,
+    payload: Dict,
+    db: DbSession,
+    principals: List[str],
+    background_tasks: BackgroundTasks,
+):
+    [version] = atbd.versions
+
+    version_input = VersionUpdate(
+        reviewers=payload["reviewers"], status="CLOSED_REVIEW"
+    )
+    # performs the validation checks to make sure each of the
+    # requested reviewers is allowed to be a reviewer on
+    # the atbd version
+    version_input = process_users_input(
+        version_input=version_input, atbd_version=version, principals=principals
+    )
+
+    crud_versions.update(db=db, db_obj=version, obj_in=version_input)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd.id, version=version.major)
+    atbd = filter_atbds(principals, atbd)
+    atbd = update_contributor_info(principals=principals, atbd=atbd)
+
+    return atbd
 
 
 def publish_handler(
@@ -45,8 +74,6 @@ def publish_handler(
     atbd = update_contributor_info(principals=principals, atbd=atbd)
 
     return atbd
-
-    return {}
 
 
 def bump_minor_version_handler(
@@ -87,10 +114,15 @@ def update_review_status_handler(
     if ALL the reviewers have marked their review as done, and if so, sets the
     atbd version status to `OPEN_REVIEW`"""
 
-    print("PAYLOAD: ", payload)
-
     [version] = atbd.versions
     version_update = VersionUpdate()
+
+    if payload["review_status"] not in ["IN_PROGRESS", "DONE"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"{payload['review_status']} is not an accepted value for review_status",
+        )
+
     version_update.reviewers = [
         {"sub": r["sub"], "review_status": payload["review_status"]}
         if r["sub"] == user["sub"]
@@ -111,7 +143,9 @@ ACTIONS: Dict[str, Dict[str, Any]] = {
     "request_closed_review": {"next_status": "CLOSED_REVIEW_REQUESTED"},
     "cancel_closed_review_request": {"next_status": "DRAFT"},
     "deny_closed_review_request": {"next_status": "DRAFT"},
-    "accept_closed_review_request": {"next_status": "CLOSED_REVIEW"},
+    "accept_closed_review_request": {
+        "custom_handler": accept_closed_review_request_handler
+    },
     "open_review": {"next_status": "OPEN_REVIEW"},
     "request_publication": {"next_status": "PUBLICATION_REQUESTED"},
     "cancel_publication_request": {"next_status": "OPEN_REVIEW"},
@@ -120,7 +154,6 @@ ACTIONS: Dict[str, Dict[str, Any]] = {
     "publish": {"custom_handler": publish_handler},
     "bump_minor_version": {"custom_handler": bump_minor_version_handler},
     "update_review_status": {"custom_handler": update_review_status_handler},
-    # "create_new_version": {"custom_handler": create_new_version},
 }
 
 
