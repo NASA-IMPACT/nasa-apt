@@ -236,33 +236,6 @@ def process_users_input(
 ):
     app_users = list_cognito_users()
 
-    if version_input.owner and version_input.owner != atbd_version.owner:
-        # User performing transfer ownership operation is not allowed
-        check_permissions(
-            principals=principals, action="offer_ownership", acl=atbd_version.__acl__(),
-        )
-
-        [cognito_owner] = [
-            user for user in app_users if user["sub"] == version_input.owner
-        ]
-
-        # User being transferred ownership to, is not allowed (either because
-        # they are a reviewer of the document, or a curator)
-
-        check_permissions(
-            principals=get_active_user_principals(cognito_owner),
-            action="receive_ownership",
-            acl=atbd_version.__acl__(),
-        )
-
-        # Remove new owner from authors list
-        version_input.authors = [
-            a for a in atbd_version.authors if a != version_input.owner
-        ]
-
-        # Set old owner as author
-        version_input.authors.append(atbd_version.owner)
-
     if version_input.reviewers:
 
         check_permissions(
@@ -306,4 +279,31 @@ def process_users_input(
                 action="join_authors",
                 acl=atbd_version.__acl__(),
             )
+
+    if version_input.owner and version_input.owner != atbd_version.owner:
+        # User performing transfer ownership operation is not allowed
+        check_permissions(
+            principals=principals, action="offer_ownership", acl=atbd_version.__acl__(),
+        )
+
+        [cognito_owner] = [
+            user for user in app_users if user["sub"] == version_input.owner
+        ]
+
+        # User being transferred ownership to, is not allowed (either because
+        # they are a reviewer of the document, or a curator)
+
+        check_permissions(
+            principals=get_active_user_principals(cognito_owner),
+            action="receive_ownership",
+            acl=atbd_version.__acl__(),
+        )
+
+        # Remove new owner from authors list
+        version_input.authors = [
+            a for a in atbd_version.authors if a != version_input.owner
+        ]
+        # Set old owner as author
+        version_input.authors.append(atbd_version.owner)
+
     return version_input

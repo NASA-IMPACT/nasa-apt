@@ -18,6 +18,7 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "bump_minor_version", "status": ["PUBLISHED"]},
         {"action": "update_journal_status", "status": ["PUBLISHED"]},
         {"action": "join_reviewers", "deny": True},
+        {"action": "join_authors", "deny": True},
         {"action": "comment"},
         {"action": "edit"},
         {"action": "invite_authors"},

@@ -175,16 +175,9 @@ def new_event(
     atbd = crud_atbds.get(db=db, atbd_id=event.atbd_id, version=major)
     atbd = filter_atbds(principals, atbd)
     [version] = atbd.versions
-    print("PRINCIPALS: ", principals)
-    print("ACTION: ", event.action)
-    print("ACL: ", version.__acl__())
+
     check_permissions(principals=principals, action=event.action, acl=version.__acl__())
-    print(
-        "PERMITTED: ",
-        check_permissions(
-            principals=principals, action=event.action, acl=version.__acl__()
-        ),
-    )
+
     if ACTIONS[event.action].get("custom_handler"):
         return ACTIONS[event.action]["custom_handler"](
             atbd=atbd,
