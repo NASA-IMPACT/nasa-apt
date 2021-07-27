@@ -15,9 +15,11 @@ from app.crud.versions import crud_versions
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import Atbds
 from app.permissions import check_permissions, filter_atbds
-from app.schemas.events import EventInput
-from app.schemas.users import User
-from app.schemas.versions import AdminUpdate as VersionUpdate
+from app.schemas import atbds, events, users, versions
+
+# from app.schemas.atbds import SummaryOutput
+# from app.schemas.events import EventInput
+# from app.schemas.versions import AdminUpdate as VersionUpdate
 from app.search.elasticsearch import add_atbd_to_index
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -27,7 +29,7 @@ router = APIRouter()
 
 def accept_closed_review_request_handler(
     atbd: Atbds,
-    user: User,
+    user: users.User,
     payload: Dict,
     db: DbSession,
     principals: List[str],
@@ -35,7 +37,7 @@ def accept_closed_review_request_handler(
 ):
     [version] = atbd.versions
 
-    version_input = VersionUpdate(
+    version_input = versions.AdminUpdate(
         reviewers=payload["reviewers"], status="CLOSED_REVIEW"
     )
     # performs the validation checks to make sure each of the
@@ -55,7 +57,7 @@ def accept_closed_review_request_handler(
 
 def publish_handler(
     atbd: Atbds,
-    user: User,
+    user: users.User,
     db: DbSession,
     payload: Dict,
     principals: List[str],
@@ -63,7 +65,7 @@ def publish_handler(
 ):
     [version] = atbd.versions
     crud_versions.update(
-        db=db, db_obj=version, obj_in=VersionUpdate(status="PUBLISHED")
+        db=db, db_obj=version, obj_in=versions.AdminUpdate(status="PUBLISHED")
     )
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
@@ -78,7 +80,7 @@ def publish_handler(
 
 def bump_minor_version_handler(
     atbd: Atbds,
-    user: User,
+    user: users.User,
     payload: Dict,
     db: DbSession,
     principals: List[str],
@@ -87,7 +89,7 @@ def bump_minor_version_handler(
     [version] = atbd.versions
 
     crud_versions.update(
-        db=db, db_obj=version, obj_in=VersionUpdate(minor=version.minor + 1)
+        db=db, db_obj=version, obj_in=versions.AdminUpdate(minor=version.minor + 1)
     )
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
@@ -102,7 +104,7 @@ def bump_minor_version_handler(
 
 def update_review_status_handler(
     atbd: Atbds,
-    user: User,
+    user: users.User,
     payload: Dict,
     db: DbSession,
     principals: List[str],
@@ -115,7 +117,7 @@ def update_review_status_handler(
     atbd version status to `OPEN_REVIEW`"""
 
     [version] = atbd.versions
-    version_update = VersionUpdate()
+    version_update = versions.AdminUpdate()
 
     if payload["review_status"] not in ["IN_PROGRESS", "DONE"]:
         raise HTTPException(
@@ -160,11 +162,12 @@ ACTIONS: Dict[str, Dict[str, Any]] = {
 @router.post(
     "/events",
     responses={200: dict(description="Return a list of all available ATBDs")},
+    response_model=atbds.SummaryOutput,
 )
 def new_event(
-    event: EventInput,
+    event: events.EventInput,
     background_tasks: BackgroundTasks,
-    user: User = Depends(get_user),
+    user: users.User = Depends(get_user),
     db: DbSession = Depends(get_db_session),
     principals: List[str] = Depends(get_active_user_principals),
 ):
@@ -194,7 +197,7 @@ def new_event(
 
     next_status = ACTIONS[event.action]["next_status"]
     crud_versions.update(
-        db=db, db_obj=version, obj_in=VersionUpdate(status=next_status)
+        db=db, db_obj=version, obj_in=versions.AdminUpdate(status=next_status)
     )
     atbd = crud_atbds.get(db=db, atbd_id=event.atbd_id, version=major)
     atbd = filter_atbds(principals, atbd)
