@@ -1,4 +1,4 @@
-FROM postgrest/postgrest:latest
+FROM postgrest/postgrest:v7.0.1
 USER root
 RUN apt-get update \
     && apt-get install -y sqitch \
