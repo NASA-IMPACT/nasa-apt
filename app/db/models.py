@@ -1,4 +1,5 @@
 """SQLAlchemy models for interfacing with the database"""
+
 from sqlalchemy import (
     CheckConstraint,
     Column,
@@ -218,3 +219,28 @@ class AtbdVersionsContactsAssociation(Base):
             f"contact_id={self.contact_id}, roles={self.roles}, "
             f"atbd_versions={self.atbd_version}, contacts={self.contact})>"
         )
+
+class Thread(Base):
+    """thread model"""
+    __tablename__ = "threads"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["atbd_id", "major"],
+            ["atbd_versions.atbd_id", "atbd_versions.major"],
+            name="atbd_version_fk_constraint",
+        ),
+    )
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    atbd_id = Column(Integer(), nullable=False, primary_key=True,)
+    major = Column(Integer(), nullable=False, primary_key=True,)
+
+class Comment(Base):
+    """comment model"""
+    __tablename__ = "comments"
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    thread_id = Column(Integer(), ForeignKey("threads.id"), primary_key=True, index=True,)
+    created_by = Column(String(), nullable=False)
+    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    last_updated_by = Column(String(), nullable=False)
+    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    comment = Column(types.Text)
