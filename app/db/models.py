@@ -12,7 +12,6 @@ from sqlalchemy import (
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
-from sqlalchemy.sql.expression import null
 
 from app.db.base import Base
 from app.db.types import utcnow
@@ -221,8 +220,10 @@ class AtbdVersionsContactsAssociation(Base):
             f"atbd_versions={self.atbd_version}, contacts={self.contact})>"
         )
 
+
 class Thread(Base):
     """thread model"""
+
     __tablename__ = "threads"
     __table_args__ = (
         ForeignKeyConstraint(
@@ -237,11 +238,15 @@ class Thread(Base):
     status = Column(String(), server_default="Open", nullable=False)
     section = Column(String(), nullable=False)
 
+
 class Comment(Base):
     """comment model"""
+
     __tablename__ = "comments"
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
-    thread_id = Column(Integer(), ForeignKey("threads.id"), primary_key=True, index=True,)
+    thread_id = Column(
+        Integer(), ForeignKey("threads.id"), primary_key=True, index=True,
+    )
     created_by = Column(String(), nullable=False)
     created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
     last_updated_by = Column(String(), nullable=False)

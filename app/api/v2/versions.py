@@ -109,8 +109,10 @@ def create_new_version(
     return atbd
 
 
-@router.post("/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput)
-def update_atbd_version(  # noqa : C901
+@router.post(  # noqa : C901
+    "/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput
+)
+def update_atbd_version(
     atbd_id: str,
     version: str,
     version_input: versions.Update,
@@ -260,10 +262,10 @@ def update_atbd_version(  # noqa : C901
             )
 
     if version_input.document and not overwrite:
-        version_input.document = {
+        version_input.document = {  # type: ignore
             **atbd_version.document,
             **version_input.document.dict(exclude_unset=True),
-        }  # type: ignore
+        }
 
     if version_input.sections_completed and not overwrite:
         version_input.sections_completed = {
