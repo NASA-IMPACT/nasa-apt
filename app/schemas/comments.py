@@ -29,12 +29,6 @@ class Output(BaseModel):
 class Update(BaseModel):
     """Update comment Model."""
 
-    id: int
-    thread_id: int
-    created_by: str
-    created_at: str
-    last_updated_by: str
-    last_updated_at: str
     body: str
 
 

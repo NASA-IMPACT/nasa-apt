@@ -71,5 +71,49 @@ def update_thread(
     # principals: List[str] = Depends(get_active_user_principals)
 ):
     """Update thread status"""
-    contact = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
-    return crud_threads.update(db=db, db_obj=contact, obj_in=update_thread_input)
+    thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    return crud_threads.update(db=db, db_obj=thread, obj_in=update_thread_input)
+
+
+@router.post("/threads/{thread_id}/comments")
+def create_comment(
+    thread_id: int,
+    comment_input: comments.FirstCreate,
+    db: DbSession = Depends(get_db_session),
+    # user: User = Depends(require_user),
+    # principals: List[str] = Depends(get_active_user_principals)
+):
+    """Create comment in a thread"""
+    comment = comments.Create(body=comment_input.body, thread_id=thread_id)
+    return crud_comments.create(db_session=db, obj_in=comment)
+
+
+@router.delete("/threads/{thread_id}/comments/{comment_id}")
+def delete_comment(
+    thread_id: int,
+    comment_id: int,
+    db: DbSession = Depends(get_db_session),
+    # user: User = Depends(require_user),
+    # principals: List[str] = Depends(get_active_user_principals)
+):
+    """Delete comment from thread"""
+    crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    comment = crud_comments.get(db_session=db, obj_in=threads.Lookup(id=comment_id))
+    db.delete(comment)
+    db.commit()
+    return {}
+
+
+@router.post("/threads/{thread_id}/comments/{comment_id}")
+def update_comment(
+    thread_id: int,
+    comment_id: int,
+    update_comment_input: comments.Update,
+    db: DbSession = Depends(get_db_session),
+    # user: User = Depends(require_user),
+    # principals: List[str] = Depends(get_active_user_principals)
+):
+    """Update comment"""
+    crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    comment = crud_comments.get(db_session=db, obj_in=comments.Lookup(id=comment_id))
+    return crud_comments.update(db=db, db_obj=comment, obj_in=update_comment_input)
