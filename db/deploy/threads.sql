@@ -2,10 +2,17 @@
 
 BEGIN;
 
+CREATE TYPE apt.thread_status AS ENUM (
+  'Open',
+  'Closed'
+);
+
 CREATE TABLE apt.threads (
     id serial PRIMARY KEY,
     atbd_id integer NOT NULL,
     major integer NOT NULL,
+    "status" apt.thread_status DEFAULT 'Open',
+    section VARCHAR(1024), 
     FOREIGN KEY (atbd_id, major) REFERENCES apt.atbd_versions (atbd_id, major) ON DELETE CASCADE
 );
 

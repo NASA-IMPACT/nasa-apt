@@ -12,6 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
+from sqlalchemy.sql.expression import null
 
 from app.db.base import Base
 from app.db.types import utcnow
@@ -233,6 +234,8 @@ class Thread(Base):
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
     atbd_id = Column(Integer(), nullable=False, primary_key=True,)
     major = Column(Integer(), nullable=False, primary_key=True,)
+    status = Column(String(), server_default="Open", nullable=False)
+    section = Column(String(), nullable=False)
 
 class Comment(Base):
     """comment model"""

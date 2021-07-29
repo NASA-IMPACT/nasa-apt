@@ -10,3 +10,4 @@ functions 2021-03-01T21:04:22Z Leo Thomas <leo@MacBook-Pro.local> # Adds functio
 owner_authors_reviewers [tables] 2021-07-07T00:35:47Z Leo Thomas <leo@MacBook-Pro.lan> # Adds columns for owner, authors and reviewers to the atbd_versions table
 drop_function_and_roles [appschema] 2021-07-21T15:45:37Z Leo Thomas <leo@MacBook-Pro> # Drop create atbd function and app_user/anonymous roles since all of those funcitionalities are no implemented in the API code
 migrate_status_to_upper_snake_case [tables] 2021-07-21T16:02:38Z Leo Thomas <leo@MacBook-Pro> # Migrate atbd version status to UPPER_SNAKE_CASE
+threads 2021-07-28T14:07:03Z Andrew Bollinger <andrewbollinger@Andrews-MacBook-Pro.local> # Add threads and comments
