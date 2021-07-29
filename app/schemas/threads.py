@@ -37,11 +37,7 @@ class Output(BaseModel):
 class Update(BaseModel):
     """Update Thread Model."""
 
-    id: int
-    atbd_id: int
-    major: int
     status: StatusEnum
-    section: str
 
 
 class Lookup(BaseModel):

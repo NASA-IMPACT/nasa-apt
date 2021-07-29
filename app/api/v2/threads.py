@@ -46,3 +46,30 @@ def create_thread(
     comment = comments.Create(body=comment_body, thread_id=thread.id)
     thread.comments = [crud_comments.create(db_session=db, obj_in=comment)]
     return thread
+
+
+@router.delete("/threads/{thread_id}")
+def delete_thread(
+    thread_id: int,
+    db: DbSession = Depends(get_db_session),
+    # user: User = Depends(require_user),
+    # principals: List[str] = Depends(get_active_user_principals)
+):
+    """Delete thread"""
+    thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    db.delete(thread)
+    db.commit()
+    return {}
+
+
+@router.post("/threads/{thread_id}")
+def update_thread(
+    thread_id: int,
+    update_thread_input: threads.Update,
+    db: DbSession = Depends(get_db_session),
+    # user: User = Depends(require_user),
+    # principals: List[str] = Depends(get_active_user_principals)
+):
+    """Update thread status"""
+    contact = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    return crud_threads.update(db=db, db_obj=contact, obj_in=update_thread_input)
