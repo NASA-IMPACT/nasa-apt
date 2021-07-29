@@ -5,7 +5,7 @@ from app.schemas.threads import Create, Output, Update
 
 
 class CRUDThreads(CRUDBase[Thread, Output, Create, Update]):
-    """CRUDContacts."""
+    """CRUDThreads."""
 
     pass
 

@@ -2,11 +2,16 @@
 from pydantic import BaseModel
 
 
-class Create(BaseModel):
+class FirstCreate(BaseModel):
+    """Create first comment"""
+
+    body: str
+
+
+class Create(FirstCreate):
     """Create comment"""
 
     thread_id: int
-    comment: str
 
 
 class Output(BaseModel):

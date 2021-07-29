@@ -17,7 +17,7 @@ class StatusEnum(str, Enum):
 class Create(BaseModel):
     """Create thread"""
 
-    comment: comments.Create
+    comment: comments.FirstCreate
     atbd_id: int
     major: int
     section: str
