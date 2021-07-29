@@ -24,7 +24,7 @@ CREATE TABLE apt.comments (
     created_at timestamptz DEFAULT now(),
     last_updated_by varchar(1024),
     last_updated_at timestamptz DEFAULT now(),
-    comment TEXT
+    body TEXT
 );
 
 COMMIT;

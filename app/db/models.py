@@ -237,6 +237,23 @@ class Thread(Base):
     major = Column(Integer(), nullable=False, primary_key=True,)
     status = Column(String(), server_default="Open", nullable=False)
     section = Column(String(), nullable=False)
+    comments = relationship(
+        "Comment",
+        backref="threads",
+        uselist=True,
+        lazy="joined",
+        order_by="Comment.created_at",
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self):
+        """String representation"""
+        comments = ", ".join(f"{c.id}" for c in self.comments)
+        return (
+            f"<Threads(id={self.id}, atbd_id={self.atbd_id}, major={self.major},"
+            f" status={self.status}, section={self.section},"
+            f" comments={comments})>"
+        )
 
 
 class Comment(Base):
@@ -251,4 +268,4 @@ class Comment(Base):
     created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
     last_updated_by = Column(String(), nullable=False)
     last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
-    comment = Column(types.Text)
+    body = Column(types.Text)

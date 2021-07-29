@@ -1,7 +1,10 @@
 """Schemas for Threads Model"""
 from enum import Enum
+from typing import List
 
 from pydantic import BaseModel
+
+from app.schemas import comments
 
 
 class StatusEnum(str, Enum):
@@ -14,7 +17,7 @@ class StatusEnum(str, Enum):
 class Create(BaseModel):
     """Create thread"""
 
-    comment: str
+    comment: comments.Create
     atbd_id: int
     major: int
     section: str
@@ -28,6 +31,7 @@ class Output(BaseModel):
     major: int
     status: StatusEnum
     section: str
+    comments: List[comments.Output]
 
 
 class Update(BaseModel):
