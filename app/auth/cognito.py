@@ -68,4 +68,5 @@ def validate_token(token: str) -> Dict:
         raise HTTPException(
             status_code=400, detail="Token was not issued for this app client"
         )
+
     return claims
