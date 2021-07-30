@@ -89,7 +89,9 @@ def bump_minor_version_handler(
     [version] = atbd.versions
 
     crud_versions.update(
-        db=db, db_obj=version, obj_in=versions.AdminUpdate(minor=version.minor + 1)
+        db=db, db_obj=version, obj_in=versions.AdminUpdate(
+            changelog=payload["changelog"], minor=version.minor + 1
+        )
     )
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
