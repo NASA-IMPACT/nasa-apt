@@ -1,5 +1,6 @@
 """."""
 
+import datetime
 from typing import Any, Dict, List
 
 from app.api.utils import (
@@ -65,7 +66,12 @@ def publish_handler(
 ):
     [version] = atbd.versions
     crud_versions.update(
-        db=db, db_obj=version, obj_in=versions.AdminUpdate(status="PUBLISHED")
+        db=db, db_obj=version, obj_in=versions.AdminUpdate(
+            changelog=payload["changelog"] if version.major > 1 else version.changelog,
+            status="PUBLISHED",
+            published_by=user["sub"],
+            published_at=datetime.datetime.now(datetime.timezone.utc)
+        )
     )
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
