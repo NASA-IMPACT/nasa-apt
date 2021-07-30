@@ -5,9 +5,11 @@ from typing import List
 from sqlalchemy import orm
 
 from app.api.utils import get_active_user_principals, require_user
+from app.crud.atbds import crud_atbds
 from app.crud.comments import crud_comments
 from app.crud.threads import crud_threads
 from app.db.db_session import DbSession, get_db_session
+from app.permissions import check_atbd_permissions
 from app.schemas import comments, threads
 from app.schemas.users import User
 
@@ -42,6 +44,11 @@ def create_thread(
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Create a thread with the first comment"""
+    atbd = crud_atbds.get(
+        db=db, atbd_id=thread_input.atbd_id, version=thread_input.major
+    )
+    check_atbd_permissions(principals=principals, action="comment", atbd=atbd)
+
     comment_body = thread_input.comment.body
     del thread_input.comment
     thread = crud_threads.create(db_session=db, obj_in=thread_input)
@@ -61,6 +68,8 @@ def delete_thread(
 ):
     """Delete thread"""
     thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    check_atbd_permissions(principals=principals, action="delete_thread", atbd=atbd)
     db.delete(thread)
     db.commit()
     return {}
@@ -76,6 +85,8 @@ def update_thread(
 ):
     """Update thread status"""
     thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    check_atbd_permissions(principals=principals, action="comment", atbd=atbd)
     return crud_threads.update(db=db, db_obj=thread, obj_in=update_thread_input)
 
 
@@ -88,6 +99,9 @@ def create_comment(
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Create comment in a thread"""
+    thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    check_atbd_permissions(principals=principals, action="comment", atbd=atbd)
     comment = comments.Create(body=comment_input.body, thread_id=thread_id)
     return crud_comments.create(
         db_session=db, comment_input=comment, user_sub=user["sub"]
@@ -103,7 +117,9 @@ def delete_comment(
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Delete comment from thread"""
-    crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    check_atbd_permissions(principals=principals, action="delete_comment", atbd=atbd)
     comment = crud_comments.get(db_session=db, obj_in=threads.Lookup(id=comment_id))
     db.delete(comment)
     db.commit()
@@ -120,6 +136,9 @@ def update_comment(
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Update comment"""
+    thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    check_atbd_permissions(principals=principals, action="comment", atbd=atbd)
     crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
     comment = crud_comments.get(db_session=db, obj_in=comments.Lookup(id=comment_id))
     return crud_comments.update(

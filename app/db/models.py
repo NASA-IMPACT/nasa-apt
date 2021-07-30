@@ -117,6 +117,8 @@ class AtbdVersions(Base):
         acl.append((permissions.Allow, "role:curator", "view_owner"))
         acl.append((permissions.Allow, "role:curator", "view_reviewers"))
         acl.append((permissions.Allow, "role:curator", "delete"))
+        acl.append((permissions.Allow, "role:curator", "delete_thread"))
+        acl.append((permissions.Allow, "role:curator", "delete_comment"))
 
         return acl
 

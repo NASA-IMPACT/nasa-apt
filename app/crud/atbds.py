@@ -1,4 +1,6 @@
 """CRUD Operations for Atbds model"""
+from typing import Union
+
 from sqlalchemy import exc, func, orm
 
 from app.crud.base import CRUDBase
@@ -42,7 +44,9 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
             )
         return query.all()
 
-    def _build_lookup_query(self, db: DbSession, atbd_id: str, version: int = None):
+    def _build_lookup_query(
+        self, db: DbSession, atbd_id: Union[str, int], version: int = None
+    ):
         try:
             int(atbd_id)
             alias = None
@@ -79,7 +83,7 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
 
         return query
 
-    def get(self, db: DbSession, atbd_id: str, version: int = None):
+    def get(self, db: DbSession, atbd_id: Union[str, int], version: int = None):
         """Query a single ATBD."""
         query = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
         try:
