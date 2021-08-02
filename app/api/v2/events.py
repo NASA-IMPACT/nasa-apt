@@ -66,12 +66,16 @@ def publish_handler(
 ):
     [version] = atbd.versions
     crud_versions.update(
-        db=db, db_obj=version, obj_in=versions.AdminUpdate(
+        db=db,
+        db_obj=version,
+        obj_in=versions.AdminUpdate(
             changelog=payload["changelog"] if version.major > 1 else version.changelog,
             status="PUBLISHED",
             published_by=user["sub"],
-            published_at=datetime.datetime.now(datetime.timezone.utc)
-        )
+            published_at=datetime.datetime.now(datetime.timezone.utc),
+            last_updated_by=user["sub"],
+            last_updated_at=datetime.datetime.now(datetime.timezone.utc),
+        ),
     )
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
@@ -95,9 +99,14 @@ def bump_minor_version_handler(
     [version] = atbd.versions
 
     crud_versions.update(
-        db=db, db_obj=version, obj_in=versions.AdminUpdate(
-            changelog=payload["changelog"], minor=version.minor + 1
-        )
+        db=db,
+        db_obj=version,
+        obj_in=versions.AdminUpdate(
+            changelog=payload["changelog"],
+            minor=version.minor + 1,
+            last_updated_by=user["sub"],
+            last_updated_at=datetime.datetime.now(datetime.timezone.utc),
+        ),
     )
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
