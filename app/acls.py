@@ -1,3 +1,4 @@
+"""ACL generation module"""
 from typing import Dict, List, Tuple
 
 import fastapi_permissions
@@ -23,7 +24,17 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "edit"},
         {"action": "invite_authors"},
         {"action": "offer_ownership"},
-        {"action": "update"},
+        {
+            "action": "update",
+            "status": [
+                "DRAFT",
+                "CLOSED_REVIEW_REQUESTED",
+                "OPEN_REVIEW",
+                "PUBLICATION_REQUESTED",
+                "PUBLICATION",
+                "PUBLISHED",
+            ],
+        },
         {"action": "invite_authors"},
         {"action": "view_owner"},
         {"action": "view_authors"},
@@ -37,6 +48,7 @@ ATBD_VERSION_ACLS: Dict = {
             "action": "update",
             "status": [
                 "DRAFT",
+                "CLOSED_REVIEW_REQUESTED",
                 "OPEN_REVIEW",
                 "PUBLICATION_REQUESTED",
                 "PUBLICATION",
