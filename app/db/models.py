@@ -1,4 +1,5 @@
 """SQLAlchemy models for interfacing with the database"""
+
 from sqlalchemy import (
     CheckConstraint,
     Column,
@@ -58,6 +59,7 @@ class AtbdVersions(Base):
         )
 
     def __acl__(self):
+        """Access Control List for Atbd Version"""
         acl = []
         for grantee, actions in ATBD_VERSION_ACLS.items():
 
@@ -187,3 +189,53 @@ class AtbdVersionsContactsAssociation(Base):
             f"contact_id={self.contact_id}, roles={self.roles}, "
             f"atbd_versions={self.atbd_version}, contacts={self.contact})>"
         )
+
+
+class Thread(Base):
+    """thread model"""
+
+    __tablename__ = "threads"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["atbd_id", "major"],
+            ["atbd_versions.atbd_id", "atbd_versions.major"],
+            name="atbd_version_fk_constraint",
+        ),
+    )
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    atbd_id = Column(Integer(), nullable=False, primary_key=True,)
+    major = Column(Integer(), nullable=False, primary_key=True,)
+    status = Column(String(), server_default="Open", nullable=False)
+    section = Column(String(), nullable=False)
+    comments = relationship(
+        "Comment",
+        backref="threads",
+        uselist=True,
+        lazy="joined",
+        order_by="Comment.created_at",
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self):
+        """String representation"""
+        comments = ", ".join(f"{c.id}" for c in self.comments)
+        return (
+            f"<Threads(id={self.id}, atbd_id={self.atbd_id}, major={self.major},"
+            f" status={self.status}, section={self.section},"
+            f" comments={comments})>"
+        )
+
+
+class Comment(Base):
+    """comment model"""
+
+    __tablename__ = "comments"
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    thread_id = Column(
+        Integer(), ForeignKey("threads.id"), primary_key=True, index=True,
+    )
+    created_by = Column(String(), nullable=False)
+    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    last_updated_by = Column(String(), nullable=False)
+    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    body = Column(types.Text)

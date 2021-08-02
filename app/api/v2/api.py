@@ -7,6 +7,7 @@ from app.api.v2 import (
     events,
     images,
     pdf,
+    threads,
     users,
     versions,
 )
@@ -22,3 +23,4 @@ api_router.include_router(elasticsearch.router, tags=["elasticsearch"])
 api_router.include_router(contacts.router, tags=["contacts"])
 api_router.include_router(users.router, tags=["users"])
 api_router.include_router(events.router, tags=["events"])
+api_router.include_router(threads.router, tags=["threads"])

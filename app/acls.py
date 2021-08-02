@@ -31,6 +31,7 @@ ATBD_VERSION_ACLS: Dict = {
             "action": "update",
             "status": [
                 "DRAFT",
+                "CLOSED_REVIEW_REQUESTED",
                 "OPEN_REVIEW",
                 "PUBLICATION_REQUESTED",
                 "PUBLICATION",
@@ -50,6 +51,7 @@ ATBD_VERSION_ACLS: Dict = {
             "action": "update",
             "status": [
                 "DRAFT",
+                "CLOSED_REVIEW_REQUESTED",
                 "OPEN_REVIEW",
                 "PUBLICATION_REQUESTED",
                 "PUBLICATION",

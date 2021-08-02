@@ -9,35 +9,33 @@ from jose.utils import base64url_decode
 from app import config
 from app.schemas.users import User
 
-from fastapi import HTTPException, Request
+from fastapi import Depends, HTTPException, Request
+from fastapi.security import HTTPBearer
 
 # In some cases (images and PDFs) the JWT token
 # is passed as a query parameter (as opposed to an Authorization header).
 # This is not necessarily "best practice" (https://stackoverflow.com/questions/32722952/is-it-safe-to-put-a-jwt-into-the-url-as-a-query-parameter-of-a-get-request)
 # TODO: review wether or not there is another, better way to do this
 
+token_scheme = HTTPBearer()
 
-def get_user(request: Request) -> Union[Dict, bool]:
+
+def get_user(request: Request, token=Depends(token_scheme)) -> Union[Dict, bool]:
     """
     Validates JWT Token (Header: "Authorization Bearer: ... ") against cognito,
     returns a dict representing user info from Cognito. If no `Authorization`
     Header was submitted, it will search for the token in the query params
     To be used as a dependency injection in API routes.
     """
-    token = request.headers.get("Authorization")
 
     if not token:
         token = request.query_params.get("token")
+    else:
+        token = token.credentials
 
     if not token:
         return False
-
-    # TODO: should this be considered an error?
-    # if not token.startswith("Bearer "):
-    #    raise HTTPException("Expected a Bearer token")
-
-    token = token.replace("Bearer ", "")
-
+    print(token)
     return validate_token(token)
 
 
@@ -71,6 +69,4 @@ def validate_token(token: str) -> User:
         raise HTTPException(
             status_code=400, detail="Token was not issued for this app client"
         )
-    print("CLAIMS: ", claims)
-    # return User(**claims)
     return claims
