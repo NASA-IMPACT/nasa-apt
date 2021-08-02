@@ -153,3 +153,5 @@ class Update(BaseModel):
 
 class AdminUpdate(Update):
     minor: Optional[int]
+    published_by: Optional[str]
+    published_at: Optional[datetime]
