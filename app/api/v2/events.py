@@ -1,5 +1,4 @@
-"""."""
-
+"""Modules for handling AtbdVersion events"""
 import datetime
 from typing import Any, Dict, List
 
@@ -17,10 +16,6 @@ from app.db.db_session import DbSession, get_db_session
 from app.db.models import Atbds
 from app.permissions import check_permissions, filter_atbds
 from app.schemas import atbds, events, users, versions
-
-# from app.schemas.atbds import SummaryOutput
-# from app.schemas.events import EventInput
-# from app.schemas.versions import AdminUpdate as VersionUpdate
 from app.search.elasticsearch import add_atbd_to_index
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -36,17 +31,23 @@ def accept_closed_review_request_handler(
     principals: List[str],
     background_tasks: BackgroundTasks,
 ):
+
     [version] = atbd.versions
 
     version_input = versions.AdminUpdate(
         reviewers=payload["reviewers"], status="CLOSED_REVIEW"
     )
+
     # performs the validation checks to make sure each of the
     # requested reviewers is allowed to be a reviewer on
     # the atbd version
-    version_input = process_users_input(
-        version_input=version_input, atbd_version=version, principals=principals
+    version_input, users_to_notify = process_users_input(
+        version_input=version_input,
+        atbd_version=version,
+        principals=principals,
+        users_to_notify=[],
     )
+    # TODO: execute notifications + notify owner
 
     crud_versions.update(db=db, db_obj=version, obj_in=version_input)
     atbd = crud_atbds.get(db=db, atbd_id=atbd.id, version=version.major)
@@ -158,6 +159,21 @@ def update_review_status_handler(
     return atbd
 
 
+NOTIFICATIONS = {
+    "request_closed_review": ["curators"],
+    "cancel_closed_review_request": ["curators"],
+    "deny_closed_review_request": ["owner"],
+    "accept_closed_review_request": ["owner"],  # authors too?
+    "open_review": ["owner", "authors"],
+    "request_publication": ["curators"],
+    "cancel_publication_request": ["curators"],
+    "deny_publication_request": ["owner"],
+    "accept_publication_request": ["owner"],
+    "publish": ["owner", "authors", "reviewers"],
+    "bump_minor_version": ["owner"],  # curators too?
+    "update_review_status": [],  # curators?
+}
+
 ACTIONS: Dict[str, Dict[str, Any]] = {
     "request_closed_review": {"next_status": "CLOSED_REVIEW_REQUESTED"},
     "cancel_closed_review_request": {"next_status": "DRAFT"},
@@ -181,7 +197,7 @@ ACTIONS: Dict[str, Dict[str, Any]] = {
     responses={200: dict(description="Return a list of all available ATBDs")},
     response_model=atbds.SummaryOutput,
 )
-def new_event(
+def event_handler(
     event: events.EventInput,
     background_tasks: BackgroundTasks,
     user: users.User = Depends(get_user),
@@ -209,6 +225,7 @@ def new_event(
     crud_versions.update(
         db=db, db_obj=version, obj_in=versions.AdminUpdate(status=next_status)
     )
+
     atbd = crud_atbds.get(db=db, atbd_id=event.atbd_id, version=major)
     atbd = filter_atbds(principals, atbd)
     atbd = update_contributor_info(principals=principals, atbd=atbd)

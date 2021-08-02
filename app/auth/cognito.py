@@ -7,6 +7,7 @@ from jose import jwk, jwt
 from jose.utils import base64url_decode
 
 from app import config
+from app.schemas.users import User
 
 from fastapi import HTTPException, Request
 
@@ -40,7 +41,7 @@ def get_user(request: Request) -> Union[Dict, bool]:
     return validate_token(token)
 
 
-def validate_token(token: str) -> Dict:
+def validate_token(token: str) -> User:
     """
     Does the ground work of unpacking the token, decrypting it using
     cognito's public key, and returning the claims contained within
@@ -70,4 +71,6 @@ def validate_token(token: str) -> Dict:
         raise HTTPException(
             status_code=400, detail="Token was not issued for this app client"
         )
+    print("CLAIMS: ", claims)
+    # return User(**claims)
     return claims

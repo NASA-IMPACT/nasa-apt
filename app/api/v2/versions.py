@@ -15,6 +15,7 @@ from app.crud.contacts import crud_contacts_associations
 from app.crud.versions import crud_versions
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import AtbdVersions
+from app.email.notifications import UserToNotify, notify_users
 from app.permissions import check_permissions, filter_atbds
 from app.schemas import atbds, versions, versions_contacts
 from app.schemas.users import User
@@ -129,7 +130,7 @@ def update_atbd_version(  # noqa : C901
     current minor version number.
 
     """
-
+    users_to_notify: List[UserToNotify] = []
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
 
@@ -166,10 +167,11 @@ def update_atbd_version(  # noqa : C901
             )
 
     if version_input.owner or version_input.reviewers or version_input.authors:
-        version_input = process_users_input(
+        version_input, users_to_notify = process_users_input(
             version_input=version_input,
             atbd_version=atbd_version,
             principals=principals,
+            users_to_notify=users_to_notify,
         )
 
     if version_input.journal_status:
@@ -195,8 +197,16 @@ def update_atbd_version(  # noqa : C901
     crud_versions.update(db=db, db_obj=atbd_version, obj_in=version_input)
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=atbd_version.major)
-
     atbd = update_contributor_info(principals, atbd)
+
+    background_tasks.add_task(
+        notify_users,
+        users_to_notify=users_to_notify,
+        app_user=user,
+        atbd_title=atbd.title,
+        atbd_id=atbd.id,
+        atbd_version=f"v{atbd_version.major}.{atbd_version.minor}",
+    )
 
     return atbd
 
@@ -228,12 +238,26 @@ def delete_atbd_version(
     crud_versions.delete(db=db, atbd=atbd, version=atbd_version)
 
     background_tasks.add_task(remove_atbd_from_index, version=atbd_version)
+    # TODO: this should also remove the associated PDFs in S3
     return {}
 
 
 def process_users_input(
-    version_input: versions.Update, atbd_version: AtbdVersions, principals: List[str]
+    version_input: versions.Update,
+    atbd_version: AtbdVersions,
+    principals: List[str],
+    users_to_notify: List[dict] = [],
 ):
+    """Processes input related to `owner`, `authors` or `reviewers` types of users.
+    In each case, the following checks are performed:
+    1. Is the user performing the request permitted to? (eg: only owner or curator can
+        invite authors, only curator can invite reivewers)
+    2. Are the users being added to the document permitted to be added in that category (eg:
+        only contributors that are NOT already authors or reviewers of a document can be
+        added as authors of that document)
+
+    Lastly, the user info + necessary notifications are returned, to be added as background tasks
+    """
     app_users = list_cognito_users()
 
     if version_input.reviewers:
@@ -246,18 +270,30 @@ def process_users_input(
 
         for reviewer in version_input.reviewers:
 
-            [cognito_user] = [user for user in app_users if user["sub"] == reviewer]
+            [cognito_reviewer] = [user for user in app_users if user["sub"] == reviewer]
 
             check_permissions(
-                principals=get_active_user_principals(cognito_user),
+                principals=get_active_user_principals(cognito_reviewer),
                 action="join_reviewers",
                 acl=atbd_version.__acl__(),
             )
+            users_to_notify.append(
+                {
+                    "email": cognito_reviewer["email"],
+                    "preferred_username": cognito_reviewer["preferred_username"],
+                    "notification": "added_as_reviewer",
+                }
+            )
 
+        # version_input is a list of cognito_subs. We want to grab the status of
+        # the current reveiwers and merge with `IN_PROGRESS` reviewers of the all
+        # the new reviewers, in order to avoid overwritting existing reviewers
+        # (and losing their status)
         reviewers = [
             x for x in atbd_version.reviewers if x["sub"] in version_input.reviewers
         ]
 
+        # new reviewers
         reviewers.extend(
             [
                 {"sub": r, "review_status": "IN_PROGRESS"}
@@ -279,9 +315,15 @@ def process_users_input(
                 action="join_authors",
                 acl=atbd_version.__acl__(),
             )
+            users_to_notify.append(
+                {
+                    "email": cognito_author["email"],
+                    "preferred_username": cognito_author["preferred_username"],
+                    "notification": "added_as_author",
+                }
+            )
 
     if version_input.owner and version_input.owner != atbd_version.owner:
-        # User performing transfer ownership operation is not allowed
         check_permissions(
             principals=principals, action="offer_ownership", acl=atbd_version.__acl__(),
         )
@@ -290,13 +332,17 @@ def process_users_input(
             user for user in app_users if user["sub"] == version_input.owner
         ]
 
-        # User being transferred ownership to, is not allowed (either because
-        # they are a reviewer of the document, or a curator)
-
         check_permissions(
             principals=get_active_user_principals(cognito_owner),
             action="receive_ownership",
             acl=atbd_version.__acl__(),
+        )
+        users_to_notify.append(
+            {
+                "email": cognito_owner["email"],
+                "preferred_username": cognito_owner["preferred_username"],
+                "notification": "added_as_owner",
+            }
         )
 
         # Remove new owner from authors list
@@ -306,4 +352,4 @@ def process_users_input(
         # Set old owner as author
         version_input.authors.append(atbd_version.owner)
 
-    return version_input
+    return version_input, users_to_notify

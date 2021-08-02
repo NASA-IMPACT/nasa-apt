@@ -1,3 +1,4 @@
+"""Schemas for the events objects"""
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, validator
@@ -5,6 +6,8 @@ from pydantic import BaseModel, validator
 
 # TODO: make action enum
 class EventInput(BaseModel):
+    """Schemas for the object inputted to an event"""
+
     atbd_id: str
     version: str
     action: str
@@ -12,6 +15,7 @@ class EventInput(BaseModel):
 
     @validator("action")
     def validate_requested_action(cls, v):
+        """."""
         if v not in [
             "request_closed_review",
             "cancel_closed_review_request",
@@ -25,6 +29,7 @@ class EventInput(BaseModel):
             "publish",
             "bump_minor_version",
             "update_review_status",
+            "send_email",
         ]:
             raise ValueError("Unrecognized action")
         return v

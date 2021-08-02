@@ -38,6 +38,15 @@ services:
     depends_on: 
       - db-ready
       - localstack-ready
+  mail:
+    image: namshi/smtp
+    restart: always
+    ports: 
+      - "25:25"
+    environment: 
+      MAILNAME: developmentseed.org
+      DISABLE_IPV6: 1
+      
       
   elastic:
     # Elastic db for local development only.
@@ -59,7 +68,7 @@ services:
     #image: localstack/localstack:latest
     environment:
       LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
-      SERVICES: s3,secretsmanager,cognito,
+      SERVICES: s3,secretsmanager,cognito,ses
       #SERVICES: s3,secretsmanager,cognito,iam,apigateway,rds,ec2,sts,cloudformation,ecr
       DEBUG: 1
       AWS_ACCESS_KEY_ID: stub

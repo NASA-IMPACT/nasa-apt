@@ -170,5 +170,6 @@ def delete_atbd(
     atbd = crud_atbds.remove(db=db, atbd_id=atbd_id)
 
     background_tasks.add_task(remove_atbd_from_index, atbd=atbd)
+    # TODO: this should also remove all associated PDFs in S3.
 
     return {}
