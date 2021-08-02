@@ -141,6 +141,7 @@ class nasaAPTLambdaStack(core.Stack):
             ],
             resources=["*"],
         )
+        ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
 
         frontend_url = config.FRONTEND_URL
         lambda_env = dict(
@@ -174,7 +175,7 @@ class nasaAPTLambdaStack(core.Stack):
         lambda_function = _lambda.Function(
             self, f"{id}-lambda", **lambda_function_props
         )
-
+        lambda_function.add_to_role_policy(ses_access)
         lambda_function.add_to_role_policy(logs_access)
         database.secret.grant_read(lambda_function)
         esdomain.grant_read_write(lambda_function)

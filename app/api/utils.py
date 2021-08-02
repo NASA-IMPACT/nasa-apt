@@ -37,7 +37,9 @@ def get_active_user_principals(user: User = Depends(get_user)) -> List[str]:
     return principals
 
 
-def update_contributor_info(principals: List[str], atbd: Atbds):
+def update_contributor_info(
+    principals: List[str], atbd: Atbds, app_users: List[User] = None
+):
     """
     Insert contributor (owner, author and reviewer) user info from
     Cognito into an ATBD Version. Identifying user information is
@@ -145,6 +147,16 @@ def list_cognito_users():
         app_users.extend(users)
 
     return app_users
+
+
+def ses_client() -> client:
+    """
+    Returns a boto3 ses client - configured to point at a specifc endpoint url if provided
+    """
+    if AWS_RESOURCES_ENDPOINT:
+        return client("ses", endpoint_url=AWS_RESOURCES_ENDPOINT)
+
+    return client("ses")
 
 
 def cognito_client() -> client:
