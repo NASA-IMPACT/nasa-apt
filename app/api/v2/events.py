@@ -6,7 +6,7 @@ from app.api.utils import (
     get_active_user_principals,
     get_major_from_version_string,
     get_user,
-    update_contributor_info,
+    update_atbd_contributor_info,
 )
 from app.api.v2.pdf import save_pdf_to_s3
 from app.api.v2.versions import process_users_input
@@ -52,7 +52,7 @@ def accept_closed_review_request_handler(
     crud_versions.update(db=db, db_obj=version, obj_in=version_input)
     atbd = crud_atbds.get(db=db, atbd_id=atbd.id, version=version.major)
     atbd = filter_atbds(principals, atbd)
-    atbd = update_contributor_info(principals=principals, atbd=atbd)
+    atbd = update_atbd_contributor_info(principals=principals, atbd=atbd)
 
     return atbd
 
@@ -84,7 +84,7 @@ def publish_handler(
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd.id, version=version.major)
     atbd = filter_atbds(principals, atbd)
-    atbd = update_contributor_info(principals=principals, atbd=atbd)
+    atbd = update_atbd_contributor_info(principals=principals, atbd=atbd)
 
     return atbd
 
@@ -115,7 +115,7 @@ def bump_minor_version_handler(
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd.id, version=version.major)
     atbd = filter_atbds(principals, atbd)
-    atbd = update_contributor_info(principals=principals, atbd=atbd)
+    atbd = update_atbd_contributor_info(principals=principals, atbd=atbd)
 
     return atbd
 
@@ -154,7 +154,7 @@ def update_review_status_handler(
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd.id, version=version.major)
     atbd = filter_atbds(principals, atbd)
-    atbd = update_contributor_info(principals=principals, atbd=atbd)
+    atbd = update_atbd_contributor_info(principals=principals, atbd=atbd)
 
     return atbd
 
@@ -228,6 +228,6 @@ def event_handler(
 
     atbd = crud_atbds.get(db=db, atbd_id=event.atbd_id, version=major)
     atbd = filter_atbds(principals, atbd)
-    atbd = update_contributor_info(principals=principals, atbd=atbd)
+    atbd = update_atbd_contributor_info(principals=principals, atbd=atbd)
 
     return atbd

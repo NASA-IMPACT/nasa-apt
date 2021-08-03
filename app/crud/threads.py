@@ -1,13 +1,13 @@
 """CRUD operations for the Threads model"""
 from app.crud.base import CRUDBase
-from app.db.models import Thread
+from app.db.models import Threads
 from app.schemas.threads import Create, Output, Update
 
 
-class CRUDThreads(CRUDBase[Thread, Output, Create, Update]):
+class CRUDThreads(CRUDBase[Threads, Output, Create, Update]):
     """CRUDThreads."""
 
     pass
 
 
-crud_threads = CRUDThreads(Thread)
+crud_threads = CRUDThreads(Threads)

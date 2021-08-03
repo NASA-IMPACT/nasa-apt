@@ -13,11 +13,44 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
 
-from app.acls import ATBD_VERSION_ACLS
+from app.acls import ATBD_VERSION_ACLS, COMMENT_ACLS
 from app.db.base import Base
 from app.db.types import utcnow
 
-import fastapi_permissions as permissions
+import fastapi_permissions
+
+
+class Atbds(Base):
+    """Atbds"""
+
+    __tablename__ = "atbds"
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    title = Column(String(), nullable=False)
+    alias = Column(String(), CheckConstraint("alias ~ '^[a-z0-9-]+$'"), unique=True)
+    created_by = Column(String(), nullable=False)
+    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    last_updated_by = Column(String(), nullable=False)
+    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+
+    versions = relationship(
+        "AtbdVersions",
+        backref="atbd",
+        uselist=True,
+        # lazy="joined",
+        lazy="select",
+        order_by="AtbdVersions.created_at",
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self):
+        """String representation"""
+        versions = ", ".join(f"v{v.major}.{v.minor}" for v in self.versions)
+        return (
+            f"<Atbds(id={self.id}, title={self.title}, alias={self.alias},"
+            f" created_by={self.created_by}, created_at={self.created_at},"
+            f" last_updated_by={self.last_updated_by}, last_updated_at={self.last_updated_at}"
+            f" versions={versions})>"
+        )
 
 
 class AtbdVersions(Base):
@@ -78,49 +111,18 @@ class AtbdVersions(Base):
                     continue
 
                 permission = (
-                    permissions.Deny if action.get("deny") else permissions.Allow
+                    fastapi_permissions.Deny
+                    if action.get("deny")
+                    else fastapi_permissions.Allow
                 )
 
                 if isinstance(grantee, str):
                     acl.append((permission, grantee, action["action"]))
 
                 if isinstance(grantee, list):
-                    for g in grantee:
-                        acl.append((permission, g, action["action"]))
+                    acl.extend([(permission, g, action["action"]) for g in grantee])
 
         return acl
-
-
-class Atbds(Base):
-    """Atbds"""
-
-    __tablename__ = "atbds"
-    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
-    title = Column(String(), nullable=False)
-    alias = Column(String(), CheckConstraint("alias ~ '^[a-z0-9-]+$'"), unique=True)
-    created_by = Column(String(), nullable=False)
-    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
-    last_updated_by = Column(String(), nullable=False)
-    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
-
-    versions = relationship(
-        "AtbdVersions",
-        backref="atbd",
-        uselist=True,
-        lazy="joined",
-        order_by="AtbdVersions.created_at",
-        cascade="all, delete-orphan",
-    )
-
-    def __repr__(self):
-        """String representation"""
-        versions = ", ".join(f"v{v.major}.{v.minor}" for v in self.versions)
-        return (
-            f"<Atbds(id={self.id}, title={self.title}, alias={self.alias},"
-            f" created_by={self.created_by}, created_at={self.created_at},"
-            f" last_updated_by={self.last_updated_by}, last_updated_at={self.last_updated_at}"
-            f" versions={versions})>"
-        )
 
 
 class Contacts(Base):
@@ -173,13 +175,15 @@ class AtbdVersionsContactsAssociation(Base):
     atbd_version = relationship(
         "AtbdVersions",
         backref=backref("contacts_link", cascade="all, delete-orphan"),
-        lazy="joined",
+        # lazy="joined",
+        lazy="select",
     )
 
     contact = relationship(
         "Contacts",
         backref=backref("atbd_versions_link", cascade="all, delete-orphan"),
-        lazy="joined",
+        # lazy="joined",
+        lazy="select",
     )
 
     def __repr__(self):
@@ -191,7 +195,7 @@ class AtbdVersionsContactsAssociation(Base):
         )
 
 
-class Thread(Base):
+class Threads(Base):
     """thread model"""
 
     __tablename__ = "threads"
@@ -205,14 +209,20 @@ class Thread(Base):
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
     atbd_id = Column(Integer(), nullable=False, primary_key=True,)
     major = Column(Integer(), nullable=False, primary_key=True,)
-    status = Column(String(), server_default="Open", nullable=False)
+    status = Column(String(), server_default="OPEN", nullable=False)
     section = Column(String(), nullable=False)
+    created_by = Column(String(), nullable=False)
+    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    last_updated_by = Column(String(), nullable=False)
+    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+
     comments = relationship(
-        "Comment",
-        backref="threads",
+        "Comments",
+        backref="thread",
         uselist=True,
-        lazy="joined",
-        order_by="Comment.created_at",
+        # lazy="joined",
+        lazy="select",
+        order_by="Comments.created_at",
         cascade="all, delete-orphan",
     )
 
@@ -226,7 +236,7 @@ class Thread(Base):
         )
 
 
-class Comment(Base):
+class Comments(Base):
     """comment model"""
 
     __tablename__ = "comments"
@@ -239,3 +249,17 @@ class Comment(Base):
     last_updated_by = Column(String(), nullable=False)
     last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
     body = Column(types.Text)
+
+    def __acl__(self):
+        """Access Control List for Comments"""
+        acl = []
+        for grantee, actions in COMMENT_ACLS.items():
+
+            if grantee == "owner":
+                grantee = f"user:{self.created_by}"
+
+            acl.extend(
+                [(fastapi_permissions.Allow, grantee, a["action"]) for a in actions]
+            )
+
+        return acl

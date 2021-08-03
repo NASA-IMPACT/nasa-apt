@@ -8,7 +8,7 @@ from app.api.utils import (
     get_user,
     list_cognito_users,
     require_user,
-    update_contributor_info,
+    update_atbd_contributor_info,
 )
 from app.crud.atbds import crud_atbds
 from app.crud.contacts import crud_contacts_associations
@@ -63,7 +63,7 @@ def get_version(
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     atbd = filter_atbds(principals, atbd)
 
-    atbd = update_contributor_info(principals, atbd)
+    atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
 
@@ -98,7 +98,7 @@ def create_new_version(
     )
     new_version = crud_versions.create(db_session=db, obj_in=new_version_input)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=new_version.major)
-    atbd = update_contributor_info(principals, atbd)
+    atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
 
@@ -199,7 +199,7 @@ def update_atbd_version(
     crud_versions.update(db=db, db_obj=atbd_version, obj_in=version_input)
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=atbd_version.major)
-    atbd = update_contributor_info(principals, atbd)
+    atbd = update_atbd_contributor_info(principals, atbd)
 
     background_tasks.add_task(
         notify_users,

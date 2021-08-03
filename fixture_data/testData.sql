@@ -35,7 +35,7 @@ WHERE
       AND last_name = 'Mendel');
 
 INSERT INTO atbds (title, alias, created_by, last_updated_by)
-  VALUES ('Test ATBD 1', 'test-atbd-1', 'LeoThomas123', 'LeoThomas123');
+  VALUES ('Test ATBD 1', 'test-atbd-1', :'owner_sub', :'owner_sub');
 
 INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation, status)
   VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', 1, 1, '{
@@ -1330,3 +1330,8 @@ INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
 INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
   VALUES (1, 2, 2, ARRAY['Investigator']::e_contact_role_type[]);
 
+INSERT INTO threads (atbd_id, major, section, created_by, last_updated_by)
+  VALUES (1, 2, 'introduction', :'author_sub_1', :'author_sub_1');
+
+INSERT INTO comments (thread_id, created_by, last_updated_by, body)
+  VALUES (1, :'author_sub_1', :'author_sub_1', 'This is a sample comment')

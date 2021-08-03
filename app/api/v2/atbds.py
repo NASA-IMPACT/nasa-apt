@@ -8,7 +8,7 @@ from app.api.utils import (
     get_active_user_principals,
     get_user,
     require_user,
-    update_contributor_info,
+    update_atbd_contributor_info,
 )
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
@@ -39,7 +39,7 @@ def list_atbds(
     if role:
         if not user:
             raise HTTPException(
-                status_code=404,
+                status_code=403,
                 detail=f"User must be logged in to filter by role: {role}",
             )
         role = f"{role}:{user['sub']}"
@@ -55,7 +55,7 @@ def list_atbds(
     ]
 
     for atbd in atbds:
-        atbd = update_contributor_info(principals, atbd)
+        atbd = update_atbd_contributor_info(principals, atbd)
 
     return atbds
 
@@ -93,7 +93,7 @@ def get_atbd(
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
     filter_atbds(principals, atbd)
 
-    atbd = update_contributor_info(principals, atbd)
+    atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
 
@@ -113,7 +113,7 @@ def create_atbd(
 
     check_atbd_permissions(principals=principals, action="create_atbd", atbd=None)
     atbd = crud_atbds.create(db, atbd_input, user["sub"])
-    atbd = update_contributor_info(principals, atbd)
+    atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
 
@@ -150,7 +150,7 @@ def update_atbd(
                 detail=f"Alias {atbd_input.alias} already exists in database",
             )
 
-    atbd = update_contributor_info(principals, atbd)
+    atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
 

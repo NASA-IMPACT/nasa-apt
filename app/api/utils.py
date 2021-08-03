@@ -9,7 +9,7 @@ from boto3 import client
 from app import config
 from app.auth.cognito import get_user
 from app.config import AWS_RESOURCES_ENDPOINT
-from app.db.models import Atbds
+from app.db.models import Atbds, AtbdVersions, Threads
 from app.permissions import check_permissions
 from app.schemas.users import User
 from app.schemas.versions import (
@@ -37,16 +37,76 @@ def get_active_user_principals(user: User = Depends(get_user)) -> List[str]:
     return principals
 
 
-def update_contributor_info(
-    principals: List[str], atbd: Atbds, app_users: List[User] = None
-):
+def update_thread_contributor_info(
+    principals: List[str], atbd_version: AtbdVersions, thread: Threads
+) -> Threads:
+    app_users = list_cognito_users()
+    version_acl = atbd_version.__acl__()
+    reviewers = [r["sub"] for r in atbd_version.reviewers]
+
+    for comment in thread.comments:
+        anon_count = 0
+        if comment.created_by == atbd_version.owner:
+            if check_permissions(
+                principals=principals, action="view_owner", acl=version_acl, error=False
+            ):
+                [comment.created_by] = [
+                    CognitoUser(**app_user)
+                    for app_user in app_users
+                    if app_user["sub"] == comment.created_by
+                ]
+            else:
+                comment.created_by = AnonymousUser(preferred_username="Owner")
+
+        elif comment.created_by in atbd_version.authors:
+            if check_permissions(
+                principals=principals,
+                action="view_authors",
+                acl=version_acl,
+                error=False,
+            ):
+                [comment.created_by] = [
+                    CognitoUser(**app_user)
+                    for app_user in app_users
+                    if app_user["sub"] == comment.created_by
+                ]
+            else:
+                comment.created_by = AnonymousUser(
+                    preferred_username=f"Author {atbd_version.authors.index(comment.created_by)}"
+                )
+
+        elif comment.created_by in reviewers:
+            if check_permissions(
+                principals=principals,
+                action="view_reviewers",
+                acl=version_acl,
+                error=False,
+            ):
+                [comment.created_by] = [
+                    CognitoUser(**app_user)
+                    for app_user in app_users
+                    if app_user["sub"] == comment.created_by
+                ]
+            else:
+                comment.created_by = AnonymousUser(
+                    preferred_username=f"Reviewer {reviewers.index(comment.created_by)}"
+                )
+        else:
+            anon_count += 1
+            comment.created_by = AnonymousUser(
+                preferred_username=f"Anonymous User {anon_count}"
+            )
+    return thread
+
+
+def update_atbd_contributor_info(principals: List[str], atbd: Atbds):
     """
     Insert contributor (owner, author and reviewer) user info from
     Cognito into an ATBD Version. Identifying user information is
     obfuscated in accordance with the principals of the user (eg:
-    unauthenticated users cannot see ANY identifying info, ATBDVersions
-    cannot see identifying info of reviewers, but can see identifying
-    info of other authors)
+    unauthenticated users cannot see ANY identifying info, authors
+    and Owners cannot see identifying info of reviewers, but can
+    see identifying info of other authors)
     """
     app_users = list_cognito_users()
 

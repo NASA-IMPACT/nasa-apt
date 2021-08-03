@@ -54,8 +54,8 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
 
         query = (
             db.query(Atbds)
-            .join(AtbdVersions, Atbds.id == AtbdVersions.atbd_id)
-            .options(orm.contains_eager(Atbds.versions))
+            # .join(AtbdVersions, Atbds.id == AtbdVersions.atbd_id)
+            # .options(orm.contains_eager(Atbds.versions))
         )
 
         if version == -1:
