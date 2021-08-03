@@ -35,7 +35,7 @@ WHERE
       AND last_name = 'Mendel');
 
 INSERT INTO atbds (title, alias, created_by, last_updated_by)
-  VALUES ('Test ATBD 1', 'test-atbd-1', 'LeoThomas123', 'LeoThomas123');
+  VALUES ('Test ATBD 1', 'test-atbd-1', :'owner_sub', :'owner_sub');
 
 INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation, status)
   VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', 1, 1, '{
@@ -679,7 +679,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
   "online_resource": "http://nasa-apt2-staging.s3-website-us-east-1.amazonaws.com/"
 }'::jsonb, 'PUBLISHED');
 
-INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation)
+INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation, status)
   VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', 2, 0, '{
   "introduction": null,
   "historical_perspective": null,
@@ -1319,7 +1319,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
   "issue": "alpha2",
   "additional_details": "",
   "online_resource": "http://nasa-apt2-staging.s3-website-us-east-1.amazonaws.com/"
-}'::jsonb);
+}'::jsonb, 'OPEN_REVIEW');
 
 INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
   VALUES (1, 1, 1, ARRAY['Science contact', 'Metadata author']::e_contact_role_type[]);
@@ -1330,3 +1330,29 @@ INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
 INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
   VALUES (1, 2, 2, ARRAY['Investigator']::e_contact_role_type[]);
 
+INSERT INTO atbds (title, alias, created_by, created_at, last_updated_by, last_updated_at)
+  VALUES ('Project algorithms technically overly simplistic', 'patos', :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', '2021-03-15 16:00:00');
+
+INSERT INTO atbd_versions (atbd_id, created_by, created_at, "owner", authors, last_updated_by, last_updated_at, major, minor, document, status)
+  VALUES (2, :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], :'owner_sub', '2021-06-27 21:00:00', 1, 1, '{
+  "introduction": null,
+  "historical_perspective": null,
+  "mathematical_theory": null,
+  "mathematical_theory_assumptions": null,
+  "algorithm_input_variables": [],
+  "algorithm_output_variables": [],
+  "algorithm_usage_constraints": null,
+  "performance_assessment_validation_methods": null,
+  "performance_assessment_validation_uncertainties": null,
+  "performance_assessment_validation_errors": null ,
+  "algorithm_implementations": [],
+  "data_access_input_data": [],
+  "data_access_output_data": [],
+  "data_access_related_urls": [],
+  "journal_discussion": null,
+  "journal_acknowledgements": null,
+  "scientific_theory": null,
+  "scientific_theory_assumptions": null,
+  "publication_references": [
+  ]
+}'::jsonb, 'DRAFT');
