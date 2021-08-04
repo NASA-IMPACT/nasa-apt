@@ -91,7 +91,8 @@ def get_atbd(
     """Returns a single ATBD (raises 404 if the ATBD has no versions with
     status `Published` and the user is not logged in)"""
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-    filter_atbds(principals, atbd)
+
+    atbd = filter_atbds(principals, atbd)
 
     atbd = update_atbd_contributor_info(principals, atbd)
     return atbd

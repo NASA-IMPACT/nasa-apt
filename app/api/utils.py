@@ -40,7 +40,7 @@ def get_active_user_principals(user: User = Depends(get_user)) -> List[str]:
 def update_thread_contributor_info(
     principals: List[str], atbd_version: AtbdVersions, thread: Threads
 ) -> Threads:
-    app_users = list_cognito_users()
+    app_users, _ = list_cognito_users()
     version_acl = atbd_version.__acl__()
     reviewers = [r["sub"] for r in atbd_version.reviewers]
 
@@ -88,7 +88,7 @@ def update_thread_contributor_info(
     return thread
 
 
-def update_atbd_contributor_info(principals: List[str], atbd: Atbds):
+def update_atbd_contributor_info(principals: List[str], atbd: Atbds) -> Atbds:
     """
     Insert contributor (owner, author and reviewer) user info from
     Cognito into an ATBD Version. Identifying user information is
@@ -106,8 +106,7 @@ def update_atbd_contributor_info(principals: List[str], atbd: Atbds):
         if check_permissions(
             principals=principals, action="view_owner", acl=version_acl, error=False
         ):
-
-            version.owner = app_users[version.owner]
+            version.owner = app_users[version.owner].dict(by_alias=True)
 
         else:
             version.owner = AnonymousUser(preferred_username="Owner")
@@ -116,7 +115,9 @@ def update_atbd_contributor_info(principals: List[str], atbd: Atbds):
             principals=principals, action="view_authors", acl=version_acl, error=False
         ):
 
-            version.authors = [app_users[author] for author in version.authors]
+            version.authors = [
+                app_users[author].dict(by_alias=True) for author in version.authors
+            ]
         else:
             version.authors = [
                 AnonymousUser(preferred_username=f"Author {str(i+1)}")
@@ -129,7 +130,7 @@ def update_atbd_contributor_info(principals: List[str], atbd: Atbds):
 
             version.reviewers = [
                 ReviewerUser(
-                    **app_users[reviewer["sub"]].dict(),
+                    **app_users[reviewer["sub"]].dict(by_alias=True),
                     review_status=reviewer["review_status"],
                 )
                 for reviewer in version.reviewers
@@ -142,7 +143,6 @@ def update_atbd_contributor_info(principals: List[str], atbd: Atbds):
                 )
                 for i, v in enumerate(version.reviewers)
             ]
-
     return atbd
 
 

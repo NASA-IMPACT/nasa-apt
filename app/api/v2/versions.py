@@ -260,7 +260,7 @@ def process_users_input(
 
     Lastly, the user info + necessary notifications are returned, to be added as background tasks
     """
-    app_users = list_cognito_users()
+    app_users, _ = list_cognito_users()
 
     if version_input.reviewers:
 

@@ -24,12 +24,18 @@ class User(BaseModel):
     email: str
 
 
-class CognitoUser(BaseModel):
+class AnonymousUser(BaseModel):
+    """Obfuscated user contributing to an ATBD Version"""
+
+    preferred_username: str
+
+
+class CognitoUser(AnonymousUser):
     """User contributing to an ATBD Version, as returned by Cognito"""
 
     # username: str = Field(..., alias="Username")
     sub: str
-    preferred_username: str
+    # preferred_username: str
     email: str
     cognito_groups: List[str] = Field(..., alias="cognito:groups")
 
@@ -46,12 +52,6 @@ class CognitoUser(BaseModel):
             ]:
                 values[attribute["Name"]] = attribute["Value"]
         return values
-
-
-class AnonymousUser(BaseModel):
-    """Obfuscated user contributing to an ATBD Version"""
-
-    preferred_username: str
 
 
 class ReviewerUser(CognitoUser):
