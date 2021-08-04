@@ -18,7 +18,7 @@ from app.db.models import AtbdVersions
 from app.email.notifications import UserToNotify, notify_users
 from app.permissions import check_permissions, filter_atbds
 from app.schemas import atbds, versions, versions_contacts
-from app.schemas.users import User
+from app.schemas.users import CognitoUser
 from app.search.elasticsearch import remove_atbd_from_index
 
 from fastapi import APIRouter, BackgroundTasks, Depends
@@ -34,7 +34,7 @@ def version_exists(
     atbd_id: str,
     version: str,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(get_user),
+    user: CognitoUser = Depends(get_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """
@@ -53,7 +53,7 @@ def get_version(
     atbd_id: str,
     version: str,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(get_user),
+    user: CognitoUser = Depends(get_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """
@@ -71,7 +71,7 @@ def get_version(
 def create_new_version(
     atbd_id: str,
     db: DbSession = Depends(get_db_session),
-    user=Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
     """
@@ -92,9 +92,9 @@ def create_new_version(
         minor=0,
         status="DRAFT",
         document=latest_version.document,
-        created_by=user["sub"],
-        last_updated_by=user["sub"],
-        owner=user["sub"],
+        created_by=user.sub,
+        last_updated_by=user.sub,
+        owner=user.sub,
     )
     new_version = crud_versions.create(db_session=db, obj_in=new_version_input)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=new_version.major)
@@ -112,7 +112,7 @@ def update_atbd_version(
     background_tasks: BackgroundTasks,
     overwrite: bool = False,
     db: DbSession = Depends(get_db_session),
-    user=Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
     """
@@ -193,7 +193,7 @@ def update_atbd_version(
             **version_input.sections_completed,
         }
 
-    atbd_version.last_updated_by = user["sub"]
+    atbd_version.last_updated_by = user.sub
     atbd_version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
 
     crud_versions.update(db=db, db_obj=atbd_version, obj_in=version_input)
@@ -222,7 +222,7 @@ def delete_atbd_version(
     version: str,
     background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db_session),
-    user=Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
 
@@ -272,7 +272,7 @@ def process_users_input(
 
         for reviewer in version_input.reviewers:
 
-            [cognito_reviewer] = [user for user in app_users if user["sub"] == reviewer]
+            cognito_reviewer = app_users[reviewer]
 
             check_permissions(
                 principals=get_active_user_principals(cognito_reviewer),
@@ -281,8 +281,8 @@ def process_users_input(
             )
             users_to_notify.append(
                 {
-                    "email": cognito_reviewer["email"],
-                    "preferred_username": cognito_reviewer["preferred_username"],
+                    "email": cognito_reviewer.email,
+                    "preferred_username": cognito_reviewer.preferred_username,
                     "notification": "added_as_reviewer",
                 }
             )
@@ -311,7 +311,7 @@ def process_users_input(
         )
 
         for author in version_input.authors:
-            [cognito_author] = [user for user in app_users if user["sub"] == author]
+            cognito_author = app_users[author]
             check_permissions(
                 principals=get_active_user_principals(cognito_author),
                 action="join_authors",
@@ -319,8 +319,8 @@ def process_users_input(
             )
             users_to_notify.append(
                 {
-                    "email": cognito_author["email"],
-                    "preferred_username": cognito_author["preferred_username"],
+                    "email": cognito_author.email,
+                    "preferred_username": cognito_author.preferred_username,
                     "notification": "added_as_author",
                 }
             )
@@ -330,9 +330,7 @@ def process_users_input(
             principals=principals, action="offer_ownership", acl=atbd_version.__acl__(),
         )
 
-        [cognito_owner] = [
-            user for user in app_users if user["sub"] == version_input.owner
-        ]
+        cognito_owner = app_users[version_input.owner]
 
         check_permissions(
             principals=get_active_user_principals(cognito_owner),
@@ -341,8 +339,8 @@ def process_users_input(
         )
         users_to_notify.append(
             {
-                "email": cognito_owner["email"],
-                "preferred_username": cognito_owner["preferred_username"],
+                "email": cognito_owner.email,
+                "preferred_username": cognito_owner.preferred_username,
                 "notification": "added_as_owner",
             }
         )

@@ -14,7 +14,7 @@ from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_atbd_permissions, filter_atbds
 from app.schemas import atbds
-from app.schemas.users import User
+from app.schemas.users import CognitoUser
 from app.search.elasticsearch import remove_atbd_from_index
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -30,7 +30,7 @@ router = APIRouter()
 def list_atbds(
     role: str = None,
     status: str = None,
-    user: User = Depends(get_user),
+    user: CognitoUser = Depends(get_user),
     db: DbSession = Depends(get_db_session),
     principals: List[str] = Depends(get_active_user_principals),
 ):
@@ -42,7 +42,7 @@ def list_atbds(
                 status_code=403,
                 detail=f"User must be logged in to filter by role: {role}",
             )
-        role = f"{role}:{user['sub']}"
+        role = f"{role}:{user.sub}"
 
     # apply permissions filter to remove any versions/
     # ATBDs that the user does not have access to
@@ -105,14 +105,14 @@ def get_atbd(
 def create_atbd(
     atbd_input: atbds.Create,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Creates a new ATBD. Requires a title, optionally takes an alias.
     Raises 400 if the user is not logged in."""
 
     check_atbd_permissions(principals=principals, action="create_atbd", atbd=None)
-    atbd = crud_atbds.create(db, atbd_input, user["sub"])
+    atbd = crud_atbds.create(db, atbd_input, user.sub)
     atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
@@ -127,7 +127,7 @@ def update_atbd(
     atbd_input: atbds.Update,
     background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Updates an ATBD (eiither Title or Alias). Raises 400 if the user
@@ -139,7 +139,7 @@ def update_atbd(
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1)
     check_atbd_permissions(principals=principals, action="update", atbd=atbd)
 
-    atbd.last_updated_by = user["sub"]
+    atbd.last_updated_by = user.sub
     atbd.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
     try:
         atbd = crud_atbds.update(db=db, db_obj=atbd, obj_in=atbd_input)
@@ -159,7 +159,7 @@ def delete_atbd(
     atbd_id: str,
     background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Deletes an ATBD (and all child versions). Removes all associated

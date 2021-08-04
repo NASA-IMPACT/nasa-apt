@@ -14,7 +14,7 @@ from app.crud.threads import crud_threads
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_atbd_permissions, check_permissions
 from app.schemas import comments, threads
-from app.schemas.users import User
+from app.schemas.users import CognitoUser
 
 from fastapi import APIRouter, Depends
 
@@ -30,7 +30,7 @@ def get_threads(
     atbd_id: int,
     version: str,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     major, _ = get_major_from_version_string(version)
@@ -47,7 +47,7 @@ def get_threads(
 # def get_thread(
 #     thread_id: int,
 #     db: DbSession = Depends(get_db_session),
-#     user: User = Depends(require_user),
+#     user: CognitoUser = Depends(require_user),
 #     principals: List[str] = Depends(get_active_user_principals),
 # ):
 #     """Retrieve a thread and associated comments"""
@@ -70,7 +70,7 @@ def get_threads(
 def create_thread(
     thread_input: threads.Create,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Create a thread with the first comment"""
@@ -101,7 +101,7 @@ def create_thread(
 def delete_thread(
     thread_id: int,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Delete thread"""
@@ -121,7 +121,7 @@ def update_thread(
     thread_id: int,
     update_thread_input: threads.Update,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Update thread status"""
@@ -137,7 +137,7 @@ def create_comment(
     thread_id: int,
     comment_input: comments.Create,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Create comment in a thread"""
@@ -161,7 +161,7 @@ def create_comment(
 def delete_comment(
     comment_id: int,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Delete comment from thread"""
@@ -178,7 +178,7 @@ def update_comment(
     comment_id: int,
     update_comment_input: comments.Update,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Update comment"""

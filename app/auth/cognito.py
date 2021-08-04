@@ -7,7 +7,7 @@ from jose import jwk, jwt
 from jose.utils import base64url_decode
 
 from app import config
-from app.schemas.users import User
+from app.schemas.users import CognitoUser, User
 
 from fastapi import HTTPException, Request
 
@@ -71,4 +71,5 @@ def validate_token(token: str) -> User:
         raise HTTPException(
             status_code=400, detail="Token was not issued for this app client"
         )
-    return claims
+
+    return CognitoUser(**claims)
