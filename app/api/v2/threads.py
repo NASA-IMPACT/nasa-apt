@@ -91,7 +91,7 @@ def create_thread(
     thread = crud_threads.create(
         db_session=db,
         obj_in=threads.AdminCreate(
-            **thread_input.dict(), created_by=user["sub"], last_updated_by=user["sub"],
+            **thread_input.dict(), created_by=user.sub, last_updated_by=user.sub,
         ),
     )
     crud_comments.create(
@@ -99,8 +99,8 @@ def create_thread(
         obj_in=comments.AdminCreate(
             body=thread_input.comment.body,
             thread_id=thread.id,
-            created_by=user["sub"],
-            last_updated_by=user["sub"],
+            created_by=user.sub,
+            last_updated_by=user.sub,
         ),
     )
     return thread
@@ -160,8 +160,8 @@ def create_comment(
         obj_in=comments.AdminCreate(
             body=comment_input.body,
             thread_id=thread_id,
-            created_by=user["sub"],
-            last_updated_by=user["sub"],
+            created_by=user.sub,
+            last_updated_by=user.sub,
         ),
     )
 
@@ -199,7 +199,7 @@ def update_comment(
         db_obj=comment,
         obj_in=comments.AdminUpdate(
             **update_comment_input.asdict(),
-            last_updated_by=user["sub"],
+            last_updated_by=user.sub,
             last_updated_at=datetime.datetime.now(datetime.timezone.utc),
         ),
     )
