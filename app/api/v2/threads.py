@@ -36,6 +36,10 @@ def get_threads(
     user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
+    """
+    Returns all threads related to a single AtbdVersion. Filterable
+    by status (`OPEN`/`CLOSED`) and an AtbdVersion document section
+    """
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     check_atbd_permissions(principals, action="view_comments", atbd=atbd)
@@ -51,7 +55,7 @@ def get_threads(
 
 # # Is this get method required? Or will threads always be accessed by
 # # atbd_id and major
-@router.get("/threads/{thread_id}")
+@router.get("/threads/{thread_id}", response_model=threads.Output)
 def get_thread(
     thread_id: int,
     db: DbSession = Depends(get_db_session),

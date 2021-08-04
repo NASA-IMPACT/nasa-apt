@@ -221,7 +221,7 @@ class Threads(Base):
         backref="thread",
         uselist=True,
         # lazy="joined",
-        lazy="dynamic",
+        lazy="select",
         order_by="Comments.created_at",
         cascade="all, delete-orphan",
     )

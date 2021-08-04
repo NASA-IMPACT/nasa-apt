@@ -1,9 +1,11 @@
 """CRUD operations for the Threads model"""
 from typing import List
 
+from sqlalchemy import orm
+
 from app.crud.base import CRUDBase
 from app.db.db_session import DbSession
-from app.db.models import Threads
+from app.db.models import Comments, Threads
 from app.schemas.threads import Create, Output, Update
 
 
@@ -15,33 +17,31 @@ class CRUDThreads(CRUDBase[Threads, Output, Create, Update]):
     ) -> List[Output]:
         """Lists (filterable) items in db"""
 
-        # subquery = (
-        #     db_session.select(
-        #         (articles_table.c.title, articles_table.c.views),
-        #     )
-        #     .where(
-        #         articles_table.c.author_id == authors_table.c.id,
-        #     )
-        #     .order_by(
-        #         articles_table.c.views.desc(),
-        #     )
-        #     .limit(3)
-        #     .lateral("top_3_articles")
-        # )
-
-        # query = db_session.select(
-        #     (authors_table.c.name, subquery.c.title, subquery.c.views),
-        # ).select_from(
-        #     authors_table.join(subquery, db_session.true()),
-        # )
+        subquery = (
+            db_session.query(Comments)
+            .filter(Comments.thread_id == Threads.id)
+            .order_by(Comments.created_at.asc())
+            .limit(1)
+            .subquery()
+            .lateral()
+        )
 
         return (
-            db_session.query(self.model)
+            db_session.query(Threads)
             .filter_by(**filters)
+            .outerjoin(subquery)
+            .options(orm.contains_eager(Threads.comments, alias=subquery))
             .offset(skip)
             .limit(limit)
             .all()
         )
+        # return (
+        #     db_session.query(self.model)
+        #     .filter_by(**filters)
+        #     .offset(skip)
+        #     .limit(limit)
+        #     .all()
+        # )
 
 
 crud_threads = CRUDThreads(Threads)

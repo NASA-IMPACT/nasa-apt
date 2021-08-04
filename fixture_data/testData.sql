@@ -1334,4 +1334,7 @@ INSERT INTO threads (atbd_id, major, section, created_by, last_updated_by)
   VALUES (1, 2, 'introduction', :'author_sub_1', :'author_sub_1');
 
 INSERT INTO comments (thread_id, created_by, last_updated_by, body)
-  VALUES (1, :'author_sub_1', :'author_sub_1', 'This is a sample comment')
+  VALUES (1, :'author_sub_1', :'author_sub_1', 'This is a sample comment');
+
+INSERT INTO comments (thread_id, created_by, last_updated_by, body)
+  VALUES (1, :'author_sub_1', :'author_sub_1', 'This is a second comment')
