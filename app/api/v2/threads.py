@@ -1,7 +1,7 @@
 """Threads endpoint."""
 
 import datetime
-from typing import List
+from typing import Dict, List, Union
 
 from app.api.utils import (
     get_active_user_principals,
@@ -21,6 +21,7 @@ from fastapi import APIRouter, Depends
 router = APIRouter()
 
 
+# TODO: make status and section into an Enum
 @router.get(
     "/threads",
     responses={200: dict(description="A list of threads belonging to an ATBD")},
@@ -29,6 +30,8 @@ router = APIRouter()
 def get_threads(
     atbd_id: int,
     version: str,
+    status: str = None,
+    section: str = None,
     db: DbSession = Depends(get_db_session),
     user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
@@ -36,30 +39,32 @@ def get_threads(
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     check_atbd_permissions(principals, action="view_comments", atbd=atbd)
-    return crud_threads.get_multi(
-        db_session=db, filters={"atbd_id": atbd_id, "major": major}
-    )
+
+    filters: Dict[str, Union[str, int]] = {"atbd_id": atbd_id, "major": major}
+    if status:
+        filters["status"] = status
+    if section:
+        filters["section"] = section
+
+    return crud_threads.get_multi(db_session=db, filters=filters)
 
 
 # # Is this get method required? Or will threads always be accessed by
 # # atbd_id and major
-# @router.get("/threads/{thread_id}")
-# def get_thread(
-#     thread_id: int,
-#     db: DbSession = Depends(get_db_session),
-#     user: CognitoUser = Depends(require_user),
-#     principals: List[str] = Depends(get_active_user_principals),
-# ):
-#     """Retrieve a thread and associated comments"""
-#     try:
-#         thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
-#     except orm.exc.NoResultFound:
-#         raise HTTPException(
-#             status_code=404, detail=f"No thread found for id {thread_id}"
-#         )
-#     atbd = crud_threads.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
-#     check_atbd_permissions(principals, actions="view_commentds", atbd=atbd)
-#     return thread
+@router.get("/threads/{thread_id}")
+def get_thread(
+    thread_id: int,
+    db: DbSession = Depends(get_db_session),
+    user: CognitoUser = Depends(require_user),
+    principals: List[str] = Depends(get_active_user_principals),
+):
+    """Retrieve a thread and associated comments"""
+    # TODO: Handle the raised error if lookup doesn't find what it's looking for
+    thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    check_atbd_permissions(principals=principals, action="view_comments", atbd=atbd)
+
+    return thread
 
 
 @router.post(

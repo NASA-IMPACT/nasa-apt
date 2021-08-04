@@ -132,7 +132,7 @@ def update_atbd_contributor_info(principals: List[str], atbd: Atbds) -> Atbds:
                 ReviewerUser(
                     **app_users[reviewer["sub"]].dict(by_alias=True),
                     review_status=reviewer["review_status"],
-                )
+                ).dict(by_alias=True)
                 for reviewer in version.reviewers
             ]
         else:

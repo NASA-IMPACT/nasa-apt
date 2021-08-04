@@ -44,7 +44,8 @@ class CRUDBase(
     ) -> ModelType:
         """Select a single item by id. TODO: use query.get(id)"""
         obj_in_data = jsonable_encoder(obj_in)
-        lookup = db_session.query(self.model).filter_by(**filters, **obj_in_data)
+        # lookup = db_session.query(self.model).filter_by(**filters, **obj_in_data)
+        lookup = db_session.query(self.model).get(**obj_in_data)
         return lookup.one()
 
     def get_multi(
