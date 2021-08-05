@@ -28,17 +28,17 @@ class CRUDThreads(CRUDBase[Threads, Output, Create, Update]):
 
         count = (
             db_session.query(Threads.id, func.count(Comments.id))
-            .filter_by(**filters)
             .join(Comments)
             .group_by(Threads.id)
             .subquery()
+            .lateral()
         )
-
         return (
             db_session.query(Threads)
             .filter_by(**filters)
-            .outerjoin(subquery)
+            .join(subquery, isouter=True)
             .options(orm.contains_eager(Threads.comments, alias=subquery))
+            .join(count, isouter=True)
             .add_column(count)
             .offset(skip)
             .limit(limit)
