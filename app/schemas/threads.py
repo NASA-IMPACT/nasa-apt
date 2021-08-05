@@ -6,7 +6,7 @@ from typing import List, Optional
 from pydantic import BaseModel, validator
 
 from app.api.utils import get_major_from_version_string
-from app.schemas import comments
+from app.schemas import comments, users
 
 
 class StatusEnum(str, Enum):
@@ -50,8 +50,9 @@ class Output(BaseModel):
     status: StatusEnum
     section: str
     comments: List[comments.Output]
-    created_by: str
+    created_by: users.CognitoUser
     created_at: datetime
+    # last_updated_by: users.CognitoUser
     last_updated_by: str
     last_updated_at: datetime
     comment_count: Optional[int]

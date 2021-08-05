@@ -72,9 +72,9 @@ def publish_handler(
         obj_in=versions.AdminUpdate(
             changelog=payload["changelog"] if version.major > 1 else version.changelog,
             status="PUBLISHED",
-            published_by=user["sub"],
+            published_by=user.sub,
             published_at=datetime.datetime.now(datetime.timezone.utc),
-            last_updated_by=user["sub"],
+            last_updated_by=user.sub,
             last_updated_at=datetime.datetime.now(datetime.timezone.utc),
         ),
     )
@@ -105,7 +105,7 @@ def bump_minor_version_handler(
         obj_in=versions.AdminUpdate(
             changelog=payload["changelog"],
             minor=version.minor + 1,
-            last_updated_by=user["sub"],
+            last_updated_by=user.sub,
             last_updated_at=datetime.datetime.now(datetime.timezone.utc),
         ),
     )
@@ -145,7 +145,7 @@ def update_review_status_handler(
 
     version_update.reviewers = [
         {"sub": r["sub"], "review_status": payload["review_status"]}
-        if r["sub"] == user["sub"]
+        if r["sub"] == user.sub
         else r
         for r in version.reviewers
     ]

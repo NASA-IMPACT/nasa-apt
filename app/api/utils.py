@@ -50,7 +50,8 @@ def update_thread_contributor_info(
             if check_permissions(
                 principals=principals, action="view_owner", acl=version_acl, error=False
             ):
-                comment.created_by = app_users[comment.created_by]
+                print("PINGPONG")
+                comment.created_by = app_users[comment.created_by].dict()
 
             else:
                 comment.created_by = AnonymousUser(preferred_username="Owner")
@@ -62,7 +63,7 @@ def update_thread_contributor_info(
                 acl=version_acl,
                 error=False,
             ):
-                comment.created_by = app_users[comment.created_by]
+                comment.created_by = app_users[comment.created_by].dict()
             else:
                 comment.created_by = AnonymousUser(
                     preferred_username=f"Author {atbd_version.authors.index(comment.created_by)}"
@@ -75,7 +76,7 @@ def update_thread_contributor_info(
                 acl=version_acl,
                 error=False,
             ):
-                comment.created_by = app_users[comment.created_by]
+                comment.created_by = app_users[comment.created_by].dict()
             else:
                 comment.created_by = AnonymousUser(
                     preferred_username=f"Reviewer {reviewers.index(comment.created_by)}"
@@ -85,6 +86,7 @@ def update_thread_contributor_info(
             comment.created_by = AnonymousUser(
                 preferred_username=f"Anonymous User {anon_count}"
             )
+
     return thread
 
 
@@ -173,37 +175,6 @@ def list_cognito_users():
                 }
             )
 
-        # params = di
-        # users = []
-
-        # users.extend(
-        #     {**user, "cognito:groups": [group]} for user in response.get("Users", [])
-        # )
-        # while response.get("PaginationToken"):
-        #     params["PaginationToken"] = response["PaginationToken"]
-        #     response = client.list_users_in_group(**params)
-        #     users.extend(
-        #         {**user, "cognito:groups": [group]}
-        #         for user in response.get("Users", [])
-        #     )
-
-        # for user in users:
-        #     for attribute in user["Attributes"]:
-        #         if attribute["Name"] not in [
-        #             "email",
-        #             "sub",
-        #             "preferred_username",
-        #             "username",
-        #         ]:
-        #             continue
-        #         user[attribute["Name"]] = attribute["Value"]
-        #     # TODO: figure out a better way to do this
-        #     user["username"] = user["Username"]
-        #     del user["Username"]
-
-        #     del user["Attributes"]
-        # app_users.extend(users)
-    # print("APP USERS: ", app_users)
     return (app_users, str(uuid4()))
 
 

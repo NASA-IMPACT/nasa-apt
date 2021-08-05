@@ -7,6 +7,7 @@ from app.api.utils import (
     get_active_user_principals,
     get_major_from_version_string,
     require_user,
+    update_thread_contributor_info,
 )
 from app.crud.atbds import crud_atbds
 from app.crud.comments import crud_comments
@@ -42,6 +43,7 @@ def get_threads(
     """
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+    [atbd_version] = atbd.versions
     check_atbd_permissions(principals, action="view_comments", atbd=atbd)
 
     filters: Dict[str, Union[str, int]] = {"atbd_id": atbd_id, "major": major}
@@ -50,13 +52,17 @@ def get_threads(
     if section:
         filters["section"] = section
 
-    print("THREAD RESULT: ", crud_threads.get_multi(db_session=db, filters=filters))
-
-    return [
+    _threads = [
         threads.Output(**thread.__dict__, comment_count=comment_count)
         for thread, _, comment_count in crud_threads.get_multi(
             db_session=db, filters=filters
         )
+    ]
+    return [
+        update_thread_contributor_info(
+            principals=principals, atbd_version=atbd_version, thread=thread
+        )
+        for thread in _threads
     ]
 
 
