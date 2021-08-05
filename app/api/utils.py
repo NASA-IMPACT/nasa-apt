@@ -11,7 +11,7 @@ from boto3 import client
 from app import config
 from app.auth.cognito import get_user
 from app.config import AWS_RESOURCES_ENDPOINT
-from app.db.models import Atbds, AtbdVersions, Threads
+from app.db.models import Atbds, AtbdVersions, Comments, Threads
 from app.permissions import check_permissions
 from app.schemas.users import User
 from app.schemas.versions import (
@@ -37,7 +37,19 @@ def get_active_user_principals(user: User = Depends(get_user)) -> List[str]:
     return principals
 
 
-def update_user_info(data_model, principals, acl, contributors, app_users):
+def update_user_info(
+    principals: List[str],
+    atbd_version: AtbdVersions,
+    data_model: Union[Comments, Threads, AtbdVersions],
+):
+    app_users, _ = list_cognito_users()
+    version_acl = atbd_version.__acl__()
+
+    contributors = {
+        "owner": [atbd_version.owner],
+        "authors": atbd_version.authors,
+        "reviewers": [r["sub"] for r in atbd_version.reviewers],
+    }
     for attr in ["created_by", "last_updated_by", "published_by"]:
         try:
             user_sub = getattr(data_model, attr)
@@ -71,7 +83,7 @@ def update_user_info(data_model, principals, acl, contributors, app_users):
                 if check_permissions(
                     principals=principals,
                     action=f"view_{contributor_type}",
-                    acl=acl,
+                    acl=version_acl,
                     error=False,
                 ):
                     setattr(data_model, attr, app_users[user_sub].dict(by_alias=True))
@@ -94,29 +106,13 @@ def update_thread_contributor_info(
     principals: List[str], atbd_version: AtbdVersions, thread: Threads
 ) -> Threads:
 
-    app_users, _ = list_cognito_users()
-    version_acl = atbd_version.__acl__()
-
-    contributors = {
-        "owner": [atbd_version.owner],
-        "authors": atbd_version.authors,
-        "reviewers": [r["sub"] for r in atbd_version.reviewers],
-    }
     for comment in thread.comments:
-
-        comment = update_user_info(
-            data_model=comment,
-            principals=principals,
-            acl=version_acl,
-            contributors=contributors,
-            app_users=app_users,
+        update_user_info(
+            principals=principals, atbd_version=atbd_version, data_model=comment
         )
+
     thread = update_user_info(
-        data_model=thread,
-        principals=principals,
-        acl=version_acl,
-        contributors=contributors,
-        app_users=app_users,
+        principals=principals, atbd_version=atbd_version, data_model=thread
     )
 
     return thread
@@ -136,18 +132,9 @@ def update_atbd_contributor_info(principals: List[str], atbd: Atbds) -> Atbds:
     for version in atbd.versions:
         version_acl = version.__acl__()
 
-        contributors = {
-            "owner": [version.owner],
-            "authors": version.authors,
-            "reviewers": [r["sub"] for r in version.reviewers],
-        }
         # Update `created_by` and `last_updated_by` fields
         version = update_user_info(
-            data_model=version,
-            principals=principals,
-            acl=version_acl,
-            contributors=contributors,
-            app_users=app_users,
+            principals=principals, atbd_version=version, data_model=version
         )
 
         if check_permissions(

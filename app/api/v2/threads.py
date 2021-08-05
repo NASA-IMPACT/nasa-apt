@@ -8,6 +8,7 @@ from app.api.utils import (
     get_major_from_version_string,
     require_user,
     update_thread_contributor_info,
+    update_user_info,
 )
 from app.crud.atbds import crud_atbds
 from app.crud.comments import crud_comments
@@ -52,24 +53,18 @@ def get_threads(
     if section:
         filters["section"] = section
 
-    return sorted(
-        [
-            threads.Output(
-                **update_thread_contributor_info(
-                    principals=principals, atbd_version=atbd_version, thread=thread,
-                ).__dict__,
-                comment_count=comment_count,
-            )
-            for thread, _, comment_count in crud_threads.get_multi(
-                db_session=db, filters=filters
-            )
-        ],
-        key=lambda x: x.created_at,
-    )
+    _threads = []
+    for thread, _, comment_count in crud_threads.get_multi(
+        db_session=db, filters=filters
+    ):
+        thread.comment_count = comment_count
+        thread = update_thread_contributor_info(
+            principals=principals, atbd_version=atbd_version, thread=thread,
+        )
+        _threads.append(thread)
+    return sorted(_threads, key=lambda x: x.created_at, reverse=True)
 
 
-# # Is this get method required? Or will threads always be accessed by
-# # atbd_id and major
 @router.get("/threads/{thread_id}", response_model=threads.Output)
 def get_thread(
     thread_id: int,
@@ -105,6 +100,7 @@ def create_thread(
     atbd = crud_atbds.get(
         db=db, atbd_id=thread_input.atbd_id, version=thread_input.major
     )
+    [atbd_version] = atbd.version
     check_atbd_permissions(principals=principals, action="comment", atbd=atbd)
 
     thread = crud_threads.create(
@@ -121,6 +117,10 @@ def create_thread(
             created_by=user.sub,
             last_updated_by=user.sub,
         ),
+    )
+
+    thread = update_thread_contributor_info(
+        principals=principals, atbd_version=atbd_version, thread=thread,
     )
     return thread
 
@@ -155,9 +155,14 @@ def update_thread(
     """Update thread status"""
     thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
     atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    [atbd_version] = atbd.versions
     check_atbd_permissions(principals=principals, action="comment", atbd=atbd)
 
-    return crud_threads.update(db=db, db_obj=thread, obj_in=update_thread_input)
+    thread = crud_threads.update(db=db, db_obj=thread, obj_in=update_thread_input)
+    thread = update_thread_contributor_info(
+        principals=principals, atbd_version=atbd_version, thread=thread,
+    )
+    return thread
 
 
 @router.post("/threads/{thread_id}/comments")
@@ -171,10 +176,11 @@ def create_comment(
     """Create comment in a thread"""
     thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
     atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    [atbd_version] = atbd.versions
     check_atbd_permissions(principals=principals, action="comment", atbd=atbd)
     # Should this return a comment or a thread? In the case of AtbdVersions
     # the entire ATBD is returned when creating a new version
-    return crud_comments.create(
+    comment = crud_comments.create(
         db_session=db,
         obj_in=comments.AdminCreate(
             body=comment_input.body,
@@ -183,6 +189,10 @@ def create_comment(
             last_updated_by=user.sub,
         ),
     )
+    comment = update_user_info(
+        principals=principals, atbd_version=atbd_version, data_model=comment
+    )
+    return comment
 
 
 @router.delete("/threads/{thread_id}/comments/{comment_id}")
@@ -195,6 +205,7 @@ def delete_comment(
     """Delete comment from thread"""
 
     comment = crud_comments.get(db_session=db, obj_in=comments.Lookup(id=comment_id))
+
     check_permissions(principals=principals, action="delete", acl=comment.__acl__())
     crud_comments.remove(db_session=db, id=comment_id)
 
@@ -212,7 +223,14 @@ def update_comment(
     """Update comment"""
 
     comment = crud_comments.get(db_session=db, obj_in=comments.Lookup(id=comment_id))
+    thread = crud_threads.get(
+        db_session=db, obj_in=threads.Lookup(id=comment.thread_id)
+    )
+    atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    [atbd_version] = atbd.versions
+
     check_permissions(principals=principals, action="update", acl=comment.__acl__())
+
     comment = crud_comments.update(
         db=db,
         db_obj=comment,
@@ -221,5 +239,8 @@ def update_comment(
             last_updated_by=user.sub,
             last_updated_at=datetime.datetime.now(datetime.timezone.utc),
         ),
+    )
+    comment = update_user_info(
+        principals=principals, atbd_version=atbd_version, data_model=comment
     )
     return comment
