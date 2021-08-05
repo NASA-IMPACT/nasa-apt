@@ -1334,7 +1334,7 @@ INSERT INTO atbds (title, alias, created_by, created_at, last_updated_by, last_u
   VALUES ('Project algorithms technically overly simplistic', 'patos', :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', '2021-03-15 16:00:00');
 
 INSERT INTO atbd_versions (atbd_id, created_by, created_at, "owner", authors, last_updated_by, last_updated_at, major, minor, document, status)
-  VALUES (2, :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], :'owner_sub', '2021-06-27 21:00:00', 1, 1, '{
+  VALUES (2, :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], :'owner_sub', '2021-06-27 21:00:00', 1, 0, '{
   "introduction": null,
   "historical_perspective": null,
   "mathematical_theory": null,
