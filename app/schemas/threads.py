@@ -17,6 +17,8 @@ class StatusEnum(str, Enum):
 
 
 class AdminCreate(BaseModel):
+    """Backend create thread"""
+
     atbd_id: int
     major: int
     section: str
@@ -52,6 +54,7 @@ class Output(BaseModel):
     created_at: datetime
     last_updated_by: str
     last_updated_at: datetime
+    comment_count: int
 
     class Config:
         """Config."""

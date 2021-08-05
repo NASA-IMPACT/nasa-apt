@@ -1,7 +1,7 @@
 """CRUD operations for the Threads model"""
 from typing import List
 
-from sqlalchemy import orm
+from sqlalchemy import func, orm
 
 from app.crud.base import CRUDBase
 from app.db.db_session import DbSession
@@ -26,22 +26,24 @@ class CRUDThreads(CRUDBase[Threads, Output, Create, Update]):
             .lateral()
         )
 
+        count = (
+            db_session.query(Threads.id, func.count(Comments.id))
+            .filter_by(**filters)
+            .join(Comments)
+            .group_by(Threads.id)
+            .subquery()
+        )
+
         return (
             db_session.query(Threads)
             .filter_by(**filters)
             .outerjoin(subquery)
             .options(orm.contains_eager(Threads.comments, alias=subquery))
+            .add_column(count)
             .offset(skip)
             .limit(limit)
             .all()
         )
-        # return (
-        #     db_session.query(self.model)
-        #     .filter_by(**filters)
-        #     .offset(skip)
-        #     .limit(limit)
-        #     .all()
-        # )
 
 
 crud_threads = CRUDThreads(Threads)

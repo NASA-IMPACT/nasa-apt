@@ -50,7 +50,12 @@ def get_threads(
     if section:
         filters["section"] = section
 
-    return crud_threads.get_multi(db_session=db, filters=filters)
+    return [
+        threads.Output(**thread.__dict__, comment_count=comment_count)
+        for thread, _, comment_count in crud_threads.get_multi(
+            db_session=db, filters=filters
+        )
+    ]
 
 
 # # Is this get method required? Or will threads always be accessed by

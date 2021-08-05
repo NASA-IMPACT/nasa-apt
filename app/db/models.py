@@ -228,7 +228,7 @@ class Threads(Base):
 
     def __repr__(self):
         """String representation"""
-        comments = ", ".join(f"{c.id}" for c in self.comments)
+        comments = ", ".join(f"{c.id}: {c.body}" for c in self.comments)
         return (
             f"<Threads(id={self.id}, atbd_id={self.atbd_id}, major={self.major},"
             f" status={self.status}, section={self.section},"
