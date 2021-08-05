@@ -36,9 +36,13 @@ def list_users(
     Lists Users
     """
     major, _ = get_major_from_version_string(version)
+    print(
+        "ATBD VERSIONS: ",
+        crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions,
+    )
     [atbd_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
     version_acl = atbd_version.__acl__()
-    app_users = list_cognito_users()
+    app_users, _ = list_cognito_users()
 
     if user_filter == "transfer_ownership":
         check_permissions(
@@ -47,7 +51,7 @@ def list_users(
 
         eligible_users = [
             user
-            for user in app_users
+            for user in app_users.values()
             if check_permissions(
                 principals=get_active_user_principals(user),
                 action="receive_ownership",
@@ -62,7 +66,7 @@ def list_users(
 
         eligible_users = [
             user
-            for user in app_users
+            for user in app_users.values()
             if check_permissions(
                 principals=get_active_user_principals(user),
                 action="join_authors",
@@ -77,7 +81,7 @@ def list_users(
 
         eligible_users = [
             user
-            for user in app_users
+            for user in app_users.values()
             if check_permissions(
                 principals=get_active_user_principals(user),
                 action="join_reviewers",
@@ -86,4 +90,4 @@ def list_users(
             )
         ]
 
-    return sorted(eligible_users, key=lambda x: x["preferred_username"].lower())
+    return sorted(eligible_users, key=lambda x: x.preferred_username.lower())

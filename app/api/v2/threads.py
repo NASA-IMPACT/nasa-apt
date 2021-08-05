@@ -1,7 +1,7 @@
 """Threads endpoint."""
 
 import datetime
-from typing import List
+from typing import Dict, List, Union
 
 from app.api.utils import (
     get_active_user_principals,
@@ -14,13 +14,14 @@ from app.crud.threads import crud_threads
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_atbd_permissions, check_permissions
 from app.schemas import comments, threads
-from app.schemas.users import User
+from app.schemas.users import CognitoUser
 
 from fastapi import APIRouter, Depends
 
 router = APIRouter()
 
 
+# TODO: make status and section into an Enum
 @router.get(
     "/threads",
     responses={200: dict(description="A list of threads belonging to an ATBD")},
@@ -29,37 +30,52 @@ router = APIRouter()
 def get_threads(
     atbd_id: int,
     version: str,
+    status: str = None,
+    section: str = None,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
+    """
+    Returns all threads related to a single AtbdVersion. Filterable
+    by status (`OPEN`/`CLOSED`) and an AtbdVersion document section
+    """
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     check_atbd_permissions(principals, action="view_comments", atbd=atbd)
-    return crud_threads.get_multi(
-        db_session=db, filters={"atbd_id": atbd_id, "major": major}
-    )
+
+    filters: Dict[str, Union[str, int]] = {"atbd_id": atbd_id, "major": major}
+    if status:
+        filters["status"] = status
+    if section:
+        filters["section"] = section
+
+    print("THREAD RESULT: ", crud_threads.get_multi(db_session=db, filters=filters))
+
+    return [
+        threads.Output(**thread.__dict__, comment_count=comment_count)
+        for thread, _, comment_count in crud_threads.get_multi(
+            db_session=db, filters=filters
+        )
+    ]
 
 
 # # Is this get method required? Or will threads always be accessed by
 # # atbd_id and major
-# @router.get("/threads/{thread_id}")
-# def get_thread(
-#     thread_id: int,
-#     db: DbSession = Depends(get_db_session),
-#     user: User = Depends(require_user),
-#     principals: List[str] = Depends(get_active_user_principals),
-# ):
-#     """Retrieve a thread and associated comments"""
-#     try:
-#         thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
-#     except orm.exc.NoResultFound:
-#         raise HTTPException(
-#             status_code=404, detail=f"No thread found for id {thread_id}"
-#         )
-#     atbd = crud_threads.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
-#     check_atbd_permissions(principals, actions="view_commentds", atbd=atbd)
-#     return thread
+@router.get("/threads/{thread_id}", response_model=threads.Output)
+def get_thread(
+    thread_id: int,
+    db: DbSession = Depends(get_db_session),
+    user: CognitoUser = Depends(require_user),
+    principals: List[str] = Depends(get_active_user_principals),
+):
+    """Retrieve a thread and associated comments"""
+    # TODO: Handle the raised error if lookup doesn't find what it's looking for
+    thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
+    atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    check_atbd_permissions(principals=principals, action="view_comments", atbd=atbd)
+
+    return thread
 
 
 @router.post(
@@ -70,7 +86,7 @@ def get_threads(
 def create_thread(
     thread_input: threads.Create,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Create a thread with the first comment"""
@@ -82,7 +98,7 @@ def create_thread(
     thread = crud_threads.create(
         db_session=db,
         obj_in=threads.AdminCreate(
-            **thread_input.dict(), created_by=user["sub"], last_updated_by=user["sub"],
+            **thread_input.dict(), created_by=user.sub, last_updated_by=user.sub,
         ),
     )
     crud_comments.create(
@@ -90,8 +106,8 @@ def create_thread(
         obj_in=comments.AdminCreate(
             body=thread_input.comment.body,
             thread_id=thread.id,
-            created_by=user["sub"],
-            last_updated_by=user["sub"],
+            created_by=user.sub,
+            last_updated_by=user.sub,
         ),
     )
     return thread
@@ -101,7 +117,7 @@ def create_thread(
 def delete_thread(
     thread_id: int,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Delete thread"""
@@ -121,7 +137,7 @@ def update_thread(
     thread_id: int,
     update_thread_input: threads.Update,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Update thread status"""
@@ -137,7 +153,7 @@ def create_comment(
     thread_id: int,
     comment_input: comments.Create,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Create comment in a thread"""
@@ -151,8 +167,8 @@ def create_comment(
         obj_in=comments.AdminCreate(
             body=comment_input.body,
             thread_id=thread_id,
-            created_by=user["sub"],
-            last_updated_by=user["sub"],
+            created_by=user.sub,
+            last_updated_by=user.sub,
         ),
     )
 
@@ -161,7 +177,7 @@ def create_comment(
 def delete_comment(
     comment_id: int,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Delete comment from thread"""
@@ -178,7 +194,7 @@ def update_comment(
     comment_id: int,
     update_comment_input: comments.Update,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Update comment"""
@@ -190,7 +206,7 @@ def update_comment(
         db_obj=comment,
         obj_in=comments.AdminUpdate(
             **update_comment_input.asdict(),
-            last_updated_by=user["sub"],
+            last_updated_by=user.sub,
             last_updated_at=datetime.datetime.now(datetime.timezone.utc),
         ),
     )

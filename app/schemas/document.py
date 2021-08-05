@@ -122,12 +122,6 @@ class SubsectionNode(BaseNode):
     id: str
     type: TypesEnum
 
-    @root_validator()
-    def _validate(cls, values):
-        print("SUBSECTION node")
-        print("PINGPONG: ", values)
-        return values
-
 
 class EquationNode(BaseNode):
     """Equation WYSIWYG node"""
@@ -140,12 +134,6 @@ class ImageNode(BaseNode):
 
     type: TypesEnum
     objectKey: str
-
-    @root_validator()
-    def _validate(cls, values):
-        print("\nIMAGE NODE")
-        print("PINGPONG: ", values)
-        return values
 
 
 class CaptionNode(BaseNode):

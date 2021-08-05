@@ -4,7 +4,7 @@ from typing import List, TypedDict
 from app import config
 from app.api.utils import ses_client
 from app.email.email_templates import EMAIL_TEMPLATES
-from app.schemas.users import User
+from app.schemas.users import CognitoUser
 
 
 class UserToNotify(TypedDict):
@@ -15,7 +15,7 @@ class UserToNotify(TypedDict):
 
 def notify_users(
     users_to_notify: List[UserToNotify],
-    app_user: User,
+    app_user: CognitoUser,
     atbd_title: str,
     atbd_id: int,
     atbd_version: str,
@@ -30,8 +30,8 @@ def notify_users(
 
         message_content = t.substitute(
             # User performing the action:
-            app_user=app_user["preferred_username"],
-            role=app_user["cognito:groups"][0],
+            app_user=app_user.preferred_username,
+            role=f"{' '.join(app_user.cognito_groups)}",
             # User being notified:
             preferred_username=user["preferred_username"],
             atbd_title=atbd_title,
