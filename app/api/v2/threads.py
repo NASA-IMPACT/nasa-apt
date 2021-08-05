@@ -52,17 +52,20 @@ def get_threads(
     if section:
         filters["section"] = section
 
-    return [
-        threads.Output(
-            **update_thread_contributor_info(
-                principals=principals, atbd_version=atbd_version, thread=thread,
-            ).__dict__,
-            comment_count=comment_count,
-        )
-        for thread, _, comment_count in crud_threads.get_multi(
-            db_session=db, filters=filters
-        )
-    ]
+    return sorted(
+        [
+            threads.Output(
+                **update_thread_contributor_info(
+                    principals=principals, atbd_version=atbd_version, thread=thread,
+                ).__dict__,
+                comment_count=comment_count,
+            )
+            for thread, _, comment_count in crud_threads.get_multi(
+                db_session=db, filters=filters
+            )
+        ],
+        key=lambda x: x.created_at,
+    )
 
 
 # # Is this get method required? Or will threads always be accessed by
