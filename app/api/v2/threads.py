@@ -50,6 +50,8 @@ def get_threads(
     if section:
         filters["section"] = section
 
+    print("THREAD RESULT: ", crud_threads.get_multi(db_session=db, filters=filters))
+
     return [
         threads.Output(**thread.__dict__, comment_count=comment_count)
         for thread, _, comment_count in crud_threads.get_multi(
