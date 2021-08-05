@@ -59,7 +59,11 @@ def update_user_info(data_model, principals, acl, contributors, app_users):
                 setattr(data_model, attr, app_users[user_sub].dict(by_alias=True))
             else:
                 setattr(
-                    data_model, attr, AnonymousUser(preferred_username="Unknown User"),
+                    data_model,
+                    attr,
+                    AnonymousUser(preferred_username="Unknown User").dict(
+                        by_alias=True
+                    ),
                 )
                 continue
         for contributor_type, contributor_subs in contributors.items():

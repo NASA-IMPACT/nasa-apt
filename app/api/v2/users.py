@@ -36,10 +36,7 @@ def list_users(
     Lists Users
     """
     major, _ = get_major_from_version_string(version)
-    print(
-        "ATBD VERSIONS: ",
-        crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions,
-    )
+
     [atbd_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
     version_acl = atbd_version.__acl__()
     app_users, _ = list_cognito_users()

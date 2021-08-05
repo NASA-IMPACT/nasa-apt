@@ -78,7 +78,11 @@ def get_thread(
     # TODO: Handle the raised error if lookup doesn't find what it's looking for
     thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
     atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
+    [atbd_version] = atbd.versions
     check_atbd_permissions(principals=principals, action="view_comments", atbd=atbd)
+    thread = update_thread_contributor_info(
+        principals=principals, atbd_version=atbd_version, thread=thread,
+    )
 
     return thread
 
