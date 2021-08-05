@@ -43,6 +43,7 @@ def update_user_info(
     data_model: Union[Comments, Threads, AtbdVersions],
 ):
     app_users, _ = list_cognito_users()
+
     version_acl = atbd_version.__acl__()
 
     contributors = {

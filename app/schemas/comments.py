@@ -17,8 +17,8 @@ class AdminCreate(Create):
     """Create comment"""
 
     thread_id: int
-    created_by: Union[users.CognitoUser, users.AnonymousUser]
-    last_updated_by: Union[users.CognitoUser, users.AnonymousUser]
+    created_by: str
+    last_updated_by: str
 
 
 class Output(BaseModel):

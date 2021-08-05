@@ -100,7 +100,7 @@ def create_thread(
     atbd = crud_atbds.get(
         db=db, atbd_id=thread_input.atbd_id, version=thread_input.major
     )
-    [atbd_version] = atbd.version
+    [atbd_version] = atbd.versions
     check_atbd_permissions(principals=principals, action="comment", atbd=atbd)
 
     thread = crud_threads.create(

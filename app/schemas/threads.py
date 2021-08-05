@@ -22,8 +22,8 @@ class AdminCreate(BaseModel):
     atbd_id: int
     major: int
     section: str
-    created_by: Union[users.CognitoUser, users.AnonymousUser]
-    last_updated_by: Union[users.CognitoUser, users.AnonymousUser]
+    created_by: str
+    last_updated_by: str
 
 
 class Create(BaseModel):
