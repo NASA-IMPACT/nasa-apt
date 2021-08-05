@@ -1,7 +1,7 @@
 """Schemas for Threads Model"""
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel, validator
 
@@ -22,8 +22,8 @@ class AdminCreate(BaseModel):
     atbd_id: int
     major: int
     section: str
-    created_by: str
-    last_updated_by: str
+    created_by: Union[users.CognitoUser, users.AnonymousUser]
+    last_updated_by: Union[users.CognitoUser, users.AnonymousUser]
 
 
 class Create(BaseModel):
@@ -50,10 +50,9 @@ class Output(BaseModel):
     status: StatusEnum
     section: str
     comments: List[comments.Output]
-    created_by: users.CognitoUser
+    created_by: Union[users.CognitoUser, users.AnonymousUser]
     created_at: datetime
-    # last_updated_by: users.CognitoUser
-    last_updated_by: str
+    last_updated_by: Union[users.CognitoUser, users.AnonymousUser]
     last_updated_at: datetime
     comment_count: Optional[int]
 

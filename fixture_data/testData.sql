@@ -37,8 +37,8 @@ WHERE
 INSERT INTO atbds (title, alias, created_by, last_updated_by)
   VALUES ('Test ATBD 1', 'test-atbd-1', :'owner_sub', :'owner_sub');
 
-INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation, status)
-  VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', 1, 1, '{
+INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, published_by, major, minor, document, citation, status)
+  VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', :'curator_sub', 1, 1, '{
   "introduction": null,
   "historical_perspective": null,
   "mathematical_theory": {

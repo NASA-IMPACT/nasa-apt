@@ -317,6 +317,7 @@ psql 'postgres://masteruser:password@db:5432/nasadb?options=--search_path%3dapt'
   -v author_sub_1="${author_sub_1}" \
   -v author_sub_2="${author_sub_2}" \
   -v reviewer_sub_1="${reviewer_sub_1}" \
-  -v reviewer_sub_2="${reviewer_sub_2}" 
+  -v reviewer_sub_2="${reviewer_sub_2}" \
+  -v curator_sub="${curator_sub}"
 
 

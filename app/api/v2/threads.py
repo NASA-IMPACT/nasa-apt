@@ -52,17 +52,16 @@ def get_threads(
     if section:
         filters["section"] = section
 
-    _threads = [
-        threads.Output(**thread.__dict__, comment_count=comment_count)
+    return [
+        threads.Output(
+            **update_thread_contributor_info(
+                principals=principals, atbd_version=atbd_version, thread=thread,
+            ).__dict__,
+            comment_count=comment_count,
+        )
         for thread, _, comment_count in crud_threads.get_multi(
             db_session=db, filters=filters
         )
-    ]
-    return [
-        update_thread_contributor_info(
-            principals=principals, atbd_version=atbd_version, thread=thread
-        )
-        for thread in _threads
     ]
 
 

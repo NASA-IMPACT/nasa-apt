@@ -31,12 +31,12 @@ class AtbdVersionSummaryOutput(BaseModel):
     minor: int
     version: Optional[str]
     status: str
-    published_by: Optional[str]
+    published_by: Optional[Union[CognitoUser, AnonymousUser]]
     published_at: Optional[datetime]
     sections_completed: Optional[dict]
-    created_by: str
+    created_by: Union[CognitoUser, AnonymousUser]
     created_at: datetime
-    last_updated_by: str
+    last_updated_by: Union[CognitoUser, AnonymousUser]
     last_updated_at: datetime
     citation: Optional[dict]
     changelog: Optional[str]

@@ -1,7 +1,10 @@
 """Schemas for Comments Model"""
 from datetime import datetime
+from typing import Union
 
 from pydantic import BaseModel
+
+from app.schemas import users
 
 
 class Create(BaseModel):
@@ -14,8 +17,8 @@ class AdminCreate(Create):
     """Create comment"""
 
     thread_id: int
-    created_by: str
-    last_updated_by: str
+    created_by: Union[users.CognitoUser, users.AnonymousUser]
+    last_updated_by: Union[users.CognitoUser, users.AnonymousUser]
 
 
 class Output(BaseModel):
@@ -23,9 +26,9 @@ class Output(BaseModel):
 
     id: int
     thread_id: int
-    created_by: str
+    created_by: Union[users.CognitoUser, users.AnonymousUser]
     created_at: datetime
-    last_updated_by: str
+    last_updated_by: Union[users.CognitoUser, users.AnonymousUser]
     last_updated_at: datetime
     body: str
 

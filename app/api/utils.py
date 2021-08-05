@@ -37,55 +37,83 @@ def get_active_user_principals(user: User = Depends(get_user)) -> List[str]:
     return principals
 
 
+def update_user_info(data_model, principals, acl, contributors, app_users):
+    for attr in ["created_by", "last_updated_by", "published_by"]:
+        try:
+            user_sub = getattr(data_model, attr)
+        # published_by field is only relevant to AtbdVersions, not
+        # Atbds, Threads or Comments. In those cases, if the published_by
+        # attribute is not present, skip it.
+        except AttributeError:
+            continue
+
+        # The `published_by` field IS present but it's value
+        # is none because the document hasn't been published yet.
+        # Skip.
+        if user_sub is None:
+            continue
+
+        if not any([user_sub in i for i in contributors.values()]):
+
+            if "curator" in app_users[user_sub].cognito_groups:
+                setattr(data_model, attr, app_users[user_sub].dict(by_alias=True))
+            else:
+                setattr(
+                    data_model, attr, AnonymousUser(preferred_username="Unknown User"),
+                )
+                continue
+        for contributor_type, contributor_subs in contributors.items():
+            if user_sub in contributor_subs:
+                if check_permissions(
+                    principals=principals,
+                    action=f"view_{contributor_type}",
+                    acl=acl,
+                    error=False,
+                ):
+                    setattr(data_model, attr, app_users[user_sub].dict(by_alias=True))
+                else:
+                    preferred_username = contributor_type.title()
+                    if contributor_type != "owner":
+                        preferred_username += f" {contributor_subs.index(user_sub)}"
+
+                    setattr(
+                        data_model,
+                        attr,
+                        AnonymousUser(preferred_username=preferred_username).dict(
+                            by_alias=True
+                        ),
+                    )
+    return data_model
+
+
 def update_thread_contributor_info(
     principals: List[str], atbd_version: AtbdVersions, thread: Threads
 ) -> Threads:
+
     app_users, _ = list_cognito_users()
     version_acl = atbd_version.__acl__()
-    reviewers = [r["sub"] for r in atbd_version.reviewers]
 
+    contributors = {
+        "owner": [atbd_version.owner],
+        "authors": atbd_version.authors,
+        "reviewers": [r["sub"] for r in atbd_version.reviewers],
+    }
     for comment in thread.comments:
-        anon_count = 0
-        if comment.created_by == atbd_version.owner:
-            if check_permissions(
-                principals=principals, action="view_owner", acl=version_acl, error=False
-            ):
-                print("PINGPONG")
-                comment.created_by = app_users[comment.created_by].dict()
 
-            else:
-                comment.created_by = AnonymousUser(preferred_username="Owner")
-
-        elif comment.created_by in atbd_version.authors:
-            if check_permissions(
-                principals=principals,
-                action="view_authors",
-                acl=version_acl,
-                error=False,
-            ):
-                comment.created_by = app_users[comment.created_by].dict()
-            else:
-                comment.created_by = AnonymousUser(
-                    preferred_username=f"Author {atbd_version.authors.index(comment.created_by)}"
-                )
-
-        elif comment.created_by in reviewers:
-            if check_permissions(
-                principals=principals,
-                action="view_reviewers",
-                acl=version_acl,
-                error=False,
-            ):
-                comment.created_by = app_users[comment.created_by].dict()
-            else:
-                comment.created_by = AnonymousUser(
-                    preferred_username=f"Reviewer {reviewers.index(comment.created_by)}"
-                )
-        else:
-            anon_count += 1
-            comment.created_by = AnonymousUser(
-                preferred_username=f"Anonymous User {anon_count}"
-            )
+        comment = update_user_info(
+            data_model=comment,
+            principals=principals,
+            acl=version_acl,
+            contributors=contributors,
+            app_users=app_users,
+        )
+    thread = update_user_info(
+        data_model=thread,
+        principals=principals,
+        acl=version_acl,
+        contributors=contributors,
+        app_users=app_users,
+    )
 
     return thread
 
@@ -100,10 +128,23 @@ def update_atbd_contributor_info(principals: List[str], atbd: Atbds) -> Atbds:
     see identifying info of other authors)
     """
     app_users, request_id = list_cognito_users()
-    print("REQUEST ID: ", request_id)
 
     for version in atbd.versions:
         version_acl = version.__acl__()
+
+        contributors = {
+            "owner": [version.owner],
+            "authors": version.authors,
+            "reviewers": [r["sub"] for r in version.reviewers],
+        }
+        # Update `created_by` and `last_updated_by` fields
+        version = update_user_info(
+            data_model=version,
+            principals=principals,
+            acl=version_acl,
+            contributors=contributors,
+            app_users=app_users,
+        )
 
         if check_permissions(
             principals=principals, action="view_owner", acl=version_acl, error=False
