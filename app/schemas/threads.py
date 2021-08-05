@@ -54,7 +54,7 @@ class Output(BaseModel):
     created_at: datetime
     last_updated_by: str
     last_updated_at: datetime
-    comment_count: int
+    comment_count: Optional[int]
 
     class Config:
         """Config."""
