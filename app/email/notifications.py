@@ -1,17 +1,45 @@
 from string import Template
-from typing import List, Mapping, TypedDict
+from typing import List, Mapping, Optional, TypedDict
 
 from app import config
 from app.api.utils import ses_client
+from app.db.models import AtbdVersions
 from app.email.email_templates import EMAIL_TEMPLATES
 from app.schemas.users import CognitoUser
+from app.users import cognito
 
 
 class UserToNotify(TypedDict):
     email: str
     preferred_username: str
     notification: str
-    data: Mapping[str, object]
+    data: Optional[Mapping[str, object]]
+
+
+def notify_atbd_version_contributors(atbd_version: AtbdVersions, notification: str):
+
+    app_users, _ = cognito.list_cognito_users()
+
+    users_to_notify = [
+        UserToNotify(
+            **app_users[atbd_version.owner].dict(), notification=notification
+        )  # type: ignore
+    ]
+
+    users_to_notify.extend(
+        [
+            UserToNotify(**app_users[author].dict(), notification=notification)  # type: ignore
+            for author in atbd_version.authors
+        ]
+    )
+    users_to_notify.extend(
+        [
+            UserToNotify(
+                **app_users[reviewer["sub"]].dict(), notification=notification
+            )  # type: ignore
+            for reviewer in atbd_version.reviewers
+        ]
+    )
 
 
 def notify_users(

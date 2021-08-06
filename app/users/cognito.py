@@ -5,7 +5,7 @@ from uuid import uuid4
 from app import config
 from app.api.utils import cognito_client
 from app.db.models import Atbds, AtbdVersions, Comments, Threads
-from app.email.notifications import UserToNotify, notify_users
+from app.email import notifications  # import UserToNotify, notify_users
 from app.permissions import check_permissions
 from app.schemas import users, versions
 from app.users.auth import get_user
@@ -132,6 +132,8 @@ def update_atbd_contributor_info(principals: List[str], atbd: Atbds) -> Atbds:
             principals=principals, atbd_version=version, data_model=version
         )
 
+        #   if isinstance(version.created_by, users.CognitoUser):
+
         if check_permissions(
             principals=principals, action="view_owner", acl=version_acl, error=False
         ):
@@ -176,6 +178,7 @@ def update_atbd_contributor_info(principals: List[str], atbd: Atbds) -> Atbds:
                 ).dict(by_alias=True)
                 for i, v in enumerate(version.reviewers)
             ]
+
     return atbd
 
 
@@ -231,7 +234,7 @@ def process_users_input(
     Lastly, the user info + necessary notifications are returned, to be added as background tasks
     """
     app_users, _ = list_cognito_users()
-    users_to_notify: List[UserToNotify] = []
+    users_to_notify: List[notifications.UserToNotify] = []
     if version_input.reviewers:
 
         check_permissions(
@@ -333,7 +336,7 @@ def process_users_input(
         )
 
     background_tasks.add_task(
-        notify_users,
+        notifications.notify_users,
         user=user,
         users_to_notify=users_to_notify,
         atbd_title=atbd_title,

@@ -214,6 +214,7 @@ def delete_comment(
 
 @router.post("/threads/{thread_id}/comments/{comment_id}")
 def update_comment(
+    thread_id: int,
     comment_id: int,
     update_comment_input: comments.Update,
     db: DbSession = Depends(get_db_session),
@@ -229,13 +230,15 @@ def update_comment(
     atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
     [atbd_version] = atbd.versions
 
+    print("PRINCIPALS: ", principals)
+    print("ACL: ", comment.__acl__())
     check_permissions(principals=principals, action="update", acl=comment.__acl__())
 
     comment = crud_comments.update(
         db=db,
         db_obj=comment,
         obj_in=comments.AdminUpdate(
-            **update_comment_input.asdict(),
+            **update_comment_input.dict(),
             last_updated_by=user.sub,
             last_updated_at=datetime.datetime.now(datetime.timezone.utc),
         ),
