@@ -132,7 +132,10 @@ def create_thread(
         atbd_title=atbd.title,
         atbd_id=atbd.id,
         user=user,
-        data={"created_by": thread.created_by},
+        data={
+            "created_by": thread.created_by.preferred_username,
+            "role": thread.created_by.cognito_groups[0],
+        },
     )
 
     return thread

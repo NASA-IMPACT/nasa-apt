@@ -280,11 +280,7 @@ def process_users_input(
 
     if version_input.authors:
         check_permissions(
-            principals=principals,
-            action="invite_authors",
-            acl=atbd_version.__acl__(),
-            action="invite_authors",
-            acl=atbd_version.__acl__(),
+            principals=principals, action="invite_authors", acl=atbd_version.__acl__(),
         )
 
         for author in version_input.authors:
@@ -302,13 +298,9 @@ def process_users_input(
                 }
             )
 
-            principals=principals,
-            action="offer_ownership",
-            acl=atbd_version.__acl__(),
+    if version_input.owner and version_input.owner != atbd_version.owner:
         check_permissions(
-            principals=principals,
-            action="offer_ownership",
-            acl=atbd_version.__acl__(),
+            principals=principals, action="offer_ownership", acl=atbd_version.__acl__(),
         )
 
         cognito_owner = app_users[version_input.owner]
