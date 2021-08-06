@@ -1,8 +1,6 @@
 from string import Template
 from typing import List, Mapping, TypedDict
 
-from moto.ses import ses_backend
-
 from app import config
 from app.api.utils import ses_client
 from app.email.email_templates import EMAIL_TEMPLATES
@@ -49,5 +47,3 @@ def notify_users(
                 "Body": {"Html": {"Data": message_content}},
             },
         )
-
-    print("MESSAGES: ", ses_backend.sent_messages)
