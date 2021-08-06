@@ -17,6 +17,6 @@ EMAIL_TEMPLATES = {
     },
     "new_thread_created": {
         "subject": "A new thread has been created",
-        "content": '<p>Hi $preferred_username,</p> <p>$created_by has transferred your ownership of the following document: <a href="$atbd_version_link">$atbd_title, $atbd_version</a> to $transferred_to. You have been added as an author of the document.</p><p>Sincerely,</p><p>The APT Team</p>',
+        "content": '<p>Hi $preferred_username,</p> <p>$created_by has created a new thread on document: <a href="$atbd_version_link">$atbd_title, $atbd_version</a> section: $section.</p><p>Sincerely,</p><p>The APT Team</p>',
     },
 }

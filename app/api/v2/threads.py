@@ -60,7 +60,9 @@ def get_threads(
     ):
         thread.comment_count = comment_count
         thread = update_thread_contributor_info(
-            principals=principals, atbd_version=atbd_version, thread=thread,
+            principals=principals,
+            atbd_version=atbd_version,
+            thread=thread,
         )
         _threads.append(thread)
     return sorted(_threads, key=lambda x: x.created_at, reverse=True)
@@ -80,7 +82,9 @@ def get_thread(
     [atbd_version] = atbd.versions
     check_atbd_permissions(principals=principals, action="view_comments", atbd=atbd)
     thread = update_thread_contributor_info(
-        principals=principals, atbd_version=atbd_version, thread=thread,
+        principals=principals,
+        atbd_version=atbd_version,
+        thread=thread,
     )
 
     return thread
@@ -108,7 +112,9 @@ def create_thread(
     thread = crud_threads.create(
         db_session=db,
         obj_in=threads.AdminCreate(
-            **thread_input.dict(), created_by=user.sub, last_updated_by=user.sub,
+            **thread_input.dict(),
+            created_by=user.sub,
+            last_updated_by=user.sub,
         ),
     )
     crud_comments.create(
@@ -122,7 +128,9 @@ def create_thread(
     )
 
     thread = update_thread_contributor_info(
-        principals=principals, atbd_version=atbd_version, thread=thread,
+        principals=principals,
+        atbd_version=atbd_version,
+        thread=thread,
     )
 
     background_tasks.add_task(
@@ -134,7 +142,7 @@ def create_thread(
         user=user,
         data={
             "created_by": thread.created_by.preferred_username,
-            "role": thread.created_by.cognito_groups[0],
+            "section": thread.section,
         },
     )
 
@@ -175,7 +183,9 @@ def update_thread(
 
     thread = crud_threads.update(db=db, db_obj=thread, obj_in=update_thread_input)
     thread = update_thread_contributor_info(
-        principals=principals, atbd_version=atbd_version, thread=thread,
+        principals=principals,
+        atbd_version=atbd_version,
+        thread=thread,
     )
     return thread
 
