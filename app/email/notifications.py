@@ -1,5 +1,5 @@
 from string import Template
-from typing import List, Mapping, Optional, TypedDict
+from typing import List, Mapping, Optional, TypedDict, Dict, Any
 
 from app import config
 from app.api.utils import ses_client
@@ -16,29 +16,45 @@ class UserToNotify(TypedDict):
     data: Optional[Mapping[str, object]]
 
 
-def notify_atbd_version_contributors(atbd_version: AtbdVersions, notification: str):
+def notify_atbd_version_contributors(
+    atbd_version: AtbdVersions,
+    notification: str,
+    atbd_title: str,
+    atbd_id: int,
+    user: CognitoUser,
+    data: Dict[str, Any] = {},
+):
 
     app_users, _ = cognito.list_cognito_users()
 
     users_to_notify = [
         UserToNotify(
-            **app_users[atbd_version.owner].dict(), notification=notification
+            **app_users[atbd_version.owner].dict(), notification=notification, data=data
         )  # type: ignore
     ]
 
     users_to_notify.extend(
         [
-            UserToNotify(**app_users[author].dict(), notification=notification)  # type: ignore
+            UserToNotify(**app_users[author].dict(), notification=notification, data=data)  # type: ignore
             for author in atbd_version.authors
         ]
     )
     users_to_notify.extend(
         [
             UserToNotify(
-                **app_users[reviewer["sub"]].dict(), notification=notification
+                **app_users[reviewer["sub"]].dict(),
+                notification=notification,
+                data=data,
             )  # type: ignore
             for reviewer in atbd_version.reviewers
         ]
+    )
+    return notify_users(
+        users_to_notify=users_to_notify,
+        atbd_title=atbd_title,
+        atbd_id=atbd_id,
+        atbd_version=f"v{atbd_version.major}.{atbd_version.minor}",
+        user=user,
     )
 
 

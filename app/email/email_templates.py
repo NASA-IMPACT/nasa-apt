@@ -15,4 +15,7 @@ EMAIL_TEMPLATES = {
         "subject": "Your ownership has been revoked",
         "content": '<p>Hi $preferred_username,</p> <p>$app_user ($role) has transferred your ownership of the following document: <a href="$atbd_version_link">$atbd_title, $atbd_version</a> to $transferred_to. You have been added as an author of the document.</p><p>Sincerely,</p><p>The APT Team</p>',
     },
+    "new_thread_created": {
+        "subject": "A new thread has been created",
+        "content": '<p>Hi $preferred_username,</p> <p>$app_user ($role) has transferred your ownership of the following document: <a href="$atbd_version_link">$atbd_title, $atbd_version</a> to $transferred_to. You have been added as an author of the document.</p><p>Sincerely,</p><p>The APT Team</p>',
 }
