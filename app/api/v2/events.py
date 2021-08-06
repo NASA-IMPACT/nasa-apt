@@ -36,6 +36,7 @@ def accept_closed_review_request_handler(
     principals: List[str],
     background_tasks: BackgroundTasks,
 ):
+    """Handler for accept closed review"""
     [version] = atbd.versions
 
     version_input = versions.AdminUpdate(
@@ -64,6 +65,7 @@ def publish_handler(
     principals: List[str],
     background_tasks: BackgroundTasks,
 ):
+    """Handler for ATBD Publication"""
     [version] = atbd.versions
     crud_versions.update(
         db=db,
@@ -96,6 +98,7 @@ def bump_minor_version_handler(
     principals: List[str],
     background_tasks: BackgroundTasks,
 ):
+    """Handler for bumping minor version number. Regenerates PDF"""
     [version] = atbd.versions
 
     crud_versions.update(
@@ -188,6 +191,10 @@ def new_event(
     db: DbSession = Depends(get_db_session),
     principals: List[str] = Depends(get_active_user_principals),
 ):
+    """Handles creation of new event. Checks ACL for the requested
+    event and either simply updates the status, or executes a custom
+    handler for more complex logic (notifying users, re-generating
+    pdfs, etc)"""
     major, _ = get_major_from_version_string(event.version)
     atbd = crud_atbds.get(db=db, atbd_id=event.atbd_id, version=major)
     atbd = filter_atbds(principals, atbd)

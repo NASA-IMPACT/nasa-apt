@@ -152,6 +152,9 @@ class Update(BaseModel):
 
 
 class AdminUpdate(Update):
+    """Update model when update comes from the API
+    through the /events endpoint"""
+
     minor: Optional[int]
     published_by: Optional[str]
     published_at: Optional[datetime]

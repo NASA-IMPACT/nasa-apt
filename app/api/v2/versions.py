@@ -213,7 +213,6 @@ def delete_atbd_version(
     user=Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
-
     """
     Deletes the version only if it is unpublished
     """
@@ -234,6 +233,11 @@ def delete_atbd_version(
 def process_users_input(
     version_input: versions.Update, atbd_version: AtbdVersions, principals: List[str]
 ):
+    """Processes logic relating to adding users to an ATBDVersion,
+    as owner (transfer ownership, notify users, add old owner to authors),
+    adding authors (verify not already owner, or reviewer), or adding
+    reviewers (verify contributor, not already assigned to the document.)
+    """
     app_users = list_cognito_users()
 
     if version_input.reviewers:
