@@ -1,5 +1,5 @@
 from string import Template
-from typing import List, Mapping, Optional, TypedDict, Dict, Any
+from typing import Any, Dict, List, Mapping, Optional, TypedDict
 
 from app import config
 from app.api.utils import ses_client

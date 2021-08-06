@@ -8,6 +8,7 @@ from app.crud.atbds import crud_atbds
 from app.crud.comments import crud_comments
 from app.crud.threads import crud_threads
 from app.db.db_session import DbSession, get_db_session
+from app.email.notifications import notify_atbd_version_contributors
 from app.permissions import check_atbd_permissions, check_permissions
 from app.schemas import comments, threads
 from app.schemas.users import CognitoUser
@@ -17,9 +18,8 @@ from app.users.cognito import (
     update_thread_contributor_info,
     update_user_info,
 )
-from app.email.notifications import notify_atbd_version_contributors
 
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends
 
 router = APIRouter()
 
@@ -60,9 +60,7 @@ def get_threads(
     ):
         thread.comment_count = comment_count
         thread = update_thread_contributor_info(
-            principals=principals,
-            atbd_version=atbd_version,
-            thread=thread,
+            principals=principals, atbd_version=atbd_version, thread=thread,
         )
         _threads.append(thread)
     return sorted(_threads, key=lambda x: x.created_at, reverse=True)
@@ -82,9 +80,7 @@ def get_thread(
     [atbd_version] = atbd.versions
     check_atbd_permissions(principals=principals, action="view_comments", atbd=atbd)
     thread = update_thread_contributor_info(
-        principals=principals,
-        atbd_version=atbd_version,
-        thread=thread,
+        principals=principals, atbd_version=atbd_version, thread=thread,
     )
 
     return thread
@@ -112,9 +108,7 @@ def create_thread(
     thread = crud_threads.create(
         db_session=db,
         obj_in=threads.AdminCreate(
-            **thread_input.dict(),
-            created_by=user.sub,
-            last_updated_by=user.sub,
+            **thread_input.dict(), created_by=user.sub, last_updated_by=user.sub,
         ),
     )
     crud_comments.create(
@@ -128,9 +122,7 @@ def create_thread(
     )
 
     thread = update_thread_contributor_info(
-        principals=principals,
-        atbd_version=atbd_version,
-        thread=thread,
+        principals=principals, atbd_version=atbd_version, thread=thread,
     )
 
     background_tasks.add_task(
@@ -180,9 +172,7 @@ def update_thread(
 
     thread = crud_threads.update(db=db, db_obj=thread, obj_in=update_thread_input)
     thread = update_thread_contributor_info(
-        principals=principals,
-        atbd_version=atbd_version,
-        thread=thread,
+        principals=principals, atbd_version=atbd_version, thread=thread,
     )
     return thread
 
