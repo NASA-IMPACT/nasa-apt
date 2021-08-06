@@ -10,13 +10,12 @@ from app.api.utils import (
     require_user,
     update_contributor_info,
 )
-from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_atbd_permissions, filter_atbds
 from app.schemas import atbds
 from app.schemas.users import User
-from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
+from app.search.elasticsearch import remove_atbd_from_index
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
@@ -93,10 +92,7 @@ def get_atbd(
     status `Published` and the user is not logged in)"""
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
     filter_atbds(principals, atbd)
-    # if not filter_atbds(principals, atbd, "view"):
-    #     raise HTTPException(
-    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-    #     )
+
     atbd = update_contributor_info(principals, atbd)
     return atbd
 
@@ -114,10 +110,7 @@ def create_atbd(
 ):
     """Creates a new ATBD. Requires a title, optionally takes an alias.
     Raises 400 if the user is not logged in."""
-    # if "role:contributor" not in principals:
-    #     raise HTTPException(
-    #         status_code=400, detail="User is not allowed to create a new ATBD"
-    #     )
+
     check_atbd_permissions(principals=principals, action="create_atbd", atbd=None)
     atbd = crud_atbds.create(db, atbd_input, user["sub"])
     atbd = update_contributor_info(principals, atbd)
@@ -157,52 +150,8 @@ def update_atbd(
                 detail=f"Alias {atbd_input.alias} already exists in database",
             )
 
-    background_tasks.add_task(add_atbd_to_index, atbd)
     atbd = update_contributor_info(principals, atbd)
     return atbd
-
-
-# TODO: migrate to the `/events` endpoint
-@router.post("/atbds/{atbd_id}/publish", response_model=atbds.FullOutput)
-def publish_atbd(
-    atbd_id: str,
-    publish_input: atbds.PublishInput,
-    background_tasks: BackgroundTasks,
-    db=Depends(get_db_session),
-    user=Depends(require_user),
-):
-    """Publishes an ATBD. Raises 400 if the `latest` version does NOT have
-    status `Published` or if the user is not logged in.
-
-    Adds PDF generation (and serialization to S3) to background tasks.
-    """
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1)
-    [latest_version] = atbd.versions
-    if latest_version.status == "Published":
-        raise HTTPException(
-            status_code=400,
-            detail=f"Latest version of atbd {atbd_id} already has status: `Published`",
-        )
-    now = datetime.datetime.now(datetime.timezone.utc)
-    latest_version.status = "Published"
-    latest_version.published_by = user["sub"]
-    latest_version.published_at = now
-
-    # Publishing a version counts as updating it, so we
-    # update the timestamp and user
-    latest_version.last_updated_by = user["sub"]
-    latest_version.last_updated_at = now
-
-    if publish_input.changelog is not None and publish_input.changelog != "":
-        latest_version.changelog = publish_input.changelog
-
-    db.commit()
-    db.refresh(latest_version)
-
-    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
-    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
-
-    return crud_atbds.get(db=db, atbd_id=atbd_id, version=latest_version.major)
 
 
 @router.delete("/atbds/{atbd_id}", responses={204: dict(description="ATBD deleted")})
@@ -217,10 +166,7 @@ def delete_atbd(
     items in the Elasticsearch index."""
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
     check_atbd_permissions(principals=principals, action="delete", atbd=atbd)
-    # if "role:curator" not in principals:
-    #     raise HTTPException(
-    #         status_code=400, detail=f"User not allowed to delete ATBD (id:{atbd_id})"
-    #     )
+
     atbd = crud_atbds.remove(db=db, atbd_id=atbd_id)
 
     background_tasks.add_task(remove_atbd_from_index, atbd=atbd)

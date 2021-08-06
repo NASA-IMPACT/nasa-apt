@@ -1,7 +1,7 @@
 """Pydantic models for AtbdVersions"""
 import enum
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 from pydantic import BaseModel, validator
 
@@ -43,6 +43,7 @@ class AtbdVersionSummaryOutput(BaseModel):
     owner: Union[CognitoUser, AnonymousUser]
     authors: Union[List[CognitoUser], List[AnonymousUser]]
     reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]
+    journal_status: Optional[str]
 
     @validator("version", always=True)
     def _generate_semver(cls, v, values) -> str:
@@ -137,7 +138,6 @@ class Update(BaseModel):
     """Update ATBD Version. Cannot increment minor version number AND update document content at
     the same time."""
 
-    minor: Optional[int]
     document: Optional[Document]
     sections_completed: Optional[dict]
     changelog: Optional[str]
@@ -148,14 +148,10 @@ class Update(BaseModel):
     owner: Optional[str]
     authors: Optional[List[str]]
     reviewers: Optional[List[str]]
+    journal_status: Optional[str]
 
-    @validator("document", always=True)
-    def _ensure_either_minor_or_document(
-        cls, value: Optional[dict], values: Dict[str, Optional[Any]]
-    ):
-        minor = values.get("minor")
-        if minor is not None and value is not None:
-            raise ValueError(
-                "Document data cannot be updated at the same time as the minor version number"
-            )
-        return value
+
+class AdminUpdate(Update):
+    minor: Optional[int]
+    published_by: Optional[str]
+    published_at: Optional[datetime]

@@ -66,23 +66,6 @@ def send_to_elastic(data: List[Dict]):
     return response.json()
 
 
-# TODO: Dies the "update_index" method need to be re-implemented?
-
-# async def update_index(
-#     connection: asyncpg.connection,
-#     atbd_id: Optional[int] = None,
-#     atbd_version: Optional[int] = None,
-# ) -> Dict:
-#     """
-#     update data for Elastic from PostgreSQL Database
-#     """
-#     logger.info("Updating Index for %s %s", atbd_id, atbd_version)
-#     content = await get_index(connection, atbd_id, atbd_version)
-#     logger.info("dbcontent %s", content)
-#     results = send_to_elastic(content)
-#     return results
-
-
 def remove_atbd_from_index(atbd: Atbds = None, version: AtbdVersions = None):
     """Deletes documents indexed in ElasticSearch that correspond to
     either a single version or all versions belonging to an ATBD"""

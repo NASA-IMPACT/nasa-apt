@@ -14,6 +14,7 @@ DROP TYPE apt.atbd_version_status;
 CREATE TYPE apt.atbd_version_status AS ENUM (
     'DRAFT',
     'CLOSED_REVIEW_REQUESTED',
+    'CLOSED_REVIEW',
     'OPEN_REVIEW',
     'PUBLICATION_REQUESTED',
     'PUBLICATION',

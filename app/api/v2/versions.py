@@ -10,7 +10,6 @@ from app.api.utils import (
     require_user,
     update_contributor_info,
 )
-from app.api.v2.pdf import save_pdf_to_s3
 from app.crud.atbds import crud_atbds
 from app.crud.contacts import crud_contacts_associations
 from app.crud.versions import crud_versions
@@ -19,10 +18,9 @@ from app.db.models import AtbdVersions
 from app.permissions import check_permissions, filter_atbds
 from app.schemas import atbds, versions, versions_contacts
 from app.schemas.users import User
-from app.search.elasticsearch import add_atbd_to_index, remove_atbd_from_index
+from app.search.elasticsearch import remove_atbd_from_index
 
-import fastapi_permissions as permissions
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends
 
 router = APIRouter()
 
@@ -45,10 +43,7 @@ def version_exists(
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     atbd = filter_atbds(principals, atbd)
-    # if not filter_atbds(principals, atbd, "view"):
-    #     raise HTTPException(
-    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-    #     )
+
     return True
 
 
@@ -66,10 +61,7 @@ def get_version(
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     atbd = filter_atbds(principals, atbd)
-    # if not filter_atbds(principals, atbd, "view"):
-    #     raise HTTPException(
-    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-    #     )
+
     atbd = update_contributor_info(principals, atbd)
     return atbd
 
@@ -97,7 +89,7 @@ def create_new_version(
         atbd_id=latest_version.atbd_id,
         major=latest_version.major + 1,
         minor=0,
-        status="Draft",
+        status="DRAFT",
         document=latest_version.document,
         created_by=user["sub"],
         last_updated_by=user["sub"],
@@ -145,6 +137,10 @@ def update_atbd_version(  # noqa : C901
     [atbd_version] = atbd.versions
     version_acl = atbd_version.__acl__()
 
+    # blanket update permission check - more specific permissions checks will
+    # occer later
+    check_permissions(principals=principals, action="update", acl=version_acl)
+
     if version_input.contacts and len(version_input.contacts):
 
         # Overwrite any existing `ContactAssociation` items
@@ -168,96 +164,18 @@ def update_atbd_version(  # noqa : C901
             crud_contacts_associations.remove(
                 db_session=db, id=(atbd_id, major, contact.contact_id)  # type: ignore
             )
-    # TODO: move bumping minor versions to the `/events` endpoint
-    if version_input.minor and atbd_version.status != "Published":
-        raise HTTPException(
-            status_code=400,
-            detail="ATBD must have status `published` in order to increment the minor version number",
-        )
 
-    if version_input.minor and version_input.minor != atbd_version.minor + 1:
-        raise HTTPException(
-            status_code=400,
-            detail="New version number must be exactly 1 greater than previous",
-        )
-
-    if version_input.minor:
-        # A new version has been created - generate a cache a PDF for both the regular
-        # PDF format, and the journal PDF format
-        background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
-        background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
-
-    app_users = []
     if version_input.owner or version_input.reviewers or version_input.authors:
-        app_users = list_cognito_users()
+        version_input = process_users_input(
+            version_input=version_input,
+            atbd_version=atbd_version,
+            principals=principals,
+        )
 
-    if version_input.owner and version_input.owner != atbd_version.owner:
-
-        # User performing transfer ownership operation is not allowed
+    if version_input.journal_status:
         check_permissions(
-            principals=principals, action="offer_ownership", acl=version_acl,
+            principals=principals, action="update_journal_status", acl=version_acl
         )
-
-        [cognito_owner] = [
-            user for user in app_users if user["sub"] == version_input.owner
-        ]
-
-        # User being transferred ownership to, is not allowed (either because
-        # they are a reviewer of the document, or a curator)
-
-        check_permissions(
-            principals=get_active_user_principals(cognito_owner),
-            action="receive_ownership",
-            acl=version_acl,
-        )
-
-        # Remove new owner from authors list
-        version_input.authors = [
-            a for a in atbd_version.authors if a != version_input.owner
-        ]
-
-        # Set old owner as author
-        version_input.authors.append(atbd_version.owner)
-
-    if version_input.reviewers:
-        check_permissions(
-            principals=principals, action="invite_reviewers", acl=version_acl,
-        )
-
-        for reviewer in version_input.reviewers:
-
-            [cognito_user] = [user for user in app_users if user["sub"] == reviewer]
-            check_permissions(
-                principals=get_active_user_principals(cognito_user),
-                action="join_reviewers",
-                acl=version_acl,
-            )
-
-        reviewers = [
-            x for x in atbd_version.reviewers if x["sub"] in version_input.reviewers
-        ]
-
-        reviewers.extend(
-            [
-                {"sub": r, "review_status": "in_progress"}
-                for r in version_input.reviewers
-                if r not in [_r["sub"] for _r in atbd_version.reviewers]
-            ]
-        )
-        version_input.reviewers = reviewers
-
-    if version_input.authors:
-        check_permissions(
-            principals=principals, action="invite_authors", acl=version_acl,
-        )
-
-        for author in version_input.authors:
-            [cognito_author] = [user for user in app_users if user["sub"] == author]
-            check_permissions(
-                principals=get_active_user_principals(cognito_author),
-                action="join_authors",
-                acl=version_acl,
-            )
 
     if version_input.document and not overwrite:
         version_input.document = {
@@ -275,10 +193,6 @@ def update_atbd_version(  # noqa : C901
     atbd_version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
 
     crud_versions.update(db=db, db_obj=atbd_version, obj_in=version_input)
-
-    # Indexes the updated vesion as well as atbd info
-    # (title, alias, etc)
-    background_tasks.add_task(add_atbd_to_index, atbd)
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=atbd_version.major)
 
@@ -307,18 +221,89 @@ def delete_atbd_version(
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     atbd_version: AtbdVersions
     [atbd_version] = atbd.versions
-    if not permissions.has_permission(principals, "delete", atbd_version.__acl__()):
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot delete an atbd version with status `Published`",
-        )
-    db.delete(atbd_version)
-    db.commit()
-    db.refresh(atbd)
+    check_permissions(
+        principals=principals, action="delete", acl=atbd_version.__acl__()
+    )
 
-    if len(atbd.versions) == 0:
-        db.delete(atbd)
-        db.commit()
+    crud_versions.delete(db=db, atbd=atbd, version=atbd_version)
 
     background_tasks.add_task(remove_atbd_from_index, version=atbd_version)
     return {}
+
+
+def process_users_input(
+    version_input: versions.Update, atbd_version: AtbdVersions, principals: List[str]
+):
+    app_users = list_cognito_users()
+
+    if version_input.reviewers:
+
+        check_permissions(
+            principals=principals,
+            action="invite_reviewers",
+            acl=atbd_version.__acl__(),
+        )
+
+        for reviewer in version_input.reviewers:
+
+            [cognito_user] = [user for user in app_users if user["sub"] == reviewer]
+
+            check_permissions(
+                principals=get_active_user_principals(cognito_user),
+                action="join_reviewers",
+                acl=atbd_version.__acl__(),
+            )
+
+        reviewers = [
+            x for x in atbd_version.reviewers if x["sub"] in version_input.reviewers
+        ]
+
+        reviewers.extend(
+            [
+                {"sub": r, "review_status": "IN_PROGRESS"}
+                for r in version_input.reviewers
+                if r not in [_r["sub"] for _r in atbd_version.reviewers]
+            ]
+        )
+        version_input.reviewers = reviewers
+
+    if version_input.authors:
+        check_permissions(
+            principals=principals, action="invite_authors", acl=atbd_version.__acl__(),
+        )
+
+        for author in version_input.authors:
+            [cognito_author] = [user for user in app_users if user["sub"] == author]
+            check_permissions(
+                principals=get_active_user_principals(cognito_author),
+                action="join_authors",
+                acl=atbd_version.__acl__(),
+            )
+
+    if version_input.owner and version_input.owner != atbd_version.owner:
+        # User performing transfer ownership operation is not allowed
+        check_permissions(
+            principals=principals, action="offer_ownership", acl=atbd_version.__acl__(),
+        )
+
+        [cognito_owner] = [
+            user for user in app_users if user["sub"] == version_input.owner
+        ]
+
+        # User being transferred ownership to, is not allowed (either because
+        # they are a reviewer of the document, or a curator)
+
+        check_permissions(
+            principals=get_active_user_principals(cognito_owner),
+            action="receive_ownership",
+            acl=atbd_version.__acl__(),
+        )
+
+        # Remove new owner from authors list
+        version_input.authors = [
+            a for a in atbd_version.authors if a != version_input.owner
+        ]
+        # Set old owner as author
+        version_input.authors.append(atbd_version.owner)
+
+    return version_input

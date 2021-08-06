@@ -78,7 +78,6 @@ def check_permissions(
     """Applies permission check for the requested action. Can be configured to either
     raise an exception or return a boolean"""
     if not fastapi_permissions.has_permission(principals, action, acl):
-
         if error:
             action_name = " ".join([x.capitalize() for x in action.split("_")])
             raise HTTPException(

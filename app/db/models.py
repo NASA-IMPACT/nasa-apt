@@ -12,6 +12,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
 
+from app.acls import ATBD_VERSION_ACLS
 from app.db.base import Base
 from app.db.types import utcnow
 
@@ -25,7 +26,7 @@ class AtbdVersions(Base):
     atbd_id = Column(Integer(), ForeignKey("atbds.id"), primary_key=True, index=True,)
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
-    status = Column(String(), server_default="Draft", nullable=False)
+    status = Column(String(), server_default="DRAFT", nullable=False)
     document = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
     sections_completed = Column(
         MutableDict.as_mutable(postgresql.JSON), server_default="{}"
@@ -42,6 +43,7 @@ class AtbdVersions(Base):
     owner = Column(String(), nullable=False)
     authors = Column(postgresql.ARRAY(String), server_default="[]")
     reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="[]")
+    journal_status = Column(String())
 
     def __repr__(self):
         """String representation"""
@@ -56,66 +58,36 @@ class AtbdVersions(Base):
         )
 
     def __acl__(self):
-        """ "Access Control List"""
-        acl = [(permissions.Allow, permissions.Authenticated, "view")]
+        """Generates a list of TUPLES representing actions that principals are either
+        allowed or denied from executing"""
 
-        if self.status == "Published":
-            acl.append((permissions.Allow, permissions.Everyone, "view"))
-            acl.append((permissions.Allow, f"user:{self.owner}", "create_new_version"))
-        if self.status == "Draft":
-            acl.append((permissions.Allow, f"user:{self.owner}", "delete"))
+        acl = []
+        for grantee, actions in ATBD_VERSION_ACLS.items():
 
-        acl.append((permissions.Allow, permissions.Authenticated, "view"))
+            if grantee == "owner":
+                grantee = f"user:{self.owner}"
 
-        # acl.append((permissions.Deny, f"user:{self.owner}", "join_authors"))
-        acl.append((permissions.Deny, f"user:{self.owner}", "join_reviewers"))
+            if grantee == "reviewers":
+                grantee = [f"user:{r['sub']}" for r in self.reviewers]
 
-        acl.append((permissions.Allow, f"user:{self.owner}", "comment"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "edit"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "invite_authors"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "offer_ownership"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "view_authors"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "view_owner"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "update"))
-        acl.append((permissions.Allow, f"user:{self.owner}", "invite_authors"))
+            if grantee == "authors":
+                grantee = [f"user:{a}" for a in self.authors]
 
-        for author in self.authors:
-            acl.append((permissions.Deny, f"user:{author}", "join_reviewers"))
-            acl.append((permissions.Allow, f"user:{author}", "comment"))
-            acl.append((permissions.Allow, f"user:{author}", "edit"))
-            acl.append((permissions.Allow, f"user:{author}", "view_authors"))
-            acl.append((permissions.Allow, f"user:{author}", "view_owner"))
-            acl.append((permissions.Allow, f"user:{author}", "update"))
+            for action in actions:
 
-            if self.status == "Published":
-                acl.append((permissions.Allow, f"user:{author}", "create_new_version"))
+                if action.get("status") and self.status not in action["status"]:
+                    continue
 
-        for reviewer in [r["sub"] for r in self.reviewers]:
+                permission = (
+                    permissions.Deny if action.get("deny") else permissions.Allow
+                )
 
-            acl.append((permissions.Deny, f"user:{reviewer}", "receive_ownership"))
-            acl.append((permissions.Deny, f"user:{reviewer}", "join_authors"))
+                if isinstance(grantee, str):
+                    acl.append((permission, grantee, action["action"]))
 
-            acl.append((permissions.Allow, f"user:{reviewer}", "comment"))
-            acl.append((permissions.Allow, f"user:{reviewer}", "view_authors"))
-            acl.append((permissions.Allow, f"user:{reviewer}", "view_owner"))
-            acl.append((permissions.Allow, f"user:{reviewer}", "view_reviewers"))
-
-        acl.append((permissions.Allow, "role:contributor", "receive_ownership"))
-        acl.append((permissions.Allow, "role:contributor", "join_authors"))
-        acl.append((permissions.Allow, "role:contributor", "join_reviewers"))
-
-        acl.append((permissions.Deny, "role:curator", "join_authors"))
-        acl.append((permissions.Deny, "role:curator", "join_reviewers"))
-        acl.append((permissions.Deny, "role:curator", "receive_ownership"))
-
-        acl.append((permissions.Allow, "role:curator", "comment"))
-        acl.append((permissions.Allow, "role:curator", "invite_reviewers"))
-        acl.append((permissions.Allow, "role:curator", "invite_authors"))
-        acl.append((permissions.Allow, "role:curator", "offer_ownership"))
-        acl.append((permissions.Allow, "role:curator", "view_authors"))
-        acl.append((permissions.Allow, "role:curator", "view_owner"))
-        acl.append((permissions.Allow, "role:curator", "view_reviewers"))
-        acl.append((permissions.Allow, "role:curator", "delete"))
+                if isinstance(grantee, list):
+                    for g in grantee:
+                        acl.append((permission, g, action["action"]))
 
         return acl
 
