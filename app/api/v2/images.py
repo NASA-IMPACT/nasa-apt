@@ -6,11 +6,13 @@ from typing import List
 import botocore
 
 from app import config
-from app.api.utils import get_active_user_principals, require_user, s3_client
+from app.api.utils import s3_client
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import filter_atbds
 from app.schemas.users import User
+from app.users.auth import require_user
+from app.users.cognito import get_active_user_principals
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, responses
 

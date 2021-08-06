@@ -1,5 +1,5 @@
 """Module with Basic CRUD operations - each DB model extends this ."""
-from typing import Any, Generic, List, Tuple, Type, TypeVar, Union
+from typing import Generic, List, Tuple, Type, TypeVar, Union
 
 from pydantic import BaseModel
 from sqlalchemy.dialects import postgresql
@@ -113,7 +113,12 @@ class CRUDBase(
         db.refresh(db_obj)
         return db_obj
 
-    def remove(self, db_session: Session, *, id: Union[int, Tuple[Any]]) -> ModelType:
+    def remove(
+        self,
+        db_session: Session,
+        *,
+        id: Union[int, Tuple[int, int], Tuple[int, int, int]],
+    ) -> ModelType:
         """Deletes an item by id"""
         obj = db_session.query(self.model).get(id)
         db_session.delete(obj)

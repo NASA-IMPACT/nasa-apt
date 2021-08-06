@@ -4,12 +4,12 @@ import boto3
 import requests
 from requests_aws4auth import AWS4Auth
 
-from app.auth.cognito import get_user
 from app.config import ELASTICSEARCH_URL
 from app.logs import logger
 
 # from app.auth.saml import User, get_user
 from app.schemas.users import User
+from app.users.auth import get_user
 
 from fastapi import APIRouter, Depends, HTTPException
 

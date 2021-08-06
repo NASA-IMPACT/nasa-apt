@@ -3,13 +3,7 @@
 import datetime
 from typing import Dict, List, Union
 
-from app.api.utils import (
-    get_active_user_principals,
-    get_major_from_version_string,
-    require_user,
-    update_thread_contributor_info,
-    update_user_info,
-)
+from app.api.utils import get_major_from_version_string
 from app.crud.atbds import crud_atbds
 from app.crud.comments import crud_comments
 from app.crud.threads import crud_threads
@@ -17,6 +11,12 @@ from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_atbd_permissions, check_permissions
 from app.schemas import comments, threads
 from app.schemas.users import CognitoUser
+from app.users.auth import require_user
+from app.users.cognito import (
+    get_active_user_principals,
+    update_thread_contributor_info,
+    update_user_info,
+)
 
 from fastapi import APIRouter, Depends
 
@@ -134,9 +134,8 @@ def delete_thread(
 ):
     """Delete thread"""
     thread = crud_threads.get(db_session=db, obj_in=threads.Lookup(id=thread_id))
-    atbd = crud_atbds.get(db=db, atbd_id=thread.atbd_id, version=thread.major)
-    check_atbd_permissions(principals=principals, action="delete_thread", atbd=atbd)
-    crud_threads.remove(db_session=db, id=thread_id)
+    check_permissions(principals=principals, action="delete", acl=thread.__acl__())
+    crud_threads.remove(db_session=db, id=(thread.id, thread.atbd_id, thread.major))
     return {}
 
 
@@ -197,6 +196,7 @@ def create_comment(
 
 @router.delete("/threads/{thread_id}/comments/{comment_id}")
 def delete_comment(
+    thread_id: int,
     comment_id: int,
     db: DbSession = Depends(get_db_session),
     user: CognitoUser = Depends(require_user),
@@ -207,7 +207,7 @@ def delete_comment(
     comment = crud_comments.get(db_session=db, obj_in=comments.Lookup(id=comment_id))
 
     check_permissions(principals=principals, action="delete", acl=comment.__acl__())
-    crud_comments.remove(db_session=db, id=comment_id)
+    crud_comments.remove(db_session=db, id=(comment.id, comment.thread_id))
 
     return {}
 

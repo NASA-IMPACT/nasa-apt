@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
 
-from app.acls import ATBD_VERSION_ACLS, COMMENT_ACLS
+from app import acls
 from app.db.base import Base
 from app.db.types import utcnow
 
@@ -87,14 +87,14 @@ class AtbdVersions(Base):
             f" sections_completed={self.sections_completed}, created_by={self.created_by},"
             f" created_at={self.created_at}, published_by={self.published_by},"
             f" published_at={self.published_by}, last_updated_at={self.last_updated_at}"
-            f" last_updated_by={self.last_updated_by}), owner={self.owner}, authors={self.authors}>"
-            f" reviewers={self.reviewers}"
+            f" last_updated_by={self.last_updated_by}), owner={self.owner}, authors={self.authors}"
+            f" reviewers={self.reviewers})>"
         )
 
     def __acl__(self):
         """Access Control List for Atbd Version"""
         acl = []
-        for grantee, actions in ATBD_VERSION_ACLS.items():
+        for grantee, actions in acls.ATBD_VERSION_ACLS.items():
 
             if grantee == "owner":
                 grantee = f"user:{self.owner}"
@@ -236,6 +236,19 @@ class Threads(Base):
             f" comments={comments})>"
         )
 
+    def __acl__(self):
+        """Access Control List for Comments"""
+        acl = []
+        for grantee, actions in acls.THREAD_ACLS.items():
+
+            if grantee == "owner":
+                grantee = f"user:{self.created_by}"
+
+            acl.extend(
+                [(fastapi_permissions.Allow, grantee, a["action"]) for a in actions]
+            )
+        return acl
+
 
 class Comments(Base):
     """comment model"""
@@ -251,10 +264,18 @@ class Comments(Base):
     last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
     body = Column(types.Text)
 
+    def __repr__(self):
+        """String representation"""
+        return (
+            f"<Comments(id={self.id}, thread_id={self.thread_id}, created_at={self.created_by},"
+            f" created_by={self.created_by}, last_updated_at={self.last_updated_at},"
+            f" last_updated_by={self.last_updated_by}, body={self.body})>"
+        )
+
     def __acl__(self):
         """Access Control List for Comments"""
         acl = []
-        for grantee, actions in COMMENT_ACLS.items():
+        for grantee, actions in acls.COMMENT_ACLS.items():
 
             if grantee == "owner":
                 grantee = f"user:{self.created_by}"

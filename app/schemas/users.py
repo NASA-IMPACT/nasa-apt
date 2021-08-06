@@ -33,9 +33,7 @@ class AnonymousUser(BaseModel):
 class CognitoUser(AnonymousUser):
     """User contributing to an ATBD Version, as returned by Cognito"""
 
-    # username: str = Field(..., alias="Username")
     sub: str
-    # preferred_username: str
     email: str
     cognito_groups: List[str] = Field(..., alias="cognito:groups")
 

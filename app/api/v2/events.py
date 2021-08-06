@@ -2,12 +2,7 @@
 import datetime
 from typing import Any, Dict, List
 
-from app.api.utils import (
-    get_active_user_principals,
-    get_major_from_version_string,
-    get_user,
-    update_atbd_contributor_info,
-)
+from app.api.utils import get_major_from_version_string
 from app.api.v2.pdf import save_pdf_to_s3
 from app.api.v2.versions import process_users_input
 from app.crud.atbds import crud_atbds
@@ -17,6 +12,11 @@ from app.db.models import Atbds
 from app.permissions import check_permissions, filter_atbds
 from app.schemas import atbds, events, users, versions
 from app.search.elasticsearch import add_atbd_to_index
+from app.users.cognito import (
+    get_active_user_principals,
+    get_user,
+    update_atbd_contributor_info,
+)
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
@@ -41,11 +41,14 @@ def accept_closed_review_request_handler(
     # performs the validation checks to make sure each of the
     # requested reviewers is allowed to be a reviewer on
     # the atbd version
-    version_input, users_to_notify = process_users_input(
+    version_input = process_users_input(
         version_input=version_input,
         atbd_version=version,
+        atbd_title=atbd.title,
+        atbd_id=atbd.id,
+        user=user,
         principals=principals,
-        users_to_notify=[],
+        background_tasks=background_tasks,
     )
     # TODO: execute notifications + notify owner
 

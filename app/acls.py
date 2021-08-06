@@ -37,6 +37,7 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "invite_authors"},
         {"action": "view_owner"},
         {"action": "view_authors"},
+        {"action": "view_curators"},
         {"action": "view_comments"},
         {"action": "comment"},
     ],
@@ -61,6 +62,7 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "update_journal_status", "status": ["PUBLISHED"]},
         {"action": "view_owner"},
         {"action": "view_authors"},
+        {"action": "view_curators"},
         {"action": "view_comments"},
         {"action": "comment"},
     ],
@@ -74,6 +76,7 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "view_authors"},
         {"action": "view_reviewers"},
         {"action": "view_comments"},
+        {"action": "view_curators"},
         {"action": "comment"},
     ],
     "role:contributor": [
@@ -91,6 +94,7 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "view_reviewers"},
         {"action": "view_authors"},
         {"action": "view_owner"},
+        {"action": "view_curators"},
         {"action": "update"},
         {
             "action": "invite_reviewers",
@@ -128,6 +132,11 @@ CONTACT_ACLS: List[Tuple] = [
 ]
 
 COMMENT_ACLS: Dict[str, List[Dict[str, str]]] = {
+    "owner": [{"action": "update"}, {"action": "delete"}],
+    "role:curator": [{"action": "update"}, {"action": "delete"}],
+}
+
+THREAD_ACLS: Dict[str, List[Dict[str, str]]] = {
     "owner": [{"action": "update"}, {"action": "delete"}],
     "role:curator": [{"action": "update"}, {"action": "delete"}],
 }

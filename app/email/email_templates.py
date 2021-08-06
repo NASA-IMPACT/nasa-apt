@@ -11,8 +11,8 @@ EMAIL_TEMPLATES = {
         "subject": "You have been given ownership",
         "content": '<p>Hi $preferred_username,</p> <p>$app_user ($role) has transferred you ownership of the following document: <a href="$atbd_version_link">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>',
     },
-    "removed_as_owner": {
-        "subject": "Your ownership has been removed",
-        "content": '<p>Hi $preferred_username,</p> <p>$app_user ($role) has removed your ownership of the following document: <a href="$atbd_version_link">$atbd_title, $atbd_version</a>. You are now an author of this document.</p><p>Sincerely,</p><p>The APT Team</p>',
+    "ownership_revoked": {
+        "subject": "Your ownership has been revoked",
+        "content": '<p>Hi $preferred_username,</p> <p>$app_user ($role) has transferred your ownership of the following document: <a href="$atbd_version_link">$atbd_title, $atbd_version</a> to $transferred_to. You have been added as an author of the document.</p><p>Sincerely,</p><p>The APT Team</p>',
     },
 }

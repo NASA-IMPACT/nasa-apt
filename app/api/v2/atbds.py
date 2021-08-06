@@ -4,18 +4,13 @@ from typing import List
 
 from sqlalchemy import exc
 
-from app.api.utils import (
-    get_active_user_principals,
-    get_user,
-    require_user,
-    update_atbd_contributor_info,
-)
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_atbd_permissions, filter_atbds
-from app.schemas import atbds
-from app.schemas.users import CognitoUser
+from app.schemas import atbds, users
 from app.search.elasticsearch import remove_atbd_from_index
+from app.users.auth import get_user, require_user
+from app.users.cognito import get_active_user_principals, update_atbd_contributor_info
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
@@ -30,7 +25,7 @@ router = APIRouter()
 def list_atbds(
     role: str = None,
     status: str = None,
-    user: CognitoUser = Depends(get_user),
+    user: users.CognitoUser = Depends(get_user),
     db: DbSession = Depends(get_db_session),
     principals: List[str] = Depends(get_active_user_principals),
 ):
@@ -106,7 +101,7 @@ def get_atbd(
 def create_atbd(
     atbd_input: atbds.Create,
     db: DbSession = Depends(get_db_session),
-    user: CognitoUser = Depends(require_user),
+    user: users.CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Creates a new ATBD. Requires a title, optionally takes an alias.
@@ -128,7 +123,7 @@ def update_atbd(
     atbd_input: atbds.Update,
     background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db_session),
-    user: CognitoUser = Depends(require_user),
+    user: users.CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Updates an ATBD (eiither Title or Alias). Raises 400 if the user
@@ -160,7 +155,7 @@ def delete_atbd(
     atbd_id: str,
     background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db_session),
-    user: CognitoUser = Depends(require_user),
+    user: users.CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Deletes an ATBD (and all child versions). Removes all associated

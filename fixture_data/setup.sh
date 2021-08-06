@@ -306,7 +306,7 @@ aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --
 aws --endpoint-url http://localstack:4566 cognito-idp admin-add-user-to-group --group-name contributor --username ${reviewer_sub_3} --user-pool-id "${pool_id}"
 
 wait_for_service "ses"
-aws --endpoint-url http://localstack:4566 ses verify-domain-identity --domain example.com --region us-east-1
+aws --endpoint-url http://localstack:4566 ses verify-domain-identity --domain ds.io --region us-east-1
 
 echo "Applying database migrations"
 sqitch deploy --verify db:pg://masteruser:password@db:5432/nasadb &&

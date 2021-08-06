@@ -45,6 +45,21 @@ def get_user(request: Request, token=Depends(token_scheme)) -> Union[Dict, bool]
     return validate_token(token)
 
 
+def require_user(user: User = Depends(get_user)) -> User:
+
+    """
+    Raises an exception if not user user token is supplied
+
+    TODO: remove this method in favor of the `require_user` already present in `auth/saml`
+    """
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="User must be authenticated to perform this operation",
+        )
+    return user
+
+
 def validate_token(token: str) -> User:
     """
     Does the ground work of unpacking the token, decrypting it using
