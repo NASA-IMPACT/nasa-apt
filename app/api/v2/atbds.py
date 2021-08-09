@@ -6,7 +6,7 @@ from sqlalchemy import exc
 
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
-from app.permissions import check_atbd_permissions, filter_atbds
+from app.permissions import check_atbd_permissions, filter_atbd_versions
 from app.schemas import atbds, users
 from app.search.elasticsearch import remove_atbd_from_index
 from app.users.auth import get_user, require_user
@@ -44,9 +44,9 @@ def list_atbds(
     # TODO: use a generator and only yield non `None` objects?
 
     atbds = [
-        filter_atbds(principals, atbd, error=False)
+        filter_atbd_versions(principals, atbd, error=False)
         for atbd in crud_atbds.scan(db=db, role=role, status=status)
-        if filter_atbds(principals, atbd, error=False) is not None
+        if filter_atbd_versions(principals, atbd, error=False) is not None
     ]
 
     for atbd in atbds:
@@ -68,7 +68,7 @@ def atbd_exists(
     not logged in and the ATBD has no versions with status `Published`)"""
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-    atbd = filter_atbds(principals, atbd)
+    atbd = filter_atbd_versions(principals, atbd)
 
     return True
 
@@ -87,7 +87,7 @@ def get_atbd(
     status `Published` and the user is not logged in)"""
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
 
-    atbd = filter_atbds(principals, atbd)
+    atbd = filter_atbd_versions(principals, atbd)
 
     atbd = update_atbd_contributor_info(principals, atbd)
     return atbd

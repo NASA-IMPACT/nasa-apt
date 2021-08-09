@@ -8,7 +8,7 @@ from app.crud.contacts import crud_contacts_associations
 from app.crud.versions import crud_versions
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import AtbdVersions
-from app.permissions import check_permissions, filter_atbds
+from app.permissions import check_permissions
 from app.schemas import atbds, versions, versions_contacts
 from app.schemas.users import CognitoUser
 from app.search.elasticsearch import remove_atbd_from_index
@@ -41,7 +41,8 @@ def version_exists(
     """
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
-    atbd = filter_atbds(principals, atbd)
+    [atbd_version] = atbd.versions
+    check_permissions(principals=principals, action="view", acl=atbd_version.__acl__())
 
     return True
 
@@ -59,8 +60,8 @@ def get_version(
     """
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
-    atbd = filter_atbds(principals, atbd)
-
+    [atbd_version] = atbd.versions
+    check_permissions(principals=principals, action="view", acl=atbd_version.__acl__())
     atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 

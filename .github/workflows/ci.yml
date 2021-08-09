@@ -71,7 +71,8 @@ jobs:
           STAGE=dev
           API_VERSION_STRING=/v2
           # Frontend Url used to set CORS origin for FastAPI
-          APT_FRONTEND_URL=https://impact.earthdata.nasa.gov/apt
+          APT_FRONTEND_URL=https://nasa-apt.surge.sh
+          NOTIFCATIONS_FROM="no-reply@ds.io"
           EOF
       - name: Install APT dependencies
         run: |
@@ -114,6 +115,7 @@ jobs:
           API_VERSION_STRING=/v2
           # Frontend Url used to set CORS origin for FastAPI
           APT_FRONTEND_URL=https://impact.earthdata.nasa.gov/apt
+          NOTIFCATIONS_FROM="no-reply@apt.org"
           EOF
       - name: Install APT dependencies
         run: |

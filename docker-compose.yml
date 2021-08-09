@@ -110,6 +110,7 @@ services:
       APT_FRONTEND_URL: $APT_FRONTEND_URL
       USER_POOL_NAME: dev-users
       APP_CLIENT_NAME: dev-client 
+      NOTIFICATIONS_FROM: no-reply@ds.io
     depends_on:
       - bootstrapper
 

@@ -9,7 +9,7 @@ from app import config
 from app.api.utils import s3_client
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
-from app.permissions import filter_atbds
+from app.permissions import filter_atbd_versions
 from app.schemas.users import User
 from app.users.auth import require_user
 from app.users.cognito import get_active_user_principals
@@ -32,11 +32,7 @@ def upload_image(
     an ATBD id. Raises a 404 exception if the ATBD doesn't exist"""
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
-    atbd = filter_atbds(principals, atbd)
-    # if not filter_atbds(principals, atbd, "view"):
-    #     raise HTTPException(
-    #         status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-    #     )
+    atbd = filter_atbd_versions(principals, atbd)
 
     key = f"{atbd_id}/images/{image_key}"
 

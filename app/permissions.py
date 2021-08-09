@@ -8,7 +8,7 @@ import fastapi_permissions
 from fastapi import HTTPException
 
 
-def filter_atbds(principals: List[str], atbd: Atbds, error=True) -> Atbds:
+def filter_atbd_versions(principals: List[str], atbd: Atbds, error=True) -> Atbds:
     """
     Applies a permission check to a list of ATBDs, returning only the versions
     that the user is allowed to see. If an ATBD has NO versions that the user is

@@ -60,9 +60,7 @@ def get_threads(
     ):
         thread.comment_count = comment_count
         thread = update_thread_contributor_info(
-            principals=principals,
-            atbd_version=atbd_version,
-            thread=thread,
+            principals=principals, atbd_version=atbd_version, thread=thread,
         )
         _threads.append(thread)
     return sorted(_threads, key=lambda x: x.created_at, reverse=True)
@@ -82,9 +80,7 @@ def get_thread(
     [atbd_version] = atbd.versions
     check_atbd_permissions(principals=principals, action="view_comments", atbd=atbd)
     thread = update_thread_contributor_info(
-        principals=principals,
-        atbd_version=atbd_version,
-        thread=thread,
+        principals=principals, atbd_version=atbd_version, thread=thread,
     )
 
     return thread
@@ -112,9 +108,7 @@ def create_thread(
     thread = crud_threads.create(
         db_session=db,
         obj_in=threads.AdminCreate(
-            **thread_input.dict(),
-            created_by=user.sub,
-            last_updated_by=user.sub,
+            **thread_input.dict(), created_by=user.sub, last_updated_by=user.sub,
         ),
     )
     crud_comments.create(
@@ -128,9 +122,7 @@ def create_thread(
     )
 
     thread = update_thread_contributor_info(
-        principals=principals,
-        atbd_version=atbd_version,
-        thread=thread,
+        principals=principals, atbd_version=atbd_version, thread=thread,
     )
 
     background_tasks.add_task(
@@ -140,10 +132,7 @@ def create_thread(
         atbd_title=atbd.title,
         atbd_id=atbd.id,
         user=user,
-        data={
-            "created_by": thread.created_by.preferred_username,
-            "section": thread.section,
-        },
+        data={"section": thread.section},
     )
 
     return thread
@@ -183,9 +172,7 @@ def update_thread(
 
     thread = crud_threads.update(db=db, db_obj=thread, obj_in=update_thread_input)
     thread = update_thread_contributor_info(
-        principals=principals,
-        atbd_version=atbd_version,
-        thread=thread,
+        principals=principals, atbd_version=atbd_version, thread=thread,
     )
     return thread
 
@@ -194,6 +181,7 @@ def update_thread(
 def create_comment(
     thread_id: int,
     comment_input: comments.Create,
+    background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db_session),
     user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
@@ -217,6 +205,17 @@ def create_comment(
     comment = update_user_info(
         principals=principals, atbd_version=atbd_version, data_model=comment
     )
+
+    background_tasks.add_task(
+        notify_atbd_version_contributors,
+        atbd_version=atbd_version,
+        notification="new_comment_created",
+        atbd_title=atbd.title,
+        atbd_id=atbd.id,
+        user=user,
+        data={"section": thread.section},
+    )
+
     return comment
 
 
