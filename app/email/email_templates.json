@@ -32,12 +32,16 @@
         "content": "<p>Hi $preferred_username,</p> <p>$app_user has removed their request for closed review of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "deny_closed_review_request": {
-        "subject": "Closed review request denid",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($roles) has denied the request closed review of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> with this note: $denial_reason.</p><p>Sincerely,</p><p>The APT Team</p>"
+        "subject": "Closed review request denied",
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has denied the request for closed review of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> with this note: $denial_reason.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "accept_closed_review_request": {
-        "subject": "",
-        "content": ""
+        "subject": "Closed review request accepted",
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has accepted the request for closed review of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
+    },
+    "all_reviews_done": {
+        "subject": "All reviewers have marked their reviews done",
+        "content": "<p>Hi $preferred_username,</p> <p>All reviewers of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> have marked their review as DONE. It is now ready for the open review stage.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "open_review": {
         "subject": "",
@@ -63,8 +67,4 @@
         "subject": "",
         "content": ""
     },
-    "all_reviews_done": {
-        "subject": "",
-        "content": ""
-    }
 }

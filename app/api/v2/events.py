@@ -38,13 +38,6 @@ def deny_closed_review_request_handler(
     """Handles deny closed review request"""
     [version] = atbd.versions
 
-    version_input = versions.AdminUpdate(
-        status="DRAFT",
-        last_updated_by=user.sub,
-        last_updated_at=datetime.datetime.now(datetime.timezone.utc),
-    )
-    version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
-
     # version = update_atbd_contributor_info()
     thread = crud_threads.create(
         db_session=db,
@@ -59,21 +52,35 @@ def deny_closed_review_request_handler(
     crud_comments.create(
         db_session=db,
         obj_in=comments.AdminCreate(
-            body=payload["denial_reason"],
+            body=payload["comment"],
             thread_id=thread.id,
             created_by=user.sub,
             last_updated_by=user.sub,
         ),
     )
 
+    version_input = versions.AdminUpdate(
+        status="DRAFT",
+        last_updated_by=user.sub,
+        last_updated_at=datetime.datetime.now(datetime.timezone.utc),
+    )
+
+    # I'm not sure why this is necessary since the version object hasn't
+    # been updated, but without it, the version object comes up empty
+    # in the `crud_versions.update()` method (therefore skipping the update
+    # and leaving the ATBDVersion in STATUS==`closed_review_requested`)
+    db.refresh(version)
+
+    version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
+
     version = update_version_contributor_info(principals=principals, version=version)
     background_tasks.add_task(
         notify_users,
         user_notifications=[
             UserNotification(
-                **version.owner.dict,
-                notification="closed_review_request_denied",
-                data={"denial_reason": payload["denial_reason"]},
+                **version.owner,
+                notification="deny_closed_review_request",
+                data={"denial_reason": payload["comment"]},
             )
         ],
         atbd_title=atbd.title,
@@ -114,11 +121,23 @@ def accept_closed_review_request_handler(
         principals=principals,
         background_tasks=background_tasks,
     )
-    # TODO:  notify owner
 
     version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
 
     version = update_version_contributor_info(principals=principals, version=version)
+
+    background_tasks.add_task(
+        notify_users,
+        user_notifications=[
+            UserNotification(
+                **version.owner, notification="accept_closed_review_request",
+            )
+        ],
+        atbd_title=atbd.title,
+        atbd_id=atbd.id,
+        atbd_version=f"v{version.major}.{version.minor}",
+        user=user,
+    )
 
     return atbd
 
@@ -224,6 +243,24 @@ def update_review_status_handler(
 
     version = update_version_contributor_info(principals=principals, version=version)
 
+    if all([r["review_status"] == "DONE" for r in version_update]):
+        users_to_notify, _ = list_cognito_users(groups="curator")
+        user_notifications = [
+            UserNotification(
+                **user.dict(by_alias=True), notification="all_reviews_done"
+            )
+            for user in users_to_notify.values()
+        ]
+
+        background_tasks.add_task(
+            notify_users,
+            user_notifications=user_notifications,
+            atbd_title=atbd.title,
+            atbd_id=atbd.id,
+            atbd_version=f"v{version.major}.{version.minor}",
+            user=user,
+        )
+
     # TODO: notify curators if all reviews marked as done
 
     return atbd
@@ -312,7 +349,8 @@ def event_handler(
     for user_type in ACTIONS[event.action]["notify"]:
 
         if user_type == "curators":
-            users_to_notify = list_cognito_users(groups="curator")
+            users_to_notify, _ = list_cognito_users(groups="curator")
+            users_to_notify = users_to_notify.values()
 
         else:
             users_to_notify = getattr(version, user_type)
@@ -324,7 +362,10 @@ def event_handler(
             if not isinstance(users_to_notify, list):
                 users_to_notify = [users_to_notify]
 
-        user_notifications = UserNotification(**user, notification=event.action)
+        user_notifications = [
+            UserNotification(**user.dict(by_alias=True), notification=event.action)
+            for user in users_to_notify
+        ]
 
         background_tasks.add_task(
             notify_users,

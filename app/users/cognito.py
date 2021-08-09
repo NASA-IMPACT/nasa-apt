@@ -238,6 +238,7 @@ def list_cognito_users(groups="curator,contributor"):
     # to, so instead we are listing the users in each group and adding
     # the group manually to returned data. It's not pretty. I know.
     app_users = {}
+
     client = cognito_client()
     for group in groups.split(","):
 
