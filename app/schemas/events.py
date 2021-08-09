@@ -15,7 +15,9 @@ class EventInput(BaseModel):
 
     @validator("action")
     def validate_requested_action(cls, v):
-        """."""
+        """Ensure requested action is one of the
+        allowed actions. TODO: make this an enum.
+        """
         if v not in [
             "request_closed_review",
             "cancel_closed_review_request",

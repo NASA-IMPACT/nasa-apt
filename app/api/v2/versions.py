@@ -216,7 +216,6 @@ def delete_atbd_version(
     user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
-
     """
     Deletes the version only if it is unpublished
     """
@@ -233,3 +232,90 @@ def delete_atbd_version(
     background_tasks.add_task(remove_atbd_from_index, version=atbd_version)
     # TODO: this should also remove the associated PDFs in S3
     return {}
+
+
+# def process_users_input(
+#     version_input: versions.Update, atbd_version: AtbdVersions, principals: List[str]
+# ):
+#     """Processes logic relating to adding users to an ATBDVersion,
+#     as owner (transfer ownership, notify users, add old owner to authors),
+#     adding authors (verify not already owner, or reviewer), or adding
+#     reviewers (verify contributor, not already assigned to the document.)
+#     """
+#     app_users = list_cognito_users()
+
+#     if version_input.reviewers:
+
+#         check_permissions(
+#             principals=principals,
+#             action="invite_reviewers",
+#             acl=atbd_version.__acl__(),
+#         )
+
+#         for reviewer in version_input.reviewers:
+
+#             [cognito_user] = [user for user in app_users if user["sub"] == reviewer]
+
+#             check_permissions(
+#                 principals=get_active_user_principals(cognito_user),
+#                 action="join_reviewers",
+#                 acl=atbd_version.__acl__(),
+#             )
+
+#         reviewers = [
+#             x for x in atbd_version.reviewers if x["sub"] in version_input.reviewers
+#         ]
+
+#         reviewers.extend(
+#             [
+#                 {"sub": r, "review_status": "IN_PROGRESS"}
+#                 for r in version_input.reviewers
+#                 if r not in [_r["sub"] for _r in atbd_version.reviewers]
+#             ]
+#         )
+#         version_input.reviewers = reviewers
+
+#     if version_input.authors:
+#         check_permissions(
+#             principals=principals,
+#             action="invite_authors",
+#             acl=atbd_version.__acl__(),
+#         )
+
+#         for author in version_input.authors:
+#             [cognito_author] = [user for user in app_users if user["sub"] == author]
+#             check_permissions(
+#                 principals=get_active_user_principals(cognito_author),
+#                 action="join_authors",
+#                 acl=atbd_version.__acl__(),
+#             )
+
+#     if version_input.owner and version_input.owner != atbd_version.owner:
+#         # User performing transfer ownership operation is not allowed
+#         check_permissions(
+#             principals=principals,
+#             action="offer_ownership",
+#             acl=atbd_version.__acl__(),
+#         )
+
+#         [cognito_owner] = [
+#             user for user in app_users if user["sub"] == version_input.owner
+#         ]
+
+#         # User being transferred ownership to, is not allowed (either because
+#         # they are a reviewer of the document, or a curator)
+
+#         check_permissions(
+#             principals=get_active_user_principals(cognito_owner),
+#             action="receive_ownership",
+#             acl=atbd_version.__acl__(),
+#         )
+
+#         # Remove new owner from authors list
+#         version_input.authors = [
+#             a for a in atbd_version.authors if a != version_input.owner
+#         ]
+#         # Set old owner as author
+#         version_input.authors.append(atbd_version.owner)
+
+#     return version_input

@@ -92,7 +92,9 @@ class AtbdVersions(Base):
         )
 
     def __acl__(self):
-        """Access Control List for Atbd Version"""
+        """Generates a list of TUPLES representing actions that principals are either
+        allowed or denied from executing"""
+
         acl = []
         for grantee, actions in acls.ATBD_VERSION_ACLS.items():
 

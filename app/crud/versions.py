@@ -10,6 +10,10 @@ class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
     """CRUDVersions"""
 
     def delete(self, db: DbSession, atbd: Atbds, version: AtbdVersions):
+        """
+        Delete atbd version - if it was the last AtbdVersion in the Atbd,
+        delete the Atbd as well.
+        """
         db.delete(version)
 
         db.commit()
