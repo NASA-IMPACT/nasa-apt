@@ -1,6 +1,7 @@
 """Threads endpoint."""
 
 import datetime
+import re
 from typing import Dict, List, Union
 
 from app.api.utils import get_major_from_version_string
@@ -19,7 +20,7 @@ from app.users.cognito import (
     update_user_info,
 )
 
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 
 router = APIRouter()
 
@@ -64,6 +65,57 @@ def get_threads(
         )
         _threads.append(thread)
     return sorted(_threads, key=lambda x: x.created_at, reverse=True)
+
+
+@router.get("/threads/stats", response_model=List[threads.Stats])
+def get_threads_stats(
+    atbds: List[str] = Query([]),
+    db: DbSession = Depends(get_db_session),
+    principals: List[str] = Depends(get_active_user_principals),
+):
+    """Returns the count of OPEN and CLOSED status threads for a list of
+    AtbdVersions. This endpoint is unsecured, meaning that any id requested
+    will be returned, regardless of wether or not the user has access to that
+    AtbdVersion. This is a temporary implementation to avoid the costly overhead
+    of having to query each AtbdVersion individually first, in order to check
+    permissions and then allow the user access to the thread stats.
+
+    The implementation will be re-visited at a later date, to ensure a both
+    efficient and secure operation."""
+
+    atbd_version_ids = [
+        {"atbd_id": atbd.split("_")[0], "major": atbd.split("_")[1]} for atbd in atbds
+    ]
+    atbd_version_ids = [
+        {
+            "atbd_id": re.match(r"(?P<atbd_id>\d*)_v(?P<major>\d*).(\d*)", atbd).group(
+                "atbd_id"
+            ),
+            "major": re.match(r"(?P<atbd_id>\d*)_v(?P<major>\d*).(\d*)", atbd).group(
+                "major"
+            ),
+        }
+        for atbd in atbds
+    ]
+
+    return [
+        threads.Stats.parse_obj(
+            {
+                "atbd_id": r.AtbdVersions.atbd_id,
+                "major": r.AtbdVersions.major,
+                "minor": r.AtbdVersions.minor,
+                "status": {"open": r.open, "closed": r.closed},
+                "total": r.total,
+            }
+        )
+        for r in crud_threads.get_stats(atbd_versions=atbd_version_ids, db_session=db)
+        if check_permissions(
+            principals=principals,
+            action="view",
+            acl=r.AtbdVersions.__acl__(),
+            error=False,
+        )
+    ]
 
 
 @router.get("/threads/{thread_id}", response_model=threads.Output)
@@ -160,6 +212,7 @@ def delete_thread(
 def update_thread(
     thread_id: int,
     update_thread_input: threads.Update,
+    background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db_session),
     user: CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
@@ -170,10 +223,30 @@ def update_thread(
     [atbd_version] = atbd.versions
     check_atbd_permissions(principals=principals, action="comment", atbd=atbd)
 
-    thread = crud_threads.update(db=db, db_obj=thread, obj_in=update_thread_input)
+    if atbd_version.status == "OPEN" and update_thread_input.status == "CLOSED":
+        background_tasks.add_task(
+            notify_atbd_version_contributors,
+            atbd_version=atbd_version,
+            notification="thread_closed",
+            atbd_title=atbd.title,
+            atbd_id=atbd.id,
+            user=user,
+            data={"section": thread.section},
+        )
+
+    thread = crud_threads.update(
+        db=db,
+        db_obj=thread,
+        obj_in=threads.AdminUpdate(
+            **update_thread_input.dict(),
+            last_updated_by=user.sub,
+            last_updated_at=datetime.datetime.now(datetime.timezone.utc),
+        ),
+    )
     thread = update_thread_contributor_info(
         principals=principals, atbd_version=atbd_version, thread=thread,
     )
+
     return thread
 
 

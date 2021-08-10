@@ -91,7 +91,7 @@ def notify_users(
         message_content = t.substitute(
             # User performing the action:
             app_user=user.preferred_username,
-            role=f"{' '.join(user.cognito_groups)}",
+            role=" ".join(user.cognito_groups),
             # User being notified:
             preferred_username=user_to_notify["preferred_username"],
             atbd_title=atbd_title,

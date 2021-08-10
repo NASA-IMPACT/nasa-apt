@@ -158,3 +158,5 @@ class AdminUpdate(Update):
     minor: Optional[int]
     published_by: Optional[str]
     published_at: Optional[datetime]
+    last_updated_by: str
+    last_updated_at: datetime

@@ -11,7 +11,11 @@ from app.crud.threads import crud_threads
 from app.crud.versions import crud_versions
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import Atbds
-from app.email.notifications import UserNotification, notify_users
+from app.email.notifications import (
+    UserNotification,
+    notify_atbd_version_contributors,
+    notify_users,
+)
 from app.permissions import check_permissions
 from app.schemas import atbds, comments, events, threads, users, versions
 from app.search.elasticsearch import add_atbd_to_index
@@ -27,68 +31,74 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 router = APIRouter()
 
 
-def deny_closed_review_request_handler(
-    atbd: Atbds,
-    user: users.User,
-    payload: Dict,
-    db: DbSession,
-    principals: List[str],
-    background_tasks: BackgroundTasks,
-):
-    """Handles deny closed review request"""
-    [version] = atbd.versions
+def deny_request_with_comment(next_status: str, notification: str):
+    """Suspended function evaluation, returns a function capable of
+    processing a rejection with comment event, with the necessary
+    status to migrate to and notification already set. Notifies
+    all contributors assigned to the AtbdVersion."""
 
-    # version = update_atbd_contributor_info()
-    thread = crud_threads.create(
-        db_session=db,
-        obj_in=threads.AdminCreate(
+    def _helper(
+        atbd: Atbds,
+        user: users.User,
+        payload: Dict,
+        db: DbSession,
+        principals: List[str],
+        background_tasks: BackgroundTasks,
+    ):
+
+        """Handles request denial"""
+        [version] = atbd.versions
+
+        # version = update_atbd_contributor_info()
+        thread = crud_threads.create(
+            db_session=db,
+            obj_in=threads.AdminCreate(
+                atbd_id=atbd.id,
+                major=version.major,
+                section="general",
+                created_by=user.sub,
+                last_updated_by=user.sub,
+            ),
+        )
+        crud_comments.create(
+            db_session=db,
+            obj_in=comments.AdminCreate(
+                body=payload["comment"],
+                thread_id=thread.id,
+                created_by=user.sub,
+                last_updated_by=user.sub,
+            ),
+        )
+
+        version_input = versions.AdminUpdate(
+            status=next_status,
+            last_updated_by=user.sub,
+            last_updated_at=datetime.datetime.now(datetime.timezone.utc),
+        )
+
+        # I'm not sure why this is necessary since the version object hasn't
+        # been updated, but without it, the version object comes up empty
+        # in the `crud_versions.update()` method (therefore skipping the update
+        # and leaving the ATBDVersion in STATUS==`closed_review_requested`)
+        db.refresh(version)
+
+        version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
+
+        background_tasks.add_task(
+            notify_atbd_version_contributors,
+            atbd_version=version,
+            notification=notification,
+            atbd_title=atbd.title,
             atbd_id=atbd.id,
-            major=version.major,
-            section="introduction",
-            created_by=user.sub,
-            last_updated_by=user.sub,
-        ),
-    )
-    crud_comments.create(
-        db_session=db,
-        obj_in=comments.AdminCreate(
-            body=payload["comment"],
-            thread_id=thread.id,
-            created_by=user.sub,
-            last_updated_by=user.sub,
-        ),
-    )
+            user=user,
+            data={"comment": payload["comment"]},
+        )
+        version = update_version_contributor_info(
+            principals=principals, version=version
+        )
+        return atbd
 
-    version_input = versions.AdminUpdate(
-        status="DRAFT",
-        last_updated_by=user.sub,
-        last_updated_at=datetime.datetime.now(datetime.timezone.utc),
-    )
-
-    # I'm not sure why this is necessary since the version object hasn't
-    # been updated, but without it, the version object comes up empty
-    # in the `crud_versions.update()` method (therefore skipping the update
-    # and leaving the ATBDVersion in STATUS==`closed_review_requested`)
-    db.refresh(version)
-
-    version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
-
-    version = update_version_contributor_info(principals=principals, version=version)
-    background_tasks.add_task(
-        notify_users,
-        user_notifications=[
-            UserNotification(
-                **version.owner,
-                notification="deny_closed_review_request",
-                data={"denial_reason": payload["comment"]},
-            )
-        ],
-        atbd_title=atbd.title,
-        atbd_id=atbd.id,
-        atbd_version=f"v{version.major}.{version.minor}",
-        user=user,
-    )
-    return atbd
+    return _helper
 
 
 def accept_closed_review_request_handler(
@@ -127,15 +137,11 @@ def accept_closed_review_request_handler(
     version = update_version_contributor_info(principals=principals, version=version)
 
     background_tasks.add_task(
-        notify_users,
-        user_notifications=[
-            UserNotification(
-                **version.owner, notification="accept_closed_review_request",
-            )
-        ],
+        notify_atbd_version_contributors,
+        atbd_version=version,
+        notification="accept_closed_review_request",
         atbd_title=atbd.title,
         atbd_id=atbd.id,
-        atbd_version=f"v{version.major}.{version.minor}",
         user=user,
     )
 
@@ -170,7 +176,14 @@ def publish_handler(
 
     version = update_version_contributor_info(principals=principals, version=version)
 
-    # TODO: notify owner, authors and reviewers
+    background_tasks.add_task(
+        notify_atbd_version_contributors,
+        atbd_version=version,
+        notification="publish",
+        atbd_title=atbd.title,
+        atbd_id=atbd.id,
+        user=user,
+    )
     return atbd
 
 
@@ -243,7 +256,7 @@ def update_review_status_handler(
 
     version = update_version_contributor_info(principals=principals, version=version)
 
-    if all([r["review_status"] == "DONE" for r in version_update]):
+    if all([r["review_status"] == "DONE" for r in version_update.reviewers]):  # type: ignore
         users_to_notify, _ = list_cognito_users(groups="curator")
         user_notifications = [
             UserNotification(
@@ -261,8 +274,6 @@ def update_review_status_handler(
             user=user,
         )
 
-    # TODO: notify curators if all reviews marked as done
-
     return atbd
 
 
@@ -273,12 +284,17 @@ ACTIONS: Dict[str, Dict[str, Any]] = {
     },
     "cancel_closed_review_request": {"next_status": "DRAFT", "notify": ["curators"]},
     "deny_closed_review_request": {
-        "custom_handler": deny_closed_review_request_handler,
+        "custom_handler": deny_request_with_comment(
+            next_status="DRAFT", notification="deny_closed_review_request"
+        ),
     },
     "accept_closed_review_request": {
         "custom_handler": accept_closed_review_request_handler,
     },
-    "open_review": {"next_status": "OPEN_REVIEW", "notify": ["owner", "authors"]},
+    "open_review": {
+        "next_status": "OPEN_REVIEW",
+        "notify": ["owner", "authors", "reviewers"],
+    },
     "request_publication": {
         "next_status": "PUBLICATION_REQUESTED",
         "notify": ["curators"],
@@ -288,12 +304,13 @@ ACTIONS: Dict[str, Dict[str, Any]] = {
         "notify": ["curators"],
     },
     "deny_publication_request": {
-        "next_status": "OPEN_REVIEW",
-        "notify": ["owner"],  # authors too?
+        "custom_handler": deny_request_with_comment(
+            next_status="OPEN_REVIEW", notification="deny_publication_request"
+        ),
     },
     "accept_publication_request": {
         "next_status": "PUBLICATION",
-        "notify": ["owner"],  # authors too?
+        "notify": ["owner", "authors", "reviewers"],
     },
     "publish": {"custom_handler": publish_handler},
     "bump_minor_version": {"custom_handler": bump_minor_version_handler},

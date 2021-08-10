@@ -1,19 +1,19 @@
 {
     "added_as_reviewer": {
         "subject": "Your review has been requested",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has requested your review on the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has requested your review on the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "added_as_author": {
         "subject": "You have been added as an author",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has added you as a collaborating author on the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has added you as a collaborating author on the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "added_as_owner": {
         "subject": "You have been given ownership",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has transferred you ownership of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has transferred you ownership of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "ownership_revoked": {
         "subject": "Your ownership has been revoked",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has transferred your ownership of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> to $transferred_to. You have been added as an author of the document.</p><p>Sincerely,</p><p>The APT Team</p>"
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has transferred your ownership of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> to $transferred_to. You have been added as an author of the document.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "new_thread_created": {
         "subject": "A new thread has been created",
@@ -25,46 +25,54 @@
     },
     "request_closed_review": {
         "subject": "Closed review requested",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user has marked the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> as ready for closed review.</p><p>Sincerely,</p><p>The APT Team</p>"
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user has marked the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> as ready for closed review.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "cancel_closed_review_request": {
         "subject": "Closed review request cancelled",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user has removed their request for closed review of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user has removed their request for closed review of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "deny_closed_review_request": {
         "subject": "Closed review request denied",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has denied the request for closed review of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> with this note: $denial_reason.</p><p>Sincerely,</p><p>The APT Team</p>"
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has denied the request for closed review of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> with this note: $comment.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "accept_closed_review_request": {
         "subject": "Closed review request accepted",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has accepted the request for closed review of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has accepted the request for closed review of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "all_reviews_done": {
-        "subject": "All reviewers have marked their reviews done",
-        "content": "<p>Hi $preferred_username,</p> <p>All reviewers of the following document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> have marked their review as DONE. It is now ready for the open review stage.</p><p>Sincerely,</p><p>The APT Team</p>"
+        "subject": "All reviews are finished",
+        "content": "<p>Hi $preferred_username,</p> <p>All reviewers of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> have marked their review as DONE. It is now ready to be considered for the open review stage.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "open_review": {
-        "subject": "",
-        "content": ""
+        "subject": "ATBD version transitioned to open review",
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has transitioned the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> to the open review stage.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "request_publication": {
-        "subject": "",
-        "content": ""
+        "subject": "Publication requested",
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user has requested publication of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "cancel_publication_request": {
-        "subject": "",
-        "content": ""
+        "subject": "Publication request cancelled",
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user has removed their request for publication of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "deny_publication_request": {
-        "subject": "",
-        "content": ""
+        "subject": "Publication request denied",
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has denied the request for publication of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> with this note: $comment.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "accept_publication_request": {
-        "subject": "",
-        "content": ""
+        "subject": "Publication request accepted",
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has accepted the request for publication of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>!</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "publish": {
+        "subject": "Atbd version Published",
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has published the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>!</p><p>Sincerely,</p><p>The APT Team</p>"
+    },
+    "bump_minor_version": {
         "subject": "",
         "content": ""
     },
+    "thread_closed": {
+        "subject": "Thread closed",
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has closed a thread in the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>, section: $section. </p><p>Sincerely,</p><p>The APT Team</p>"
+    }
 }

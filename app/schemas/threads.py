@@ -69,7 +69,37 @@ class Update(BaseModel):
     status: StatusEnum
 
 
+class AdminUpdate(Update):
+    """Admin update model"""
+
+    last_updated_by: str
+    last_updated_at: datetime
+
+
 class Lookup(BaseModel):
     """Lookup thread."""
 
     id: int
+
+
+class StatusCounts(BaseModel):
+    """Object for count of open and closed threads"""
+
+    open: int
+    closed: int
+
+
+class Stats(BaseModel):
+    """Object for thread counts object"""
+
+    atbd_id: int
+    status: StatusCounts
+    total: int
+    major: int
+    minor: int
+    version: Optional[str]
+
+    @validator("version", always=True, pre=True)
+    def _generate_semver(cls, v, values) -> str:
+
+        return f"v{values['major']}.{values['minor']}"
