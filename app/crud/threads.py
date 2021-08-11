@@ -67,7 +67,7 @@ class CRUDThreads(CRUDBase[Threads, Output, Create, Update]):
                     for version in atbd_versions
                 )
             )
-            .join(Threads)
+            .outerjoin(Threads)
             .group_by(AtbdVersions.atbd_id, AtbdVersions.major,)
             .all()
         )

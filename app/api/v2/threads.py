@@ -99,15 +99,13 @@ def get_threads_stats(
     ]
 
     return [
-        threads.Stats.parse_obj(
-            {
-                "atbd_id": r.AtbdVersions.atbd_id,
-                "major": r.AtbdVersions.major,
-                "minor": r.AtbdVersions.minor,
-                "status": {"open": r.open, "closed": r.closed},
-                "total": r.total,
-            }
-        )
+        {
+            "atbd_id": r.AtbdVersions.atbd_id,
+            "major": r.AtbdVersions.major,
+            "minor": r.AtbdVersions.minor,
+            "status": {"open": r.open, "closed": r.closed},
+            "total": r.total,
+        }
         for r in crud_threads.get_stats(atbd_versions=atbd_version_ids, db_session=db)
         if check_permissions(
             principals=principals,
