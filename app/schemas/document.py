@@ -59,14 +59,16 @@ class TextLeaf(BaseModel):
 class BaseNode(BaseModel):
     """Generic WYSIWYG node type"""
 
-    type: str
+    type: TypesEnum
+    id: Optional[str]
+    # _type: str
     children: List[TextLeaf]
 
 
 class LinkNode(BaseNode):
     """href Link WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     url: AnyUrl
     children: List[TextLeaf]
 
@@ -74,7 +76,7 @@ class LinkNode(BaseNode):
 class ReferenceNode(BaseNode):
     """Reference to bib item WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     refId: str
     children: List[TextLeaf]
 
@@ -82,21 +84,21 @@ class ReferenceNode(BaseNode):
 class DivNode(BaseNode):
     """Generic text container WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[Union[TextLeaf, LinkNode, ReferenceNode]]
 
 
 class OrderedListNode(BaseNode):
     """Ordered (numerical) List WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[ListItemNode]
 
 
 class UnorderedListNode(BaseNode):
     """Unordered (bullet points) list WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[ListItemNode]
 
 
@@ -104,7 +106,7 @@ class ListItemNode(BaseNode):
     """List item node that gets wrapped with OrderedList or UnorderedList.
     List items can also contain other orderd or unordered lists"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[Union[DivNode, OrderedListNode, UnorderedListNode]]
 
 
@@ -119,33 +121,36 @@ UnorderedListNode.update_forward_refs()
 class SubsectionNode(BaseNode):
     """Custom/user defined `sub-sections` items"""
 
-    id: str
-    type: TypesEnum
+    pass
+    # id: str
+    # _type: TypesEnum
 
 
 class EquationNode(BaseNode):
     """Equation WYSIWYG node"""
 
-    type: TypesEnum
+    pass
+    # _type: TypesEnum
 
 
 class ImageNode(BaseNode):
     """Image WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     objectKey: str
 
 
 class CaptionNode(BaseNode):
     """Caption nodes (for Table or Image WYSIWYG nodes)"""
 
-    type: TypesEnum
+    # _type: TypesEnum
+    pass
 
 
 class ImageBlockNode(BaseNode):
     """Image block node (contains image and caption)"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[Union[ImageNode, CaptionNode]]
 
     @validator("children")
@@ -170,28 +175,28 @@ class ImageBlockNode(BaseNode):
 class TableCellNode(BaseNode):
     """Table cell WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[DivNode]
 
 
 class TableRowNode(BaseNode):
     """Table row WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[TableCellNode]
 
 
 class TableNode(BaseNode):
     """Table WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[TableRowNode]
 
 
 class TableBlockNode(BaseNode):
     """Wrapper for Table WYSIWYG node and Caption WYSIWYG nodes"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[Union[TableNode, CaptionNode]]
 
     @validator("children")
@@ -256,10 +261,10 @@ class SectionWrapper(BaseModel):
     children: List[
         Union[
             DivNode,
+            SubsectionNode,
             OrderedListNode,
             UnorderedListNode,
             ImageBlockNode,
-            SubsectionNode,
             TableBlockNode,
             EquationNode,
         ]

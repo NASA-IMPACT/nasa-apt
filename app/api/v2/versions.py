@@ -47,7 +47,11 @@ def version_exists(
     return True
 
 
-@router.get("/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput)
+@router.get(
+    "/atbds/{atbd_id}/versions/{version}",
+    response_model=atbds.FullOutput,
+    response_model_exclude_none=True,
+)
 def get_version(
     atbd_id: str,
     version: str,
@@ -66,7 +70,11 @@ def get_version(
     return atbd
 
 
-@router.post("/atbds/{atbd_id}/versions", response_model=atbds.FullOutput)
+@router.post(
+    "/atbds/{atbd_id}/versions",
+    response_model=atbds.FullOutput,
+    response_model_exclude_none=True,
+)
 def create_new_version(
     atbd_id: str,
     db: DbSession = Depends(get_db_session),
@@ -102,7 +110,9 @@ def create_new_version(
 
 
 @router.post(  # noqa : C901
-    "/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput
+    "/atbds/{atbd_id}/versions/{version}",
+    response_model=atbds.FullOutput,
+    response_model_exclude_none=True,
 )
 def update_atbd_version(
     atbd_id: str,
