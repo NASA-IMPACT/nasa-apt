@@ -39,13 +39,17 @@ def notify_atbd_version_contributors(
 
     user_notifications = [
         UserNotification(
-            **app_users[atbd_version.owner].dict(), notification=notification, data=data
+            **app_users[atbd_version.owner["sub"]].dict(),
+            notification=notification,
+            data=data,
         )  # type: ignore
     ]
 
     user_notifications.extend(
         [
-            UserNotification(**app_users[author].dict(), notification=notification, data=data)  # type: ignore
+            UserNotification(
+                **app_users[author["sub"]].dict(), notification=notification, data=data  # type: ignore
+            )
             for author in atbd_version.authors
         ]
     )

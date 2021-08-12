@@ -8,21 +8,23 @@ from app.schemas.document import Document
 
 
 class ElasticsearchAtbdVersion(BaseModel):
-    """Elasticsearch document representing an AtbdVersion """
+    """Elasticsearch document representing an AtbdVersion"""
 
     major: int
     minor: int
     version: Optional[str]
-    status: str
-    published_by: Optional[str]
-    published_at: Optional[datetime]
-    created_by: str
-    created_at: datetime
-    last_updated_by: str
-    last_updated_at: datetime
+    # They should all have status == "PUBLISHED"
+    # status: str
+    # published_by: Optional[str]
+    # published_at: Optional[datetime]
+    # created_by: str
+    # created_at: datetime
+    # last_updated_by: str
+    # last_updated_at: datetime
     citation: Optional[dict]
     document: Optional[Document]
     doi: Optional[str]
+    changelog: Optional[str]
 
     class Config:
         """Config."""

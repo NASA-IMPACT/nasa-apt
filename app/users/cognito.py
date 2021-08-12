@@ -296,6 +296,9 @@ def process_users_input(
                 action="join_reviewers",
                 acl=atbd_version.__acl__(),
             )
+            # skip notifying reviewers who are already assigned to the document
+            if reviewer in [r["sub"] for r in atbd_version.reviewers]:
+                continue
             user_notifications.append(
                 {
                     "email": cognito_reviewer.email,
@@ -328,12 +331,18 @@ def process_users_input(
         )
 
         for author in version_input.authors:
+
             cognito_author = app_users[author]
             check_permissions(
                 principals=get_active_user_principals(cognito_author),
                 action="join_authors",
                 acl=atbd_version.__acl__(),
             )
+            # Skip notification for authors who are already
+            # assigned to the document
+            if author in atbd_version.authors:
+                continue
+
             user_notifications.append(
                 {
                     "email": cognito_author.email,

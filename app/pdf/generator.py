@@ -406,7 +406,12 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
     """
     doc = Document(
         default_filepath=filepath,
-        documentclass=Command("documentclass", options=["12pt"], arguments="article",),
+        documentclass=Command(
+            "documentclass",
+            options=["12pt"],
+            # arguments="article",
+            arguments="agujournal2019",
+        ),
         fontenc="T1",
         inputenc="utf8",
         # use Latin-Math Modern pacakge for char support
@@ -423,6 +428,7 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
         "amsmath",
         "array",
         "booktabs",
+        "soul",
     ]:
         doc.packages.append(Package(p))
 
@@ -518,7 +524,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             doc.append(process(item, atbd_id=atbd.id))
             continue
 
-    doc.append(Command("bibliographystyle", arguments="abbrv"))
+    # doc.append(Command("bibliographystyle", arguments="apalike"))
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
 
     return doc

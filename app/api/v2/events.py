@@ -83,7 +83,9 @@ def deny_request_with_comment(next_status: str, notification: str):
         db.refresh(version)
 
         version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
-
+        atbd.version = [
+            update_version_contributor_info(principals=principals, version=version)
+        ]
         background_tasks.add_task(
             notify_atbd_version_contributors,
             atbd_version=version,
@@ -93,9 +95,7 @@ def deny_request_with_comment(next_status: str, notification: str):
             user=user,
             data={"comment": payload["comment"]},
         )
-        version = update_version_contributor_info(
-            principals=principals, version=version
-        )
+
         return atbd
 
     return _helper
@@ -134,7 +134,9 @@ def accept_closed_review_request_handler(
 
     version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
 
-    version = update_version_contributor_info(principals=principals, version=version)
+    atbd.version = [
+        update_version_contributor_info(principals=principals, version=version)
+    ]
 
     background_tasks.add_task(
         notify_atbd_version_contributors,
@@ -170,11 +172,13 @@ def publish_handler(
             last_updated_at=datetime.datetime.now(datetime.timezone.utc),
         ),
     )
+
+    atbd.version = [
+        update_version_contributor_info(principals=principals, version=version)
+    ]
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
     background_tasks.add_task(add_atbd_to_index, atbd)
-
-    version = update_version_contributor_info(principals=principals, version=version)
 
     background_tasks.add_task(
         notify_atbd_version_contributors,
@@ -212,7 +216,9 @@ def bump_minor_version_handler(
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
     background_tasks.add_task(add_atbd_to_index, atbd)
 
-    version = update_version_contributor_info(principals=principals, version=version)
+    atbd.version = [
+        update_version_contributor_info(principals=principals, version=version)
+    ]
 
     # TODO: notify owner
     return atbd
@@ -254,7 +260,9 @@ def update_review_status_handler(
 
     version = crud_versions.update(db=db, db_obj=version, obj_in=version_update)
 
-    version = update_version_contributor_info(principals=principals, version=version)
+    atbd.version = [
+        update_version_contributor_info(principals=principals, version=version)
+    ]
 
     if all([r["review_status"] == "DONE" for r in version_update.reviewers]):  # type: ignore
         users_to_notify, _ = list_cognito_users(groups="curator")
@@ -362,12 +370,15 @@ def event_handler(
         ),
     )
     version = update_version_contributor_info(principals=principals, version=version)
+    atbd.version = [version]
 
     for user_type in ACTIONS[event.action]["notify"]:
 
         if user_type == "curators":
             users_to_notify, _ = list_cognito_users(groups="curator")
-            users_to_notify = users_to_notify.values()
+            users_to_notify = [
+                user.dict(by_alias=True) for user in users_to_notify.values()
+            ]
 
         else:
             users_to_notify = getattr(version, user_type)
@@ -380,7 +391,7 @@ def event_handler(
                 users_to_notify = [users_to_notify]
 
         user_notifications = [
-            UserNotification(**user.dict(by_alias=True), notification=event.action)
+            UserNotification(**user, notification=event.action)
             for user in users_to_notify
         ]
 
