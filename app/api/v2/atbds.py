@@ -132,8 +132,18 @@ def update_atbd(
 
     # Get latest version - ability to udpate an atbd is given
     # to whoever is allowed to update the latest version of that atbd
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1)
-    check_atbd_permissions(principals=principals, action="update", atbd=atbd)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
+
+    check_atbd_permissions(
+        principals=principals, action="update", atbd=atbd, all_versions=False
+    )
+    print("STATUS: ",)
+    print([v.status == "PUBLISHED" for v in atbd.versions])
+    if any([v.status == "PUBLISHED" for v in atbd.versions]):
+        raise HTTPException(
+            status_code=400,
+            detail="Update not allowed for an ATBD with a published version",
+        )
 
     atbd.last_updated_by = user.sub
     atbd.last_updated_at = datetime.datetime.now(datetime.timezone.utc)

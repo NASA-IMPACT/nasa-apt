@@ -274,15 +274,20 @@ class SectionWrapper(BaseModel):
 class Document(BaseModel):
     """Top level `document` node"""
 
+    abstract: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
     historical_perspective: Optional[SectionWrapper]
+    additional_information: Optional[SectionWrapper]
     algorithm_description: Optional[SectionWrapper]
+    data_availability: Optional[SectionWrapper]
     scientific_theory: Optional[SectionWrapper]
     scientific_theory_assumptions: Optional[SectionWrapper]
     mathematical_theory: Optional[SectionWrapper]
     mathematical_theory_assumptions: Optional[SectionWrapper]
     algorithm_input_variables: Optional[List[AlgorithmVariable]]
+    algorithm_input_variables_caption: Optional[str]
     algorithm_output_variables: Optional[List[AlgorithmVariable]]
+    algorithm_output_variables_caption: Optional[str]
     algorithm_implementations: Optional[List[DataAccessUrl]]
     algorithm_usage_constraints: Optional[SectionWrapper]
     performance_assessment_validation_methods: Optional[SectionWrapper]

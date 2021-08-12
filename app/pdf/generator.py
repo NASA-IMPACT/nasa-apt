@@ -31,7 +31,9 @@ from app.schemas.versions_contacts import ContactsLinkOutput
 SECTIONS = {
     "introduction": {"title": "Introduction"},
     "historical_perspective": {"title": "Historical Perspective"},
+    "additional_information": {"Title: Additional Data"},
     "algorithm_description": {"title": "Algorithm Description"},
+    "data_availability": {"Title": "Data Availability"},
     "scientific_theory": {"title": "Scientific Theory", "subsection": True},
     "scientific_theory_assumptions": {
         "title": "Scientific Theory Assumptions",
@@ -218,7 +220,9 @@ def process_data_access_urls(data: List[document.DataAccessUrl]) -> List:
     return urls
 
 
-def process_algorithm_variables(data: List[document.AlgorithmVariable]) -> NoEscape:
+def process_algorithm_variables(
+    data: List[document.AlgorithmVariable], caption
+) -> NoEscape:
     """
     Returns a Latex formatted table representing algorithm input or output variables,
     wrapped with a NoEscape command. The text processing commands are applied to each
@@ -249,6 +253,7 @@ def process_algorithm_variables(data: List[document.AlgorithmVariable]) -> NoEsc
         na_rep=" ",
         columns=["long_name", "unit"],
         header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
+        caption=caption,
     )
     return NoEscape(latex_table)
 
@@ -505,7 +510,12 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             "algorithm_output_variables",
         ]:
 
-            doc.append(process_algorithm_variables(document_data[section_name]))
+            doc.append(
+                process_algorithm_variables(
+                    data=document_data[section_name],
+                    caption=document_data[f"{section_name}_caption"],
+                )
+            )
             continue
 
         if section_name in [

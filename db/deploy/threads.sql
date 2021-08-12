@@ -4,31 +4,12 @@ CREATE TYPE apt.thread_status AS ENUM (
   'OPEN',
   'CLOSED'
 );
-CREATE TYPE apt.document_section AS ENUM (
-  'general',
-  'citation',
-  'contacts',
-  'introduction',
-  'historical_perspective',
-  'scientific_theory',
-  'mathematical_theory',
-  'input_variables',
-  'output_variables',
-  'constraints',
-  'validation',
-  'algorithm_implementations',
-  'data_access_input_data',
-  'data_access_output_data',
-  'data_access_related_urls',
-  'discussion',
-  'acknowledgements'
-);
 CREATE TABLE apt.threads (
   id serial PRIMARY KEY,
   atbd_id integer NOT NULL,
   major integer NOT NULL,
   "status" apt.thread_status DEFAULT 'OPEN',
-  "section" apt.document_section NOT NULL,
+  "section" varchar(1024) NOT NULL,
   created_by varchar(1024),
   created_at timestamptz DEFAULT now(),
   last_updated_by varchar(1024),
