@@ -6,7 +6,9 @@ from typing import List, Optional, Union
 from pydantic import BaseModel, validator
 
 from app.api.utils import get_major_from_version_string
-from app.schemas import comments, users
+from app.schemas import comments, document, users
+
+from fastapi import HTTPException
 
 
 class StatusEnum(str, Enum):
@@ -39,6 +41,14 @@ class Create(BaseModel):
     def _extract_major(cls, v, values) -> int:
         major, _ = get_major_from_version_string(values["version"])
         return major
+
+    @validator("section", always=True)
+    def _validate_section(cls, v) -> str:
+        if v not in document.Document.__dict__["__fields__"].keys():
+            raise HTTPException(
+                status_code=400, detail=f"Section {v} not allowed for thread"
+            )
+        return v
 
 
 class Output(BaseModel):

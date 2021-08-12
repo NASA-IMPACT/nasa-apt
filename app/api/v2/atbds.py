@@ -137,8 +137,7 @@ def update_atbd(
     check_atbd_permissions(
         principals=principals, action="update", atbd=atbd, all_versions=False
     )
-    print("STATUS: ",)
-    print([v.status == "PUBLISHED" for v in atbd.versions])
+
     if any([v.status == "PUBLISHED" for v in atbd.versions]):
         raise HTTPException(
             status_code=400,
