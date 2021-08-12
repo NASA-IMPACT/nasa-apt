@@ -300,9 +300,9 @@ def generate_bib_reference(data: document.PublicationReference) -> str:
     reference = ""
     for e in ["title", "pages", "publisher", "year", "volume"]:
         if data.get(e):
-            reference += f'{e}="{data[e]}",\n'
+            reference += f"{e}={{{data[e]}}},\n"
     if data.get("authors"):
-        reference += f"author=\"{data['authors']}\",\n"
+        reference += f"author={{{data['authors']}}},\n"
     # Can't use both VOLUME and NUMBER fields in bibtex
 
     return f"@BOOK{{{reference_id},\n{reference}}}"
@@ -406,12 +406,7 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
     """
     doc = Document(
         default_filepath=filepath,
-        documentclass=Command(
-            "documentclass",
-            options=["12pt"],
-            # arguments="article",
-            arguments="agujournal2019",
-        ),
+        documentclass=Command("documentclass", options=["12pt"], arguments="article",),
         fontenc="T1",
         inputenc="utf8",
         # use Latin-Math Modern pacakge for char support
@@ -420,6 +415,7 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
         page_numbers=True,
         indent=True,
     )
+
     for p in [
         "color",
         "url",
@@ -446,6 +442,9 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
             arguments=f"colorlinks={str(journal).lower()},linkcolor=blue,filecolor=magenta,urlcolor=blue",
         )
     )
+    # The package `apacite` MUST be loaded AFTER hyperref otherwise the
+    # in-text citations won't populate correctly.
+    doc.packages.append(Package("apacite"))
 
     doc.preamble.append(Command("title", arguments=atbd.title))
     doc.preamble.append(Command("date", arguments=NoEscape("\\today")))
@@ -524,7 +523,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             doc.append(process(item, atbd_id=atbd.id))
             continue
 
-    # doc.append(Command("bibliographystyle", arguments="apalike"))
+    doc.append(Command("bibliographystyle", arguments="apacite"))
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
 
     return doc
