@@ -29,11 +29,12 @@ from app.schemas import document
 from app.schemas.versions_contacts import ContactsLinkOutput
 
 SECTIONS = {
+    "abstract": {},
     "introduction": {"title": "Introduction"},
     "historical_perspective": {"title": "Historical Perspective"},
-    "additional_information": {"Title: Additional Data"},
+    "additional_information": {"title": "Additional Data"},
     "algorithm_description": {"title": "Algorithm Description"},
-    "data_availability": {"Title": "Data Availability"},
+    "data_availability": {"title": "Data Availability"},
     "scientific_theory": {"title": "Scientific Theory", "subsection": True},
     "scientific_theory_assumptions": {
         "title": "Scientific Theory Assumptions",
@@ -484,6 +485,18 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             "journal_acknowledgements",
             "journal_discussion",
         ]:
+            continue
+
+        if section_name == "abstract":
+            doc.append(Command("begin", "abstract"))
+
+            for item in document_data[section_name].get(
+                "children", [CONTENT_UNAVAILABLE]
+            ):
+                doc.append(NoEscape("\n"))
+                doc.append(process(item, atbd_id=atbd.id))
+
+            doc.append(Command("end", "abstract"))
             continue
 
         s = Section(info["title"])

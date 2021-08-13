@@ -39,8 +39,22 @@ INSERT INTO atbds (title, alias, created_by, last_updated_by)
 
 INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, published_by, major, minor, document, citation, status)
   VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', :'curator_sub', 1, 1, '{
+  "abstract": {
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "text": "This is the super duper document abstract "
+          }
+        ]
+      } 
+    ] 
+  },
   "introduction": null,
   "historical_perspective": null,
+  "additional_information": null,
+  "data_availability":null,
   "mathematical_theory": {
     "children": [
       {
@@ -171,6 +185,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
     ]
   },
   "algorithm_input_variables": [],
+  "algorithm_input_variables_caption": null,
   "algorithm_output_variables": [
     {
       "name": {
@@ -215,6 +230,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
       }
     }
   ],
+  "algorithm_output_variables_caption": "This is a caption for algorithm output variables",
   "algorithm_usage_constraints": null,
   "performance_assessment_validation_methods": {
     "children": [
@@ -681,8 +697,22 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
 
 INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation, status)
   VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', 2, 0, '{
+  "abstract": {
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "text": "The algorithm specified in this document is designed to derive footprint level canopy cover and vertical "
+          }
+        ]
+      } 
+    ] 
+  },
   "introduction": null,
   "historical_perspective": null,
+  "additional_information": null,
+  "data_availability":null,
   "mathematical_theory": {
     "children": [
       {
@@ -813,6 +843,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
     ]
   },
   "algorithm_input_variables": [],
+  "algorithm_input_variables_caption": null,
   "algorithm_output_variables": [
     {
       "name": {
@@ -857,6 +888,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
       }
     }
   ],
+  "algorithm_output_variables_caption": null,
   "algorithm_usage_constraints": null,
   "performance_assessment_validation_methods": {
     "children": [
@@ -1335,12 +1367,28 @@ INSERT INTO atbds (title, alias, created_by, created_at, last_updated_by, last_u
 
 INSERT INTO atbd_versions (atbd_id, created_by, created_at, "owner", authors, last_updated_by, last_updated_at, major, minor, document, status)
   VALUES (2, :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], :'owner_sub', '2021-06-27 21:00:00', 1, 0, '{
+  "abstract": {
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "text": "The algorithm specified in this document is designed to derive footprint level canopy cover and vertical "
+          }
+        ]
+      } 
+    ] 
+  },
   "introduction": null,
   "historical_perspective": null,
+  "additional_information": null,
+  "data_availability":null,
   "mathematical_theory": null,
   "mathematical_theory_assumptions": null,
   "algorithm_input_variables": [],
+  "algorithm_input_variables_caption": null,
   "algorithm_output_variables": [],
+  "algorithm_output_variables_caption": null,
   "algorithm_usage_constraints": null,
   "performance_assessment_validation_methods": null,
   "performance_assessment_validation_uncertainties": null,
