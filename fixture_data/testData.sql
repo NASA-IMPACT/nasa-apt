@@ -888,7 +888,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
       }
     }
   ],
-  "algorithm_output_variables_caption": null,
+  "algorithm_output_variables_caption": "Algorithm Variables table caption :)",
   "algorithm_usage_constraints": null,
   "performance_assessment_validation_methods": {
     "children": [
