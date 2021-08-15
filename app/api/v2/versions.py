@@ -186,11 +186,16 @@ def update_atbd_version(
             principals=principals,
             background_tasks=background_tasks,
         )
-
+    # TODO: use enum for journal status
     if version_input.journal_status:
-        check_permissions(
-            principals=principals, action="update_journal_status", acl=version_acl
+        action = (
+            "update_journal_status"
+            if version_input.journal_status
+            in ["NO_PUBLICATION", "PUBLICATION_INTENDED"]
+            else "update_journal_publication_status"
         )
+
+        check_permissions(principals=principals, action=action, acl=version_acl)
 
     if version_input.document and not overwrite:
         version_input.document = {  # type: ignore
