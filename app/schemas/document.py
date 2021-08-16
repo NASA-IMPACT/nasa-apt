@@ -220,7 +220,7 @@ class TableBlockNode(BaseNode):
 class DataAccessUrl(BaseModel):
     """Data Access URL"""
 
-    url: Optional[AnyUrl]
+    url: Optional[Union[AnyUrl, str]]
     description: Optional[str]
 
     @root_validator(pre=True)
