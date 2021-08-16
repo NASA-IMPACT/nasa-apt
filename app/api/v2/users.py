@@ -1,7 +1,8 @@
 """ Users endpoint."""
 from typing import List
 
-from app.api.utils import get_major_from_version_string
+from app import config
+from app.api.utils import cognito_client, get_major_from_version_string
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_permissions
@@ -85,3 +86,22 @@ def list_users(
         ]
 
     return sorted(eligible_users, key=lambda x: x.preferred_username.lower())
+
+
+@router.post(
+    "/users/auth",
+    responses={
+        200: dict(
+            description="AWS Cognito JWT (id token) for the requested user-password combo"
+        )
+    },
+)
+def get_id_token(username: str, password: str):
+    """Returns an Id Token for the given user/password combo"""
+    return {
+        "IdToken": cognito_client().initiate_auth(
+            ClientId=config.APP_CLIENT_ID,
+            AuthFlow="USER_PASSWORD_AUTH",
+            AuthParameters={"USERNAME": username, "PASSWORD": password},
+        )["AuthenticationResult"]["IdToken"]
+    }
