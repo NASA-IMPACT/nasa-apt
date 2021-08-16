@@ -178,6 +178,8 @@ def update_atbd_version(
                 db_session=db, id=(atbd_id, major, contact.contact_id)  # type: ignore
             )
 
+        delattr(version_input, "contacts")
+
     if version_input.owner or version_input.reviewers or version_input.authors:
         version_input = process_users_input(
             version_input=version_input,
