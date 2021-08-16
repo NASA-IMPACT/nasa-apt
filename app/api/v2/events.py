@@ -83,9 +83,7 @@ def deny_request_with_comment(next_status: str, notification: str):
         db.refresh(version)
 
         version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
-        atbd.versions = [
-            update_version_contributor_info(principals=principals, version=version)
-        ]
+
         background_tasks.add_task(
             notify_atbd_version_contributors,
             atbd_version=version,
@@ -95,7 +93,9 @@ def deny_request_with_comment(next_status: str, notification: str):
             user=user,
             data={"comment": payload["comment"]},
         )
-
+        atbd.versions = [
+            update_version_contributor_info(principals=principals, version=version)
+        ]
         return atbd
 
     return _helper
@@ -134,10 +134,6 @@ def accept_closed_review_request_handler(
 
     version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
 
-    atbd.versions = [
-        update_version_contributor_info(principals=principals, version=version)
-    ]
-
     background_tasks.add_task(
         notify_atbd_version_contributors,
         atbd_version=version,
@@ -146,7 +142,9 @@ def accept_closed_review_request_handler(
         atbd_id=atbd.id,
         user=user,
     )
-
+    atbd.versions = [
+        update_version_contributor_info(principals=principals, version=version)
+    ]
     return atbd
 
 
@@ -172,13 +170,6 @@ def publish_handler(
         ),
     )
 
-    atbd.versions = [
-        update_version_contributor_info(principals=principals, version=version)
-    ]
-    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
-    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
-    background_tasks.add_task(add_atbd_to_index, atbd)
-
     background_tasks.add_task(
         notify_atbd_version_contributors,
         atbd_version=version,
@@ -187,6 +178,12 @@ def publish_handler(
         atbd_id=atbd.id,
         user=user,
     )
+    atbd.versions = [
+        update_version_contributor_info(principals=principals, version=version)
+    ]
+    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
+    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
+    background_tasks.add_task(add_atbd_to_index, atbd)
     return atbd
 
 

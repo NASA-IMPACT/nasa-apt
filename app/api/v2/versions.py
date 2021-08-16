@@ -190,6 +190,7 @@ def update_atbd_version(
             principals=principals,
             background_tasks=background_tasks,
         )
+        print("REVIEWERS: ", version_input.reviewers)
     # TODO: use enum for journal status
     if version_input.journal_status:
         action = (

@@ -44,7 +44,9 @@ class Create(BaseModel):
 
     @validator("section", always=True)
     def _validate_section(cls, v) -> str:
-        if v not in document.Document.__dict__["__fields__"].keys():
+        allowed_fields = list(document.Document.__dict__["__fields__"].keys())
+        allowed_fields.append("general")
+        if v not in allowed_fields:
             raise HTTPException(
                 status_code=400, detail=f"Section {v} not allowed for thread"
             )
