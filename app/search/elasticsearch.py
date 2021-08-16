@@ -98,7 +98,7 @@ def add_atbd_to_index(atbd: Atbds):
     """Indexes an ATBD in ElasticSearch. If the ATBD metadata (title, alias) is
     to be updated, then the `atbd` input param will contain all associated versions,
     wich will all be updated in the ElasticSearch. If the ATBD version data (document,
-    changelog, citation, etc) has been updated, then the `atbd` input param
+    citation, etc) has been updated, then the `atbd` input param
     will only contain a single version, and only that version will be updated."""
 
     es_commands = []

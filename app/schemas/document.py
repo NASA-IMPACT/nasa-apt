@@ -275,6 +275,7 @@ class Document(BaseModel):
     """Top level `document` node"""
 
     abstract: Optional[SectionWrapper]
+    version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
     historical_perspective: Optional[SectionWrapper]
     additional_information: Optional[SectionWrapper]

@@ -9,12 +9,6 @@ from app.schemas import versions
 from fastapi import HTTPException
 
 
-class PublishInput(BaseModel):
-    """Input for publishing an ATBD"""
-
-    changelog: Optional[str]
-
-
 class Update(BaseModel):
     """Atbd Update"""
 

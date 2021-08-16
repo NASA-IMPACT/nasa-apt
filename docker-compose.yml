@@ -69,7 +69,7 @@ services:
     environment:
       LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
       SERVICES: s3,secretsmanager,cognito,ses
-      DEBUG: 1
+      # DEBUG: 1 # Uncomment to increase localstack logging output
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
       AWS_DEFAULT_REGION: us-east-1     

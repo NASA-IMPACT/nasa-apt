@@ -71,7 +71,6 @@ class AtbdVersions(Base):
     created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
     last_updated_by = Column(String(), nullable=False)
     last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
-    changelog = Column(String())
     doi = Column(String())
     citation = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
     owner = Column(String(), nullable=False)

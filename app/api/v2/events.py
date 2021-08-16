@@ -164,7 +164,6 @@ def publish_handler(
         db=db,
         db_obj=version,
         obj_in=versions.AdminUpdate(
-            changelog=payload["changelog"] if version.major > 1 else version.changelog,
             status="PUBLISHED",
             published_by=user.sub,
             published_at=datetime.datetime.now(datetime.timezone.utc),
@@ -206,7 +205,6 @@ def bump_minor_version_handler(
         db=db,
         db_obj=version,
         obj_in=versions.AdminUpdate(
-            changelog=payload["changelog"],
             minor=version.minor + 1,
             last_updated_by=user.sub,
             last_updated_at=datetime.datetime.now(datetime.timezone.utc),

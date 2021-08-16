@@ -51,6 +51,24 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
       } 
     ] 
   },
+  "version_description": {
+    "children":[
+      {
+        "type": "p",
+        "children":[
+          {
+            "text": "The important aspects of this document version include updated handling of the flux capcitor and addition of a description of the impulse response of an inhomogeneous linear differential operator defined on a domain with specified initial conditions or boundary conditions, also known as Green''s function:"
+          }
+        ]
+      },
+      {
+        "type": "equation",
+        "children": [
+          {"text": "\\int_C P\\,du + Q\\, dv = \\int\\!\\!\\!\\int_A \\left({\\partial Q\\over \\partial u} - {\\partial P\\over \\partial v}\\right) {1\\over \\sqrt{EG-F^2}}\\,dA"}
+        ]
+      }
+    ]
+  },
   "introduction": null,
   "historical_perspective": null,
   "additional_information": null,
@@ -708,6 +726,24 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
         ]
       } 
     ] 
+  },
+  "version_description": {
+    "children":[
+      {
+        "type": "p",
+        "children":[
+          {
+            "text": "The important aspects of this document version include updated handling of the flux capcitor and addition of a description of the impulse response of an inhomogeneous linear differential operator defined on a domain with specified initial conditions or boundary conditions, also known as Green''s function:"
+          }
+        ]
+      },
+      {
+        "type": "equation",
+        "children": [
+          {"text": "\\int_C P\\,du + Q\\, dv = \\int\\!\\!\\!\\int_A \\left({\\partial Q\\over \\partial u} - {\\partial P\\over \\partial v}\\right) {1\\over \\sqrt{EG-F^2}}\\,dA" }
+        ]
+      }
+    ]
   },
   "introduction": null,
   "historical_perspective": null,
@@ -1379,6 +1415,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, created_at, "owner", authors, la
       } 
     ] 
   },
+  "version_description": null,
   "introduction": null,
   "historical_perspective": null,
   "additional_information": null,

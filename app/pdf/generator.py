@@ -30,6 +30,7 @@ from app.schemas.versions_contacts import ContactsLinkOutput
 
 SECTIONS = {
     "abstract": {},
+    "version_description": {"title": "Description"},
     "introduction": {"title": "Introduction"},
     "historical_perspective": {"title": "Historical Perspective"},
     "additional_information": {"title": "Additional Data"},
@@ -462,7 +463,7 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
     return doc
 
 
-def generate_latex(atbd: Atbds, filepath: str, journal=False):
+def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     """
     Generates a Latex document with associated Bibtex file
     """
@@ -497,6 +498,14 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
                 doc.append(process(item, atbd_id=atbd.id))
 
             doc.append(Command("end", "abstract"))
+            continue
+
+        # Version Description is the only field that doesn't get rendered at all
+        # if it's not found in the database data (as opposed to other field which)
+        # get displayed as "Content Unavailable"
+        if section_name == "version_description" and not document_data.get(
+            "version_description"
+        ):
             continue
 
         s = Section(info["title"])

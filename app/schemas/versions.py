@@ -39,7 +39,6 @@ class AtbdVersionSummaryOutput(BaseModel):
     last_updated_by: Union[CognitoUser, AnonymousUser]
     last_updated_at: datetime
     citation: Optional[dict]
-    changelog: Optional[str]
     owner: Union[CognitoUser, AnonymousUser]
     authors: Union[List[CognitoUser], List[AnonymousUser]]
     reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]
@@ -113,6 +112,7 @@ class SectionsCompleted(BaseModel):
     Gets set by the user"""
 
     abstract: CompletednessEnum
+    version_description: CompletednessEnum
     introduction: CompletednessEnum
     historical_perspective: CompletednessEnum
     additional_information: CompletednessEnum
@@ -145,7 +145,6 @@ class Update(BaseModel):
 
     document: Optional[Document]
     sections_completed: Optional[dict]
-    changelog: Optional[str]
     doi: Optional[str]
     citation: Optional[Citation]
     status: Optional[str]

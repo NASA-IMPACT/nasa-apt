@@ -24,7 +24,6 @@ class ElasticsearchAtbdVersion(BaseModel):
     citation: Optional[dict]
     document: Optional[Document]
     doi: Optional[str]
-    changelog: Optional[str]
 
     class Config:
         """Config."""
