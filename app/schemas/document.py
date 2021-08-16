@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import AnyUrl, BaseModel, root_validator, validator
 
@@ -220,8 +220,16 @@ class TableBlockNode(BaseNode):
 class DataAccessUrl(BaseModel):
     """Data Access URL"""
 
-    url: AnyUrl
-    description: str
+    url: Optional[AnyUrl]
+    description: Optional[str]
+
+    @root_validator(pre=True)
+    def _set_url(cls, values: Dict[str, Any]):
+        if "url" not in values:
+            values["url"] = ""
+        if "description" not in values:
+            values["description"] = ""
+        return values
 
 
 class DivWrapperNode(BaseModel):
