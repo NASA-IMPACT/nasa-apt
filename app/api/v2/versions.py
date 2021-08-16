@@ -92,13 +92,15 @@ def create_new_version(
         action="create_new_version",
         acl=latest_version.__acl__(),
     )
+    update_document = latest_version.document
+    update_document["version_description"] = None
 
     new_version_input = versions.Create(
         atbd_id=latest_version.atbd_id,
         major=latest_version.major + 1,
         minor=0,
         status="DRAFT",
-        document=latest_version.document,
+        document=update_document,
         created_by=user.sub,
         last_updated_by=user.sub,
         owner=user.sub,

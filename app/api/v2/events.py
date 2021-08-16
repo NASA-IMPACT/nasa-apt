@@ -83,7 +83,7 @@ def deny_request_with_comment(next_status: str, notification: str):
         db.refresh(version)
 
         version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
-        atbd.version = [
+        atbd.versions = [
             update_version_contributor_info(principals=principals, version=version)
         ]
         background_tasks.add_task(
@@ -134,7 +134,7 @@ def accept_closed_review_request_handler(
 
     version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
 
-    atbd.version = [
+    atbd.versions = [
         update_version_contributor_info(principals=principals, version=version)
     ]
 
@@ -172,7 +172,7 @@ def publish_handler(
         ),
     )
 
-    atbd.version = [
+    atbd.versions = [
         update_version_contributor_info(principals=principals, version=version)
     ]
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
@@ -214,7 +214,7 @@ def bump_minor_version_handler(
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
     background_tasks.add_task(add_atbd_to_index, atbd)
 
-    atbd.version = [
+    atbd.versions = [
         update_version_contributor_info(principals=principals, version=version)
     ]
 
@@ -258,7 +258,7 @@ def update_review_status_handler(
 
     version = crud_versions.update(db=db, db_obj=version, obj_in=version_update)
 
-    atbd.version = [
+    atbd.versions = [
         update_version_contributor_info(principals=principals, version=version)
     ]
 
@@ -368,7 +368,7 @@ def event_handler(
         ),
     )
     version = update_version_contributor_info(principals=principals, version=version)
-    atbd.version = [version]
+    atbd.versions = [version]
 
     for user_type in ACTIONS[event.action]["notify"]:
 
