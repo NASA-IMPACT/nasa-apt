@@ -39,18 +39,7 @@ INSERT INTO atbds (title, alias, created_by, last_updated_by)
 
 INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, published_by, major, minor, document, citation, status)
   VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', :'curator_sub', 1, 1, '{
-  "abstract": {
-    "children": [
-      {
-        "type": "p",
-        "children": [
-          {
-            "text": "This is the super duper document abstract "
-          }
-        ]
-      } 
-    ] 
-  },
+  "abstract": "A brief and interesting overview of the themes presented in this document are as follows: At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. ", 
   "version_description": {
     "children":[
       {
@@ -715,18 +704,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
 
 INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation, status)
   VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', 2, 0, '{
-  "abstract": {
-    "children": [
-      {
-        "type": "p",
-        "children": [
-          {
-            "text": "The algorithm specified in this document is designed to derive footprint level canopy cover and vertical "
-          }
-        ]
-      } 
-    ] 
-  },
+  "abstract": "A brief and interesting overview of the themes presented in this document are as follows: At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. ",
   "version_description": {
     "children":[
       {
@@ -1403,18 +1381,7 @@ INSERT INTO atbds (title, alias, created_by, created_at, last_updated_by, last_u
 
 INSERT INTO atbd_versions (atbd_id, created_by, created_at, "owner", authors, last_updated_by, last_updated_at, major, minor, document, status)
   VALUES (2, :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], :'owner_sub', '2021-06-27 21:00:00', 1, 0, '{
-  "abstract": {
-    "children": [
-      {
-        "type": "p",
-        "children": [
-          {
-            "text": "The algorithm specified in this document is designed to derive footprint level canopy cover and vertical "
-          }
-        ]
-      } 
-    ] 
-  },
+  "abstract": null,
   "version_description": null,
   "introduction": null,
   "historical_perspective": null,

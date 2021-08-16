@@ -490,13 +490,10 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
         if section_name == "abstract":
             doc.append(Command("begin", "abstract"))
-
-            for item in document_data[section_name].get(
-                "children", [CONTENT_UNAVAILABLE]
-            ):
-                doc.append(NoEscape("\n"))
-                doc.append(process(item, atbd_id=atbd.id))
-
+            if not document_data.get(section_name):
+                doc.append("Abstract Unavailable")
+            else:
+                doc.append(document_data[section_name])
             doc.append(Command("end", "abstract"))
             continue
 

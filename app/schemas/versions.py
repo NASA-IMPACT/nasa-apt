@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 from pydantic import BaseModel, validator
 
 from app.schemas import versions_contacts
-from app.schemas.document import Document
+from app.schemas.document import Document, DocumentSummary
 from app.schemas.users import (
     AnonymousReviewerUser,
     AnonymousUser,
@@ -39,6 +39,7 @@ class AtbdVersionSummaryOutput(BaseModel):
     last_updated_by: Union[CognitoUser, AnonymousUser]
     last_updated_at: datetime
     citation: Optional[dict]
+    document: Optional[DocumentSummary]
     owner: Union[CognitoUser, AnonymousUser]
     authors: Union[List[CognitoUser], List[AnonymousUser]]
     reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]

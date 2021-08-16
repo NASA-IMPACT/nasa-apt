@@ -271,10 +271,16 @@ class SectionWrapper(BaseModel):
     ]
 
 
-class Document(BaseModel):
+class DocumentSummary(BaseModel):
+    """Document node to be returns in the `SummaryOutput` of
+    Atbds and AtbdVersions"""
+
+    abstract: Optional[str]
+
+
+class Document(DocumentSummary):
     """Top level `document` node"""
 
-    abstract: Optional[SectionWrapper]
     version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
     historical_perspective: Optional[SectionWrapper]
