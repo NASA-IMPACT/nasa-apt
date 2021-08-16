@@ -30,8 +30,6 @@ if config.BACKEND_CORS_ORIGINS:
     )
 
 app.add_middleware(GZipMiddleware, minimum_size=0)
-
-
 app.include_router(api_router, prefix=config.API_VERSION_STRING)
 
 

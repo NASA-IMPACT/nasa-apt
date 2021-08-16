@@ -58,3 +58,7 @@ BACKEND_CORS_ORIGINS = os.environ.get(
 # If using this value, ensure that the value is unique
 # otherwise the deployment will fail
 S3_BUCKET = os.environ.get("S3_BUCKET")
+
+NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
+    "NOTIFICATIONS_FROM env var required"
+)

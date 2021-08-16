@@ -152,7 +152,9 @@ class nasaAPTLambdaStack(core.Stack):
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             ELASTICSEARCH_URL=esdomain.domain_endpoint,
             S3_BUCKET=bucket.bucket_name,
+            NOTIFICATIONS_FROM=config.NOTIFICATIONS_FROM,
         )
+
         lambda_env.update(dict(MODULE_NAME="nasa_apt.main", VARIABLE_NAME="app",))
 
         lambda_function_props = dict(
