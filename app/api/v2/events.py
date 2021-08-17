@@ -1,5 +1,6 @@
 """Modules for handling AtbdVersion events"""
 import datetime
+from copy import deepcopy
 from typing import Any, Dict, List
 
 from app.api.utils import get_major_from_version_string
@@ -86,7 +87,7 @@ def deny_request_with_comment(next_status: str, notification: str):
 
         background_tasks.add_task(
             notify_atbd_version_contributors,
-            atbd_version=version,
+            atbd_version=deepcopy(version),
             notification=notification,
             atbd_title=atbd.title,
             atbd_id=atbd.id,
@@ -112,11 +113,8 @@ def accept_closed_review_request_handler(
     """Handler for accept closed review"""
     [version] = atbd.versions
 
-    version_input = versions.AdminUpdate(
-        reviewers=payload["reviewers"],
-        status="CLOSED_REVIEW",
-        last_updated_by=user.sub,
-        last_updated_at=datetime.datetime.now(datetime.timezone.utc),
+    version_input = versions.Update(
+        reviewers=payload["reviewers"], status="CLOSED_REVIEW",
     )
 
     # performs the validation checks to make sure each of the
@@ -132,11 +130,21 @@ def accept_closed_review_request_handler(
         background_tasks=background_tasks,
     )
 
-    version = crud_versions.update(db=db, db_obj=version, obj_in=version_input)
+    version = crud_versions.update(
+        db=db,
+        db_obj=version,
+        obj_in=versions.AdminUpdate(
+            **version_input.dict(),
+            last_updated_by=user.sub,
+            last_updated_at=datetime.datetime.now(datetime.timezone.utc),
+        ),
+    )
+
+    db.refresh(version)
 
     background_tasks.add_task(
         notify_atbd_version_contributors,
-        atbd_version=version,
+        atbd_version=deepcopy(version),
         notification="accept_closed_review_request",
         atbd_title=atbd.title,
         atbd_id=atbd.id,
@@ -145,6 +153,7 @@ def accept_closed_review_request_handler(
     atbd.versions = [
         update_version_contributor_info(principals=principals, version=version)
     ]
+
     return atbd
 
 
@@ -172,7 +181,7 @@ def publish_handler(
 
     background_tasks.add_task(
         notify_atbd_version_contributors,
-        atbd_version=version,
+        atbd_version=deepcopy(version),
         notification="publish",
         atbd_title=atbd.title,
         atbd_id=atbd.id,
