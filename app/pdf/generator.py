@@ -585,6 +585,7 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
         # the compiler to manage image positioning within the pdf document
         # and native unicode character handling
         compiler_args=["--pdfxe"],
+        silent=False,
     )
 
     return f"{filepath}.pdf"
