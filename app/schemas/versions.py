@@ -112,32 +112,24 @@ class SectionsCompleted(BaseModel):
     """Sections completed - each value is a str equal to either `incomplete` or `complete`.
     Gets set by the user"""
 
-    abstract: CompletednessEnum
     version_description: CompletednessEnum
+    citation: CompletednessEnum
+    contacts: CompletednessEnum
     introduction: CompletednessEnum
-    historical_perspective: CompletednessEnum
-    additional_information: CompletednessEnum
-    algorithm_description: CompletednessEnum
-    data_availability: CompletednessEnum
+    context_background: CompletednessEnum
     scientific_theory: CompletednessEnum
-    scientific_theory_assumptions: CompletednessEnum
     mathematical_theory: CompletednessEnum
-    mathematical_theory_assumptions: CompletednessEnum
-    algorithm_input_variables: CompletednessEnum
-    algorithm_input_variables_caption: CompletednessEnum
-    algorithm_output_variables: CompletednessEnum
-    algorithm_output_variables_caption: CompletednessEnum
-    algorithm_implementations: CompletednessEnum
-    algorithm_usage_constraints: CompletednessEnum
-    performance_assessment_validation_methods: CompletednessEnum
-    performance_assessment_validation_uncertainties: CompletednessEnum
-    performance_assessment_validation_errors: CompletednessEnum
+    input_variables: CompletednessEnum
+    output_variables: CompletednessEnum
+    constraints: CompletednessEnum
+    validation: CompletednessEnum
+    algorithm_availability: CompletednessEnum
     data_access_input_data: CompletednessEnum
     data_access_output_data: CompletednessEnum
     data_access_related_urls: CompletednessEnum
-    journal_dicsussion: CompletednessEnum
-    journal_acknowledgements: CompletednessEnum
-    publication_references: CompletednessEnum
+    abstract: CompletednessEnum
+    discussion: CompletednessEnum
+    acknowledgements: CompletednessEnum
 
 
 class Update(BaseModel):

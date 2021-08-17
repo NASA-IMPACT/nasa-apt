@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 from pydantic import BaseModel, validator
 
 from app.api.utils import get_major_from_version_string
-from app.schemas import comments, document, users
+from app.schemas import comments, versions, users
 
 from fastapi import HTTPException
 
@@ -44,7 +44,7 @@ class Create(BaseModel):
 
     @validator("section", always=True)
     def _validate_section(cls, v) -> str:
-        allowed_fields = list(document.Document.__dict__["__fields__"].keys())
+        allowed_fields = list(versions.SectionsCompleted.__dict__["__fields__"].keys())
         allowed_fields.append("general")
         if v not in allowed_fields:
             raise HTTPException(
