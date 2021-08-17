@@ -25,7 +25,6 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "join_reviewers", "deny": True},
         {"action": "join_authors", "deny": True},
         {"action": "edit"},
-        {"action": "invite_authors"},
         {"action": "offer_ownership"},
         {
             "action": "update",

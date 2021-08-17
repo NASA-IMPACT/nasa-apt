@@ -1,7 +1,7 @@
 """Pydantic models for AtbdVersions"""
 import enum
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, validator
 
@@ -157,3 +157,7 @@ class AdminUpdate(Update):
     published_at: Optional[datetime]
     last_updated_by: str
     last_updated_at: datetime
+    # reviewers gets re-defined here as a list of Dict
+    # since from the API side, each reviewer should have
+    # a review status associated with their user sub
+    reviewers: Optional[List[Dict[str, str]]]  # type: ignore
