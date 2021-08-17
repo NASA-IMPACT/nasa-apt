@@ -47,11 +47,14 @@ def send_to_elastic(data: List[Dict]):
     """
     # bulk commands must end with newline
     data_string = "\n".join(json.dumps(d, default=_default) for d in data) + "\n"
-
     url = f"http://{config.ELASTICSEARCH_URL}/atbd/_bulk"
 
     auth = aws_auth()
-    logger.info("sending %s %s using auth: %s", json, url, auth)
+    print("SENDING DATA: ", data_string)
+    print("TO URL : ", url)
+    print("WITH AUTH: ", auth)
+
+    logger.info("sending %s %s using auth: %s", data_string, url, auth)
     response = requests.post(
         url,
         auth=auth,
