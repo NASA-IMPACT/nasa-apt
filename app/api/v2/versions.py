@@ -150,11 +150,9 @@ def update_atbd_version(
     [atbd_version] = atbd.versions
     version_acl = atbd_version.__acl__()
 
-    # blanket update permission check - more specific permissions checks will
-    # occer later
-    check_permissions(principals=principals, action="update", acl=version_acl)
-
     if version_input.contacts and len(version_input.contacts):
+
+        check_permissions(principals=principals, action="update", acl=version_acl)
 
         # Overwrite any existing `ContactAssociation` items
         # in the database - this makes updating roles on an existing
@@ -181,6 +179,9 @@ def update_atbd_version(
         delattr(version_input, "contacts")
 
     if version_input.owner or version_input.reviewers or version_input.authors:
+        # No need to check action permissions here because the
+        # process_users_input method has its own permissions
+        # checking logic
         version_input = process_users_input(
             version_input=version_input,
             atbd_version=atbd_version,
@@ -190,7 +191,7 @@ def update_atbd_version(
             principals=principals,
             background_tasks=background_tasks,
         )
-        print("REVIEWERS: ", version_input.reviewers)
+
     # TODO: use enum for journal status
     if version_input.journal_status:
         action = (
@@ -203,12 +204,18 @@ def update_atbd_version(
         check_permissions(principals=principals, action=action, acl=version_acl)
 
     if version_input.document and not overwrite:
+
+        check_permissions(principals=principals, action="update", acl=version_acl)
+
         version_input.document = {  # type: ignore
             **atbd_version.document,
             **version_input.document.dict(exclude_unset=True),
         }
 
     if version_input.sections_completed and not overwrite:
+
+        check_permissions(principals=principals, action="update", acl=version_acl)
+
         version_input.sections_completed = {
             **atbd_version.sections_completed,
             **version_input.sections_completed,
