@@ -150,9 +150,19 @@ def update_atbd_version(
     [atbd_version] = atbd.versions
     version_acl = atbd_version.__acl__()
 
-    if version_input.contacts and len(version_input.contacts):
+    for attribute in versions.Update.__dict__["__fields__"].keys():
+        if attribute in ["journal_status", "owner", "authors", "reviewers"]:
+            continue
 
-        check_permissions(principals=principals, action="update", acl=version_acl)
+        try:
+            if getattr(version_input, attribute):
+                check_permissions(
+                    principals=principals, action="update", acl=version_acl
+                )
+        except AttributeError:
+            continue
+
+    if version_input.contacts and len(version_input.contacts):
 
         # Overwrite any existing `ContactAssociation` items
         # in the database - this makes updating roles on an existing
@@ -205,16 +215,12 @@ def update_atbd_version(
 
     if version_input.document and not overwrite:
 
-        check_permissions(principals=principals, action="update", acl=version_acl)
-
         version_input.document = {  # type: ignore
             **atbd_version.document,
             **version_input.document.dict(exclude_unset=True),
         }
 
     if version_input.sections_completed and not overwrite:
-
-        check_permissions(principals=principals, action="update", acl=version_acl)
 
         version_input.sections_completed = {
             **atbd_version.sections_completed,
