@@ -1,6 +1,6 @@
 """Schemas for Cognito User models"""
 
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, root_validator
 
@@ -35,7 +35,7 @@ class CognitoUser(AnonymousUser):
 
     sub: str
     email: str
-    cognito_groups: List[str] = Field(..., alias="cognito:groups")
+    cognito_groups: List[str] = Field([], alias="cognito:groups")
 
     @root_validator(pre=True)
     def _unpack_attributes(cls, values):
