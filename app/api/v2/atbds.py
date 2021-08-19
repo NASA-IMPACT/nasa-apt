@@ -126,7 +126,7 @@ def update_atbd(
     user: users.CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
-    """Updates an ATBD (eiither Title or Alias). Raises 400 if the user
+    """Updates an ATBD (either Title or Alias). Raises 400 if the user
     is not logged in. Re-indexes all corresponding items in Elasticsearch
     with the new/updated values"""
 
@@ -138,7 +138,7 @@ def update_atbd(
         principals=principals, action="update", atbd=atbd, all_versions=False
     )
 
-    if any([v.status == "PUBLISHED" for v in atbd.versions]):
+    if atbd_input.alias and any([v.status == "PUBLISHED" for v in atbd.versions]):
         raise HTTPException(
             status_code=400,
             detail="Update not allowed for an ATBD with a published version",
