@@ -64,12 +64,12 @@
         "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has accepted the request for publication of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>!</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "publish": {
-        "subject": "Atbd version Published",
+        "subject": "Atbd version published",
         "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has published the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>!</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "bump_minor_version": {
-        "subject": "",
-        "content": ""
+        "subject": "Atbd minor version number bumped",
+        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has bumped the minor vesion number of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>!</p><p>Sincerely,</p><p>The APT Team</p>"
     },
     "thread_closed": {
         "subject": "Thread closed",

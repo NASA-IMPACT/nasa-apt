@@ -84,7 +84,6 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "view_reviewers"},
         {"action": "view_comments"},
         {"action": "view_curators"},
-        {"action": "comment"},
     ],
     "role:contributor": [
         {"action": "receive_ownership"},
