@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 from pydantic import BaseModel, validator
 
 from app.api.utils import get_major_from_version_string
-from app.schemas import comments, versions, users
+from app.schemas import comments, users, versions
 
 from fastapi import HTTPException
 

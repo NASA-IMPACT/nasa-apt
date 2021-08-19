@@ -46,6 +46,8 @@ class Update(BaseModel):
 
 
 class AdminUpdate(Update):
+    """Extend Update class with last_updated_by and timestamp"""
+
     last_updated_by: str
     last_updated_at: datetime
 
