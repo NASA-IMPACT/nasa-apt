@@ -47,11 +47,14 @@ def send_to_elastic(data: List[Dict]):
     """
     # bulk commands must end with newline
     data_string = "\n".join(json.dumps(d, default=_default) for d in data) + "\n"
-
     url = f"http://{config.ELASTICSEARCH_URL}/atbd/_bulk"
 
     auth = aws_auth()
-    logger.info("sending %s %s using auth: %s", json, url, auth)
+    print("SENDING DATA: ", data_string)
+    print("TO URL : ", url)
+    print("WITH AUTH: ", auth)
+
+    logger.info("sending %s %s using auth: %s", data_string, url, auth)
     response = requests.post(
         url,
         auth=auth,
@@ -98,7 +101,7 @@ def add_atbd_to_index(atbd: Atbds):
     """Indexes an ATBD in ElasticSearch. If the ATBD metadata (title, alias) is
     to be updated, then the `atbd` input param will contain all associated versions,
     wich will all be updated in the ElasticSearch. If the ATBD version data (document,
-    changelog, citation, etc) has been updated, then the `atbd` input param
+    citation, etc) has been updated, then the `atbd` input param
     will only contain a single version, and only that version will be updated."""
 
     es_commands = []

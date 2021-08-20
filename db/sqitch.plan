@@ -11,3 +11,6 @@ owner_authors_reviewers [tables] 2021-07-07T00:35:47Z Leo Thomas <leo@MacBook-Pr
 drop_function_and_roles [appschema] 2021-07-21T15:45:37Z Leo Thomas <leo@MacBook-Pro> # Drop create atbd function and app_user/anonymous roles since all of those funcitionalities are no implemented in the API code
 migrate_status_to_upper_snake_case [tables] 2021-07-21T16:02:38Z Leo Thomas <leo@MacBook-Pro> # Migrate atbd version status to UPPER_SNAKE_CASE
 journal_status 2021-07-26T10:40:07Z Leo Thomas <leo@MacBook-Pro> # Add journal_status flag to atbd_versions table
+threads 2021-07-28T14:07:03Z Andrew Bollinger <andrewbollinger@Andrews-MacBook-Pro.local> # Add threads and comments
+update_document_fields 2021-08-13T03:33:32Z Leo Thomas <leo@MacBook-Pro.local> # Add addition_information, data_accessibility, abstract, algorithm_{input/output}_variables_caption keys to the atbd_versions.document field
+contact_roles [tables] 2021-08-18T16:11:47Z Daniel da Silva <daniel@hystericalhamster.localdomain> # Change contacts roles enum

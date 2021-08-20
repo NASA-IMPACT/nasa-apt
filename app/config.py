@@ -90,3 +90,8 @@ COGNITO_KEYS_URL = f"https://cognito-idp.{AWS_REGION}.amazonaws.com/{USER_POOL_I
 
 if AWS_RESOURCES_ENDPOINT:
     COGNITO_KEYS_URL = f"{AWS_RESOURCES_ENDPOINT}/{USER_POOL_ID}/.well-known/jwks.json"
+
+
+NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
+    "NOTIFICATIONS_FROM env var required"
+)

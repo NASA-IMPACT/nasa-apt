@@ -1,17 +1,15 @@
 """ Users endpoint."""
 from typing import List
 
-from app.api.utils import (
-    get_active_user_principals,
-    get_major_from_version_string,
-    list_cognito_users,
-    require_user,
-)
+from app import config
+from app.api.utils import cognito_client, get_major_from_version_string
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_permissions
 from app.schemas import users
 from app.schemas.users import User
+from app.users.auth import require_user
+from app.users.cognito import get_active_user_principals, list_cognito_users
 
 from fastapi import APIRouter, Depends
 
@@ -36,9 +34,10 @@ def list_users(
     Lists Users
     """
     major, _ = get_major_from_version_string(version)
+
     [atbd_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=major).versions
     version_acl = atbd_version.__acl__()
-    app_users = list_cognito_users()
+    app_users, _ = list_cognito_users()
 
     if user_filter == "transfer_ownership":
         check_permissions(
@@ -47,7 +46,7 @@ def list_users(
 
         eligible_users = [
             user
-            for user in app_users
+            for user in app_users.values()
             if check_permissions(
                 principals=get_active_user_principals(user),
                 action="receive_ownership",
@@ -62,7 +61,7 @@ def list_users(
 
         eligible_users = [
             user
-            for user in app_users
+            for user in app_users.values()
             if check_permissions(
                 principals=get_active_user_principals(user),
                 action="join_authors",
@@ -77,7 +76,7 @@ def list_users(
 
         eligible_users = [
             user
-            for user in app_users
+            for user in app_users.values()
             if check_permissions(
                 principals=get_active_user_principals(user),
                 action="join_reviewers",
@@ -86,4 +85,23 @@ def list_users(
             )
         ]
 
-    return sorted(eligible_users, key=lambda x: x["preferred_username"].lower())
+    return sorted(eligible_users, key=lambda x: x.preferred_username.lower())
+
+
+@router.post(
+    "/users/auth",
+    responses={
+        200: dict(
+            description="AWS Cognito JWT (id token) for the requested user-password combo"
+        )
+    },
+)
+def get_id_token(username: str, password: str):
+    """Returns an Id Token for the given user/password combo"""
+    return {
+        "IdToken": cognito_client().initiate_auth(
+            ClientId=config.APP_CLIENT_ID,
+            AuthFlow="USER_PASSWORD_AUTH",
+            AuthParameters={"USERNAME": username, "PASSWORD": password},
+        )["AuthenticationResult"]["IdToken"]
+    }

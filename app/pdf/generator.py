@@ -29,9 +29,13 @@ from app.schemas import document
 from app.schemas.versions_contacts import ContactsLinkOutput
 
 SECTIONS = {
+    "abstract": {},
+    "version_description": {"title": "Description"},
     "introduction": {"title": "Introduction"},
     "historical_perspective": {"title": "Historical Perspective"},
+    "additional_information": {"title": "Additional Data"},
     "algorithm_description": {"title": "Algorithm Description"},
+    "data_availability": {"title": "Data Availability"},
     "scientific_theory": {"title": "Scientific Theory", "subsection": True},
     "scientific_theory_assumptions": {
         "title": "Scientific Theory Assumptions",
@@ -218,7 +222,9 @@ def process_data_access_urls(data: List[document.DataAccessUrl]) -> List:
     return urls
 
 
-def process_algorithm_variables(data: List[document.AlgorithmVariable]) -> NoEscape:
+def process_algorithm_variables(
+    data: List[document.AlgorithmVariable], caption
+) -> NoEscape:
     """
     Returns a Latex formatted table representing algorithm input or output variables,
     wrapped with a NoEscape command. The text processing commands are applied to each
@@ -249,6 +255,7 @@ def process_algorithm_variables(data: List[document.AlgorithmVariable]) -> NoEsc
         na_rep=" ",
         columns=["long_name", "unit"],
         header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
+        caption=caption,
     )
     return NoEscape(latex_table)
 
@@ -300,9 +307,9 @@ def generate_bib_reference(data: document.PublicationReference) -> str:
     reference = ""
     for e in ["title", "pages", "publisher", "year", "volume"]:
         if data.get(e):
-            reference += f'{e}="{data[e]}",\n'
+            reference += f"{e}={{{data[e]}}},\n"
     if data.get("authors"):
-        reference += f"author=\"{data['authors']}\",\n"
+        reference += f"author={{{data['authors']}}},\n"
     # Can't use both VOLUME and NUMBER fields in bibtex
 
     return f"@BOOK{{{reference_id},\n{reference}}}"
@@ -415,6 +422,7 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
         page_numbers=True,
         indent=True,
     )
+
     for p in [
         "color",
         "url",
@@ -423,6 +431,7 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
         "amsmath",
         "array",
         "booktabs",
+        "soul",
     ]:
         doc.packages.append(Package(p))
 
@@ -440,6 +449,9 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
             arguments=f"colorlinks={str(journal).lower()},linkcolor=blue,filecolor=magenta,urlcolor=blue",
         )
     )
+    # The package `apacite` MUST be loaded AFTER hyperref otherwise the
+    # in-text citations won't populate correctly.
+    doc.packages.append(Package("apacite"))
 
     doc.preamble.append(Command("title", arguments=atbd.title))
     doc.preamble.append(Command("date", arguments=NoEscape("\\today")))
@@ -451,7 +463,7 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
     return doc
 
 
-def generate_latex(atbd: Atbds, filepath: str, journal=False):
+def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     """
     Generates a Latex document with associated Bibtex file
     """
@@ -474,6 +486,23 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             "journal_acknowledgements",
             "journal_discussion",
         ]:
+            continue
+
+        if section_name == "abstract":
+            doc.append(Command("begin", "abstract"))
+            if not document_data.get(section_name):
+                doc.append("Abstract Unavailable")
+            else:
+                doc.append(document_data[section_name])
+            doc.append(Command("end", "abstract"))
+            continue
+
+        # Version Description is the only field that doesn't get rendered at all
+        # if it's not found in the database data (as opposed to other field which)
+        # get displayed as "Content Unavailable"
+        if section_name == "version_description" and not document_data.get(
+            "version_description"
+        ):
             continue
 
         s = Section(info["title"])
@@ -500,7 +529,12 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             "algorithm_output_variables",
         ]:
 
-            doc.append(process_algorithm_variables(document_data[section_name]))
+            doc.append(
+                process_algorithm_variables(
+                    data=document_data[section_name],
+                    caption=document_data[f"{section_name}_caption"],
+                )
+            )
             continue
 
         if section_name in [
@@ -518,7 +552,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             doc.append(process(item, atbd_id=atbd.id))
             continue
 
-    doc.append(Command("bibliographystyle", arguments="abbrv"))
+    doc.append(Command("bibliographystyle", arguments="apacite"))
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
 
     return doc
@@ -542,15 +576,16 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
 
     latex_document.generate_pdf(
         filepath=filepath,
-        clean=False,
-        clean_tex=False,
+        clean=True,
+        clean_tex=True,
         # latexmk automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
         compiler="latexmk",
         # the `--pdfxe` flag loads the Xelatex pacakge necessary for
         # the compiler to manage image positioning within the pdf document
         # and native unicode character handling
-        compiler_args=["--pdfxe"],
+        compiler_args=["--pdfxe", "-e", "$max_repeat=10"],
+        silent=False,
     )
 
     return f"{filepath}.pdf"

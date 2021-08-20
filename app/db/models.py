@@ -1,4 +1,5 @@
 """SQLAlchemy models for interfacing with the database"""
+
 from sqlalchemy import (
     CheckConstraint,
     Column,
@@ -12,11 +13,44 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
 
-from app.acls import ATBD_VERSION_ACLS
+from app import acls
 from app.db.base import Base
 from app.db.types import utcnow
 
-import fastapi_permissions as permissions
+import fastapi_permissions
+
+
+class Atbds(Base):
+    """Atbds"""
+
+    __tablename__ = "atbds"
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    title = Column(String(), nullable=False)
+    alias = Column(String(), CheckConstraint("alias ~ '^[a-z0-9-]+$'"), unique=True)
+    created_by = Column(String(), nullable=False)
+    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    last_updated_by = Column(String(), nullable=False)
+    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+
+    versions = relationship(
+        "AtbdVersions",
+        backref="atbd",
+        uselist=True,
+        # lazy="joined",
+        lazy="select",
+        order_by="AtbdVersions.created_at",
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self):
+        """String representation"""
+        versions = ", ".join(f"v{v.major}.{v.minor}" for v in self.versions)
+        return (
+            f"<Atbds(id={self.id}, title={self.title}, alias={self.alias},"
+            f" created_by={self.created_by}, created_at={self.created_at},"
+            f" last_updated_by={self.last_updated_by}, last_updated_at={self.last_updated_at}"
+            f" versions={versions})>"
+        )
 
 
 class AtbdVersions(Base):
@@ -37,7 +71,6 @@ class AtbdVersions(Base):
     created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
     last_updated_by = Column(String(), nullable=False)
     last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
-    changelog = Column(String())
     doi = Column(String())
     citation = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
     owner = Column(String(), nullable=False)
@@ -53,8 +86,8 @@ class AtbdVersions(Base):
             f" sections_completed={self.sections_completed}, created_by={self.created_by},"
             f" created_at={self.created_at}, published_by={self.published_by},"
             f" published_at={self.published_by}, last_updated_at={self.last_updated_at}"
-            f" last_updated_by={self.last_updated_by}), owner={self.owner}, authors={self.authors}>"
-            f" reviewers={self.reviewers}"
+            f" last_updated_by={self.last_updated_by}), owner={self.owner}, authors={self.authors}"
+            f" reviewers={self.reviewers})>"
         )
 
     def __acl__(self):
@@ -62,7 +95,7 @@ class AtbdVersions(Base):
         allowed or denied from executing"""
 
         acl = []
-        for grantee, actions in ATBD_VERSION_ACLS.items():
+        for grantee, actions in acls.ATBD_VERSION_ACLS.items():
 
             if grantee == "owner":
                 grantee = f"user:{self.owner}"
@@ -79,49 +112,18 @@ class AtbdVersions(Base):
                     continue
 
                 permission = (
-                    permissions.Deny if action.get("deny") else permissions.Allow
+                    fastapi_permissions.Deny
+                    if action.get("deny")
+                    else fastapi_permissions.Allow
                 )
 
                 if isinstance(grantee, str):
                     acl.append((permission, grantee, action["action"]))
 
                 if isinstance(grantee, list):
-                    for g in grantee:
-                        acl.append((permission, g, action["action"]))
+                    acl.extend([(permission, g, action["action"]) for g in grantee])
 
         return acl
-
-
-class Atbds(Base):
-    """Atbds"""
-
-    __tablename__ = "atbds"
-    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
-    title = Column(String(), nullable=False)
-    alias = Column(String(), CheckConstraint("alias ~ '^[a-z0-9-]+$'"), unique=True)
-    created_by = Column(String(), nullable=False)
-    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
-    last_updated_by = Column(String(), nullable=False)
-    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
-
-    versions = relationship(
-        "AtbdVersions",
-        backref="atbd",
-        uselist=True,
-        lazy="joined",
-        order_by="AtbdVersions.created_at",
-        cascade="all, delete-orphan",
-    )
-
-    def __repr__(self):
-        """String representation"""
-        versions = ", ".join(f"v{v.major}.{v.minor}" for v in self.versions)
-        return (
-            f"<Atbds(id={self.id}, title={self.title}, alias={self.alias},"
-            f" created_by={self.created_by}, created_at={self.created_at},"
-            f" last_updated_by={self.last_updated_by}, last_updated_at={self.last_updated_at}"
-            f" versions={versions})>"
-        )
 
 
 class Contacts(Base):
@@ -174,13 +176,15 @@ class AtbdVersionsContactsAssociation(Base):
     atbd_version = relationship(
         "AtbdVersions",
         backref=backref("contacts_link", cascade="all, delete-orphan"),
-        lazy="joined",
+        # lazy="joined",
+        lazy="select",
     )
 
     contact = relationship(
         "Contacts",
         backref=backref("atbd_versions_link", cascade="all, delete-orphan"),
-        lazy="joined",
+        # lazy="joined",
+        lazy="select",
     )
 
     def __repr__(self):
@@ -190,3 +194,95 @@ class AtbdVersionsContactsAssociation(Base):
             f"contact_id={self.contact_id}, roles={self.roles}, "
             f"atbd_versions={self.atbd_version}, contacts={self.contact})>"
         )
+
+
+class Threads(Base):
+    """thread model"""
+
+    __tablename__ = "threads"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["atbd_id", "major"],
+            ["atbd_versions.atbd_id", "atbd_versions.major"],
+            name="atbd_version_fk_constraint",
+        ),
+    )
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    atbd_id = Column(Integer(), nullable=False, primary_key=True,)
+    major = Column(Integer(), nullable=False, primary_key=True,)
+    status = Column(String(), server_default="OPEN", nullable=False)
+    section = Column(String(), nullable=False)
+    created_by = Column(String(), nullable=False)
+    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    last_updated_by = Column(String(), nullable=False)
+    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+
+    comments = relationship(
+        "Comments",
+        backref="thread",
+        uselist=True,
+        # lazy="joined",
+        lazy="select",
+        # lazy="dynamic",
+        order_by="Comments.created_at",
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self):
+        """String representation"""
+        comments = ", ".join(f"{c.id}: {c.body}" for c in self.comments)
+        return (
+            f"<Threads(id={self.id}, atbd_id={self.atbd_id}, major={self.major},"
+            f" status={self.status}, section={self.section},"
+            f" comments={comments})>"
+        )
+
+    def __acl__(self):
+        """Access Control List for Comments"""
+        acl = []
+        for grantee, actions in acls.THREAD_ACLS.items():
+
+            if grantee == "owner":
+                grantee = f"user:{self.created_by}"
+
+            acl.extend(
+                [(fastapi_permissions.Allow, grantee, a["action"]) for a in actions]
+            )
+        return acl
+
+
+class Comments(Base):
+    """comment model"""
+
+    __tablename__ = "comments"
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    thread_id = Column(
+        Integer(), ForeignKey("threads.id"), primary_key=True, index=True,
+    )
+    created_by = Column(String(), nullable=False)
+    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    last_updated_by = Column(String(), nullable=False)
+    last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    body = Column(types.Text)
+
+    def __repr__(self):
+        """String representation"""
+        return (
+            f"<Comments(id={self.id}, thread_id={self.thread_id}, created_at={self.created_by},"
+            f" created_by={self.created_by}, last_updated_at={self.last_updated_at},"
+            f" last_updated_by={self.last_updated_by}, body={self.body})>"
+        )
+
+    def __acl__(self):
+        """Access Control List for Comments"""
+        acl = []
+        for grantee, actions in acls.COMMENT_ACLS.items():
+
+            if grantee == "owner":
+                grantee = f"user:{self.created_by}"
+
+            acl.extend(
+                [(fastapi_permissions.Allow, grantee, a["action"]) for a in actions]
+            )
+
+        return acl

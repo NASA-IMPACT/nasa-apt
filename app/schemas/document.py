@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import AnyUrl, BaseModel, root_validator, validator
 
@@ -59,14 +59,16 @@ class TextLeaf(BaseModel):
 class BaseNode(BaseModel):
     """Generic WYSIWYG node type"""
 
-    type: str
+    type: TypesEnum
+    id: Optional[str]
+    # _type: str
     children: List[TextLeaf]
 
 
 class LinkNode(BaseNode):
     """href Link WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     url: AnyUrl
     children: List[TextLeaf]
 
@@ -74,7 +76,7 @@ class LinkNode(BaseNode):
 class ReferenceNode(BaseNode):
     """Reference to bib item WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     refId: str
     children: List[TextLeaf]
 
@@ -82,21 +84,21 @@ class ReferenceNode(BaseNode):
 class DivNode(BaseNode):
     """Generic text container WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[Union[TextLeaf, LinkNode, ReferenceNode]]
 
 
 class OrderedListNode(BaseNode):
     """Ordered (numerical) List WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[ListItemNode]
 
 
 class UnorderedListNode(BaseNode):
     """Unordered (bullet points) list WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[ListItemNode]
 
 
@@ -104,7 +106,7 @@ class ListItemNode(BaseNode):
     """List item node that gets wrapped with OrderedList or UnorderedList.
     List items can also contain other orderd or unordered lists"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[Union[DivNode, OrderedListNode, UnorderedListNode]]
 
 
@@ -119,45 +121,36 @@ UnorderedListNode.update_forward_refs()
 class SubsectionNode(BaseNode):
     """Custom/user defined `sub-sections` items"""
 
-    id: str
-    type: TypesEnum
-
-    @root_validator()
-    def _validate(cls, values):
-        print("SUBSECTION node")
-        print("PINGPONG: ", values)
-        return values
+    pass
+    # id: str
+    # _type: TypesEnum
 
 
 class EquationNode(BaseNode):
     """Equation WYSIWYG node"""
 
-    type: TypesEnum
+    pass
+    # _type: TypesEnum
 
 
 class ImageNode(BaseNode):
     """Image WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     objectKey: str
-
-    @root_validator()
-    def _validate(cls, values):
-        print("\nIMAGE NODE")
-        print("PINGPONG: ", values)
-        return values
 
 
 class CaptionNode(BaseNode):
     """Caption nodes (for Table or Image WYSIWYG nodes)"""
 
-    type: TypesEnum
+    # _type: TypesEnum
+    pass
 
 
 class ImageBlockNode(BaseNode):
     """Image block node (contains image and caption)"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[Union[ImageNode, CaptionNode]]
 
     @validator("children")
@@ -182,28 +175,28 @@ class ImageBlockNode(BaseNode):
 class TableCellNode(BaseNode):
     """Table cell WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[DivNode]
 
 
 class TableRowNode(BaseNode):
     """Table row WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[TableCellNode]
 
 
 class TableNode(BaseNode):
     """Table WYSIWYG node"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[TableRowNode]
 
 
 class TableBlockNode(BaseNode):
     """Wrapper for Table WYSIWYG node and Caption WYSIWYG nodes"""
 
-    type: TypesEnum
+    # _type: TypesEnum
     children: List[Union[TableNode, CaptionNode]]
 
     @validator("children")
@@ -227,8 +220,16 @@ class TableBlockNode(BaseNode):
 class DataAccessUrl(BaseModel):
     """Data Access URL"""
 
-    url: AnyUrl
-    description: str
+    url: Optional[Union[AnyUrl, str]]
+    description: Optional[str]
+
+    @root_validator(pre=True)
+    def _set_url(cls, values: Dict[str, Any]):
+        if "url" not in values:
+            values["url"] = ""
+        if "description" not in values:
+            values["description"] = ""
+        return values
 
 
 class DivWrapperNode(BaseModel):
@@ -268,28 +269,40 @@ class SectionWrapper(BaseModel):
     children: List[
         Union[
             DivNode,
+            SubsectionNode,
             OrderedListNode,
             UnorderedListNode,
             ImageBlockNode,
-            SubsectionNode,
             TableBlockNode,
             EquationNode,
         ]
     ]
 
 
-class Document(BaseModel):
+class DocumentSummary(BaseModel):
+    """Document node to be returns in the `SummaryOutput` of
+    Atbds and AtbdVersions"""
+
+    abstract: Optional[str]
+
+
+class Document(DocumentSummary):
     """Top level `document` node"""
 
+    version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
     historical_perspective: Optional[SectionWrapper]
+    additional_information: Optional[SectionWrapper]
     algorithm_description: Optional[SectionWrapper]
+    data_availability: Optional[SectionWrapper]
     scientific_theory: Optional[SectionWrapper]
     scientific_theory_assumptions: Optional[SectionWrapper]
     mathematical_theory: Optional[SectionWrapper]
     mathematical_theory_assumptions: Optional[SectionWrapper]
     algorithm_input_variables: Optional[List[AlgorithmVariable]]
+    algorithm_input_variables_caption: Optional[str]
     algorithm_output_variables: Optional[List[AlgorithmVariable]]
+    algorithm_output_variables_caption: Optional[str]
     algorithm_implementations: Optional[List[DataAccessUrl]]
     algorithm_usage_constraints: Optional[SectionWrapper]
     performance_assessment_validation_methods: Optional[SectionWrapper]

@@ -2,23 +2,22 @@
 import datetime
 from typing import List
 
-from app.api.utils import (
-    get_active_user_principals,
-    get_major_from_version_string,
-    get_user,
-    list_cognito_users,
-    require_user,
-    update_contributor_info,
-)
+from app.api.utils import get_major_from_version_string
 from app.crud.atbds import crud_atbds
 from app.crud.contacts import crud_contacts_associations
 from app.crud.versions import crud_versions
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import AtbdVersions
-from app.permissions import check_permissions, filter_atbds
+from app.permissions import check_permissions
 from app.schemas import atbds, versions, versions_contacts
-from app.schemas.users import User
+from app.schemas.users import CognitoUser
 from app.search.elasticsearch import remove_atbd_from_index
+from app.users.auth import get_user, require_user
+from app.users.cognito import (
+    get_active_user_principals,
+    process_users_input,
+    update_atbd_contributor_info,
+)
 
 from fastapi import APIRouter, BackgroundTasks, Depends
 
@@ -33,7 +32,7 @@ def version_exists(
     atbd_id: str,
     version: str,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(get_user),
+    user: CognitoUser = Depends(get_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """
@@ -42,17 +41,22 @@ def version_exists(
     """
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
-    atbd = filter_atbds(principals, atbd)
+    [atbd_version] = atbd.versions
+    check_permissions(principals=principals, action="view", acl=atbd_version.__acl__())
 
     return True
 
 
-@router.get("/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput)
+@router.get(
+    "/atbds/{atbd_id}/versions/{version}",
+    response_model=atbds.FullOutput,
+    response_model_exclude_none=True,
+)
 def get_version(
     atbd_id: str,
     version: str,
     db: DbSession = Depends(get_db_session),
-    user: User = Depends(get_user),
+    user: CognitoUser = Depends(get_user),
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """
@@ -60,17 +64,21 @@ def get_version(
     """
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
-    atbd = filter_atbds(principals, atbd)
-
-    atbd = update_contributor_info(principals, atbd)
+    [atbd_version] = atbd.versions
+    check_permissions(principals=principals, action="view", acl=atbd_version.__acl__())
+    atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
 
-@router.post("/atbds/{atbd_id}/versions", response_model=atbds.FullOutput)
+@router.post(
+    "/atbds/{atbd_id}/versions",
+    response_model=atbds.FullOutput,
+    response_model_exclude_none=True,
+)
 def create_new_version(
     atbd_id: str,
     db: DbSession = Depends(get_db_session),
-    user=Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
     """
@@ -84,32 +92,38 @@ def create_new_version(
         action="create_new_version",
         acl=latest_version.__acl__(),
     )
+    update_document = latest_version.document
+    update_document["version_description"] = None
 
     new_version_input = versions.Create(
         atbd_id=latest_version.atbd_id,
         major=latest_version.major + 1,
         minor=0,
         status="DRAFT",
-        document=latest_version.document,
-        created_by=user["sub"],
-        last_updated_by=user["sub"],
-        owner=user["sub"],
+        document=update_document,
+        created_by=user.sub,
+        last_updated_by=user.sub,
+        owner=user.sub,
     )
     new_version = crud_versions.create(db_session=db, obj_in=new_version_input)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=new_version.major)
-    atbd = update_contributor_info(principals, atbd)
+    atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
 
-@router.post("/atbds/{atbd_id}/versions/{version}", response_model=atbds.FullOutput)
-def update_atbd_version(  # noqa : C901
+@router.post(  # noqa : C901
+    "/atbds/{atbd_id}/versions/{version}",
+    response_model=atbds.FullOutput,
+    response_model_exclude_none=True,
+)
+def update_atbd_version(
     atbd_id: str,
     version: str,
     version_input: versions.Update,
     background_tasks: BackgroundTasks,
     overwrite: bool = False,
     db: DbSession = Depends(get_db_session),
-    user=Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
     """
@@ -129,7 +143,6 @@ def update_atbd_version(  # noqa : C901
     current minor version number.
 
     """
-
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
 
@@ -137,9 +150,17 @@ def update_atbd_version(  # noqa : C901
     [atbd_version] = atbd.versions
     version_acl = atbd_version.__acl__()
 
-    # blanket update permission check - more specific permissions checks will
-    # occer later
-    check_permissions(principals=principals, action="update", acl=version_acl)
+    for attribute in versions.Update.__dict__["__fields__"].keys():
+        if attribute in ["journal_status", "owner", "authors", "reviewers"]:
+            continue
+
+        try:
+            if getattr(version_input, attribute):
+                check_permissions(
+                    principals=principals, action="update", acl=version_acl
+                )
+        except AttributeError:
+            continue
 
     if version_input.contacts and len(version_input.contacts):
 
@@ -165,38 +186,63 @@ def update_atbd_version(  # noqa : C901
                 db_session=db, id=(atbd_id, major, contact.contact_id)  # type: ignore
             )
 
+        delattr(version_input, "contacts")
+
     if version_input.owner or version_input.reviewers or version_input.authors:
+        # No need to check action permissions here because the
+        # process_users_input method has its own permissions
+        # checking logic
         version_input = process_users_input(
             version_input=version_input,
             atbd_version=atbd_version,
+            atbd_title=atbd.title,
+            atbd_id=atbd.id,
+            user=user,
             principals=principals,
+            background_tasks=background_tasks,
         )
 
+    # TODO: use enum for journal status
     if version_input.journal_status:
-        check_permissions(
-            principals=principals, action="update_journal_status", acl=version_acl
+        action = (
+            "update_journal_status"
+            if version_input.journal_status
+            in ["NO_PUBLICATION", "PUBLICATION_INTENDED"]
+            else "update_journal_publication_status"
         )
+
+        check_permissions(principals=principals, action=action, acl=version_acl)
 
     if version_input.document and not overwrite:
-        version_input.document = {
+
+        version_input.document = {  # type: ignore
             **atbd_version.document,
             **version_input.document.dict(exclude_unset=True),
-        }  # type: ignore
+        }
 
     if version_input.sections_completed and not overwrite:
+
         version_input.sections_completed = {
             **atbd_version.sections_completed,
             **version_input.sections_completed,
         }
 
-    atbd_version.last_updated_by = user["sub"]
-    atbd_version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
+    # # This should act on the update input object, and not the db object
+    # atbd_version.last_updated_by = user.sub
+    # atbd_version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
 
-    crud_versions.update(db=db, db_obj=atbd_version, obj_in=version_input)
+    crud_versions.update(
+        db=db,
+        db_obj=atbd_version,
+        obj_in=versions.AdminUpdate(
+            **version_input.dict(),
+            last_updated_by=user.sub,
+            last_updated_at=datetime.datetime.now(datetime.timezone.utc)
+        ),
+    )
 
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=atbd_version.major)
-
-    atbd = update_contributor_info(principals, atbd)
+    atbd = update_atbd_contributor_info(principals, atbd)
 
     return atbd
 
@@ -210,7 +256,7 @@ def delete_atbd_version(
     version: str,
     background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db_session),
-    user=Depends(require_user),
+    user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
     """
@@ -227,87 +273,6 @@ def delete_atbd_version(
     crud_versions.delete(db=db, atbd=atbd, version=atbd_version)
 
     background_tasks.add_task(remove_atbd_from_index, version=atbd_version)
+
+    # TODO: this should also remove the associated PDFs in S3
     return {}
-
-
-def process_users_input(
-    version_input: versions.Update, atbd_version: AtbdVersions, principals: List[str]
-):
-    """Processes logic relating to adding users to an ATBDVersion,
-    as owner (transfer ownership, notify users, add old owner to authors),
-    adding authors (verify not already owner, or reviewer), or adding
-    reviewers (verify contributor, not already assigned to the document.)
-    """
-    app_users = list_cognito_users()
-
-    if version_input.reviewers:
-
-        check_permissions(
-            principals=principals,
-            action="invite_reviewers",
-            acl=atbd_version.__acl__(),
-        )
-
-        for reviewer in version_input.reviewers:
-
-            [cognito_user] = [user for user in app_users if user["sub"] == reviewer]
-
-            check_permissions(
-                principals=get_active_user_principals(cognito_user),
-                action="join_reviewers",
-                acl=atbd_version.__acl__(),
-            )
-
-        reviewers = [
-            x for x in atbd_version.reviewers if x["sub"] in version_input.reviewers
-        ]
-
-        reviewers.extend(
-            [
-                {"sub": r, "review_status": "IN_PROGRESS"}
-                for r in version_input.reviewers
-                if r not in [_r["sub"] for _r in atbd_version.reviewers]
-            ]
-        )
-        version_input.reviewers = reviewers
-
-    if version_input.authors:
-        check_permissions(
-            principals=principals, action="invite_authors", acl=atbd_version.__acl__(),
-        )
-
-        for author in version_input.authors:
-            [cognito_author] = [user for user in app_users if user["sub"] == author]
-            check_permissions(
-                principals=get_active_user_principals(cognito_author),
-                action="join_authors",
-                acl=atbd_version.__acl__(),
-            )
-
-    if version_input.owner and version_input.owner != atbd_version.owner:
-        # User performing transfer ownership operation is not allowed
-        check_permissions(
-            principals=principals, action="offer_ownership", acl=atbd_version.__acl__(),
-        )
-
-        [cognito_owner] = [
-            user for user in app_users if user["sub"] == version_input.owner
-        ]
-
-        # User being transferred ownership to, is not allowed (either because
-        # they are a reviewer of the document, or a curator)
-
-        check_permissions(
-            principals=get_active_user_principals(cognito_owner),
-            action="receive_ownership",
-            acl=atbd_version.__acl__(),
-        )
-
-        # Remove new owner from authors list
-        version_input.authors = [
-            a for a in atbd_version.authors if a != version_input.owner
-        ]
-        # Set old owner as author
-        version_input.authors.append(atbd_version.owner)
-
-    return version_input

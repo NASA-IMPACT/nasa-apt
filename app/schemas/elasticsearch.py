@@ -8,18 +8,11 @@ from app.schemas.document import Document
 
 
 class ElasticsearchAtbdVersion(BaseModel):
-    """Elasticsearch document representing an AtbdVersion """
+    """Elasticsearch document representing an AtbdVersion"""
 
     major: int
     minor: int
     version: Optional[str]
-    status: str
-    published_by: Optional[str]
-    published_at: Optional[datetime]
-    created_by: str
-    created_at: datetime
-    last_updated_by: str
-    last_updated_at: datetime
     citation: Optional[dict]
     document: Optional[Document]
     doi: Optional[str]
@@ -42,6 +35,12 @@ class ElasticsearchAtbdVersion(BaseModel):
                 return " "
 
             if isinstance(d, dict) and d.get("text"):
+                try:
+                    datetime.fromisoformat(d["text"])
+                    return d["text"].replace("T", " ")
+                except ValueError:
+                    pass
+
                 return d["text"]
 
             if isinstance(d, dict) and d.get("description") and d.get("url"):
@@ -66,15 +65,8 @@ class ElasticsearchAtbd(BaseModel):
     id: str
     title: str
     alias: Optional[str]
-    created_by: str
-    created_at: datetime
-    last_updated_by: str
-    last_updated_at: datetime
     version: ElasticsearchAtbdVersion
 
-    # attribute names starting with `_` don't get serialized by Pydantic
-    # so we use a field alias to convert it. Elasticsearch requires that
-    # each document contain a field with key `_id` that uniquely identifies that document
     class Config:
         """Config."""
 

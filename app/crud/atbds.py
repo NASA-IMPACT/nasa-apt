@@ -1,4 +1,6 @@
 """CRUD Operations for Atbds model"""
+from typing import Union
+
 from sqlalchemy import exc, func, orm
 
 from app.crud.base import CRUDBase
@@ -41,7 +43,9 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
             )
         return query.all()
 
-    def _build_lookup_query(self, db: DbSession, atbd_id: str, version: int = None):
+    def _build_lookup_query(
+        self, db: DbSession, atbd_id: Union[str, int], version: int = None
+    ):
         try:
             int(atbd_id)
             alias = None
@@ -78,7 +82,7 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
 
         return query
 
-    def get(self, db: DbSession, atbd_id: str, version: int = None):
+    def get(self, db: DbSession, atbd_id: Union[str, int], version: int = None):
         """Query a single ATBD."""
         query = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
         try:
@@ -89,23 +93,13 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
                 status_code=404, detail=f"No data found for id/alias: {atbd_id}"
             )
 
-    # def exists(self, db: DbSession, atbd_id: str, version: int = None):  # type: ignore
-    #     """Raise exception if ATBD is not found in DB, otherwise returns 200."""
-
-    #     lookup = self._build_lookup_query(db=db, atbd_id=atbd_id, version=version)
-    #     result = db.query(lookup.exists()).scalar()
-    #     if not result:
-    #         raise HTTPException(
-    #             status_code=404, detail=f"No data found for id/alias: {atbd_id}"
-    #         )
-
-    #     return result
-
-    # TODO: migrate this from a custom Postgres function to a SQLAlchemy
-    # operation that executes within a single transaction
-    def create(self, db: DbSession, atbd_input: Create, user_sub: str):  # type: ignore
-        """Creates a new ATBD (using a custom Postgres function, in order to also create the
-        necessary Version)"""
+    def create(  # type: ignore
+        self, db: DbSession, atbd_input: Create, user_sub: str
+    ) -> Atbds:
+        """Creates a new Atbd along with an Atbd Version v1.0. It's necessary to add
+        and commit the Atbd before creating the Atbd Version because the Atbd's id,
+        which needs to be saved as a field of the AtbdVersion, gets generated when
+        serializing the Atbd to the database."""
 
         atbd = Atbds(
             **atbd_input.dict(), created_by=user_sub, last_updated_by=user_sub,
@@ -125,75 +119,6 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         db.commit()
         db.refresh(atbd)
         return atbd
-
-        # atbd_id, created_by, last_updated_by, major, minor
-        # title = Column(String(), nullable=False)
-        # alias = Column(String(), CheckConstraint("alias ~ '^[a-z0-9-]+$'"), unique=True)
-        # created_by = Column(String(), nullable=False)
-        # created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
-        # last_updated_by = Column(String(), nullable=False)
-        # last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
-
-        # _input = (
-        #     (atbd_input.title, user)
-        #     if not atbd_input.alias
-        #     else (atbd_input.title, user, atbd_input.alias)
-        # )
-        # try:
-        #     # TODO: consider switching from using a Postgres function
-        #     # to performing this operation directly with SQLAlchemy ORM models
-        #     function_execution_result = db.execute(
-        #         select(
-        #             [
-        #                 column("atbds.id"),
-        #                 column("atbds.title"),
-        #                 column("atbds.alias"),
-        #                 column("atbds.created_by"),
-        #                 column("atbds.created_at"),
-        #                 column("atbds.last_updated_by"),
-        #                 column("atbds.last_updated_at"),
-        #                 column("atbd_versions.major"),
-        #                 column("atbd_versions.minor"),
-        #                 column("atbd_versions.atbd_id"),
-        #                 column("atbd_versions.status"),
-        #                 column("atbd_versions.document"),
-        #                 column("atbd_versions.sections_completed"),
-        #                 column("atbd_versions.published_by"),
-        #                 column("atbd_versions.published_at"),
-        #                 column("atbd_versions.created_by"),
-        #                 column("atbd_versions.created_at"),
-        #                 column("atbd_versions.last_updated_by"),
-        #                 column("atbd_versions.last_updated_at"),
-        #                 column("atbd_versions.changelog"),
-        #                 column("atbd_versions.doi"),
-        #                 column("atbd_versions.citation"),
-        #             ]
-        #         ).select_from(func.apt.create_atbd_version(*_input))
-        #     )
-
-        #     db.commit()
-
-        # except exc.IntegrityError:
-        #     if atbd_input.alias:
-        #         raise HTTPException(
-        #             status_code=400,
-        #             detail=f"An ATBD with alias {atbd_input.alias} already exists",
-        #         )
-        # [created_atbd] = function_execution_result
-
-        # output = {
-        #     k.split(".")[-1]: v
-        #     for k, v in dict(created_atbd).items()
-        #     if k.split(".")[0] == "atbds"
-        # }
-        # output["versions"] = [
-        #     {
-        #         k.split(".")[-1]: v
-        #         for k, v in dict(created_atbd).items()
-        #         if k.split(".")[0] == "atbd_versions"
-        #     }
-        # ]
-        # return output
 
     def remove(self, db: DbSession, atbd_id: str) -> Atbds:  # type: ignore
         """Deletes an ATBD."""

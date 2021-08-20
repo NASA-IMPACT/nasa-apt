@@ -3,6 +3,7 @@ RUN apt-get update \
     && apt-get install -y \
     locales \
     texlive-latex-recommended \
+    texlive-bibtex-extra \
     texlive-xetex \
     latexmk\
     wget libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config gcc \

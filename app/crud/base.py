@@ -1,5 +1,5 @@
 """Module with Basic CRUD operations - each DB model extends this ."""
-from typing import Any, Generic, List, Tuple, Type, TypeVar, Union
+from typing import Generic, List, Tuple, Type, TypeVar, Union
 
 from pydantic import BaseModel
 from sqlalchemy.dialects import postgresql
@@ -45,6 +45,7 @@ class CRUDBase(
         """Select a single item by id. TODO: use query.get(id)"""
         obj_in_data = jsonable_encoder(obj_in)
         lookup = db_session.query(self.model).filter_by(**filters, **obj_in_data)
+        # lookup = db_session.query(self.model).get(**obj_in.dict())
         return lookup.one()
 
     def get_multi(
@@ -103,7 +104,7 @@ class CRUDBase(
         """Queries the item in the DB, updates the class's attributes and
         re-inserts into the DB."""
         obj_data = jsonable_encoder(db_obj)
-        update_data = obj_in.dict(skip_defaults=True)
+        update_data = obj_in.dict(exclude_unset=True, exclude_none=True)
         for field in obj_data:
             if field in update_data:
                 setattr(db_obj, field, update_data[field])
@@ -112,7 +113,12 @@ class CRUDBase(
         db.refresh(db_obj)
         return db_obj
 
-    def remove(self, db_session: Session, *, id: Union[int, Tuple[Any]]) -> ModelType:
+    def remove(
+        self,
+        db_session: Session,
+        *,
+        id: Union[int, Tuple[int, int], Tuple[int, int, int]],
+    ) -> ModelType:
         """Deletes an item by id"""
         obj = db_session.query(self.model).get(id)
         db_session.delete(obj)

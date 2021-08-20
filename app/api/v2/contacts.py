@@ -4,12 +4,13 @@ from typing import List
 from sqlalchemy import orm
 
 from app.acls import CONTACT_ACLS
-from app.api.utils import get_active_user_principals, require_user
 from app.crud.contacts import crud_contacts
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_permissions
 from app.schemas import contacts
 from app.schemas.users import User
+from app.users.auth import require_user
+from app.users.cognito import get_active_user_principals
 
 from fastapi import APIRouter, Depends, HTTPException
 

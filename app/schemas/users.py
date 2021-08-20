@@ -1,6 +1,8 @@
 """Schemas for Cognito User models"""
 
-from pydantic import BaseModel, Field
+from typing import List
+
+from pydantic import BaseModel, Field, root_validator
 
 
 class User(BaseModel):
@@ -22,19 +24,32 @@ class User(BaseModel):
     email: str
 
 
-class CognitoUser(BaseModel):
-    """User contributing to an ATBD Version, as returned by Cognito"""
-
-    username: str
-    sub: str
-    preferred_username: str
-    email: str
-
-
 class AnonymousUser(BaseModel):
     """Obfuscated user contributing to an ATBD Version"""
 
     preferred_username: str
+
+
+class CognitoUser(AnonymousUser):
+    """User contributing to an ATBD Version, as returned by Cognito"""
+
+    sub: str
+    email: str
+    cognito_groups: List[str] = Field([], alias="cognito:groups")
+
+    @root_validator(pre=True)
+    def _unpack_attributes(cls, values):
+        if "Attributes" not in values:
+            return values
+
+        for attribute in values["Attributes"]:
+            if attribute["Name"] in [
+                "email",
+                "sub",
+                "preferred_username",
+            ]:
+                values[attribute["Name"]] = attribute["Value"]
+        return values
 
 
 class ReviewerUser(CognitoUser):

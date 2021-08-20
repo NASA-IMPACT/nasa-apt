@@ -1,12 +1,12 @@
 """Pydantic models for AtbdVersions"""
 import enum
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, validator
 
 from app.schemas import versions_contacts
-from app.schemas.document import Document
+from app.schemas.document import Document, DocumentSummary
 from app.schemas.users import (
     AnonymousReviewerUser,
     AnonymousUser,
@@ -31,15 +31,15 @@ class AtbdVersionSummaryOutput(BaseModel):
     minor: int
     version: Optional[str]
     status: str
-    published_by: Optional[str]
+    published_by: Optional[Union[CognitoUser, AnonymousUser]]
     published_at: Optional[datetime]
     sections_completed: Optional[dict]
-    created_by: str
+    created_by: Union[CognitoUser, AnonymousUser]
     created_at: datetime
-    last_updated_by: str
+    last_updated_by: Union[CognitoUser, AnonymousUser]
     last_updated_at: datetime
     citation: Optional[dict]
-    changelog: Optional[str]
+    document: Optional[DocumentSummary]
     owner: Union[CognitoUser, AnonymousUser]
     authors: Union[List[CognitoUser], List[AnonymousUser]]
     reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]
@@ -112,26 +112,24 @@ class SectionsCompleted(BaseModel):
     """Sections completed - each value is a str equal to either `incomplete` or `complete`.
     Gets set by the user"""
 
+    version_description: CompletednessEnum
+    citation: CompletednessEnum
+    contacts: CompletednessEnum
     introduction: CompletednessEnum
-    historical_perspective: CompletednessEnum
-    algorithm_description: CompletednessEnum
+    context_background: CompletednessEnum
     scientific_theory: CompletednessEnum
-    scientific_theory_assumptions: CompletednessEnum
     mathematical_theory: CompletednessEnum
-    mathematical_theory_assumptions: CompletednessEnum
-    algorithm_input_variables: CompletednessEnum
-    algorithm_output_variables: CompletednessEnum
-    algorithm_implementations: CompletednessEnum
-    algorithm_usage_constraints: CompletednessEnum
-    performance_assessment_validation_methods: CompletednessEnum
-    performance_assessment_validation_uncertainties: CompletednessEnum
-    performance_assessment_validation_errors: CompletednessEnum
+    input_variables: CompletednessEnum
+    output_variables: CompletednessEnum
+    constraints: CompletednessEnum
+    validation: CompletednessEnum
+    algorithm_availability: CompletednessEnum
     data_access_input_data: CompletednessEnum
     data_access_output_data: CompletednessEnum
     data_access_related_urls: CompletednessEnum
-    journal_dicsussion: CompletednessEnum
-    journal_acknowledgements: CompletednessEnum
-    publication_references: CompletednessEnum
+    abstract: CompletednessEnum
+    discussion: CompletednessEnum
+    acknowledgements: CompletednessEnum
 
 
 class Update(BaseModel):
@@ -140,7 +138,6 @@ class Update(BaseModel):
 
     document: Optional[Document]
     sections_completed: Optional[dict]
-    changelog: Optional[str]
     doi: Optional[str]
     citation: Optional[Citation]
     status: Optional[str]
@@ -158,3 +155,9 @@ class AdminUpdate(Update):
     minor: Optional[int]
     published_by: Optional[str]
     published_at: Optional[datetime]
+    last_updated_by: str
+    last_updated_at: datetime
+    # reviewers gets re-defined here as a list of Dict
+    # since from the API side, each reviewer should have
+    # a review status associated with their user sub
+    reviewers: Optional[List[Dict[str, str]]]  # type: ignore

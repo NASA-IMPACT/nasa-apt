@@ -1,12 +1,14 @@
-"""Events pydantic models"""
+"""Schemas for the events objects"""
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, validator
 
+from app.api.v2 import events
+
 
 # TODO: make action enum
 class EventInput(BaseModel):
-    """Model for a new event"""
+    """Schemas for the object inputted to an event"""
 
     atbd_id: str
     version: str
@@ -18,19 +20,6 @@ class EventInput(BaseModel):
         """Ensure requested action is one of the
         allowed actions. TODO: make this an enum.
         """
-        if v not in [
-            "request_closed_review",
-            "cancel_closed_review_request",
-            "deny_closed_review_request",
-            "accept_closed_review_request",
-            "open_review",
-            "request_publication",
-            "cancel_publication_request",
-            "deny_publication_request",
-            "accept_publication_request",
-            "publish",
-            "bump_minor_version",
-            "update_review_status",
-        ]:
+        if v not in events.ACTIONS.keys():
             raise ValueError("Unrecognized action")
         return v

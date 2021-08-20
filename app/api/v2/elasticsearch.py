@@ -4,12 +4,12 @@ import boto3
 import requests
 from requests_aws4auth import AWS4Auth
 
-from app.auth.cognito import get_user
 from app.config import ELASTICSEARCH_URL
 from app.logs import logger
 
 # from app.auth.saml import User, get_user
 from app.schemas.users import User
+from app.users.auth import get_user
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -46,10 +46,6 @@ def search_elastic(request: dict, user: User = Depends(get_user)):
 
     logger.info("User %s", user)
     logger.info("data: %s", request)
-
-    if user is None:
-        # Apllies filter after the request operation returns the results
-        request["post_filter"] = {"match": {"version.status": "Published"}}
 
     logger.info("Searching %s %s", url, request)
     auth = aws_auth()

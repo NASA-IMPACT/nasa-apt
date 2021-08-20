@@ -6,11 +6,7 @@ from pydantic import BaseModel, validator
 
 from app.schemas import versions
 
-
-class PublishInput(BaseModel):
-    """Input for publishing an ATBD"""
-
-    changelog: Optional[str]
+from fastapi import HTTPException
 
 
 class Update(BaseModel):
@@ -19,12 +15,28 @@ class Update(BaseModel):
     alias: Optional[str]
     title: Optional[str]
 
+    @validator("alias")
+    def _restrict_to_32_chars(cls, v):
+        if len(v) > 32:
+            raise HTTPException(
+                status_code=400, detail="Alias cannot be longer than 32 characters"
+            )
+        return v
+
 
 class Create(BaseModel):
     """Atbd Create"""
 
     title: str
     alias: Optional[str]
+
+    @validator("alias")
+    def _restrict_to_32_chars(cls, v):
+        if len(v) > 32:
+            raise HTTPException(
+                status_code=400, detail="Alias cannot be longer than 32 characters"
+            )
+        return v
 
     class Config:
         """Config."""

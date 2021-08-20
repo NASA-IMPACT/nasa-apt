@@ -37,10 +37,31 @@ WHERE
 INSERT INTO atbds (title, alias, created_by, last_updated_by)
   VALUES ('Test ATBD 1', 'test-atbd-1', :'owner_sub', :'owner_sub');
 
-INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation, status)
-  VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', 1, 1, '{
+INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, published_by, major, minor, document, citation, status)
+  VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', :'curator_sub', 1, 1, '{
+  "abstract": "A brief and interesting overview of the themes presented in this document are as follows: At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. ", 
+  "version_description": {
+    "children":[
+      {
+        "type": "p",
+        "children":[
+          {
+            "text": "The important aspects of this document version include updated handling of the flux capcitor and addition of a description of the impulse response of an inhomogeneous linear differential operator defined on a domain with specified initial conditions or boundary conditions, also known as Green''s function:"
+          }
+        ]
+      },
+      {
+        "type": "equation",
+        "children": [
+          {"text": "\\int_C P\\,du + Q\\, dv = \\int\\!\\!\\!\\int_A \\left({\\partial Q\\over \\partial u} - {\\partial P\\over \\partial v}\\right) {1\\over \\sqrt{EG-F^2}}\\,dA"}
+        ]
+      }
+    ]
+  },
   "introduction": null,
   "historical_perspective": null,
+  "additional_information": null,
+  "data_availability":null,
   "mathematical_theory": {
     "children": [
       {
@@ -171,6 +192,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
     ]
   },
   "algorithm_input_variables": [],
+  "algorithm_input_variables_caption": null,
   "algorithm_output_variables": [
     {
       "name": {
@@ -215,6 +237,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
       }
     }
   ],
+  "algorithm_output_variables_caption": "This is a caption for algorithm output variables",
   "algorithm_usage_constraints": null,
   "performance_assessment_validation_methods": {
     "children": [
@@ -681,8 +704,29 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
 
 INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, last_updated_by, major, minor, document, citation, status)
   VALUES (1, :'owner_sub', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], ARRAY[jsonb_object(ARRAY['sub', :'reviewer_sub_1', 'review_status', 'IN_PROGRESS']::text[]), jsonb_object(ARRAY['sub', :'reviewer_sub_2', 'review_status', 'IN_PROGRESS']::text[])]::jsonb[], :'author_sub_1', 2, 0, '{
+  "abstract": "A brief and interesting overview of the themes presented in this document are as follows: At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. ",
+  "version_description": {
+    "children":[
+      {
+        "type": "p",
+        "children":[
+          {
+            "text": "The important aspects of this document version include updated handling of the flux capcitor and addition of a description of the impulse response of an inhomogeneous linear differential operator defined on a domain with specified initial conditions or boundary conditions, also known as Green''s function:"
+          }
+        ]
+      },
+      {
+        "type": "equation",
+        "children": [
+          {"text": "\\int_C P\\,du + Q\\, dv = \\int\\!\\!\\!\\int_A \\left({\\partial Q\\over \\partial u} - {\\partial P\\over \\partial v}\\right) {1\\over \\sqrt{EG-F^2}}\\,dA" }
+        ]
+      }
+    ]
+  },
   "introduction": null,
   "historical_perspective": null,
+  "additional_information": null,
+  "data_availability":null,
   "mathematical_theory": {
     "children": [
       {
@@ -813,6 +857,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
     ]
   },
   "algorithm_input_variables": [],
+  "algorithm_input_variables_caption": null,
   "algorithm_output_variables": [
     {
       "name": {
@@ -857,6 +902,7 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
       }
     }
   ],
+  "algorithm_output_variables_caption": "Algorithm Variables table caption :)",
   "algorithm_usage_constraints": null,
   "performance_assessment_validation_methods": {
     "children": [
@@ -1335,12 +1381,18 @@ INSERT INTO atbds (title, alias, created_by, created_at, last_updated_by, last_u
 
 INSERT INTO atbd_versions (atbd_id, created_by, created_at, "owner", authors, last_updated_by, last_updated_at, major, minor, document, status)
   VALUES (2, :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], :'owner_sub', '2021-06-27 21:00:00', 1, 0, '{
+  "abstract": null,
+  "version_description": null,
   "introduction": null,
   "historical_perspective": null,
+  "additional_information": null,
+  "data_availability":null,
   "mathematical_theory": null,
   "mathematical_theory_assumptions": null,
   "algorithm_input_variables": [],
+  "algorithm_input_variables_caption": null,
   "algorithm_output_variables": [],
+  "algorithm_output_variables_caption": null,
   "algorithm_usage_constraints": null,
   "performance_assessment_validation_methods": null,
   "performance_assessment_validation_uncertainties": null,
@@ -1356,3 +1408,12 @@ INSERT INTO atbd_versions (atbd_id, created_by, created_at, "owner", authors, la
   "publication_references": [
   ]
 }'::jsonb, 'DRAFT');
+
+INSERT INTO threads (atbd_id, major, section, created_by, last_updated_by)
+  VALUES (1, 2, 'introduction', :'author_sub_1', :'author_sub_1');
+
+INSERT INTO comments (thread_id, created_by, last_updated_by, body)
+  VALUES (1, :'author_sub_1', :'author_sub_1', 'This is a first comment');
+
+INSERT INTO comments (thread_id, created_by, last_updated_by, body)
+  VALUES (1, :'author_sub_1', :'author_sub_1', 'This is a second comment')
