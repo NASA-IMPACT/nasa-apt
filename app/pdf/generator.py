@@ -576,15 +576,15 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
 
     latex_document.generate_pdf(
         filepath=filepath,
-        clean=False,
-        clean_tex=False,
+        clean=True,
+        clean_tex=True,
         # latexmk automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
         compiler="latexmk",
         # the `--pdfxe` flag loads the Xelatex pacakge necessary for
         # the compiler to manage image positioning within the pdf document
         # and native unicode character handling
-        compiler_args=["--pdfxe"],
+        compiler_args=["--pdfxe", "-e", "$max_repeat=10"],
         silent=False,
     )
 
