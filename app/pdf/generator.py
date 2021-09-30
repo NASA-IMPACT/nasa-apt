@@ -68,7 +68,7 @@ SECTIONS = {
     "data_access_input_data": {"title": "Data Access Input Data"},
     "data_access_output_data": {"title": "Data Access Output Data"},
     "data_access_related_urls": {"title": "Data Access Related URLs"},
-    "journal_dicsussion": {"title": "Discussion"},
+    "journal_discussion": {"title": "Discussion"},
     "journal_acknowledgements": {"title": "Acknowledgements"},
     "contacts": {"title": "Contacts"},
 }
