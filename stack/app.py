@@ -120,18 +120,6 @@ class nasaAPTLambdaStack(core.Stack):
                 volume_type=ec2.EbsDeviceVolumeType.GP2,
             ),
             automated_snapshot_start_hour=0,
-            access_policies=[
-                iam.PolicyStatement(
-                    actions=["es:*"],
-                    effect=iam.Effect.ALLOW,
-                    principals=[
-                        iam.ArnPrincipal(f"arn:aws:iam::{core.Aws.ACCOUNT_ID}:root")
-                    ],
-                    resources=[
-                        f"arn:aws:es:${core.Aws.REGION}:${core.Aws.ACCOUNT_ID}:domain/${core.Aws.STACK_NAME}-elastic"
-                    ],
-                )
-            ],
         )
         logs_access = iam.PolicyStatement(
             actions=[
@@ -153,9 +141,9 @@ class nasaAPTLambdaStack(core.Stack):
             ELASTICSEARCH_URL=esdomain.domain_endpoint,
             S3_BUCKET=bucket.bucket_name,
             NOTIFICATIONS_FROM=config.NOTIFICATIONS_FROM,
+            MODULE_NAME="nasa_apt.main",
+            VARIABLE_NAME="app",
         )
-
-        lambda_env.update(dict(MODULE_NAME="nasa_apt.main", VARIABLE_NAME="app",))
 
         lambda_function_props = dict(
             runtime=_lambda.Runtime.FROM_IMAGE,
