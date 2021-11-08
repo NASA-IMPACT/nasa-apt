@@ -7,6 +7,7 @@ from pydantic import BaseModel, validator
 
 from app.schemas import versions_contacts
 from app.schemas.document import Document, DocumentSummary
+from app.schemas.publication_checklist import PublicationChecklist
 from app.schemas.users import (
     AnonymousReviewerUser,
     AnonymousUser,
@@ -60,6 +61,7 @@ class FullOutput(AtbdVersionSummaryOutput):
     """Version output, including document, sections completed, doi, and contacts"""
 
     document: Optional[Document]
+    publication_checklist: Optional[PublicationChecklist]
     sections_completed: Optional[dict]
     doi: Optional[str]
     contacts_link: Optional[List[versions_contacts.ContactsLinkOutput]]
@@ -73,6 +75,7 @@ class Create(BaseModel):
     minor: int
     status: str  # TODO: make this enum
     document: Document
+    publication_checklist: PublicationChecklist
     created_by: str
     last_updated_by: str
     owner: str
@@ -137,6 +140,7 @@ class Update(BaseModel):
     the same time."""
 
     document: Optional[Document]
+    publication_checklist: Optional[PublicationChecklist]
     sections_completed: Optional[dict]
     doi: Optional[str]
     citation: Optional[Citation]
