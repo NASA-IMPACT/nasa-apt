@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from enum import Enum, unique
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import AnyUrl, BaseModel, root_validator, validator
 
 
+@unique
 class TypesEnum(str, Enum):
     """Enum for all possible WYSIWYG node types"""
 
@@ -31,29 +32,29 @@ class TypesEnum(str, Enum):
 class TextLeaf(BaseModel):
     """Leaf Node:"""
 
-    text: str
+    text: str = ""
     underline: Optional[Union[str, bool]]
     italic: Optional[Union[str, bool]]
     bold: Optional[Union[str, bool]]
     subscript: Optional[Union[str, bool]]
     superscript: Optional[Union[str, bool]]
 
-    @root_validator()
-    def validate(cls, values: Dict[str, Union[str, bool]]):
+    @validator("underline", "italic", "bold", "subscript", "superscript")
+    def _remove_formatting_if_text_empty(
+        cls, v: Union[str, bool], values: Dict[str, Union[str, bool]], field: str
+    ) -> bool:
         """Ensure that formatting is not applied to empty text (will break latex)"""
-        for formatting in ["underline", "italic", "bold", "subscript", "superscript"]:
-            if isinstance(values.get(formatting), str):
-                if values["text"] == "":
-                    raise ValueError(
-                        f"Text formatting option {formatting} cannot be applied to empty text"
-                    )
 
-                # type ignore below because mypy complains that `.lower()` cannot be
-                # applied to values[formatting] because it might be boolean (even
-                # though we've already validated that `values[formatting]` is type(str))
-                values[formatting] = values[formatting].lower() == "true"  # type: ignore
+        # cast to bool
+        if isinstance(v, str):
+            v = v.lower() == "true"
 
-        return values
+        # set the formatting option to None if no text is present
+        # (this happens if multiple lines were bolded, for example)
+        if v and not values["text"]:
+            return None
+
+        return v
 
 
 class BaseNode(BaseModel):
@@ -61,44 +62,41 @@ class BaseNode(BaseModel):
 
     type: TypesEnum
     id: Optional[str]
-    # _type: str
     children: List[TextLeaf]
 
 
 class LinkNode(BaseNode):
     """href Link WYSIWYG node"""
 
-    # _type: TypesEnum
+    type: Literal[TypesEnum.link]
     url: AnyUrl
-    children: List[TextLeaf]
 
 
 class ReferenceNode(BaseNode):
     """Reference to bib item WYSIWYG node"""
 
-    # _type: TypesEnum
+    type: Literal[TypesEnum.reference]
     refId: str
-    children: List[TextLeaf]
 
 
 class DivNode(BaseNode):
     """Generic text container WYSIWYG node"""
 
-    # _type: TypesEnum
-    children: List[Union[TextLeaf, LinkNode, ReferenceNode]]
+    type: Literal[TypesEnum.div]
+    children: List[Union[LinkNode, ReferenceNode, TextLeaf]]
 
 
 class OrderedListNode(BaseNode):
     """Ordered (numerical) List WYSIWYG node"""
 
-    # _type: TypesEnum
+    type: Literal[TypesEnum.ordered_list]
     children: List[ListItemNode]
 
 
 class UnorderedListNode(BaseNode):
     """Unordered (bullet points) list WYSIWYG node"""
 
-    # _type: TypesEnum
+    type: Literal[TypesEnum.unordered_list]
     children: List[ListItemNode]
 
 
@@ -106,8 +104,8 @@ class ListItemNode(BaseNode):
     """List item node that gets wrapped with OrderedList or UnorderedList.
     List items can also contain other orderd or unordered lists"""
 
-    # _type: TypesEnum
-    children: List[Union[DivNode, OrderedListNode, UnorderedListNode]]
+    type: Literal[TypesEnum.list_item]
+    children: List[Union[OrderedListNode, UnorderedListNode, DivNode]]
 
 
 # OrderedList and UnorderedList are both possible children
@@ -121,37 +119,34 @@ UnorderedListNode.update_forward_refs()
 class SubsectionNode(BaseNode):
     """Custom/user defined `sub-sections` items"""
 
-    pass
-    # id: str
-    # _type: TypesEnum
+    type: Literal[TypesEnum.subsection]
 
 
 class EquationNode(BaseNode):
     """Equation WYSIWYG node"""
 
-    pass
-    # _type: TypesEnum
+    type: Literal[TypesEnum.equation]
 
 
 class ImageNode(BaseNode):
     """Image WYSIWYG node"""
 
-    # _type: TypesEnum
     objectKey: str
+    type: Literal[TypesEnum.image]
 
 
 class CaptionNode(BaseNode):
     """Caption nodes (for Table or Image WYSIWYG nodes)"""
 
-    # _type: TypesEnum
-    pass
+    type: Literal[TypesEnum.caption]
+    children: List[Union[LinkNode, ReferenceNode, TextLeaf]]
 
 
 class ImageBlockNode(BaseNode):
     """Image block node (contains image and caption)"""
 
-    # _type: TypesEnum
-    children: List[Union[ImageNode, CaptionNode]]
+    type: Literal[TypesEnum.image_block]
+    children: List[Union[CaptionNode, ImageNode]]
 
     @validator("children")
     def _validate_children(cls, v):
@@ -160,6 +155,7 @@ class ImageBlockNode(BaseNode):
                 "`Children` field of `Image-Block` type must contain one `Image` model and"
                 " one `Caption` model"
             )
+        # TODO: make this more pythonic
         if not (
             all([isinstance(v[0], ImageNode), isinstance(v[1], CaptionNode)])
             or all([isinstance(v[0], CaptionNode), isinstance(v[1], ImageNode)])
@@ -175,28 +171,28 @@ class ImageBlockNode(BaseNode):
 class TableCellNode(BaseNode):
     """Table cell WYSIWYG node"""
 
-    # _type: TypesEnum
+    type: Literal[TypesEnum.table_cell]
     children: List[DivNode]
 
 
 class TableRowNode(BaseNode):
     """Table row WYSIWYG node"""
 
-    # _type: TypesEnum
+    type: Literal[TypesEnum.table_row]
     children: List[TableCellNode]
 
 
 class TableNode(BaseNode):
     """Table WYSIWYG node"""
 
-    # _type: TypesEnum
+    type: Literal[TypesEnum.table]
     children: List[TableRowNode]
 
 
 class TableBlockNode(BaseNode):
     """Wrapper for Table WYSIWYG node and Caption WYSIWYG nodes"""
 
-    # _type: TypesEnum
+    type: Literal[TypesEnum.table_block]
     children: List[Union[TableNode, CaptionNode]]
 
     @validator("children")
@@ -223,13 +219,10 @@ class DataAccessUrl(BaseModel):
     url: Optional[Union[AnyUrl, str]]
     description: Optional[str]
 
-    @root_validator(pre=True)
-    def _set_url(cls, values: Dict[str, Any]):
-        if "url" not in values:
-            values["url"] = ""
-        if "description" not in values:
-            values["description"] = ""
-        return values
+    @validator("url", "description", always=True)
+    def _set_empty_if_missing(cls, v: Union[AnyUrl, str]):
+        if not v:
+            return ""
 
 
 class DivWrapperNode(BaseModel):
@@ -268,27 +261,21 @@ class SectionWrapper(BaseModel):
 
     children: List[
         Union[
-            DivNode,
-            SubsectionNode,
+            ImageBlockNode,
             OrderedListNode,
             UnorderedListNode,
-            ImageBlockNode,
             TableBlockNode,
+            SubsectionNode,
             EquationNode,
+            DivNode,
         ]
     ]
 
 
-class DocumentSummary(BaseModel):
-    """Document node to be returns in the `SummaryOutput` of
-    Atbds and AtbdVersions"""
-
-    abstract: Optional[str]
-
-
-class Document(DocumentSummary):
+class Document(BaseModel):
     """Top level `document` node"""
 
+    abstract: Optional[str]
     version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
     historical_perspective: Optional[SectionWrapper]
@@ -324,3 +311,94 @@ class Document(DocumentSummary):
     )
     def _check_if_list_has_value(cls, value):
         return value or None
+
+
+class DocumentSummary(Document):
+    """Document node to be returned in the `SummaryOutput` of
+    Atbds and AtbdVersions. This node should just contain the
+    publication unit values (number of tables, images and words)
+    as well as the abstract.
+    This class extends the Document class in order to have access
+    to all of the Document fields necessary to calculating the
+    publication unit values.
+
+    Once the publication unit values have been calculated the
+    validator removes all of the Document fields before returning
+    to the user.
+    """
+
+    abstract: Optional[str]
+    publication_units: Optional[float]
+
+    @root_validator
+    def _generate_publication_units(cls, values: Dict[str, Any]) -> Dict[str, int]:
+
+        values["publication_units"] = cls._count_images_tables_words(Document(**values))  # type: ignore
+
+        values = {
+            k: v for k, v in values.items() if k in ["abstract", "publication_units"]
+        }
+
+        return values
+
+    def _count_images_tables_words(doc: Document) -> Dict:  # noqa: C901
+        # "words" field is initialized to 58, the number of
+        # words in all of the titles of the journal sections
+        # TODO: calculate this dynamically based on the sections
+        # in the document
+        counts = dict(images=0, tables=0, words=58)
+        # TODO: use a typed dict for `counts` to ensure the only keys in the provided
+
+        # Dict are `images`, `tables`, and `words`
+        def _helper(d: Any) -> None:
+            if not d or any(
+                isinstance(d, i) for i in (bool, PublicationReference, ReferenceNode)
+            ):
+                return
+            if isinstance(d, AlgorithmVariable):
+                _helper(d.name)
+                _helper(d.unit)
+                return
+            if isinstance(d, DataAccessUrl):
+                counts["words"] += 1  # URL counts as one word
+                _helper(d.description)
+                return
+            if isinstance(d, TextLeaf):
+                _helper(d.text)
+                return
+            if isinstance(d, EquationNode):
+                counts["words"] += 1
+                return
+            if isinstance(d, TableBlockNode):
+                counts["tables"] += 1
+                return
+            if isinstance(d, ImageNode):
+                counts["images"] += 1
+                return
+            if isinstance(d, str):
+                counts["words"] += len(d.split(" "))
+                return
+            if isinstance(d, dict):
+                if d.get("text"):
+                    _helper(d["text"])
+                    return
+                # convert to list, let the next condition check catch it
+                d = list(d.values())
+            if isinstance(d, list):
+                for _d in d:
+                    _helper(_d)
+                return
+            if any(
+                isinstance(d, i) for i in (SectionWrapper, DivWrapperNode, BaseNode)
+            ):
+                _helper(d.children)
+                return
+
+            raise Exception("Unhandled Node!")
+
+        for _, field in doc.__fields__.items():
+            if field.name == "version_description":
+                continue
+            _helper(getattr(doc, field.name))
+
+        return counts
