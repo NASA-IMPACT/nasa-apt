@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from enum import Enum, unique
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import AnyUrl, BaseModel, root_validator, validator
+from pydantic import AnyUrl, BaseModel, validator
 
 
 @unique
@@ -272,10 +273,61 @@ class SectionWrapper(BaseModel):
     ]
 
 
-class Document(BaseModel):
-    """Top level `document` node"""
+class PublicationUnits(BaseModel):
+    """
+    Publication Units (contains numbers of words, images and tables)
+    """
+
+    words: int = 0
+    images: int = 0
+    tables: int = 0
+
+    def __add__(self, d: PublicationUnits) -> PublicationUnits:
+        """Overloaded `+` operator so that I can combine the publication
+        units for 2 leaves (or sub-trees) within a document with a single
+        addition operation. Eg:
+        >>> leaf_1 = PublicationUnits(words=2, images=2, tables=2)
+        >>> leaf_2 = PublicationUnits(words=4, images=4, tables=4)
+
+        >>> sub_tree = leaf_1 + leaf_2
+        >>> sub_tree
+        PublicationUnits(words=6, images=6, tables=6)
+        """
+        return PublicationUnits(
+            words=self.words + d.words,
+            images=self.images + d.images,
+            tables=self.tables + d.tables,
+        )
+
+    def __radd__(self, d: PublicationUnits) -> PublicationUnits:
+        """Overloaded `__radd__` operand (reverse add) in order to enable
+        the `sum()` operation (which attempts to add items in reverse if
+        it can resolve the types going forward)
+        >>> leaf_1 = PublicationUnits(words=2, images=2, tables=2)
+        >>> leaf_2 = PublicationUnits(words=4, images=4, tables=4)
+        >>> leaf_3 = PublicationUnits(words=6, images=6, tables=6)
+
+        >>> sub_tree = sum([leaf_1, leaf_2, leaf_3])
+        >>> sub_tree
+        PublicationUnits(words=12, images=12, tables=12ß)
+
+        """
+        return PublicationUnits(
+            words=d + self.words, images=d + self.images, tables=d + self.tables,
+        )
+
+
+class DocumentSummary(BaseModel):
+    """Document node to be returned in the `SummaryOutput` of
+    Atbds and AtbdVersions.
+    """
 
     abstract: Optional[str]
+
+
+class Document(DocumentSummary):
+    """Top level `document` node"""
+
     version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
     historical_perspective: Optional[SectionWrapper]
@@ -301,6 +353,7 @@ class Document(BaseModel):
     journal_discussion: Optional[SectionWrapper]
     journal_acknowledgements: Optional[SectionWrapper]
     publication_references: Optional[List[PublicationReference]]
+    publication_units: Optional[PublicationUnits]
 
     @validator(
         "algorithm_implementations",
@@ -312,93 +365,66 @@ class Document(BaseModel):
     def _check_if_list_has_value(cls, value):
         return value or None
 
-
-class DocumentSummary(Document):
-    """Document node to be returned in the `SummaryOutput` of
-    Atbds and AtbdVersions. This node should just contain the
-    publication unit values (number of tables, images and words)
-    as well as the abstract.
-    This class extends the Document class in order to have access
-    to all of the Document fields necessary to calculating the
-    publication unit values.
-
-    Once the publication unit values have been calculated the
-    validator removes all of the Document fields before returning
-    to the user.
-    """
-
-    abstract: Optional[str]
-    publication_units: Optional[float]
-
-    @root_validator
-    def _generate_publication_units(cls, values: Dict[str, Any]) -> Dict[str, int]:
-
-        values["publication_units"] = cls._count_images_tables_words(Document(**values))  # type: ignore
-
-        values = {
-            k: v for k, v in values.items() if k in ["abstract", "publication_units"]
-        }
-
-        return values
-
-    def _count_images_tables_words(doc: Document) -> Dict:  # noqa: C901
+    @validator("publication_units", always=True)
+    def _generate_publication_units(cls, v, values: Dict[str, Any]) -> PublicationUnits:
         # "words" field is initialized to 58, the number of
         # words in all of the titles of the journal sections
         # TODO: calculate this dynamically based on the sections
         # in the document
-        counts = dict(images=0, tables=0, words=58)
-        # TODO: use a typed dict for `counts` to ensure the only keys in the provided
+        # The following line is ignore because mypy assumes that `sum()`
+        # returns a numerical type, and complains that PublicationUnits()
+        # can't be added to the PublicationUnits type
+        return PublicationUnits(images=0, tables=0, words=58) + sum(  # type: ignore
+            [
+                # The following line is ignored because of a bug in mypy
+                # ref: https://github.com/python/mypy/issues/4290
+                cls._count_images_tables_words(v)  # type: ignore
+                for k, v in values.items()
+                if k not in ["version_description", "plain_summary"]
+            ]
+        )
 
-        # Dict are `images`, `tables`, and `words`
-        def _helper(d: Any) -> None:
+    def _count_images_tables_words(doc: Document) -> PublicationUnits:  # noqa: C901
+        def _helper(d: Any) -> PublicationUnits:
             if not d or any(
                 isinstance(d, i) for i in (bool, PublicationReference, ReferenceNode)
             ):
-                return
+                return PublicationUnits(images=0, tables=0, words=0)
+
             if isinstance(d, AlgorithmVariable):
-                _helper(d.name)
-                _helper(d.unit)
-                return
+                return _helper(d.name) + _helper(d.unit)
+
             if isinstance(d, DataAccessUrl):
-                counts["words"] += 1  # URL counts as one word
-                _helper(d.description)
-                return
+                return _helper(d.url) + _helper(d.description)
+
             if isinstance(d, TextLeaf):
-                _helper(d.text)
-                return
+                return _helper(d.text)
+
             if isinstance(d, EquationNode):
-                counts["words"] += 1
-                return
+                return PublicationUnits(images=0, tables=0, words=1)
+
             if isinstance(d, TableBlockNode):
-                counts["tables"] += 1
-                return
+                return PublicationUnits(images=0, tables=1, words=0)
+
             if isinstance(d, ImageNode):
-                counts["images"] += 1
-                return
+                return PublicationUnits(images=1, tables=0, words=0)
+
             if isinstance(d, str):
-                counts["words"] += len(d.split(" "))
-                return
-            if isinstance(d, dict):
-                if d.get("text"):
-                    _helper(d["text"])
-                    return
-                # convert to list, let the next condition check catch it
-                d = list(d.values())
+                return PublicationUnits(
+                    images=0, tables=0, words=len(re.findall(r"\w+", d))
+                )
+
             if isinstance(d, list):
-                for _d in d:
-                    _helper(_d)
-                return
+                # the following line is ignored for the same reason as
+                # above - mypy assumes that sum returns a numerical type
+                # which is incompatible with the return type of the method
+                return sum(_helper(_d) for _d in d)  # type: ignore
+
             if any(
                 isinstance(d, i) for i in (SectionWrapper, DivWrapperNode, BaseNode)
             ):
-                _helper(d.children)
-                return
+                return _helper(d.children)
 
             raise Exception("Unhandled Node!")
 
-        for _, field in doc.__fields__.items():
-            if field.name == "version_description":
-                continue
-            _helper(getattr(doc, field.name))
-
-        return counts
+        return _helper(doc)
