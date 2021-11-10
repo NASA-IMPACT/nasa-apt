@@ -403,7 +403,7 @@ class Document(DocumentSummary):
             if isinstance(d, EquationNode):
                 return PublicationUnits(images=0, tables=0, words=1)
 
-            if isinstance(d, TableBlockNode):
+            if isinstance(d, TableNode):
                 return PublicationUnits(images=0, tables=1, words=0)
 
             if isinstance(d, ImageNode):
