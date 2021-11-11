@@ -80,8 +80,10 @@ class nasaAPTLambdaStack(core.Stack):
             security_groups=[rds_security_group],
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             engine=rds.DatabaseInstanceEngine.POSTGRES,
+            # Upgraded to t3 small RDS instance since t2 small no longer
+            # supports postgres 13+
             instance_type=ec2.InstanceType.of(
-                ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL
+                ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL
             ),
             database_name="nasadb",
             backup_retention=core.Duration.days(7),

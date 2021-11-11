@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import re
 from enum import Enum, unique
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 
 from pydantic import AnyUrl, BaseModel, validator
 
@@ -273,50 +272,6 @@ class SectionWrapper(BaseModel):
     ]
 
 
-class PublicationUnits(BaseModel):
-    """
-    Publication Units (contains numbers of words, images and tables)
-    """
-
-    words: int = 0
-    images: int = 0
-    tables: int = 0
-
-    def __add__(self, d: PublicationUnits) -> PublicationUnits:
-        """Overloaded `+` operator so that I can combine the publication
-        units for 2 leaves (or sub-trees) within a document with a single
-        addition operation. Eg:
-        >>> leaf_1 = PublicationUnits(words=2, images=2, tables=2)
-        >>> leaf_2 = PublicationUnits(words=4, images=4, tables=4)
-
-        >>> sub_tree = leaf_1 + leaf_2
-        >>> sub_tree
-        PublicationUnits(words=6, images=6, tables=6)
-        """
-        return PublicationUnits(
-            words=self.words + d.words,
-            images=self.images + d.images,
-            tables=self.tables + d.tables,
-        )
-
-    def __radd__(self, d: PublicationUnits) -> PublicationUnits:
-        """Overloaded `__radd__` operand (reverse add) in order to enable
-        the `sum()` operation (which attempts to add items in reverse if
-        it can resolve the types going forward)
-        >>> leaf_1 = PublicationUnits(words=2, images=2, tables=2)
-        >>> leaf_2 = PublicationUnits(words=4, images=4, tables=4)
-        >>> leaf_3 = PublicationUnits(words=6, images=6, tables=6)
-
-        >>> sub_tree = sum([leaf_1, leaf_2, leaf_3])
-        >>> sub_tree
-        PublicationUnits(words=12, images=12, tables=12ß)
-
-        """
-        return PublicationUnits(
-            words=d + self.words, images=d + self.images, tables=d + self.tables,
-        )
-
-
 class DocumentSummary(BaseModel):
     """Document node to be returned in the `SummaryOutput` of
     Atbds and AtbdVersions.
@@ -353,7 +308,6 @@ class Document(DocumentSummary):
     journal_discussion: Optional[SectionWrapper]
     journal_acknowledgements: Optional[SectionWrapper]
     publication_references: Optional[List[PublicationReference]]
-    publication_units: Optional[PublicationUnits]
 
     @validator(
         "algorithm_implementations",
@@ -364,67 +318,3 @@ class Document(DocumentSummary):
     )
     def _check_if_list_has_value(cls, value):
         return value or None
-
-    @validator("publication_units", always=True)
-    def _generate_publication_units(cls, v, values: Dict[str, Any]) -> PublicationUnits:
-        # "words" field is initialized to 58, the number of
-        # words in all of the titles of the journal sections
-        # TODO: calculate this dynamically based on the sections
-        # in the document
-        # The following line is ignore because mypy assumes that `sum()`
-        # returns a numerical type, and complains that PublicationUnits()
-        # can't be added to the PublicationUnits type
-        return PublicationUnits(images=0, tables=0, words=58) + sum(  # type: ignore
-            [
-                # The following line is ignored because of a bug in mypy
-                # ref: https://github.com/python/mypy/issues/4290
-                cls._count_images_tables_words(v)  # type: ignore
-                for k, v in values.items()
-                if k not in ["version_description", "plain_summary"]
-            ]
-        )
-
-    def _count_images_tables_words(doc: Document) -> PublicationUnits:  # noqa: C901
-        def _helper(d: Any) -> PublicationUnits:
-            if not d or any(
-                isinstance(d, i) for i in (bool, PublicationReference, ReferenceNode)
-            ):
-                return PublicationUnits(images=0, tables=0, words=0)
-
-            if isinstance(d, AlgorithmVariable):
-                return _helper(d.name) + _helper(d.unit)
-
-            if isinstance(d, DataAccessUrl):
-                return _helper(d.url) + _helper(d.description)
-
-            if isinstance(d, TextLeaf):
-                return _helper(d.text)
-
-            if isinstance(d, EquationNode):
-                return PublicationUnits(images=0, tables=0, words=1)
-
-            if isinstance(d, TableNode):
-                return PublicationUnits(images=0, tables=1, words=0)
-
-            if isinstance(d, ImageNode):
-                return PublicationUnits(images=1, tables=0, words=0)
-
-            if isinstance(d, str):
-                return PublicationUnits(
-                    images=0, tables=0, words=len(re.findall(r"\w+", d))
-                )
-
-            if isinstance(d, list):
-                # the following line is ignored for the same reason as
-                # above - mypy assumes that sum returns a numerical type
-                # which is incompatible with the return type of the method
-                return sum(_helper(_d) for _d in d)  # type: ignore
-
-            if any(
-                isinstance(d, i) for i in (SectionWrapper, DivWrapperNode, BaseNode)
-            ):
-                return _helper(d.children)
-
-            raise Exception("Unhandled Node!")
-
-        return _helper(doc)
