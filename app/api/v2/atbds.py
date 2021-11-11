@@ -90,6 +90,7 @@ def get_atbd(
     atbd = filter_atbd_versions(principals, atbd)
 
     atbd = update_atbd_contributor_info(principals, atbd)
+
     return atbd
 
 

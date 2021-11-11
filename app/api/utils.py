@@ -1,5 +1,4 @@
-"""
-Provides various utilities to the API classes
+"""Provides various utilities to the API classes
 """
 import re
 from typing import Tuple, Union
