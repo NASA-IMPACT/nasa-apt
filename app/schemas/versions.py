@@ -8,9 +8,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, validator
 
-# import document as _document to avoid namespace
-# collision with the `document` field of the AtbdVersion's
-# SummaryOutput and FullOutput classes
+# import document as _document to avoid namespace collision with the
+# `document` field of the AtbdVersion's SummaryOutput and FullOutput classes
 from app.schemas import document as _document
 from app.schemas import versions_contacts
 from app.schemas.users import (
@@ -21,12 +20,25 @@ from app.schemas.users import (
 )
 
 
-class StatusEnum(enum.Enum):
+class JournalStatusEnum(str, enum.Enum):
+    """Status for Journal ATBD, values provided by NASA impact"""
+
+    NO_PUBLICATION = "NO_PUBLICATION"
+    PUBLICATION_INTENDED = "PUBLICATION_INTENDED"
+    PUBLICATION_REQUESTED = "PUBLICATION_REQUESTED"
+    PUBLISHED = "PUBLISHED"
+
+
+class StatusEnum(str, enum.Enum):
     """Status for ATBD, values provided by NASA impact"""
 
-    draft = "Draft"
-    review = "Review"
-    published = "Published"
+    DRAFT = "DRAFT"
+    CLOSED_REVIEW_REQUESTED = "CLOSED_REVIEW_REQUESTED"
+    CLOSED_REVIEW = "CLOSED_REVIEW"
+    OPEN_REVIEW = "OPEN_REVIEW"
+    PUBLICATION_REQUESTED = "PUBLICATION_REQUESTED"
+    PUBLICATION = "PUBLICATION"
+    PUBLISHED = "PUBLISHED"
 
 
 class SuggestedReviewer(BaseModel):
@@ -42,7 +54,7 @@ class PublicationChecklist(BaseModel):
     suggested_reviewers: Optional[List[SuggestedReviewer]]
     review_roles: bool = False
     journal_editor: str = "Chelle Gentemann"
-    author_affiliations: bool = False
+    author_affirmations: bool = False
 
     @validator("suggested_reviewers", whole=True)
     def _check_if_list_has_value(cls, value):
@@ -100,7 +112,7 @@ class AtbdVersionSummaryOutput(BaseModel):
     major: int
     minor: int
     version: Optional[str]
-    status: str
+    status: StatusEnum
     published_by: Optional[Union[CognitoUser, AnonymousUser]]
     published_at: Optional[datetime]
     sections_completed: Optional[dict]
@@ -113,7 +125,7 @@ class AtbdVersionSummaryOutput(BaseModel):
     owner: Union[CognitoUser, AnonymousUser]
     authors: Union[List[CognitoUser], List[AnonymousUser]]
     reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]
-    journal_status: Optional[str]
+    journal_status: Optional[JournalStatusEnum]
 
     @validator("version", always=True)
     def _generate_semver(cls, v, values) -> str:
@@ -134,7 +146,6 @@ class FullOutput(AtbdVersionSummaryOutput):
     sections_completed: Optional[dict]
     doi: Optional[str]
     contacts_link: Optional[List[versions_contacts.ContactsLinkOutput]]
-
     publication_units: Optional[PublicationUnits]
 
     @validator("publication_units", always=True)
@@ -224,7 +235,7 @@ class Create(BaseModel):
     atbd_id: str
     major: int
     minor: int
-    status: str  # TODO: make this enum
+    status: StatusEnum
     document: _document.Document
     publication_checklist: PublicationChecklist
     created_by: str
@@ -295,12 +306,12 @@ class Update(BaseModel):
     sections_completed: Optional[dict]
     doi: Optional[str]
     citation: Optional[Citation]
-    status: Optional[str]
+    status: Optional[StatusEnum]
     contacts: Optional[List[versions_contacts.ContactsLinkInput]]
     owner: Optional[str]
     authors: Optional[List[str]]
     reviewers: Optional[List[str]]
-    journal_status: Optional[str]
+    journal_status: Optional[JournalStatusEnum]
 
 
 class AdminUpdate(Update):
