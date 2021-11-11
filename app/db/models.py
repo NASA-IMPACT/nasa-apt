@@ -62,6 +62,7 @@ class AtbdVersions(Base):
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="DRAFT", nullable=False)
     document = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
+    publication_checklist = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
     sections_completed = Column(
         MutableDict.as_mutable(postgresql.JSON), server_default="{}"
     )
@@ -82,7 +83,7 @@ class AtbdVersions(Base):
         """String representation"""
         return (
             f"<AtbdVersions(atbd_id={self.atbd_id}, version=v{self.major}.{self.minor},"
-            f" status={self.status}, document={self.document},"
+            f" status={self.status}, document={self.document}, publication_checklist={self.publication_checklist},"
             f" sections_completed={self.sections_completed}, created_by={self.created_by},"
             f" created_at={self.created_at}, published_by={self.published_by},"
             f" published_at={self.published_by}, last_updated_at={self.last_updated_at}"

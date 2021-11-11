@@ -29,6 +29,26 @@ class StatusEnum(enum.Enum):
     published = "Published"
 
 
+class SuggestedReviewer(BaseModel):
+    """Suggested Reviewer"""
+
+    name: str
+    email: str
+
+
+class PublicationChecklist(BaseModel):
+    """Top level `publication_checklist` node"""
+
+    suggested_reviewers: Optional[List[SuggestedReviewer]]
+    review_roles: bool = False
+    journal_editor: str = "Chelle Gentemann"
+    author_affiliations: bool = False
+
+    @validator("suggested_reviewers", whole=True)
+    def _check_if_list_has_value(cls, value):
+        return value or None
+
+
 class PublicationUnits(BaseModel):
     """
     Publication Units (contains numbers of words, images and tables)
@@ -110,6 +130,7 @@ class FullOutput(AtbdVersionSummaryOutput):
     """Version output, including document, sections completed, doi, and contacts"""
 
     document: Optional[_document.Document]
+    publication_checklist: Optional[PublicationChecklist]
     sections_completed: Optional[dict]
     doi: Optional[str]
     contacts_link: Optional[List[versions_contacts.ContactsLinkOutput]]
@@ -205,6 +226,7 @@ class Create(BaseModel):
     minor: int
     status: str  # TODO: make this enum
     document: _document.Document
+    publication_checklist: PublicationChecklist
     created_by: str
     last_updated_by: str
     owner: str
@@ -269,6 +291,7 @@ class Update(BaseModel):
     the same time."""
 
     document: Optional[_document.Document]
+    publication_checklist: Optional[PublicationChecklist]
     sections_completed: Optional[dict]
     doi: Optional[str]
     citation: Optional[Citation]

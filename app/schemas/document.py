@@ -283,6 +283,8 @@ class DocumentSummary(BaseModel):
 class Document(DocumentSummary):
     """Top level `document` node"""
 
+    plain_summary: Optional[str]
+    key_points: Optional[str]
     version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
     historical_perspective: Optional[SectionWrapper]
