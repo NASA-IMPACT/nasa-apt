@@ -1368,13 +1368,13 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
 }'::jsonb, 'OPEN_REVIEW');
 
 INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
-  VALUES (1, 1, 1, ARRAY['Science contact', 'Metadata author']::e_contact_role_type[]);
+  VALUES (1, 1, 1, ARRAY['Writing – original draft', 'Data Curation']::e_contact_role_type[]);
 
 INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
-  VALUES (1, 1, 2, ARRAY['Investigator']::e_contact_role_type[]);
+  VALUES (1, 1, 2, ARRAY['Methodology']::e_contact_role_type[]);
 
 INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
-  VALUES (1, 2, 2, ARRAY['Investigator']::e_contact_role_type[]);
+  VALUES (1, 2, 2, ARRAY['Project Administration']::e_contact_role_type[]);
 
 INSERT INTO atbds (title, alias, created_by, created_at, last_updated_by, last_updated_at)
   VALUES ('Project algorithms technically overly simplistic', 'patos', :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', '2021-03-15 16:00:00');

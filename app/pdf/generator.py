@@ -26,10 +26,11 @@ from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
 from app.schemas import document
-from app.schemas.versions_contacts import ContactsLinkOutput
+from app.schemas.versions_contacts import ContactsLinkOutput, RolesEnum
 
 SECTIONS = {
     "abstract": {},
+    "plain_summary": {"title": "Plain Language Summary"},
     "version_description": {"title": "Description"},
     "introduction": {"title": "Introduction"},
     "historical_perspective": {"title": "Historical Perspective"},
@@ -405,15 +406,21 @@ def process(
         return process_table(table, caption=caption)
 
 
-def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Document:
+def setup_document(
+    atbd: Atbds,
+    filepath: str,
+    contacts_link: List[ContactsLinkOutput],
+    journal: bool = False,
+) -> Document:
     """
     Creates a new Latex document instance and adds packages/metadata commands
     necessary for the document style (eg: line numbering and spacing, math
     char support, table of contents generation)
     """
+    document_class = "agujournal2019" if journal else "article"
     doc = Document(
         default_filepath=filepath,
-        documentclass=Command("documentclass", options=["12pt"], arguments="article",),
+        documentclass=Command("documentclass", arguments=document_class,),
         fontenc="T1",
         inputenc="utf8",
         # use Latin-Math Modern pacakge for char support
@@ -455,6 +462,42 @@ def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Documen
 
     doc.preamble.append(Command("title", arguments=atbd.title))
     doc.preamble.append(Command("date", arguments=NoEscape("\\today")))
+    affiliations = [contact_link.contact.url for contact_link in contacts_link]
+
+    doc.preamble.append(
+        Command(
+            "authors",
+            arguments=NoEscape(
+                ", ".join(
+                    [
+                        f"{contact_link.contact.first_name} {contact_link.contact.last_name}\\affil{{{affiliations.index(contact_link.contact.url)}}}"
+                        for contact_link in contacts_link
+                    ]
+                )
+            ),
+        )
+    )
+
+    for i, affiliation in enumerate(affiliations):
+        doc.preamble.append(Command("affiliation", arguments=[str(i + 1), affiliation]))
+
+    [corresponding_author] = [
+        contact_link.contact
+        for contact_link in contacts_link
+        if contact_link.role == RolesEnum.CORRESPONDING_AUTHOR
+    ]
+    [corresponding_author_email] = [
+        mechanism.value  # type: ignore
+        for mechanism in corresponding_author.mechanisms
+        if mechanism.type == "email"  # type: ignore
+    ]
+    doc.preamble.append(
+        "correspondingauthor",
+        arguments=[
+            f"{corresponding_author.first_name} {corresponding_author.last_name}",
+            corresponding_author_email,
+        ],
+    )
 
     doc.append(Command("maketitle"))
 
@@ -471,7 +514,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     [atbd_version] = atbd.versions
     document_data = atbd_version.document
     contacts_data = atbd_version.contacts_link
-    doc = setup_document(atbd, filepath, journal=journal)
+    doc = setup_document(atbd, filepath, contacts_link=contacts_data, journal=journal)
 
     generate_bib_file(
         document_data.get("publication_references", []), filepath=f"{filepath}.bib",

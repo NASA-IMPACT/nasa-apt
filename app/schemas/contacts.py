@@ -1,47 +1,9 @@
 """Schemas for Contacts Model"""
-import enum
 from typing import List, Optional
 
 from pydantic import BaseModel, validator
 
 from app.schemas import versions_contacts
-
-
-class ContactMechanismEnum(str, enum.Enum):
-    """Enum for possible contact Mechansisms - values provided by NASA Impact."""
-
-    direct_line = "Direct line"
-    email = "Email"
-    facebook = "Facebook"
-    fax = "Fax"
-    mobile = "Mobile"
-    modem = "Modem"
-    primary = "Primary"
-    tdd_tty_phone = "TDD/TTY phone"
-    telephone = "Telephone"
-    twitter = "Twitter"
-    us = "U.S."
-    other = "Other"
-
-
-class RolesEnum(str, enum.Enum):
-    """Enum for possible roles that a contact can be assigned within the context
-    of an ATBD Version - values provided by NASA Impact."""
-
-    data_center_contact = "Data center contact"
-    technical_contact = "Technical contact"
-    science_contact = "Science contact"
-    investigator = "Investigator"
-    metadata_author = "Metadata author"
-    user_services = "User services"
-    science_software_development = "Science software development"
-
-
-class Roles(BaseModel):
-    """Roles."""
-
-    # TODO: use enum from above
-    role: Optional[str]
 
 
 class Create(versions_contacts.ContactsBase):

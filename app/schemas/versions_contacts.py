@@ -1,9 +1,50 @@
 """Versions -- Contacts relationship classes"""
 
 import re
+from enum import Enum, unique
 from typing import List, Optional
 
 from pydantic import BaseModel, validator
+
+
+@unique
+class ContactMechanismEnum(str, Enum):
+    """Enum for possible contact Mechansisms - values provided by NASA Impact."""
+
+    DIRECT_LINE = "Direct line"
+    EMAIL = "Email"
+    FACEBOOK = "Facebook"
+    FAX = "Fax"
+    MOBILE = "Mobile"
+    MODEM = "Modem"
+    PRIMARY = "Primary"
+    TDD_TTY_PHONE = "TDD/TTY phone"
+    TELEPHONE = "Telephone"
+    TWITTER = "Twitter"
+    US = "U.S."
+    OTHER = "Other"
+
+
+@unique
+class RolesEnum(str, Enum):
+    """Enum for possible roles that a contact can be assigned within the context
+    of an ATBD Version - values provided by NASA Impact."""
+
+    WRITING_ORIGINAL_DRAFT = "Writing – original draft"
+    WRITING_REVIEW_EDITING = "Writing – review & editing"
+    VALIDATION = "Validation"
+    DATA_CURATION = "Data curation"
+    CONCEPTUALIZATION = "Conceptualization"
+    METHODOLOGY = "Methodology"
+    VISUALIZATION = "Visualization"
+    FORMAL_ANALYSIS = "Formal analysis"
+    SOFTWARE = "Software"
+    RESOURCES = "Resources"
+    PROJECT_ADMINISTRATION = "Project administration"
+    SUPERVISION = "Supervision"
+    INVESTIGATION = "Investigation"
+    FUNDING_ACQUISITION = "Funding acquisition"
+    CORRESPONDING_AUTHOR = "Corresponding Author"
 
 
 class AtbdLinkOutput(BaseModel):
@@ -80,7 +121,7 @@ class ContactsMechanism(BaseModel):
     """Contact Mechanism"""
 
     # TODO: use enum from above
-    mechanism_type: Optional[str]
+    mechanism_type: Optional[ContactMechanismEnum]
     mechanism_value: Optional[str]
 
 
@@ -129,7 +170,6 @@ class ContactsLinkOutput(BaseModel):
         orm_mode = True
 
 
-# TODO; role should be enum
 class ContactsLinkInput(BaseModel):
     """Link from Version to Contact. This is a separate class in order to serialize
     and de-serialize the `roles` object, which gets saved as a string type in the Postgres
@@ -137,7 +177,7 @@ class ContactsLinkInput(BaseModel):
     """
 
     id: int
-    roles: List[str]
+    roles: List[RolesEnum]
 
     @validator("roles")
     def _format_roles(cls, v):
@@ -157,4 +197,4 @@ class ContactsAssociationLookup(BaseModel):
 class ContactsAssociation(ContactsAssociationLookup):
     """Contact Association output model"""
 
-    roles: str
+    roles: RolesEnum

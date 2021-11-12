@@ -17,6 +17,9 @@ COPY ./README.md /app/README.md
 COPY ./app/ /app/app/
 COPY ./setup.py /app/setup.py
 
+# Style file for AGU journal pdf
+RUN mkdir -p /usr/share/texlive/texmf-dist/tex/xetex/agu/
+COPY ./app/pdf/agujournal2019.cls /usr/share/texlive/texmf-dist/tex/xetex/agu/agujournal2019.cls
 
 RUN pip install --upgrade pip
 RUN pip install . -t .
