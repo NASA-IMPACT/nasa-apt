@@ -105,6 +105,15 @@ class PublicationUnits(BaseModel):
         )
 
 
+class Keyword(BaseModel):
+    """GCMD KMS keyword API output to store in DB"""
+
+    name: str  # should this be "label"?
+    path: str  # `|` delimited path
+    value: str  # UUID (should we enfore this as a uuid-type? )
+    id: str  # should this be pure int?
+
+
 class AtbdVersionSummaryOutput(BaseModel):
     """Summary output for AtbdVersion (does NOT include full document).
     TODO: use status enum above"""
@@ -122,6 +131,7 @@ class AtbdVersionSummaryOutput(BaseModel):
     last_updated_at: datetime
     citation: Optional[dict]
     document: Optional[_document.DocumentSummary]
+    keywords: Optional[Keyword]
     owner: Union[CognitoUser, AnonymousUser]
     authors: Union[List[CognitoUser], List[AnonymousUser]]
     reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]
