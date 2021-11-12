@@ -90,7 +90,7 @@ class PublicationUnits(BaseModel):
     def __radd__(self, d: PublicationUnits) -> PublicationUnits:
         """Overloaded `__radd__` operand (reverse add) in order to enable
         the `sum()` operation (which attempts to add items in reverse if
-        it can resolve the types going forward)
+        it can't resolve the types going forward)
         >>> leaf_1 = PublicationUnits(words=2, images=2, tables=2)
         >>> leaf_2 = PublicationUnits(words=4, images=4, tables=4)
         >>> leaf_3 = PublicationUnits(words=6, images=6, tables=6)
@@ -115,8 +115,7 @@ class Keyword(BaseModel):
 
 
 class AtbdVersionSummaryOutput(BaseModel):
-    """Summary output for AtbdVersion (does NOT include full document).
-    TODO: use status enum above"""
+    """Summary output for AtbdVersion (does NOT include full document)."""
 
     major: int
     minor: int
