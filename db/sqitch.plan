@@ -17,3 +17,4 @@ contact_roles [tables] 2021-08-18T16:11:47Z Daniel da Silva <daniel@hystericalha
 publication_checklist [tables] 2021-11-08T17:34:58Z Daniel da Silva <daniel@keenkoala.lan> # Adds publication checklist field
 corresponding_author_role [contact_roles] 2021-11-11T19:56:36Z Leo Thomas <leo@MacBook-Pro.local> # Add a new value (Corresponding Author) to the contact roles enum
 gcmd_keywords [tables] 2021-11-12T15:34:13Z Leo Thomas <leo@MacBook-Pro.local> # Adds KMS keywords from the GCMD API to AtbdVersions
+contact_affiliations [tables] 2021-11-12T16:33:35Z Leo Thomas <leo@MacBook-Pro.local> # Adds contact affiliations (text[]) to conact_version relation
