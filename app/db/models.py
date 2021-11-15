@@ -77,10 +77,10 @@ class AtbdVersions(Base):
     doi = Column(String())
     citation = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
     owner = Column(String(), nullable=False)
-    authors = Column(postgresql.ARRAY(String), server_default="[]")
-    reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="[]")
+    authors = Column(postgresql.ARRAY(String()), server_default="{{}}")
+    reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
     journal_status = Column(String())
-    keywords = Column(postgresql.ARRAY(postgresql.JSONB), server_default="[]")
+    keywords = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
 
     def __repr__(self):
         """String representation"""
@@ -151,6 +151,10 @@ class Contacts(Base):
         )
 
 
+# enum = postgresql.ENUM(*(str(r.value) for r in RolesEnum), name="e_contact_role_type")
+# print("ENUM: ", enum.__dir__())
+
+
 class AtbdVersionsContactsAssociation(Base):
     """AtbdVersionContactsAssociation.
     see https://docs.sqlalchemy.org/en/14/orm/extensions/associationproxy.html for
@@ -175,8 +179,8 @@ class AtbdVersionsContactsAssociation(Base):
     contact_id = Column(
         Integer(), ForeignKey("contacts.id"), nullable=False, primary_key=True
     )
-    roles = Column(String())
-    affiliations = Column(String())
+    roles = Column(postgresql.ARRAY(String()), server_default="{{}}")
+    affiliations = Column(postgresql.ARRAY(String()), server_default="{{}}")
 
     atbd_version = relationship(
         "AtbdVersions",

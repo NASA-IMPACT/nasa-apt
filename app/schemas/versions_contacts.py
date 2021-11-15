@@ -84,15 +84,13 @@ class AtbdVersionsLinkOutput(BaseModel):
 class AtbdVersionsLink(BaseModel):
     """Links from Contact to Versions (many-to-many)"""
 
-    # No need to set a default value for roles or affiliations here since
-    # the database already sets an empty list default value
-    roles: str
-    affiliations: str
+    roles: Optional[List[RolesEnum]] = []
+    affiliations: Optional[List[str]] = []
     atbd_version: AtbdVersionsLinkOutput
 
-    @validator("roles", "affiliations")
-    def _format_roles(cls, v):
-        return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
+    # @validator("roles", "affiliations")
+    # def _format_roles(cls, v):
+    #     return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
 
     class Config:
         """Config."""
@@ -158,14 +156,14 @@ class ContactsLinkOutput(BaseModel):
     """Link from Version to Contact"""
 
     contact: ContactsSummary
-    roles: Optional[str]
-    affiliations: Optional[str]
+    roles: Optional[List[RolesEnum]] = []
+    affiliations: Optional[List[str]] = []
 
-    @validator("roles", "affiliations", always=True)
-    def _format_roles(cls, v, values, field):
-        if not v:
-            return []
-        return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
+    # @validator("roles", "affiliations", always=True)
+    # def _format_roles(cls, v, values, field):
+    #     if not v:
+    #         return []
+    #     return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
 
     class Config:
         """Config."""
@@ -181,15 +179,8 @@ class ContactsLinkInput(BaseModel):
     """
 
     id: int
-    roles: Optional[List[RolesEnum]]
-    affiliations: Optional[List[str]]
-
-    @validator("roles", "affiliations", always=True)
-    def _format_roles(cls, v):
-        if not v:
-            v = []
-
-        return f"{{{','.join(i for i in v)}}}"
+    roles: Optional[List[RolesEnum]] = []
+    affiliations: Optional[List[str]] = []
 
 
 class ContactsAssociationLookup(BaseModel):
@@ -203,5 +194,5 @@ class ContactsAssociationLookup(BaseModel):
 class ContactsAssociation(ContactsAssociationLookup):
     """Contact Association output model"""
 
-    roles: str
-    affiliations: str
+    roles: Optional[List[RolesEnum]] = []
+    affiliations: Optional[List[str]] = []
