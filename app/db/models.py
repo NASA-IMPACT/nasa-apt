@@ -78,6 +78,7 @@ class AtbdVersions(Base):
     authors = Column(postgresql.ARRAY(String), server_default="[]")
     reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="[]")
     journal_status = Column(String())
+    keywords = Column(postgresql.ARRAY(postgresql.JSONB), server_default="[]")
 
     def __repr__(self):
         """String representation"""
