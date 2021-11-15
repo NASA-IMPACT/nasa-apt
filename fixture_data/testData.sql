@@ -1367,47 +1367,20 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
   "online_resource": "http://nasa-apt2-staging.s3-website-us-east-1.amazonaws.com/"
 }'::jsonb, 'OPEN_REVIEW');
 
-INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
-  VALUES (1, 1, 1, ARRAY['Writing – original draft', 'Data Curation']::e_contact_role_type[]);
+INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles, affiliations)
+  VALUES (1, 1, 1, ARRAY['Writing – original draft', 'Data curation']::e_contact_role_type[], ARRAY['Bell Laboratories', 'Los Alamos']::text[]);
 
-INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
-  VALUES (1, 1, 2, ARRAY['Methodology']::e_contact_role_type[]);
+INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles, affiliations)
+  VALUES (1, 1, 2, ARRAY['Methodology']::e_contact_role_type[], ARRAY['Oakridge National Lab']::text[]);
 
-INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles)
-  VALUES (1, 2, 2, ARRAY['Project Administration']::e_contact_role_type[]);
+INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles, affiliations)
+  VALUES (1, 2, 2, ARRAY['Project administration']::e_contact_role_type[], ARRAY['CERN']::text[]);
 
 INSERT INTO atbds (title, alias, created_by, created_at, last_updated_by, last_updated_at)
   VALUES ('Project algorithms technically overly simplistic', 'patos', :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', '2021-03-15 16:00:00');
 
 INSERT INTO atbd_versions (atbd_id, created_by, created_at, "owner", authors, last_updated_by, last_updated_at, major, minor, document, status)
-  VALUES (2, :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], :'owner_sub', '2021-06-27 21:00:00', 1, 0, '{
-  "abstract": null,
-  "version_description": null,
-  "introduction": null,
-  "historical_perspective": null,
-  "additional_information": null,
-  "data_availability":null,
-  "mathematical_theory": null,
-  "mathematical_theory_assumptions": null,
-  "algorithm_input_variables": [],
-  "algorithm_input_variables_caption": null,
-  "algorithm_output_variables": [],
-  "algorithm_output_variables_caption": null,
-  "algorithm_usage_constraints": null,
-  "performance_assessment_validation_methods": null,
-  "performance_assessment_validation_uncertainties": null,
-  "performance_assessment_validation_errors": null ,
-  "algorithm_implementations": [],
-  "data_access_input_data": [],
-  "data_access_output_data": [],
-  "data_access_related_urls": [],
-  "journal_discussion": null,
-  "journal_acknowledgements": null,
-  "scientific_theory": null,
-  "scientific_theory_assumptions": null,
-  "publication_references": [
-  ]
-}'::jsonb, 'DRAFT');
+  VALUES (2, :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', ARRAY[:'author_sub_1', :'author_sub_2']::text[], :'owner_sub', '2021-06-27 21:00:00', 1, 0, '{ "abstract" : null, "version_description" : null, "introduction" : null, "historical_perspective" : null, "additional_information" : null, "data_availability" :null, "mathematical_theory" : null, "mathematical_theory_assumptions" : null, "algorithm_input_variables" :[], "algorithm_input_variables_caption" : null, "algorithm_output_variables" :[], "algorithm_output_variables_caption" : null, "algorithm_usage_constraints" : null, "performance_assessment_validation_methods" : null, "performance_assessment_validation_uncertainties" : null, "performance_assessment_validation_errors" : null, "algorithm_implementations" :[], "data_access_input_data" :[], "data_access_output_data" :[], "data_access_related_urls" :[], "journal_discussion" : null, "journal_acknowledgements" : null, "scientific_theory" : null, "scientific_theory_assumptions" : null, "publication_references" :[] }'::jsonb, 'DRAFT');
 
 INSERT INTO threads (atbd_id, major, section, created_by, last_updated_by)
   VALUES (1, 2, 'introduction', :'author_sub_1', :'author_sub_1');

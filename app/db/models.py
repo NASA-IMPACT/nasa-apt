@@ -62,7 +62,9 @@ class AtbdVersions(Base):
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="DRAFT", nullable=False)
     document = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
-    publication_checklist = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
+    publication_checklist = Column(
+        MutableDict.as_mutable(postgresql.JSON), server_default="{}"
+    )
     sections_completed = Column(
         MutableDict.as_mutable(postgresql.JSON), server_default="{}"
     )
@@ -173,18 +175,17 @@ class AtbdVersionsContactsAssociation(Base):
         Integer(), ForeignKey("contacts.id"), nullable=False, primary_key=True
     )
     roles = Column(String())
+    affiliations = Column(String())
 
     atbd_version = relationship(
         "AtbdVersions",
         backref=backref("contacts_link", cascade="all, delete-orphan"),
-        # lazy="joined",
         lazy="select",
     )
 
     contact = relationship(
         "Contacts",
         backref=backref("atbd_versions_link", cascade="all, delete-orphan"),
-        # lazy="joined",
         lazy="select",
     )
 
@@ -193,6 +194,7 @@ class AtbdVersionsContactsAssociation(Base):
         return (
             f"<AtbdVersionContact(atbd_id={self.atbd_id}), major={self.major}, "
             f"contact_id={self.contact_id}, roles={self.roles}, "
+            f"affiliations={self.affiliations}, "
             f"atbd_versions={self.atbd_version}, contacts={self.contact})>"
         )
 

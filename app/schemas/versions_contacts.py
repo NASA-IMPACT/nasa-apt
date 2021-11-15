@@ -84,10 +84,13 @@ class AtbdVersionsLinkOutput(BaseModel):
 class AtbdVersionsLink(BaseModel):
     """Links from Contact to Versions (many-to-many)"""
 
+    # No need to set a default value for roles or affiliations here since
+    # the database already sets an empty list default value
     roles: str
+    affiliations: str
     atbd_version: AtbdVersionsLinkOutput
 
-    @validator("roles")
+    @validator("roles", "affiliations")
     def _format_roles(cls, v):
         return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
 
@@ -137,10 +140,8 @@ class ContactsSummary(ContactsBase):
     # This is not ideal, and this kind of formatting should happen
     # at the model level
 
-    @validator("mechanisms")
+    @validator("mechanisms", always=True)
     def _format_contact_mechanisms(cls, v):
-        if v is None:
-            return []
 
         mechanisms = []
 
@@ -157,10 +158,13 @@ class ContactsLinkOutput(BaseModel):
     """Link from Version to Contact"""
 
     contact: ContactsSummary
-    roles: str
+    roles: Optional[str]
+    affiliations: Optional[str]
 
-    @validator("roles")
-    def _format_roles(cls, v):
+    @validator("roles", "affiliations", always=True)
+    def _format_roles(cls, v, values, field):
+        if not v:
+            return []
         return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
 
     class Config:
@@ -177,13 +181,15 @@ class ContactsLinkInput(BaseModel):
     """
 
     id: int
-    roles: List[RolesEnum]
+    roles: Optional[List[RolesEnum]]
+    affiliations: Optional[List[str]]
 
-    @validator("roles")
+    @validator("roles", "affiliations", always=True)
     def _format_roles(cls, v):
+        if not v:
+            v = []
 
-        s = ",".join(i for i in v)
-        return f"{{{s}}}"
+        return f"{{{','.join(i for i in v)}}}"
 
 
 class ContactsAssociationLookup(BaseModel):
@@ -197,4 +203,5 @@ class ContactsAssociationLookup(BaseModel):
 class ContactsAssociation(ContactsAssociationLookup):
     """Contact Association output model"""
 
-    roles: RolesEnum
+    roles: str
+    affiliations: str

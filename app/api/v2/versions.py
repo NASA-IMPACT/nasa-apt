@@ -168,6 +168,7 @@ def update_atbd_version(
         # in the database - this makes updating roles on an existing
         # contacts_link item possible.
         for contact in version_input.contacts:
+            print("CONTACT: ", contact)
             crud_contacts_associations.upsert(
                 db_session=db,
                 obj_in=versions_contacts.ContactsAssociation(
@@ -175,6 +176,7 @@ def update_atbd_version(
                     atbd_id=atbd_id,
                     major=major,
                     roles=contact.roles,
+                    affiliations=contact.affiliations,
                 ),
             )
 
