@@ -108,10 +108,10 @@ class PublicationUnits(BaseModel):
 class Keyword(BaseModel):
     """GCMD KMS keyword API output to store in DB"""
 
-    name: str  # should this be "label"?
+    label: str  # should this be "label"?
     path: str  # `|` delimited path
-    value: str  # UUID (should we enfore this as a uuid-type? )
-    id: str  # should this be pure int?
+    value: str  # UUID (should we enforve this as a uuid-type? )
+    id: int  # should this be pure int?
 
 
 class AtbdVersionSummaryOutput(BaseModel):
@@ -130,7 +130,7 @@ class AtbdVersionSummaryOutput(BaseModel):
     last_updated_at: datetime
     citation: Optional[dict]
     document: Optional[_document.DocumentSummary]
-    keywords: Optional[Keyword]
+    keywords: Optional[List[Keyword]]
     owner: Union[CognitoUser, AnonymousUser]
     authors: Union[List[CognitoUser], List[AnonymousUser]]
     reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]
@@ -312,6 +312,7 @@ class Update(BaseModel):
 
     document: Optional[_document.Document]
     publication_checklist: Optional[PublicationChecklist]
+    keywords: Optional[List[Keyword]]
     sections_completed: Optional[dict]
     doi: Optional[str]
     citation: Optional[Citation]
