@@ -88,10 +88,6 @@ class AtbdVersionsLink(BaseModel):
     affiliations: Optional[List[str]] = []
     atbd_version: AtbdVersionsLinkOutput
 
-    # @validator("roles", "affiliations")
-    # def _format_roles(cls, v):
-    #     return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
-
     class Config:
         """Config."""
 
@@ -158,12 +154,6 @@ class ContactsLinkOutput(BaseModel):
     contact: ContactsSummary
     roles: Optional[List[RolesEnum]] = []
     affiliations: Optional[List[str]] = []
-
-    # @validator("roles", "affiliations", always=True)
-    # def _format_roles(cls, v, values, field):
-    #     if not v:
-    #         return []
-    #     return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
 
     class Config:
         """Config."""

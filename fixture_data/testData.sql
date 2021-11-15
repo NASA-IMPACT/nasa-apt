@@ -1368,13 +1368,16 @@ INSERT INTO atbd_versions (atbd_id, created_by, "owner", authors, reviewers, las
 }'::jsonb, 'OPEN_REVIEW');
 
 INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles, affiliations)
-  VALUES (1, 1, 1, ARRAY['Writing – original draft', 'Data curation']::e_contact_role_type[], ARRAY['Bell Laboratories', 'Los Alamos']::text[]);
+  VALUES (1, 1, 1, ARRAY['Writing – original draft', 'Data curation']::text[], ARRAY['Bell Laboratories', 'Los Alamos']::text[]);
 
 INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles, affiliations)
-  VALUES (1, 1, 2, ARRAY['Methodology']::e_contact_role_type[], ARRAY['Oakridge National Lab']::text[]);
+  VALUES (1, 1, 2, ARRAY['Methodology']::text[], ARRAY['Oakridge National Lab']::text[]);
 
 INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id, roles, affiliations)
-  VALUES (1, 2, 2, ARRAY['Project administration']::e_contact_role_type[], ARRAY['CERN']::text[]);
+  VALUES (1, 2, 2, ARRAY['Project administration']::text[], ARRAY['CERN']::text[]);
+
+INSERT INTO atbd_versions_contacts (atbd_id, major, contact_id)
+  VALUES (1, 2, 1);
 
 INSERT INTO atbds (title, alias, created_by, created_at, last_updated_by, last_updated_at)
   VALUES ('Project algorithms technically overly simplistic', 'patos', :'owner_sub', '2021-03-14 14:30:00', :'owner_sub', '2021-03-15 16:00:00');
