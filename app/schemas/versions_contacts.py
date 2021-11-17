@@ -1,6 +1,5 @@
 """Versions -- Contacts relationship classes"""
 
-import re
 from enum import Enum, unique
 from typing import List, Optional
 
@@ -121,31 +120,24 @@ class ContactsMechanism(BaseModel):
     mechanism_type: Optional[ContactMechanismEnum]
     mechanism_value: Optional[str]
 
+    class Config:
+        """Config."""
+
+        title = "ContactMechanism"
+        orm_mode = True
+
 
 class ContactsSummary(ContactsBase):
     """Contacts summary output (doesn't include version)"""
 
     id: int
-    mechanisms: Optional[str]
-    # TODO: I couldn't get the SQLAlchemy model working with
-    # composite array and composite type, so I've left them
-    # as a string representation in the datamodel and then
-    # converted them to a list of Mechanism objects here.
-    # This is not ideal, and this kind of formatting should happen
-    # at the model level
+    mechanisms: Optional[List[ContactsMechanism]]
 
-    @validator("mechanisms", always=True)
-    def _format_contact_mechanisms(cls, v):
+    class Config:
+        """Config."""
 
-        mechanisms = []
-
-        for result in re.findall(r"(\"\()(.*?),(.*?)(\)\")", v.strip("{}")):
-            mtype, mvalue = result[1].strip('\\"'), result[2].strip('\\"')
-
-            mechanisms.append(
-                ContactsMechanism(mechanism_type=mtype, mechanism_value=mvalue)
-            )
-        return mechanisms
+        title = "Contact"
+        orm_mode = True
 
 
 class ContactsLinkOutput(BaseModel):

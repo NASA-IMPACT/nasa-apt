@@ -1,7 +1,7 @@
 """Schemas for Contacts Model"""
 from typing import List, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 
 from app.schemas import versions_contacts
 
@@ -11,14 +11,6 @@ class Create(versions_contacts.ContactsBase):
     since SQLAlchemy doesn't have native support for Postgres custom types."""
 
     mechanisms: Optional[List[versions_contacts.ContactsMechanism]]
-
-    @validator("mechanisms")
-    def _format_contact_mechanisms(cls, v):
-
-        s = ",".join(
-            f'"(\\"{m.mechanism_type}\\",\\"{m.mechanism_value}\\")"' for m in v
-        )
-        return f"{{{s}}}"
 
 
 class Output(versions_contacts.ContactsSummary):
@@ -37,14 +29,6 @@ class Update(BaseModel):
     uuid: Optional[str]
     url: Optional[str]
     mechanisms: Optional[List[versions_contacts.ContactsMechanism]]
-
-    @validator("mechanisms")
-    def _format_contact_mechanisms(cls, v):
-
-        s = ",".join(
-            f'"(\\"{m.mechanism_type}\\",\\"{m.mechanism_value}\\")"' for m in v
-        )
-        return f"{{{s}}}"
 
 
 class Lookup(BaseModel):

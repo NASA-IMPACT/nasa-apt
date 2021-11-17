@@ -65,6 +65,7 @@ def get_version(
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     [atbd_version] = atbd.versions
+    print("ATBD VERSION CONTACTS: ", atbd_version.contacts_link)
     check_permissions(principals=principals, action="view", acl=atbd_version.__acl__())
     atbd = update_atbd_contributor_info(principals, atbd)
     return atbd

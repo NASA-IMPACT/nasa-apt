@@ -26,7 +26,11 @@ from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
 from app.schemas import document
-from app.schemas.versions_contacts import ContactsLinkOutput, RolesEnum
+from app.schemas.versions_contacts import (
+    ContactMechanismEnum,
+    ContactsLinkOutput,
+    RolesEnum,
+)
 
 SECTIONS = {
     "abstract": {},
@@ -306,14 +310,13 @@ def generate_bib_reference(data: document.PublicationReference) -> str:
     """
     reference_id = bib_reference_name(data["id"])
     reference = ""
-    for e in ["title", "pages", "publisher", "year", "volume"]:
+    for e in ["title", "pages", "publisher", "year", "volume", "number"]:
         if data.get(e):
             reference += f"{e}={{{data[e]}}},\n"
     if data.get("authors"):
         reference += f"author={{{data['authors']}}},\n"
-    # Can't use both VOLUME and NUMBER fields in bibtex
 
-    return f"@BOOK{{{reference_id},\n{reference}}}"
+    return f"@article{{{reference_id},\n{reference}}}"
 
 
 def generate_bib_file(references: List[document.PublicationReference], filepath: str):
@@ -421,85 +424,85 @@ def setup_document(
     doc = Document(
         default_filepath=filepath,
         documentclass=Command("documentclass", arguments=document_class,),
-        fontenc="T1",
-        inputenc="utf8",
         # use Latin-Math Modern pacakge for char support
         lmodern=True,
-        textcomp=True,
-        page_numbers=True,
-        indent=True,
     )
 
     for p in [
-        "color",
-        "url",
-        "graphicx",
         "float",
-        "amsmath",
-        "array",
         "booktabs",
         "soul",
     ]:
         doc.packages.append(Package(p))
 
     if journal:
-        doc.packages.append(Package("setspace"))
-        doc.preamble.append(Command("doublespacing"))
 
         doc.packages.append(Package("lineno"))
         doc.preamble.append(Command("linenumbers"))
 
-    doc.packages.append(Package("hyperref"))
-    doc.preamble.append(
-        Command(
-            "hypersetup",
-            arguments=f"colorlinks={str(journal).lower()},linkcolor=blue,filecolor=magenta,urlcolor=blue",
+    doc.append(Command("title", arguments=atbd.title))
+
+    if journal:
+        doc.preamble.append(
+            Command("journalname", arguments="American Geophysical Union")
+        )
+
+    affiliations = list(
+        set(
+            affiliation
+            for contact_link in contacts_link
+            for affiliation in contact_link.affiliations
         )
     )
-    # The package `apacite` MUST be loaded AFTER hyperref otherwise the
-    # in-text citations won't populate correctly.
-    doc.packages.append(Package("apacite"))
-
-    doc.preamble.append(Command("title", arguments=atbd.title))
-    doc.preamble.append(Command("date", arguments=NoEscape("\\today")))
-    affiliations = [contact_link.contact.url for contact_link in contacts_link]
-
-    doc.preamble.append(
-        Command(
-            "authors",
-            arguments=NoEscape(
-                ", ".join(
-                    [
-                        f"{contact_link.contact.first_name} {contact_link.contact.last_name}\\affil{{{affiliations.index(contact_link.contact.url)}}}"
-                        for contact_link in contacts_link
-                    ]
-                )
-            ),
+    author_affiliations = []
+    for contact_link in contacts_link:
+        author_affiliation = (
+            f"{contact_link.contact.first_name} {contact_link.contact.last_name}"
         )
-    )
+        if contact_link.affiliations:
+            indices = [
+                str(affiliations.index(affiliation) + 1)
+                for affiliation in contact_link.affiliations
+            ]
+            author_affiliation += f"\\affil{{{','.join(indices)}}}"
+            author_affiliations.append(author_affiliation)
+
+    doc.append(Command("authors", arguments=NoEscape(", ".join(author_affiliations)),))
 
     for i, affiliation in enumerate(affiliations):
-        doc.preamble.append(Command("affiliation", arguments=[str(i + 1), affiliation]))
+        doc.append(Command("affiliation", arguments=[str(i + 1), affiliation]))
 
-    [corresponding_author] = [
+    corresponding_author = [
         contact_link.contact
         for contact_link in contacts_link
-        if contact_link.role == RolesEnum.CORRESPONDING_AUTHOR
+        if RolesEnum.CORRESPONDING_AUTHOR in contact_link.roles
     ]
-    [corresponding_author_email] = [
-        mechanism.value  # type: ignore
-        for mechanism in corresponding_author.mechanisms
-        if mechanism.type == "email"  # type: ignore
-    ]
-    doc.preamble.append(
-        "correspondingauthor",
-        arguments=[
-            f"{corresponding_author.first_name} {corresponding_author.last_name}",
-            corresponding_author_email,
-        ],
-    )
+    if not corresponding_author:
+        corresponding_author_fullname = "No corresponding author found"
+        corresponding_author_email = "No email found"
+    else:
+        corresponding_author = corresponding_author[0]
+        corresponding_author_fullname = (
+            f"{corresponding_author.first_name} {corresponding_author.last_name}"
+        )
 
-    doc.append(Command("maketitle"))
+        corresponding_author_email = [
+            mechanism.mechanism_value  # type: ignore
+            for mechanism in corresponding_author.mechanisms
+            if mechanism.mechanism_type == ContactMechanismEnum.EMAIL
+        ]
+        if corresponding_author_email:
+            corresponding_author_email = corresponding_author_email[0]
+
+    if journal:
+        doc.append(
+            Command(
+                "correspondingauthor",
+                arguments=[corresponding_author_fullname, corresponding_author_email],
+            )
+        )
+
+    # doc.append(Command("maketitle"))
 
     if not journal:
         doc.append(Command("tableofcontents"))
@@ -557,6 +560,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             s = Subsubsection(info["title"])
 
         doc.append(s)
+        if section_name == "plain_summary":
+            doc.append(document_data[section_name])
+            continue
 
         if section_name == "contacts":
             for contact in process_contacts(contacts_data):
@@ -595,8 +601,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             doc.append(process(item, atbd_id=atbd.id))
             continue
 
-    doc.append(Command("bibliographystyle", arguments="apacite"))
+    # doc.append(Command("bibliographystyle", arguments="apacite"))
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
+    # doc.append(Command("end", arguments="document"))
 
     return doc
 
@@ -619,8 +626,10 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
 
     latex_document.generate_pdf(
         filepath=filepath,
-        clean=True,
-        clean_tex=True,
+        # clean=True,
+        # clean_tex=True,
+        clean=False,
+        clean_tex=False,
         # latexmk automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
         compiler="latexmk",

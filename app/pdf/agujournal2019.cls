@@ -1148,6 +1148,10 @@ width0pt\relax}\\*\noindent\ignorespaces}
 % When using NatBib, this sets brackets for citations:
 %\renewcommand\NAT@open{(} \renewcommand\NAT@close{)}   %xx Parens by default, but not using anyways.  DC
 
+% hyperref MUST be loaded before APACite 
+\RequirePackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue}%
+
 \RequirePackage{apacite}
 %\RequirePackage{natbib}
 \let\cite\shortcite %xx So get et al. with three authors the first time.

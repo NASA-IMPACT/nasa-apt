@@ -1,5 +1,8 @@
 """SQLAlchemy models for interfacing with the database"""
 
+# from sqlalchemy_utils import CompositeArray, CompositeType
+import re
+
 from sqlalchemy import (
     CheckConstraint,
     Column,
@@ -16,6 +19,7 @@ from sqlalchemy.orm import backref, relationship
 from app import acls
 from app.db.base import Base
 from app.db.types import utcnow
+from app.schemas.versions_contacts import ContactMechanismEnum
 
 import fastapi_permissions
 
@@ -130,6 +134,57 @@ class AtbdVersions(Base):
         return acl
 
 
+class ContactMechanism:
+    """
+    Custom object class used to mimic a SQLAlchemy object, that
+    gets built by the custom type deserializer below
+    """
+
+    mechanism_type: str
+    mechanism_value: str
+
+    def __init__(self, mechanism_type: ContactMechanismEnum, mechanism_value: str):
+        """Init custom ContactMechanism class"""
+        self.mechanism_type = mechanism_type
+        self.mechanism_value = mechanism_value
+
+    def __repr__(self):
+        """String representation"""
+        return f"Contact Mechanism(type: {self.mechanism_type}, value: {self.mechanism_value})"
+
+
+class ContactMechanismArray(types.TypeDecorator):
+    """
+    Custom SQLAlchemy type that converts back and forth between
+    the Postgres string and the python object respresenting an
+    author's contact mechanisms
+    """
+
+    impl = types.String
+
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        """Serialize to string when writing to database"""
+        s = ",".join(
+            f'"(\\"{m.mechanism_type}\\",\\"{m.mechanism_value}\\")"' for m in value
+        )
+        return f"{{{s}}}"
+
+    def process_result_value(self, value, dialect):
+        """De-serialize from String to python class when reading
+        from database"""
+        mechanisms = []
+        for result in re.findall(r"(\"\()(.*?),(.*?)(\)\")", value.strip("{}")):
+            mtype, mvalue = result[1].strip('\\"'), result[2].strip('\\"')
+
+            mechanisms.append(
+                ContactMechanism(mechanism_type=mtype, mechanism_value=mvalue)
+            )
+
+        return mechanisms
+
+
 class Contacts(Base):
     """Contacts"""
 
@@ -140,7 +195,7 @@ class Contacts(Base):
     last_name = Column(String(), nullable=False)
     uuid = Column(String())
     url = Column(String())
-    mechanisms = Column(String())
+    mechanisms = Column(ContactMechanismArray)
 
     def __repr__(self):
         """String representation"""
@@ -149,10 +204,6 @@ class Contacts(Base):
             f" last_name={self.last_name}, uuid={self.uuid}, url={self.url}, "
             f" mechanisms={self.mechanisms})>"
         )
-
-
-# enum = postgresql.ENUM(*(str(r.value) for r in RolesEnum), name="e_contact_role_type")
-# print("ENUM: ", enum.__dir__())
 
 
 class AtbdVersionsContactsAssociation(Base):
@@ -179,7 +230,9 @@ class AtbdVersionsContactsAssociation(Base):
     contact_id = Column(
         Integer(), ForeignKey("contacts.id"), nullable=False, primary_key=True
     )
+
     roles = Column(postgresql.ARRAY(String()), server_default="{{}}")
+
     affiliations = Column(postgresql.ARRAY(String()), server_default="{{}}")
 
     atbd_version = relationship(
