@@ -502,8 +502,6 @@ def setup_document(
             )
         )
 
-    # doc.append(Command("maketitle"))
-
     if not journal:
         doc.append(Command("tableofcontents"))
     return doc
@@ -513,14 +511,20 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     """
     Generates a Latex document with associated Bibtex file
     """
-
     [atbd_version] = atbd.versions
-    document_data = atbd_version.document
+    # parse as Pydantic model and return to dict to enforce data integrity
+    document_data = document.Document.parse_obj(atbd_version.document).dict()
     contacts_data = atbd_version.contacts_link
     doc = setup_document(atbd, filepath, contacts_link=contacts_data, journal=journal)
 
+    if journal:
+        doc.append(Command("begin", arguments="keypoints"))
+        for keypoint in document_data["key_points"].split("\n"):
+            doc.append(Command("item", arguments=keypoint))
+        doc.append(Command("end", arguments="keypoints"))
+
     generate_bib_file(
-        document_data.get("publication_references", []), filepath=f"{filepath}.bib",
+        document_data["publication_references"], filepath=f"{filepath}.bib",
     )
     section_name: str
     info: Any
@@ -601,9 +605,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             doc.append(process(item, atbd_id=atbd.id))
             continue
 
-    # doc.append(Command("bibliographystyle", arguments="apacite"))
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
-    # doc.append(Command("end", arguments="document"))
 
     return doc
 

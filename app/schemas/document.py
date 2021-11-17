@@ -216,13 +216,18 @@ class TableBlockNode(BaseNode):
 class DataAccessUrl(BaseModel):
     """Data Access URL"""
 
-    url: Optional[Union[AnyUrl, str]]
-    description: Optional[str]
+    url: Optional[Union[AnyUrl, str]] = ""
+    description: Optional[str] = ""
 
-    @validator("url", "description", always=True)
-    def _set_empty_if_missing(cls, v: Union[AnyUrl, str]):
-        if not v:
-            return ""
+    # @root_validator
+    # def _print(cls, values):
+    #     print("VALUES: ", values)
+    #     return values
+
+    # @validator("url", "description", always=True)
+    # def _set_empty_if_missing(cls, v: Union[AnyUrl, str]):
+    #     if not v:
+    #         return ""
 
 
 class DivWrapperNode(BaseModel):
@@ -283,8 +288,8 @@ class DocumentSummary(BaseModel):
 class Document(DocumentSummary):
     """Top level `document` node"""
 
-    plain_summary: Optional[str]
-    key_points: Optional[str]
+    plain_summary: Optional[str] = ""
+    key_points: Optional[str] = ""
     version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
     historical_perspective: Optional[SectionWrapper]
@@ -309,14 +314,4 @@ class Document(DocumentSummary):
     data_access_related_urls: Optional[List[DataAccessUrl]]
     journal_discussion: Optional[SectionWrapper]
     journal_acknowledgements: Optional[SectionWrapper]
-    publication_references: Optional[List[PublicationReference]]
-
-    @validator(
-        "algorithm_implementations",
-        "data_access_input_data",
-        "data_access_output_data",
-        "data_access_related_urls",
-        whole=True,
-    )
-    def _check_if_list_has_value(cls, value):
-        return value or None
+    publication_references: Optional[List[PublicationReference]] = []

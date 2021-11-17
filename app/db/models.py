@@ -40,7 +40,6 @@ class Atbds(Base):
         "AtbdVersions",
         backref="atbd",
         uselist=True,
-        # lazy="joined",
         lazy="select",
         order_by="AtbdVersions.created_at",
         cascade="all, delete-orphan",
