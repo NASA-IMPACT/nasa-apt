@@ -229,7 +229,7 @@ class FullOutput(AtbdVersionSummaryOutput):
             [
                 _helper(getattr(doc, field))
                 for field in doc.__fields__
-                if field not in ["version_description", "plain_summary"]
+                if field not in ["version_description", "plain_summary", "key_points"]
             ]
         )
 
