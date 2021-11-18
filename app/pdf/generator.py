@@ -38,18 +38,19 @@ SECTIONS = {
     "keywords": {"title": "Keywords"},
     "version_description": {"title": "Description"},
     "introduction": {"title": "Introduction"},
-    "historical_perspective": {"title": "Historical Perspective"},
-    "additional_information": {"title": "Additional Data"},
-    "algorithm_description": {"title": "Algorithm Description"},
+    "context_background": {"title": "Context / Background", "section_header": True},
+    "historical_perspective": {"title": "Historical Perspective", "subsection": True},
+    "additional_information": {"title": "Additional Data", "subsection": True},
+    "algorithm_description": {"title": "Algorithm Description", "section_header": True},
     "scientific_theory": {"title": "Scientific Theory", "subsection": True},
     "scientific_theory_assumptions": {
         "title": "Scientific Theory Assumptions",
-        "subsection": True,
+        "subsubsection": True,
     },
     "mathematical_theory": {"title": "Mathematical Theory", "subsection": True},
     "mathematical_theory_assumptions": {
         "title": "Mathematical Theory Assumptions",
-        "subsection": True,
+        "subsubsection": True,
     },
     "algorithm_input_variables": {
         "title": "Algorithm Input Variables",
@@ -59,20 +60,31 @@ SECTIONS = {
         "title": "Algorithm Output Variables",
         "subsection": True,
     },
-    "algorithm_implementations": {"title": "Algorithm Implementations"},
+    "algorithm_implementations": {
+        "title": "Algorithm Availability",
+        # "section_header": True,
+    },
     "algorithm_usage_constraints": {"title": "Algorithm Usage Constraints"},
+    "performace_assessment_validations": {
+        "title": "Performance Assessment Validation Methods",
+        "section_header": True,
+    },
     "performance_assessment_validation_methods": {
-        "title": "Performance Assessment Validation Methods"
+        "title": "Performance Assessment Validation Methods",
+        "subsection": True,
     },
     "performance_assessment_validation_uncertainties": {
-        "title": "Performance Assessment Validation Uncertainties"
+        "title": "Performance Assessment Validation Uncertainties",
+        "subsection": True,
     },
     "performance_assessment_validation_errors": {
-        "title": "Performance Assessment Validation Errors"
+        "title": "Performance Assessment Validation Errors",
+        "subsection": True,
     },
-    "data_access_input_data": {"title": "Data Access Input Data"},
-    "data_access_output_data": {"title": "Data Access Output Data"},
-    "data_access_related_urls": {"title": "Data Access Related URLs"},
+    "data_access": {"title": "Data Access", "section_header": True},
+    "data_access_input_data": {"title": "Input Data Access", "subsection": True},
+    "data_access_output_data": {"title": "Output Data Access", "subsection": True},
+    "data_access_related_urls": {"title": "Important Related URLs", "subsection": True},
     "journal_discussion": {"title": "Discussion"},
     "journal_acknowledgements": {"title": "Acknowledgements"},
     "data_availability": {"title": "Data Availability", "subsection": True},
@@ -208,10 +220,10 @@ def process_data_access_url(access_url: document.DataAccessUrl) -> List[NoEscape
     Returns a list of Latex formatted commands, to be appended in order
     to the Latex document, to display a single data acccess url
     """
-    p1 = section.Paragraph(wrap_text({"text": "Access url:", "bold": True}))  # type: ignore
+    p1 = section.Paragraph(wrap_text({"text": "Access url:", "bold": True}), numbering=False)  # type: ignore
     p1.append(hyperlink(access_url["url"], access_url["url"]))
 
-    p2 = section.Paragraph(wrap_text({"text": "Description:", "bold": True}))  # type: ignore
+    p2 = section.Paragraph(wrap_text({"text": "Description:", "bold": True}), numbering=False)  # type: ignore
     p2.append(access_url["description"])
     return [p1, p2]
 
@@ -224,7 +236,7 @@ def process_data_access_urls(data: List[document.DataAccessUrl]) -> List:
     """
     urls = []
     for i, access_url in enumerate(data):
-        s = Subsection(f"Entry #{str(i+1)}")
+        s = Subsubsection(f"Entry #{str(i+1)}")
         for command in process_data_access_url(access_url):
             s.append(command)
         urls.append(s)
@@ -570,6 +582,11 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             s = Subsubsection(info["title"])
 
         doc.append(s)
+
+        if info.get("section_header"):
+            # section header means that no content is needed
+            continue
+
         if section_name == "plain_summary":
             doc.append(document_data[section_name])
             continue
@@ -609,8 +626,11 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "data_access_output_data",
             "data_access_related_urls",
         ]:
+            print("SECTION: ", section_name)
+
             for url in process_data_access_urls(document_data[section_name]):
                 doc.append(url)
+                print("DATA: ", url)
             continue
 
         for item in document_data[section_name].get("children", [CONTENT_UNAVAILABLE]):
