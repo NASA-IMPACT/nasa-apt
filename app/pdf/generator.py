@@ -35,12 +35,12 @@ from app.schemas.versions_contacts import (
 SECTIONS = {
     "abstract": {},
     "plain_summary": {"title": "Plain Language Summary"},
+    "keywords": {"title": "Keywords"},
     "version_description": {"title": "Description"},
     "introduction": {"title": "Introduction"},
     "historical_perspective": {"title": "Historical Perspective"},
     "additional_information": {"title": "Additional Data"},
     "algorithm_description": {"title": "Algorithm Description"},
-    "data_availability": {"title": "Data Availability"},
     "scientific_theory": {"title": "Scientific Theory", "subsection": True},
     "scientific_theory_assumptions": {
         "title": "Scientific Theory Assumptions",
@@ -75,6 +75,7 @@ SECTIONS = {
     "data_access_related_urls": {"title": "Data Access Related URLs"},
     "journal_discussion": {"title": "Discussion"},
     "journal_acknowledgements": {"title": "Acknowledgements"},
+    "data_availability": {"title": "Data Availability", "subsection": True},
     "contacts": {"title": "Contacts"},
 }
 
@@ -156,7 +157,10 @@ def reference(reference_id: str) -> NoEscape:
 TEXT_WRAPPERS = {
     "superscript": lambda e: f"\\textsuperscript{{{e}}}",
     "subscript": lambda e: f"\\textsubscript{{{e}}}",
-    "underline": lambda e: f"\\underline{{{e}}}",
+    # using the `\ul` command instead of the `\underline` as
+    # `\underline` "wraps" the argument in a horizontal box
+    # which doesn't allow for linebreaks
+    "underline": lambda e: f"\\ul{{{e}}}",
     "italic": lambda e: f"\\textit{{{e}}}",
     "bold": lambda e: f"\\textbf{{{e}}}",
 }
@@ -261,6 +265,7 @@ def process_algorithm_variables(
         columns=["long_name", "unit"],
         header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
         caption=caption,
+        position="H",
     )
     return NoEscape(latex_table)
 
@@ -440,6 +445,21 @@ def setup_document(
         doc.packages.append(Package("lineno"))
         doc.preamble.append(Command("linenumbers"))
 
+    return doc
+
+
+def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
+    """
+    Generates a Latex document with associated Bibtex file
+    """
+    [atbd_version] = atbd.versions
+
+    # parse as Pydantic model and return to dict to enforce data integrity
+    document_data = document.Document.parse_obj(atbd_version.document).dict()
+
+    contacts_data = atbd_version.contacts_link
+    doc = setup_document(atbd, filepath, contacts_link=contacts_data, journal=journal)
+
     doc.append(Command("title", arguments=atbd.title))
 
     if journal:
@@ -450,12 +470,12 @@ def setup_document(
     affiliations = list(
         set(
             affiliation
-            for contact_link in contacts_link
+            for contact_link in contacts_data
             for affiliation in contact_link.affiliations
         )
     )
     author_affiliations = []
-    for contact_link in contacts_link:
+    for contact_link in contacts_data:
         author_affiliation = (
             f"{contact_link.contact.first_name} {contact_link.contact.last_name}"
         )
@@ -474,7 +494,7 @@ def setup_document(
 
     corresponding_author = [
         contact_link.contact
-        for contact_link in contacts_link
+        for contact_link in contacts_data
         if RolesEnum.CORRESPONDING_AUTHOR in contact_link.roles
     ]
     if not corresponding_author:
@@ -482,13 +502,11 @@ def setup_document(
         corresponding_author_email = "No email found"
     else:
         corresponding_author = corresponding_author[0]
-        corresponding_author_fullname = (
-            f"{corresponding_author.first_name} {corresponding_author.last_name}"
-        )
+        corresponding_author_fullname = f"{corresponding_author.first_name} {corresponding_author.last_name}"  # type: ignore
 
         corresponding_author_email = [
             mechanism.mechanism_value  # type: ignore
-            for mechanism in corresponding_author.mechanisms
+            for mechanism in corresponding_author.mechanisms  # type: ignore
             if mechanism.mechanism_type == ContactMechanismEnum.EMAIL
         ]
         if corresponding_author_email:
@@ -504,18 +522,6 @@ def setup_document(
 
     if not journal:
         doc.append(Command("tableofcontents"))
-    return doc
-
-
-def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
-    """
-    Generates a Latex document with associated Bibtex file
-    """
-    [atbd_version] = atbd.versions
-    # parse as Pydantic model and return to dict to enforce data integrity
-    document_data = document.Document.parse_obj(atbd_version.document).dict()
-    contacts_data = atbd_version.contacts_link
-    doc = setup_document(atbd, filepath, contacts_link=contacts_data, journal=journal)
 
     if journal:
         doc.append(Command("begin", arguments="keypoints"))
@@ -566,6 +572,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         doc.append(s)
         if section_name == "plain_summary":
             doc.append(document_data[section_name])
+            continue
+
+        if section_name == "keywords":
+            doc.append(Command("begin", arguments="itemize"))
+            for keyword in atbd_version.keywords:
+                doc.append(Command("item", arguments=keyword["path"]))
+            doc.append(Command("end", arguments="itemize"))
             continue
 
         if section_name == "contacts":

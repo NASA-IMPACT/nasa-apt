@@ -18,10 +18,14 @@ CREATE TYPE apt.e_contact_role_type AS ENUM (
     'Funding acquisition'
 );
 ALTER TABLE apt.atbd_versions_contacts
+    ALTER COLUMN "roles" DROP DEFAULT;
+UPDATE
+    apt.atbd_versions_contacts
+SET
+    "roles" = array_remove("roles", 'Corresponding Author');
+ALTER TABLE apt.atbd_versions_contacts
     ALTER COLUMN "roles" TYPE apt.e_contact_role_type[]
     USING roles::apt.e_contact_role_type[];
-ALTER TABLE apt.atbd_versions_contacts
-    ALTER COLUMN "roles" DROP DEFAULT;
 ALTER TABLE apt.atbd_versions_contacts
     ALTER COLUMN "roles" SET DEFAULT '{}';
 COMMIT;

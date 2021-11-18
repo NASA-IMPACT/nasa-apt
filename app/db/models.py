@@ -165,8 +165,10 @@ class ContactMechanismArray(types.TypeDecorator):
 
     def process_bind_param(self, value, dialect):
         """Serialize to string when writing to database"""
+
         s = ",".join(
-            f'"(\\"{m.mechanism_type}\\",\\"{m.mechanism_value}\\")"' for m in value
+            f'"(\\"{m["mechanism_type"]}\\",\\"{m["mechanism_value"]}\\")"'
+            for m in value
         )
         return f"{{{s}}}"
 

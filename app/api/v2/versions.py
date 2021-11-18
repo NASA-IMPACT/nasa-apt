@@ -65,7 +65,6 @@ def get_version(
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     [atbd_version] = atbd.versions
-    print("ATBD VERSION CONTACTS: ", atbd_version.contacts_link)
     check_permissions(principals=principals, action="view", acl=atbd_version.__acl__())
     atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
@@ -169,7 +168,6 @@ def update_atbd_version(
         # in the database - this makes updating roles on an existing
         # contacts_link item possible.
         for contact in version_input.contacts:
-            print("CONTACT: ", contact)
             crud_contacts_associations.upsert(
                 db_session=db,
                 obj_in=versions_contacts.ContactsAssociation(

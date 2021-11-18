@@ -219,16 +219,6 @@ class DataAccessUrl(BaseModel):
     url: Optional[Union[AnyUrl, str]] = ""
     description: Optional[str] = ""
 
-    # @root_validator
-    # def _print(cls, values):
-    #     print("VALUES: ", values)
-    #     return values
-
-    # @validator("url", "description", always=True)
-    # def _set_empty_if_missing(cls, v: Union[AnyUrl, str]):
-    #     if not v:
-    #         return ""
-
 
 class DivWrapperNode(BaseModel):
     """Div Wrapper Ndoe"""
@@ -315,3 +305,13 @@ class Document(DocumentSummary):
     journal_discussion: Optional[SectionWrapper]
     journal_acknowledgements: Optional[SectionWrapper]
     publication_references: Optional[List[PublicationReference]] = []
+
+    @validator(
+        "algorithm_implementations",
+        "data_access_input_data",
+        "data_access_output_data",
+        "data_access_related_urls",
+    )
+    def _print(cls, v):
+        # Filter out items that are missing both URL and Description
+        return list(filter(lambda d: d.url or d.description, v))

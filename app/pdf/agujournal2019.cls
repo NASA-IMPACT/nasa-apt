@@ -1150,7 +1150,7 @@ width0pt\relax}\\*\noindent\ignorespaces}
 
 % hyperref MUST be loaded before APACite 
 \RequirePackage{hyperref}
-\hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue}%
+\hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black}%
 
 \RequirePackage{apacite}
 %\RequirePackage{natbib}
