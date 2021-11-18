@@ -60,10 +60,7 @@ SECTIONS = {
         "title": "Algorithm Output Variables",
         "subsection": True,
     },
-    "algorithm_implementations": {
-        "title": "Algorithm Availability",
-        # "section_header": True,
-    },
+    "algorithm_implementations": {"title": "Algorithm Availability"},
     "algorithm_usage_constraints": {"title": "Algorithm Usage Constraints"},
     "performace_assessment_validations": {
         "title": "Performance Assessment Validation Methods",
@@ -113,18 +110,20 @@ def generate_contact(contact_link: ContactsLinkOutput) -> List:
 
     for k in ["uuid", "url"]:
         if contact.get(k):
-            paragraph = section.Paragraph(f"{k.title()}:")
+            paragraph = section.Paragraph(f"{k.title()}:", numbering=False)
             paragraph.append(NoEscape(contact[k]))
             latex_contact.append(paragraph)
 
     if contact.get("mechanisms"):
         for mechanism in contact["mechanisms"]:
-            paragraph = section.Paragraph(f"{mechanism['mechanism_type']}:")
+            paragraph = section.Paragraph(
+                f"{mechanism['mechanism_type']}:", numbering=False
+            )
             paragraph.append(mechanism["mechanism_value"])
             latex_contact.append(paragraph)
 
     if contact_link.roles:
-        paragraph = section.Paragraph("Roles:")
+        paragraph = section.Paragraph("Roles:", numbering=False)
         paragraph.append(", ".join(r for r in contact_link.roles))
         latex_contact.append(paragraph)
 
@@ -626,11 +625,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "data_access_output_data",
             "data_access_related_urls",
         ]:
-            print("SECTION: ", section_name)
 
             for url in process_data_access_urls(document_data[section_name]):
                 doc.append(url)
-                print("DATA: ", url)
             continue
 
         for item in document_data[section_name].get("children", [CONTENT_UNAVAILABLE]):
