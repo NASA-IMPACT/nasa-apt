@@ -82,9 +82,9 @@ SECTIONS = {
     "data_access_input_data": {"title": "Input Data Access", "subsection": True},
     "data_access_output_data": {"title": "Output Data Access", "subsection": True},
     "data_access_related_urls": {"title": "Important Related URLs", "subsection": True},
+    "data_availability": {"title": "Data Availability"},
     "journal_discussion": {"title": "Discussion"},
     "journal_acknowledgements": {"title": "Acknowledgements"},
-    "data_availability": {"title": "Data Availability", "subsection": True},
     "contacts": {"title": "Contacts"},
 }
 
