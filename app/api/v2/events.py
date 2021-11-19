@@ -190,6 +190,7 @@ def publish_handler(
     atbd.versions = [
         update_version_contributor_info(principals=principals, version=version)
     ]
+
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
     background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
     background_tasks.add_task(add_atbd_to_index, atbd)

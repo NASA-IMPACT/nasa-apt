@@ -18,9 +18,15 @@ def save_pdf_to_s3(atbd: Atbds, journal: bool = False):
     """
     Uploads a generated PDF from local execution environment to S3
     """
-    key = generate_pdf_key(atbd=atbd, journal=journal)
-    local_pdf_key = generate_pdf(atbd=atbd, filepath=key, journal=journal)
-    s3_client().upload_file(Filename=local_pdf_key, Bucket=config.S3_BUCKET, Key=key)
+    try:
+        key = generate_pdf_key(atbd=atbd, journal=journal)
+        local_pdf_key = generate_pdf(atbd=atbd, filepath=key, journal=journal)
+        s3_client().upload_file(
+            Filename=local_pdf_key, Bucket=config.S3_BUCKET, Key=key
+        )
+    except Exception as e:
+        print(f"PDF generation ({'journal' if journal else 'regular'}) failed with: ")
+        print(e)
 
 
 # TODO: will this break if the ATBD is created without an alias and then
@@ -92,7 +98,11 @@ def get_pdf(
     try:
         local_pdf_filepath = generate_pdf(atbd=atbd, filepath=pdf_key, journal=journal)
     except Exception as e:
+        if not e.__dict__.get("output"):
+            raise e
+
         atbd_link = f"{config.FRONTEND_URL}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
+
         pdf_compiler_output = [
             f"<p>{line}</p>" for line in str(e.__dict__["output"]).split("\\n")
         ]

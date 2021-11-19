@@ -51,14 +51,10 @@ class SuggestedReviewer(BaseModel):
 class PublicationChecklist(BaseModel):
     """Top level `publication_checklist` node"""
 
-    suggested_reviewers: Optional[List[SuggestedReviewer]]
+    suggested_reviewers: Optional[List[SuggestedReviewer]] = []
     review_roles: bool = False
     journal_editor: str = "Chelle Gentemann"
     author_affirmations: bool = False
-
-    @validator("suggested_reviewers", whole=True)
-    def _check_if_list_has_value(cls, value):
-        return value or None
 
 
 class PublicationUnits(BaseModel):
@@ -90,7 +86,7 @@ class PublicationUnits(BaseModel):
     def __radd__(self, d: PublicationUnits) -> PublicationUnits:
         """Overloaded `__radd__` operand (reverse add) in order to enable
         the `sum()` operation (which attempts to add items in reverse if
-        it can resolve the types going forward)
+        it can't resolve the types going forward)
         >>> leaf_1 = PublicationUnits(words=2, images=2, tables=2)
         >>> leaf_2 = PublicationUnits(words=4, images=4, tables=4)
         >>> leaf_3 = PublicationUnits(words=6, images=6, tables=6)
@@ -105,9 +101,17 @@ class PublicationUnits(BaseModel):
         )
 
 
+class Keyword(BaseModel):
+    """GCMD KMS keyword API output to store in DB"""
+
+    label: str
+    path: str  # `|` delimited path
+    value: str  # UUID (should we enforce this as a uuid-type? )
+    id: int
+
+
 class AtbdVersionSummaryOutput(BaseModel):
-    """Summary output for AtbdVersion (does NOT include full document).
-    TODO: use status enum above"""
+    """Summary output for AtbdVersion (does NOT include full document)."""
 
     major: int
     minor: int
@@ -122,6 +126,7 @@ class AtbdVersionSummaryOutput(BaseModel):
     last_updated_at: datetime
     citation: Optional[dict]
     document: Optional[_document.DocumentSummary]
+    keywords: Optional[List[Keyword]] = []
     owner: Union[CognitoUser, AnonymousUser]
     authors: Union[List[CognitoUser], List[AnonymousUser]]
     reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]
@@ -224,7 +229,7 @@ class FullOutput(AtbdVersionSummaryOutput):
             [
                 _helper(getattr(doc, field))
                 for field in doc.__fields__
-                if field not in ["version_description", "plain_summary"]
+                if field not in ["version_description", "plain_summary", "key_points"]
             ]
         )
 
@@ -303,6 +308,7 @@ class Update(BaseModel):
 
     document: Optional[_document.Document]
     publication_checklist: Optional[PublicationChecklist]
+    keywords: Optional[List[Keyword]]
     sections_completed: Optional[dict]
     doi: Optional[str]
     citation: Optional[Citation]

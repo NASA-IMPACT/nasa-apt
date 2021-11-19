@@ -1,5 +1,8 @@
 """SQLAlchemy models for interfacing with the database"""
 
+# from sqlalchemy_utils import CompositeArray, CompositeType
+import re
+
 from sqlalchemy import (
     CheckConstraint,
     Column,
@@ -16,6 +19,7 @@ from sqlalchemy.orm import backref, relationship
 from app import acls
 from app.db.base import Base
 from app.db.types import utcnow
+from app.schemas.versions_contacts import ContactMechanismEnum
 
 import fastapi_permissions
 
@@ -36,7 +40,6 @@ class Atbds(Base):
         "AtbdVersions",
         backref="atbd",
         uselist=True,
-        # lazy="joined",
         lazy="select",
         order_by="AtbdVersions.created_at",
         cascade="all, delete-orphan",
@@ -62,7 +65,9 @@ class AtbdVersions(Base):
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="DRAFT", nullable=False)
     document = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
-    publication_checklist = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
+    publication_checklist = Column(
+        MutableDict.as_mutable(postgresql.JSON), server_default="{}"
+    )
     sections_completed = Column(
         MutableDict.as_mutable(postgresql.JSON), server_default="{}"
     )
@@ -75,9 +80,10 @@ class AtbdVersions(Base):
     doi = Column(String())
     citation = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
     owner = Column(String(), nullable=False)
-    authors = Column(postgresql.ARRAY(String), server_default="[]")
-    reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="[]")
+    authors = Column(postgresql.ARRAY(String()), server_default="{{}}")
+    reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
     journal_status = Column(String())
+    keywords = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
 
     def __repr__(self):
         """String representation"""
@@ -127,6 +133,59 @@ class AtbdVersions(Base):
         return acl
 
 
+class ContactMechanism:
+    """
+    Custom object class used to mimic a SQLAlchemy object, that
+    gets built by the custom type deserializer below
+    """
+
+    mechanism_type: str
+    mechanism_value: str
+
+    def __init__(self, mechanism_type: ContactMechanismEnum, mechanism_value: str):
+        """Init custom ContactMechanism class"""
+        self.mechanism_type = mechanism_type
+        self.mechanism_value = mechanism_value
+
+    def __repr__(self):
+        """String representation"""
+        return f"Contact Mechanism(type: {self.mechanism_type}, value: {self.mechanism_value})"
+
+
+class ContactMechanismArray(types.TypeDecorator):
+    """
+    Custom SQLAlchemy type that converts back and forth between
+    the Postgres string and the python object respresenting an
+    author's contact mechanisms
+    """
+
+    impl = types.String
+
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        """Serialize to string when writing to database"""
+
+        s = ",".join(
+            f'"(\\"{m["mechanism_type"]}\\",\\"{m["mechanism_value"]}\\")"'
+            for m in value
+        )
+        return f"{{{s}}}"
+
+    def process_result_value(self, value, dialect):
+        """De-serialize from String to python class when reading
+        from database"""
+        mechanisms = []
+        for result in re.findall(r"(\"\()(.*?),(.*?)(\)\")", value.strip("{}")):
+            mtype, mvalue = result[1].strip('\\"'), result[2].strip('\\"')
+
+            mechanisms.append(
+                ContactMechanism(mechanism_type=mtype, mechanism_value=mvalue)
+            )
+
+        return mechanisms
+
+
 class Contacts(Base):
     """Contacts"""
 
@@ -137,7 +196,7 @@ class Contacts(Base):
     last_name = Column(String(), nullable=False)
     uuid = Column(String())
     url = Column(String())
-    mechanisms = Column(String())
+    mechanisms = Column(ContactMechanismArray)
 
     def __repr__(self):
         """String representation"""
@@ -172,19 +231,20 @@ class AtbdVersionsContactsAssociation(Base):
     contact_id = Column(
         Integer(), ForeignKey("contacts.id"), nullable=False, primary_key=True
     )
-    roles = Column(String())
+
+    roles = Column(postgresql.ARRAY(String()), server_default="{{}}")
+
+    affiliations = Column(postgresql.ARRAY(String()), server_default="{{}}")
 
     atbd_version = relationship(
         "AtbdVersions",
         backref=backref("contacts_link", cascade="all, delete-orphan"),
-        # lazy="joined",
         lazy="select",
     )
 
     contact = relationship(
         "Contacts",
         backref=backref("atbd_versions_link", cascade="all, delete-orphan"),
-        # lazy="joined",
         lazy="select",
     )
 
@@ -193,6 +253,7 @@ class AtbdVersionsContactsAssociation(Base):
         return (
             f"<AtbdVersionContact(atbd_id={self.atbd_id}), major={self.major}, "
             f"contact_id={self.contact_id}, roles={self.roles}, "
+            f"affiliations={self.affiliations}, "
             f"atbd_versions={self.atbd_version}, contacts={self.contact})>"
         )
 
@@ -222,9 +283,7 @@ class Threads(Base):
         "Comments",
         backref="thread",
         uselist=True,
-        # lazy="joined",
         lazy="select",
-        # lazy="dynamic",
         order_by="Comments.created_at",
         cascade="all, delete-orphan",
     )

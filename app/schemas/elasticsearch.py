@@ -1,10 +1,13 @@
 """Pydantic Models for data that get's indexed and searched in ElasticSearch"""
-from datetime import datetime
-from typing import Optional
+import re
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, validator
 
+from app.schemas import document as _document
 from app.schemas.document import Document
+from app.schemas.versions import Keyword
+from app.schemas.versions_contacts import ContactsLinkOutput
 
 
 class ElasticsearchAtbdVersion(BaseModel):
@@ -14,8 +17,10 @@ class ElasticsearchAtbdVersion(BaseModel):
     minor: int
     version: Optional[str]
     citation: Optional[dict]
+    keywords: Optional[List[Keyword]] = []
     document: Optional[Document]
     doi: Optional[str]
+    contacts_link: Optional[List[ContactsLinkOutput]]
 
     class Config:
         """Config."""
@@ -28,35 +33,50 @@ class ElasticsearchAtbdVersion(BaseModel):
         return f"v{values['major']}.{values['minor']}"
 
     @validator("document")
-    def _cleanup_document(cls, v) -> dict:
-        def _clean(d):
+    def _cleanup_document(cls, v: _document.Document) -> dict:
+        def _clean(d: Any) -> Any:
+            if not d:
+                return
+            if isinstance(d, _document.PublicationReference):
+                return d.dict(exclude_none=True, exclude_unset=True)
+            if isinstance(d, str):
 
-            if isinstance(d, dict) and d.get("text") == "":
-                return " "
+                return " ".join(re.findall(r"\w+", d))
 
-            if isinstance(d, dict) and d.get("text"):
-                try:
-                    datetime.fromisoformat(d["text"])
-                    return d["text"].replace("T", " ")
-                except ValueError:
-                    pass
-
-                return d["text"]
-
-            if isinstance(d, dict) and d.get("description") and d.get("url"):
-                return [d["description"], d["url"]]
-
-            if isinstance(d, dict) and d.get("children"):
-                return _clean(d["children"])
-            if isinstance(d, dict):
-                return {
-                    k: (_d if k == "publication_references" else _clean(_d))
-                    for k, _d in d.items()
-                }
             if isinstance(d, list):
                 return [_clean(_d) for _d in d]
 
-        return _clean(v.dict(exclude_unset=True, exclude_none=True))
+            if isinstance(d, _document.AlgorithmVariable):
+                return [_clean(d.name), _clean(d.unit)]
+
+            if isinstance(d, _document.DataAccessUrl):
+                return [_clean(d.url), _clean(d.description)]
+
+            if isinstance(d, _document.TextLeaf):
+                return _clean(d.text)
+
+            # Skipping equation indexing because those
+            # are all latex code
+            if isinstance(d, _document.EquationNode):
+                return
+
+            if any(
+                isinstance(d, i)
+                for i in (
+                    _document.SectionWrapper,
+                    _document.DivWrapperNode,
+                    _document.BaseNode,
+                )
+            ):
+                return _clean(d.children)
+
+            raise Exception("Unhandled Node! ", d)
+
+        return {
+            field: _clean(getattr(v, field))
+            for field in v.__fields__
+            if field not in ["version_description"]
+        }
 
 
 class ElasticsearchAtbd(BaseModel):

@@ -4,7 +4,7 @@ services:
   db:
     # Postgres db for local development only.
     # For staging/production, see RDS instance in stack/app.py
-    image: postgres:11.8
+    image: postgres:12.7
     ports:
       - "5432:5432"
     environment:

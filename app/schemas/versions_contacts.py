@@ -1,9 +1,49 @@
 """Versions -- Contacts relationship classes"""
 
-import re
+from enum import Enum, unique
 from typing import List, Optional
 
 from pydantic import BaseModel, validator
+
+
+@unique
+class ContactMechanismEnum(str, Enum):
+    """Enum for possible contact Mechansisms - values provided by NASA Impact."""
+
+    DIRECT_LINE = "Direct line"
+    EMAIL = "Email"
+    FACEBOOK = "Facebook"
+    FAX = "Fax"
+    MOBILE = "Mobile"
+    MODEM = "Modem"
+    PRIMARY = "Primary"
+    TDD_TTY_PHONE = "TDD/TTY phone"
+    TELEPHONE = "Telephone"
+    TWITTER = "Twitter"
+    US = "U.S."
+    OTHER = "Other"
+
+
+@unique
+class RolesEnum(str, Enum):
+    """Enum for possible roles that a contact can be assigned within the context
+    of an ATBD Version - values provided by NASA Impact."""
+
+    WRITING_ORIGINAL_DRAFT = "Writing – original draft"
+    WRITING_REVIEW_EDITING = "Writing – review & editing"
+    VALIDATION = "Validation"
+    DATA_CURATION = "Data curation"
+    CONCEPTUALIZATION = "Conceptualization"
+    METHODOLOGY = "Methodology"
+    VISUALIZATION = "Visualization"
+    FORMAL_ANALYSIS = "Formal analysis"
+    SOFTWARE = "Software"
+    RESOURCES = "Resources"
+    PROJECT_ADMINISTRATION = "Project administration"
+    SUPERVISION = "Supervision"
+    INVESTIGATION = "Investigation"
+    FUNDING_ACQUISITION = "Funding acquisition"
+    CORRESPONDING_AUTHOR = "Corresponding Author"
 
 
 class AtbdLinkOutput(BaseModel):
@@ -43,12 +83,9 @@ class AtbdVersionsLinkOutput(BaseModel):
 class AtbdVersionsLink(BaseModel):
     """Links from Contact to Versions (many-to-many)"""
 
-    roles: str
+    roles: Optional[List[RolesEnum]] = []
+    affiliations: Optional[List[str]] = []
     atbd_version: AtbdVersionsLinkOutput
-
-    @validator("roles")
-    def _format_roles(cls, v):
-        return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
 
     class Config:
         """Config."""
@@ -80,47 +117,35 @@ class ContactsMechanism(BaseModel):
     """Contact Mechanism"""
 
     # TODO: use enum from above
-    mechanism_type: Optional[str]
+    mechanism_type: Optional[ContactMechanismEnum]
     mechanism_value: Optional[str]
+
+    class Config:
+        """Config."""
+
+        title = "ContactMechanism"
+        orm_mode = True
 
 
 class ContactsSummary(ContactsBase):
     """Contacts summary output (doesn't include version)"""
 
     id: int
-    mechanisms: Optional[str]
-    # TODO: I couldn't get the SQLAlchemy model working with
-    # composite array and composite type, so I've left them
-    # as a string representation in the datamodel and then
-    # converted them to a list of Mechanism objects here.
-    # This is not ideal, and this kind of formatting should happen
-    # at the model level
+    mechanisms: Optional[List[ContactsMechanism]]
 
-    @validator("mechanisms")
-    def _format_contact_mechanisms(cls, v):
-        if v is None:
-            return []
+    class Config:
+        """Config."""
 
-        mechanisms = []
-
-        for result in re.findall(r"(\"\()(.*?),(.*?)(\)\")", v.strip("{}")):
-            mtype, mvalue = result[1].strip('\\"'), result[2].strip('\\"')
-
-            mechanisms.append(
-                ContactsMechanism(mechanism_type=mtype, mechanism_value=mvalue)
-            )
-        return mechanisms
+        title = "Contact"
+        orm_mode = True
 
 
 class ContactsLinkOutput(BaseModel):
     """Link from Version to Contact"""
 
     contact: ContactsSummary
-    roles: str
-
-    @validator("roles")
-    def _format_roles(cls, v):
-        return [i.strip('\\"(){}') for i in v.split(",") if i.strip('\\"(){}')]
+    roles: Optional[List[RolesEnum]] = []
+    affiliations: Optional[List[str]] = []
 
     class Config:
         """Config."""
@@ -129,7 +154,6 @@ class ContactsLinkOutput(BaseModel):
         orm_mode = True
 
 
-# TODO; role should be enum
 class ContactsLinkInput(BaseModel):
     """Link from Version to Contact. This is a separate class in order to serialize
     and de-serialize the `roles` object, which gets saved as a string type in the Postgres
@@ -137,13 +161,8 @@ class ContactsLinkInput(BaseModel):
     """
 
     id: int
-    roles: List[str]
-
-    @validator("roles")
-    def _format_roles(cls, v):
-
-        s = ",".join(i for i in v)
-        return f"{{{s}}}"
+    roles: Optional[List[RolesEnum]] = []
+    affiliations: Optional[List[str]] = []
 
 
 class ContactsAssociationLookup(BaseModel):
@@ -157,4 +176,5 @@ class ContactsAssociationLookup(BaseModel):
 class ContactsAssociation(ContactsAssociationLookup):
     """Contact Association output model"""
 
-    roles: str
+    roles: Optional[List[RolesEnum]] = []
+    affiliations: Optional[List[str]] = []

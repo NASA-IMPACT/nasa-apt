@@ -12,6 +12,8 @@ from app.config import (
     POSTGRES_HOST,
 )
 
+# from sqlalchemy_utils import register_composites
+
 DATABASE_CONNECTION_URL = engine.url.URL(
     "postgresql",
     username=POSTGRES_ADMIN_USER,
@@ -40,6 +42,7 @@ async def get_db_session():
     """
     try:
         db = DbSession()
+        # register_composites(engine.connect())
         db.execute("SET SESSION AUTHORIZATION app_user;")
         yield db
     finally:

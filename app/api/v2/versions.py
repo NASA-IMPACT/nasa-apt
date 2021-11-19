@@ -175,6 +175,7 @@ def update_atbd_version(
                     atbd_id=atbd_id,
                     major=major,
                     roles=contact.roles,
+                    affiliations=contact.affiliations,
                 ),
             )
 
