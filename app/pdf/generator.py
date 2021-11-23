@@ -168,7 +168,7 @@ def reference(reference_id: str) -> NoEscape:
 TEXT_WRAPPERS = {
     "superscript": lambda e: f"\\textsuperscript{{{e}}}",
     "subscript": lambda e: f"\\textsubscript{{{e}}}",
-    # using the `\ul` command instead of the `\underline` as
+    # use the `\ul` command instead of the `\underline` as
     # `\underline` "wraps" the argument in a horizontal box
     # which doesn't allow for linebreaks
     "underline": lambda e: f"\\ul{{{e}}}",
@@ -425,17 +425,17 @@ def process(
         return process_table(table, caption=caption)
 
 
-def setup_document(
-    atbd: Atbds,
-    filepath: str,
-    contacts_link: List[ContactsLinkOutput],
-    journal: bool = False,
-) -> Document:
+def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     """
-    Creates a new Latex document instance and adds packages/metadata commands
-    necessary for the document style (eg: line numbering and spacing, math
-    char support, table of contents generation)
+    Generates a Latex document with associated Bibtex file
     """
+    [atbd_version] = atbd.versions
+
+    # parse as Pydantic model and return to dict to enforce data integrity
+    document_data = document.Document.parse_obj(atbd_version.document).dict()
+
+    contacts_data = atbd_version.contacts_link
+
     document_class = "agujournal2019" if journal else "article"
     doc = Document(
         default_filepath=filepath,
@@ -451,25 +451,37 @@ def setup_document(
     ]:
         doc.packages.append(Package(p))
 
+    if not journal:
+        # doc.preamble.append(
+        #     Command(
+        #         "PassOptionsToPackage",
+        #         arguments=[
+        #             "hyphens",
+        #             "url",
+        #             NoEscape(Command("RequirePackage", arguments="hyperref")),
+        #         ],
+        #     )
+        # )
+        doc.preamble.append(
+            NoEscape("\\PassOptionsToPackage{hyphens}{url}\\RequirePackage{hyperref}")
+        )
+        doc.preamble.append(
+            Command(
+                "hypersetup",
+                arguments="colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
+            )
+        )
+        # The apacite package is added using the `usepackage` command
+        # instead of the `Package()` funciton to ensure that apacite
+        # will be loaded after `hyperref` - with breaks things if the
+        # two packages are loaded in the reverse order:
+        # https://tex.stackexchange.com/a/316288
+        doc.preamble.append(Command("usepackage", arguments="apacite"))
+
     if journal:
 
         doc.packages.append(Package("lineno"))
         doc.preamble.append(Command("linenumbers"))
-
-    return doc
-
-
-def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
-    """
-    Generates a Latex document with associated Bibtex file
-    """
-    [atbd_version] = atbd.versions
-
-    # parse as Pydantic model and return to dict to enforce data integrity
-    document_data = document.Document.parse_obj(atbd_version.document).dict()
-
-    contacts_data = atbd_version.contacts_link
-    doc = setup_document(atbd, filepath, contacts_link=contacts_data, journal=journal)
 
     doc.append(Command("title", arguments=atbd.title))
 
@@ -485,51 +497,53 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             for affiliation in contact_link.affiliations
         )
     )
-    author_affiliations = []
+
+    authors = []
     for contact_link in contacts_data:
-        author_affiliation = (
-            f"{contact_link.contact.first_name} {contact_link.contact.last_name}"
-        )
-        if contact_link.affiliations:
-            indices = [
+        author = f"{contact_link.contact.first_name} {contact_link.contact.last_name}"
+        if journal and contact_link.affiliations:
+            indices = ",".join(
                 str(affiliations.index(affiliation) + 1)
                 for affiliation in contact_link.affiliations
-            ]
-            author_affiliation += f"\\affil{{{','.join(indices)}}}"
-            author_affiliations.append(author_affiliation)
-
-    doc.append(Command("authors", arguments=NoEscape(", ".join(author_affiliations)),))
-
-    for i, affiliation in enumerate(affiliations):
-        doc.append(Command("affiliation", arguments=[str(i + 1), affiliation]))
-
-    corresponding_author = [
-        contact_link.contact
-        for contact_link in contacts_data
-        if RolesEnum.CORRESPONDING_AUTHOR in contact_link.roles
-    ]
-    if not corresponding_author:
-        corresponding_author_fullname = "No corresponding author found"
-        corresponding_author_email = "No email found"
-    else:
-        corresponding_author = corresponding_author[0]
-        corresponding_author_fullname = f"{corresponding_author.first_name} {corresponding_author.last_name}"  # type: ignore
-
-        corresponding_author_email = [
-            mechanism.mechanism_value  # type: ignore
-            for mechanism in corresponding_author.mechanisms  # type: ignore
-            if mechanism.mechanism_type == ContactMechanismEnum.EMAIL
-        ]
-        if corresponding_author_email:
-            corresponding_author_email = corresponding_author_email[0]
+            )
+            author = f"{author}\\affil{{{indices}}}"
+        authors.append(author)
 
     if journal:
+        doc.append(Command("authors", arguments=NoEscape(", ".join(authors)),))
+        for i, affiliation in enumerate(affiliations):
+            doc.append(Command("affiliation", arguments=[str(i + 1), affiliation]))
+
+        corresponding_author = [
+            contact_link.contact
+            for contact_link in contacts_data
+            if RolesEnum.CORRESPONDING_AUTHOR in contact_link.roles
+        ]
+        if not corresponding_author:
+            corresponding_author_fullname = "No corresponding author found"
+            corresponding_author_email = "No email found"
+        else:
+            corresponding_author = corresponding_author[0]
+            corresponding_author_fullname = f"{corresponding_author.first_name} {corresponding_author.last_name}"  # type: ignore
+
+            corresponding_author_email = [
+                mechanism.mechanism_value  # type: ignore
+                for mechanism in corresponding_author.mechanisms  # type: ignore
+                if mechanism.mechanism_type == ContactMechanismEnum.EMAIL
+            ]
+            if corresponding_author_email:
+                corresponding_author_email = corresponding_author_email[0]
+
         doc.append(
             Command(
                 "correspondingauthor",
                 arguments=[corresponding_author_fullname, corresponding_author_email],
             )
         )
+
+    else:
+        doc.append(Command("author", arguments=NoEscape("\\and ".join(authors))))
+        doc.append(Command("maketitle"))
 
     if not journal:
         doc.append(Command("tableofcontents"))
@@ -634,6 +648,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             doc.append(NoEscape("\n"))
             doc.append(process(item, atbd_id=atbd.id))
             continue
+
+    if not journal:
+        doc.append(Command("bibliographystyle", arguments="apacite"))
 
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
 
