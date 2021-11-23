@@ -25,8 +25,7 @@ inst_reqs = [
     "pylatex==1.4.1",
     "fastapi_permissions==0.2.7",
     "mangum>=0.9.0",
-    "awslambdaric==1.2.0"
-    # "SQLAlchemy-Utils==0.37.0",
+    "awslambdaric==1.2.0",
 ]
 extra_reqs = {
     "dev": ["pre-commit", "flake8", "black", "mypy", "isort"],
@@ -43,6 +42,7 @@ extra_reqs = {
         "aws-cdk.aws_ecs>=1.95.0",
         "aws-cdk.aws_elasticsearch>=1.95.0",
         "aws-cdk.aws_cognito>=1.95.0",
+        "aws-cdk.aws_iam>=1.95.0",
     ],
     "test": [
         "moto==2.0.8",
@@ -57,7 +57,7 @@ extra_reqs = {
 
 setup(
     name="nasa_apt",
-    version="2.0.0",
+    version="2.1.0",
     description=u"API for the NASA Algorith Publication Tool",
     long_description=long_description,
     long_description_content_type="text/markdown",

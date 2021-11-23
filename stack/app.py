@@ -14,13 +14,14 @@ from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
 from aws_cdk import core
+from permissions_boundary import PermissionBoundaryAspect
 
 
 class nasaAPTLambdaStack(core.Stack):
     """
     Covid API Lambda Stack
 
-    This code is freely adapted from
+    This code is freely adapted from:
     - https://github.com/leothomas/titiler/blob/10df64fbbdd342a0762444eceebaac18d8867365/stack/app.py author: @leothomas
     - https://github.com/ciaranevans/titiler/blob/3a4e04cec2bd9b90e6f80decc49dc3229b6ef569/stack/app.py author: @ciaranevans
 
@@ -38,6 +39,14 @@ class nasaAPTLambdaStack(core.Stack):
     ) -> None:
         """Define stack."""
         super().__init__(scope, id, **kwargs)
+
+        if config.GCC_MODE:
+            print("DEPLOYING WITH GCC PERMISSIONS BOUNDARY APPLIED")
+            permission_boundary = iam.ManagedPolicy.from_managed_policy_name(
+                self, "PermissionsBoundary", "gcc-tenantOperatorBoundary"
+            )
+            core.Aspects.of(self).add(PermissionBoundaryAspect(permission_boundary))
+            # self.node.apply_aspect(PermissionBoundaryAspect(permission_boundary))
 
         if config.VPC_ID:
             vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID)
@@ -76,7 +85,7 @@ class nasaAPTLambdaStack(core.Stack):
             ),
             allocated_storage=10,
             vpc=vpc,
-            publicly_accessible=True,
+            # publicly_accessible=True,
             security_groups=[rds_security_group],
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             engine=rds.DatabaseInstanceEngine.POSTGRES,
@@ -97,7 +106,9 @@ class nasaAPTLambdaStack(core.Stack):
             self,
             f"{id}-database-secret-arn",
             value=database.secret.secret_arn,
-            description="Arn of the SecretsManager instance holding the connection info for Postgres DB",
+            description=(
+                "Arn of the SecretsManager instance holding the connection info for Postgres DB"
+            ),
         )
 
         bucket_params = dict(scope=self, id=f"{id}")
@@ -112,8 +123,8 @@ class nasaAPTLambdaStack(core.Stack):
             capacity=elasticsearch.CapacityConfig(
                 data_node_instance_type="t2.small.elasticsearch", data_nodes=1,
             ),
-            # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in AWS
-            # (and can't start with a `-` character)
+            # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in
+            # AWS (and can't start with a `-` character)
             domain_name=f"{id}-elastic"[-28:].strip("-"),
             ebs=elasticsearch.EbsOptions(
                 enabled=True,
@@ -295,7 +306,7 @@ for key, value in {
     "Client": config.CLIENT,
 }.items():
     if value:
-        core.Tag.add(app, key, value)
+        core.Tags.of(app).add(key, value)
 
 
 lambda_stackname = f"{config.PROJECT_NAME}-lambda-{config.STAGE}"
