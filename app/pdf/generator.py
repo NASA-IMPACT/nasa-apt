@@ -452,16 +452,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         doc.packages.append(Package(p))
 
     if not journal:
-        # doc.preamble.append(
-        #     Command(
-        #         "PassOptionsToPackage",
-        #         arguments=[
-        #             "hyphens",
-        #             "url",
-        #             NoEscape(Command("RequirePackage", arguments="hyperref")),
-        #         ],
-        #     )
-        # )
+
         doc.preamble.append(
             NoEscape("\\PassOptionsToPackage{hyphens}{url}\\RequirePackage{hyperref}")
         )
