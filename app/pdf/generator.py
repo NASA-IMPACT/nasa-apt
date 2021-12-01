@@ -481,26 +481,31 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             Command("journalname", arguments="American Geophysical Union")
         )
 
-    affiliations = list(
-        set(
-            affiliation
-            for contact_link in contacts_data
-            for affiliation in contact_link.affiliations
-        )
-    )
-
+    affiliations = []
     authors = []
+
+    contacts_data = sorted(contacts_data, key=lambda x: x.contact.last_name)
+
     for contact_link in contacts_data:
+
         author = f"{contact_link.contact.first_name} {contact_link.contact.last_name}"
-        if journal and contact_link.affiliations:
-            indices = ",".join(
-                str(affiliations.index(affiliation) + 1)
-                for affiliation in contact_link.affiliations
-            )
-            author = f"{author}\\affil{{{indices}}}"
+
+        if not journal or not contact_link.affiliations:
+            authors.append(author)
+            continue
+
+        affiliation_indices = []
+        for affiliation in contact_link.affiliations:
+            if affiliation not in affiliations:
+                affiliations.append(affiliation)
+            affiliation_indices.append(str(affiliations.index(affiliation) + 1))
+
+        author += f'\\affil{{{",".join(affiliation_indices)}}}'
+
         authors.append(author)
 
     if journal:
+
         doc.append(Command("authors", arguments=NoEscape(", ".join(authors)),))
         for i, affiliation in enumerate(affiliations):
             doc.append(Command("affiliation", arguments=[str(i + 1), affiliation]))
@@ -598,7 +603,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         if section_name == "keywords":
             doc.append(Command("begin", arguments="itemize"))
             for keyword in atbd_version.keywords:
-                doc.append(Command("item", arguments=keyword["path"]))
+                doc.append(Command("item", arguments=keyword["label"]))
             doc.append(Command("end", arguments="itemize"))
             continue
 
