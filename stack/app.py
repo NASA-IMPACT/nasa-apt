@@ -134,14 +134,14 @@ class nasaAPTLambdaStack(core.Stack):
             ),
             automated_snapshot_start_hour=0,
         )
-        logs_access = iam.PolicyStatement(
-            actions=[
-                "logs:CreateLogGroup",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents",
-            ],
-            resources=["*"],
-        )
+        # logs_access = iam.PolicyStatement(
+        #     actions=[
+        #         "logs:CreateLogGroup",
+        #         "logs:CreateLogStream",
+        #         "logs:PutLogEvents",
+        #     ],
+        #     resources=["*"],
+        # )
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
 
         frontend_url = config.FRONTEND_URL
@@ -179,7 +179,7 @@ class nasaAPTLambdaStack(core.Stack):
             self, f"{id}-lambda", **lambda_function_props
         )
         lambda_function.add_to_role_policy(ses_access)
-        lambda_function.add_to_role_policy(logs_access)
+        # lambda_function.add_to_role_policy(logs_access)
         database.secret.grant_read(lambda_function)
         esdomain.grant_read_write(lambda_function)
         bucket.grant_read_write(lambda_function)
