@@ -600,7 +600,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             doc.append(document_data[section_name])
             continue
 
-        if section_name == "keywords":
+        if section_name == "keywords" and atbd_version.keywords:
             doc.append(Command("begin", arguments="itemize"))
             for keyword in atbd_version.keywords:
                 doc.append(Command("item", arguments=keyword["label"]))
