@@ -1,6 +1,7 @@
 """
 CDK Stack definition code for NASA APT API
 """
+import os
 from typing import Any
 
 import config
@@ -46,7 +47,6 @@ class nasaAPTLambdaStack(core.Stack):
                 self, "PermissionsBoundary", "gcc-tenantOperatorBoundary"
             )
             core.Aspects.of(self).add(PermissionBoundaryAspect(permission_boundary))
-            # self.node.apply_aspect(PermissionBoundaryAspect(permission_boundary))
 
         if config.VPC_ID:
             vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID)
@@ -316,6 +316,10 @@ nasaAPTLambdaStack(
     memory=config.MEMORY,
     timeout=config.TIMEOUT,
     concurrent=config.MAX_CONCURRENT,
+    env=dict(
+        account=os.environ["CDK_DEFAULT_ACCOUNT"],
+        region=os.environ["CDK_DEFAULT_REGION"],
+    ),
 )
 
 app.synth()
