@@ -133,7 +133,7 @@ class nasaAPTLambdaStack(core.Stack):
                 volume_type=ec2.EbsDeviceVolumeType.GP2,
             ),
             automated_snapshot_start_hour=0,
-            removal_policy=core.RemovalPolicy.SNAPSHOT
+            removal_policy=core.RemovalPolicy.RETAIN
             if config.STAGE.lower() == "prod"
             else core.RemovalPolicy.DESTROY,
         )
