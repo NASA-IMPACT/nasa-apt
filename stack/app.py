@@ -223,6 +223,9 @@ class nasaAPTLambdaStack(core.Stack):
                 ),
                 email_style=cognito.VerificationEmailStyle.LINK,
             ),
+            removal_policy=core.RemovalPolicy.RETAIN
+            if config.STAGE.lower() == "prod"
+            else core.RemovalPolicy.DESTROY,
         )
 
         lambda_function.add_to_role_policy(
