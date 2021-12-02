@@ -44,7 +44,7 @@ class nasaAPTLambdaStack(core.Stack):
         if config.GCC_MODE:
             print("DEPLOYING WITH GCC PERMISSIONS BOUNDARY APPLIED")
             permission_boundary = iam.ManagedPolicy.from_managed_policy_name(
-                self, "PermissionsBoundary", "gcc-tenantOperatorBoundary"
+                self, "PermissionsBoundary", "mcp-tenantOperator"
             )
             core.Aspects.of(self).add(PermissionBoundaryAspect(permission_boundary))
 
