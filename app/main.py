@@ -11,14 +11,16 @@ from starlette.middleware.gzip import GZipMiddleware
 
 app = FastAPI(
     title=config.PROJECT_NAME,
-    openapi_url="/api/v1/openapi.json",
-    description="A lightweight Cloud Optimized GeoTIFF tile server",
+    openapi_url="/api/v2/openapi.json",
+    description="Backend for the NASA Algorithm Publication Tool",
     version=config.API_VERSION_STRING,
 )
 
 # Set all CORS enabled origins
 if config.BACKEND_CORS_ORIGINS:
+
     origins = [origin.strip() for origin in config.BACKEND_CORS_ORIGINS.split(",")]
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
@@ -28,8 +30,6 @@ if config.BACKEND_CORS_ORIGINS:
     )
 
 app.add_middleware(GZipMiddleware, minimum_size=0)
-
-
 app.include_router(api_router, prefix=config.API_VERSION_STRING)
 
 

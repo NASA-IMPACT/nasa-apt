@@ -47,13 +47,18 @@ FRONTEND_URL = os.environ.get("APT_FRONTEND_URL") or exit(
     "APT_FRONTEND_URL env var required"
 )
 
-if STAGE != "prod":
-    FRONTEND_URL = f"{FRONTEND_URL},http://localhost:9000"
+# if STAGE != "prod":
+#    FRONTEND_URL = f"{FRONTEND_URL},http://localhost:9000,https://nasa-apt.surge.sh"
 
 BACKEND_CORS_ORIGINS = os.environ.get(
     "BACKEND_CORS_ORIGINS",
+    # TODO: should this value be only `FRONTEND_URL`
     default=f"*,http://localhost:9000,http://localhost:3006,{FRONTEND_URL}",
 )
 # If using this value, ensure that the value is unique
 # otherwise the deployment will fail
 S3_BUCKET = os.environ.get("S3_BUCKET")
+
+NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
+    "NOTIFICATIONS_FROM env var required"
+)

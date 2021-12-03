@@ -4,7 +4,7 @@ services:
   db:
     # Postgres db for local development only.
     # For staging/production, see RDS instance in stack/app.py
-    image: postgres:11.8
+    image: postgres:12.7
     ports:
       - "5432:5432"
     environment:
@@ -14,6 +14,8 @@ services:
     command: postgres -c log_statement=all
   
   bootstrapper: 
+    # Sets up the necessary AWS resources in Localstack and 
+    # loads fixture data in the database
     build: 
       context: ./
       dockerfile: ./fixture_data/bootstrapper.Dockerfile
@@ -36,6 +38,15 @@ services:
     depends_on: 
       - db-ready
       - localstack-ready
+  mail:
+    image: namshi/smtp
+    restart: always
+    ports: 
+      - "25:25"
+    environment: 
+      MAILNAME: developmentseed.org
+      DISABLE_IPV6: 1
+      
       
   elastic:
     # Elastic db for local development only.
@@ -50,26 +61,20 @@ services:
       - http.cors.allow-credentials=true
     ports:
       - "9200:9200"
-  # localstack for local development only. AWS S3 used for staging/production
-  
-  mail: 
-    image: bytemark/smtp
-    restart: always
   
   localstack:
-    image: localstack/localstack:0.12.7
+    # localstack for local development only. AWS S3 used for staging/production
+    image: localstack/localstack:0.12.13
+    #image: localstack/localstack:latest
     environment:
       LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
-      SERVICES: s3,secretsmanager,cognito
-      SMTP_HOST: mail
-      SMTP_USER: test@example.com
-      SMTP_PASS: secretpassword
-      SMTP_EMAIL: no-reply@example.com
-      HOSTNAME: localhost
-      HOSTNAME_EXTERNAL: localhost
+      SERVICES: s3,secretsmanager,cognito,ses
+      DEBUG: 1 # Uncomment to increase localstack logging output
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
-      AWS_DEFAULT_REGION: us-east-1
+      AWS_DEFAULT_REGION: us-east-1     
+      EXTRA_CORS_ALLOWED_ORIGINS: http://localhost:9000
+      
     ports:
       - "4566:4566"
       
@@ -104,25 +109,17 @@ services:
       ELASTICSEARCH_URL: elastic:9200
       APT_FRONTEND_URL: $APT_FRONTEND_URL
       USER_POOL_NAME: dev-users
-      APP_CLIENT_NAME: dev-client
-     
+      APP_CLIENT_NAME: dev-client 
+      NOTIFICATIONS_FROM: no-reply@ds.io
     depends_on:
       - bootstrapper
-  swagger:
-    image: swaggerapi/swagger-ui
-    ports:
-      - "8080:8080"
-    expose:
-      - "8080"
-    environment:
-      API_URL: http://localhost:8000/atbds
-    depends_on:
-      - api
+
   db-ready:
     image: dadarek/wait-for-dependencies
     depends_on:
       - db
     command: db:5432
+
   localstack-ready:
     image: dadarek/wait-for-dependencies
     depends_on:

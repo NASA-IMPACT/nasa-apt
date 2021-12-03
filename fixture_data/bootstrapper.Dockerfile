@@ -1,6 +1,6 @@
-FROM postgrest/postgrest:latest
+FROM postgrest/postgrest:v7.0.1
 USER root
-RUN apt-get update \
+RUN apt-get update   \
     && apt-get install -y sqitch \
     libdbd-pg-perl \
     postgresql-client \

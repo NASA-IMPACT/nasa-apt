@@ -5,7 +5,6 @@ on:
     branches:
       - master
       - develop
-  pull_request:
 jobs: 
   lint:
     runs-on: ubuntu-latest
@@ -72,7 +71,8 @@ jobs:
           STAGE=dev
           API_VERSION_STRING=/v2
           # Frontend Url used to set CORS origin for FastAPI
-          APT_FRONTEND_URL=https://impact.earthdata.nasa.gov/apt
+          APT_FRONTEND_URL=https://nasa-apt.surge.sh
+          NOTIFICATIONS_FROM="no-reply@ds.io"
           EOF
       - name: Install APT dependencies
         run: |
@@ -83,8 +83,8 @@ jobs:
           pip install --upgrade pip setuptools wheel 
           pip install -e .[deploy] --no-binary xmlsec
       - name: Install CDK
-        run: npm install -g aws-cdk
-      - name: Bootstrap CDK 
+        run: npm install -g aws-cdk@1.x
+      - name: Bootstrap CDK  
         run: cdk bootstrap
       - name: Deploy stack
         run: cdk deploy nasa-apt-api-lambda-dev --require-approval never
@@ -115,6 +115,7 @@ jobs:
           API_VERSION_STRING=/v2
           # Frontend Url used to set CORS origin for FastAPI
           APT_FRONTEND_URL=https://impact.earthdata.nasa.gov/apt
+          NOTIFICATIONS_FROM="no-reply@apt.org"
           EOF
       - name: Install APT dependencies
         run: |

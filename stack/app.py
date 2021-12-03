@@ -80,8 +80,10 @@ class nasaAPTLambdaStack(core.Stack):
             security_groups=[rds_security_group],
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             engine=rds.DatabaseInstanceEngine.POSTGRES,
+            # Upgraded to t3 small RDS instance since t2 small no longer
+            # supports postgres 13+
             instance_type=ec2.InstanceType.of(
-                ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL
+                ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL
             ),
             database_name="nasadb",
             backup_retention=core.Duration.days(7),
@@ -120,18 +122,6 @@ class nasaAPTLambdaStack(core.Stack):
                 volume_type=ec2.EbsDeviceVolumeType.GP2,
             ),
             automated_snapshot_start_hour=0,
-            access_policies=[
-                iam.PolicyStatement(
-                    actions=["es:*"],
-                    effect=iam.Effect.ALLOW,
-                    principals=[
-                        iam.ArnPrincipal(f"arn:aws:iam::{core.Aws.ACCOUNT_ID}:root")
-                    ],
-                    resources=[
-                        f"arn:aws:es:${core.Aws.REGION}:${core.Aws.ACCOUNT_ID}:domain/${core.Aws.STACK_NAME}-elastic"
-                    ],
-                )
-            ],
         )
         logs_access = iam.PolicyStatement(
             actions=[
@@ -141,6 +131,7 @@ class nasaAPTLambdaStack(core.Stack):
             ],
             resources=["*"],
         )
+        ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
 
         frontend_url = config.FRONTEND_URL
         lambda_env = dict(
@@ -151,8 +142,10 @@ class nasaAPTLambdaStack(core.Stack):
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             ELASTICSEARCH_URL=esdomain.domain_endpoint,
             S3_BUCKET=bucket.bucket_name,
+            NOTIFICATIONS_FROM=config.NOTIFICATIONS_FROM,
+            MODULE_NAME="nasa_apt.main",
+            VARIABLE_NAME="app",
         )
-        lambda_env.update(dict(MODULE_NAME="nasa_apt.main", VARIABLE_NAME="app",))
 
         lambda_function_props = dict(
             runtime=_lambda.Runtime.FROM_IMAGE,
@@ -174,7 +167,7 @@ class nasaAPTLambdaStack(core.Stack):
         lambda_function = _lambda.Function(
             self, f"{id}-lambda", **lambda_function_props
         )
-
+        lambda_function.add_to_role_policy(ses_access)
         lambda_function.add_to_role_policy(logs_access)
         database.secret.grant_read(lambda_function)
         esdomain.grant_read_write(lambda_function)
@@ -229,6 +222,7 @@ class nasaAPTLambdaStack(core.Stack):
                 actions=[
                     "cognito-idp:ListUserPools",
                     "cognito-idp:ListUserPoolClients",
+                    "cognito-idp:ListUsersInGroup",
                 ],
                 resources=["*"],
             )

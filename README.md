@@ -14,9 +14,8 @@ The API is deployed to AWS using [AWS CDK](https://docs.aws.amazon.com/cdk/lates
 
 To deploy a new APT API stack, copy the `.env.sample` file to your workstation. 
 Required values in the `.env` file are: 
-- `APT_FRONTEND_URL`. This is the URL where the frontend is deployed. Necessary for the SAML authentication code to redirect the user upon successfull token generation.
--  `IDP_METADATA_URL`. Setting this value to `mock` will cause the API to bypass authentication (and create a valid JWT token whenever you click "login")
-
+- `APT_FRONTEND_URL`. This is the URL where the frontend is deployed. Necessary for the email notifications to build the correct links.
+- `NOTIFICATIONS_FROM`. This is the email address from which notification emails will be set. Either the address or the domain must have been [verified in SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-domains.html)
 
 Optional values in the `.env` file are: 
 - `PROJECT_NAME`. Value will be used to identify the CDK stack and generated resources in AWS. Defaults to `nasa-apt-api`
@@ -25,6 +24,7 @@ Optional values in the `.env` file are:
 - `OWNER` and `CLIENT`. These values are used for tagging resources in AWS for billing and tracing purposes.
 - `VPC_ID`. If provided the generated AWS resources will be placed within this VPC, otherwise a new VPC will be created for the STACK. 
 - `S3_BUCKET`. The name of the S3 bucket to store files images and PDFs for the APT application. If provided, this value must be unique within AWS, otherwise the stack will fail to create. 
+
 
 To deploy a new stack run: 
 ```bash
@@ -50,15 +50,16 @@ You can find a nice outline of managing Postgres migrations with Sqitch [here](h
 This project uses a Sqitch Docker image referencing some local files in order to manage migrations.
 As an example, to add a table we could run the following from the project root.
 
-To create a Sqitch `change`
+To create a Sqitch migration named `somechange`
 
 ```shell script
 cd db
 ./sqitch add somechange --requires previouschange -n 'Change the database in some way'
 ```
 
-This creates new empty `sql` scripts in the `deploy`, `revert` and `verify` directories.
-You can then update the `somechange.sql` script in the `deploy` directory with the necessary change.
+This creates new empty `somechange.sql` scripts in the `deploy`, `revert` and `verify` directories.
+You can then update the `somechange.sql` script in the `deploy` directory with the necessary change. Be sure to also include all necessary data migration operations in the `/deploy/` script. 
+
 See the Sqitch [documentation](https://sqitch.org/docs/manual/sqitchtutorial) for more details on change dependencies and validation.
 
 Sqitch migrations must be manually applied the database in AWS. When deploying a stack for the first time, to prepare the database you will need the database secrets to access the database. 
@@ -73,7 +74,7 @@ The secrets value needed to setup the database are:
 - `HOST`
 - `USERNAME`
 - `PASSWORD`
-- `DBNAME`
+- `DBNAME` (should be default value of `nasadb`)
 - `PORT` (should be default value of `5432`) 
 
 With these values the DB migration can be applied as follows (requires Docker): 
@@ -83,7 +84,6 @@ cd db
 ```
 
 Once the database has been setup, any migrations must also be manually applied to the database using the above command. 
-(More info on how to backup, update and restore the database from backup coming soon.)
 
 Optionally, some of the test fixture data can be loaded with the following command (requires [psql](https://www.postgresql.org/docs/13/app-psql.html), recommended **only** for dev/staging environemnts):
 
@@ -92,6 +92,9 @@ cd db # if not already in `/cd`
 psql 'postgres://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${DBNAME}?options=--search_path%3dapt' -f ./testData.sql
 ```
 
+The database has Point-In-Time recovery available by default - which allows you to recover the state of the database from any point in the last 7 days. 
+(More info on how to restore the database from backup coming soon.)
+
 ## Local development
 The API can be run locally for development purposes. To run locally, run: 
 ```bash
@@ -99,7 +102,7 @@ docker-compose up --build
 ```
 This will create several docker containers: one for the Postgres database, one for the REST API, one for the ElasticSearch instance and one for a Localstack instance, which mocks AWS resources locally. 
 
-The Localstack container will instantiate a cognito service. The cognito service is a PAID feature of localstack, so in order to authenticate (sign-in) when running the API locally, you'll need an API key for a localstack PRO account as an env variable (in the `.env` file): 
+The Localstack container will instantiate a cognito service. The cognito service is a PAID feature of localstack, so you'll need an API key for a localstack PRO account as an env variable (in the `.env` file): 
 
 ```bash
 LOCALSTACK_API_KEY=...
@@ -107,8 +110,15 @@ LOCALSTACK_API_KEY=...
 
 When running the front-end locally, the `sign-up` functionality will still point to the hosted UI - meaning that it will not be possible to sign up. To mitigate this, users will be created when spinning up the APIl.
 
-Test users (and their passwords): 
-- TODO!
+The following test users will be created (all with the same password: `Password123!`)
+- Carlos Curator (email: `curator@example.com`)
+- Olivia Owner (email: `owner@example.com`)
+- Andre Author (email: `author1@example.com`)
+- Anita Author (email: `author2@example.com`)
+- Allison Author (email: `author3@example.com`)
+- Ricardo Reviewer (email: `reviewer1@example.com`)
+- Ronald Reviewer (email: `reviwer2@example.com`)
+- Rita Reviewer (email: `reviewer3@example.com`)
 
 In order to authenticated with the locally running instance of cognito, the frontend needs to know the User Pool ID and the User Pool Client ID to authenticate against. These values will be printed in the output of the locally running API, but can also be accessed with the following commands: 
 
@@ -120,7 +130,7 @@ pool_id=$(AWS_REGION=us-east-1 aws --endpoint-url http://localhost:4566 cognito-
 AWS_REGION=us-east-1 aws --endpoint-url http://localhost:4566 cognito-idp list-user-pool-clients --user-pool-id $pool_id  --no-sign-request --max-results 10 | jq -rc '.UserPoolClients[0] | {ClientId: .ClientId, UserPoolId: .UserPoolId}'
 ```
 
-Upon spinning up, all necessary database migrations (see below) will be run, and the database will be pre-populated with a test ATBD, which has 2 versions, one with status `Published` and one with status `Draft`. The ElasticSearch instance will not be populated with data until the ATBD gets updated. 
+Upon spinning up, all necessary database migrations (see below) will be run, and the database will be pre-populated with a test ATBD, which has 2 versions, one with status `Published` and one with status `Draft`. The ElasticSearch instance will not be populated with data until an ATBD gets published or the published ATBD gets its minor version bumped. 
 
 After running for the first time you can drop the `--build` flag (this flag forces the docker image to be re-built).
 
@@ -128,13 +138,20 @@ You can stop running the API with `ctrl+C` and `docker-compose down`. To clear o
 
 Locally, the resources will be available at the following endpoints: 
 
-- The Swagger API documentation is accessible via [http://localhost:8080](http://localhost:8080).
 - The REST API is accessible via [http://localhost:8000](http://localhost:8000).
+- Autogenerated docs for the REST API is accessible at [http://localhost:8000/docs](http://localhost:8000/docs).
 
 For debugging purposes the data storage resources are available: 
 - The Localstack (AWS) resources are accessible via [http://localhost:4566](http://localhost:4566)
 - The Elasticsearch instance is accessible via [http://localhost:9200](http://localhost:9200)
 - The Postgres DB is accessible via the username/password/host/port/dbname combo: `masteruser/password/localhost/5432/nasadb`
+
+Note: when running the API locally, localstack mocks the SES implementation, meaning it won't actually send any notification emails. However the content and subject of these emails will appear in the localstack docker container logs. 
+
+## Role Based Access: 
+An important aspect of the APT API is the restriction of access to document operations depending on application role. Users are divided into 2 groups at the application level: `Curators` and `Contributors`. `Curators` are admin-like users who approve or deny requested stage transitions of ATBDs and manage the users assigned to ATBDs. `Contributors` are users that can be assigned to ATBDs. `Contributors` are divided into 3 groups at the ATBD level: `owner`, or `Lead Author`, `authors` and `reviewers`. 
+
+User authentication in managed by AWS Cognito. When users sign up they will not be assigned to any group, until someone goes through the AWS console to the User Pool for the API and adds the user to either one of the `curator` or `contributor` group. Once a user is part of either group, they will be able to view, and create/update documents, as permitted by their role.
 
 ## Contributing
 This repo is set to use `pre-commit` to run *my-py*, *flake8*, *pydocstring* and *black* ("uncompromising Python code formatter") when commiting new code.
@@ -178,7 +195,6 @@ A number of changes were made to the API from it's first iteration:
 4. Reduce API response latency and overhead, increase scalability and error traceability
     
     Previously the API was running in ECS instances. The images were difficult to debug as the logs were not readily available, and did not scale as readily as Lambda functions. Using [Mangum](https://pypi.org/project/mangum/) we can wrap our FastAPI app with a single line of code to make it compatible with the Lambda runtime environment. This results in an API that is readily scalable and only incurs costs proportinally to its usage. Lastly we benefit from the Lambda monitoring and logging functionality made available through Cloudwatch. 
-
 
 
 ## Notes

@@ -47,11 +47,14 @@ def send_to_elastic(data: List[Dict]):
     """
     # bulk commands must end with newline
     data_string = "\n".join(json.dumps(d, default=_default) for d in data) + "\n"
-
     url = f"http://{config.ELASTICSEARCH_URL}/atbd/_bulk"
 
     auth = aws_auth()
-    logger.info("sending %s %s using auth: %s", json, url, auth)
+    print("SENDING DATA: ", data_string)
+    print("TO URL : ", url)
+    print("WITH AUTH: ", auth)
+
+    logger.info("sending %s %s using auth: %s", data_string, url, auth)
     response = requests.post(
         url,
         auth=auth,
@@ -64,23 +67,6 @@ def send_to_elastic(data: List[Dict]):
         raise HTTPException(status_code=response.status_code, detail=response.text)
     print("RESPONSE: ", response.content)
     return response.json()
-
-
-# TODO: Dies the "update_index" method need to be re-implemented?
-
-# async def update_index(
-#     connection: asyncpg.connection,
-#     atbd_id: Optional[int] = None,
-#     atbd_version: Optional[int] = None,
-# ) -> Dict:
-#     """
-#     update data for Elastic from PostgreSQL Database
-#     """
-#     logger.info("Updating Index for %s %s", atbd_id, atbd_version)
-#     content = await get_index(connection, atbd_id, atbd_version)
-#     logger.info("dbcontent %s", content)
-#     results = send_to_elastic(content)
-#     return results
 
 
 def remove_atbd_from_index(atbd: Atbds = None, version: AtbdVersions = None):
@@ -115,7 +101,7 @@ def add_atbd_to_index(atbd: Atbds):
     """Indexes an ATBD in ElasticSearch. If the ATBD metadata (title, alias) is
     to be updated, then the `atbd` input param will contain all associated versions,
     wich will all be updated in the ElasticSearch. If the ATBD version data (document,
-    changelog, citation, etc) has been updated, then the `atbd` input param
+    citation, etc) has been updated, then the `atbd` input param
     will only contain a single version, and only that version will be updated."""
 
     es_commands = []
@@ -133,7 +119,7 @@ def add_atbd_to_index(atbd: Atbds):
             }
         )
         es_commands.append(
-            ElasticsearchAtbd.from_orm(atbd).dict(by_alias=True, exclude_none=True,)
+            ElasticsearchAtbd.from_orm(atbd).dict(by_alias=True, exclude_none=True)
         )
 
     return send_to_elastic(es_commands)

@@ -26,21 +26,31 @@ from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
 from app.schemas import document
-from app.schemas.versions_contacts import ContactsLinkOutput
+from app.schemas.versions_contacts import (
+    ContactMechanismEnum,
+    ContactsLinkOutput,
+    RolesEnum,
+)
 
 SECTIONS = {
+    "abstract": {},
+    "plain_summary": {"title": "Plain Language Summary"},
+    "keywords": {"title": "Keywords"},
+    "version_description": {"title": "Description"},
     "introduction": {"title": "Introduction"},
-    "historical_perspective": {"title": "Historical Perspective"},
-    "algorithm_description": {"title": "Algorithm Description"},
+    "context_background": {"title": "Context / Background", "section_header": True},
+    "historical_perspective": {"title": "Historical Perspective", "subsection": True},
+    "additional_information": {"title": "Additional Data", "subsection": True},
+    "algorithm_description": {"title": "Algorithm Description", "section_header": True},
     "scientific_theory": {"title": "Scientific Theory", "subsection": True},
     "scientific_theory_assumptions": {
         "title": "Scientific Theory Assumptions",
-        "subsection": True,
+        "subsubsection": True,
     },
     "mathematical_theory": {"title": "Mathematical Theory", "subsection": True},
     "mathematical_theory_assumptions": {
         "title": "Mathematical Theory Assumptions",
-        "subsection": True,
+        "subsubsection": True,
     },
     "algorithm_input_variables": {
         "title": "Algorithm Input Variables",
@@ -50,21 +60,30 @@ SECTIONS = {
         "title": "Algorithm Output Variables",
         "subsection": True,
     },
-    "algorithm_implementations": {"title": "Algorithm Implementations"},
+    "algorithm_implementations": {"title": "Algorithm Availability"},
     "algorithm_usage_constraints": {"title": "Algorithm Usage Constraints"},
+    "performace_assessment_validations": {
+        "title": "Performance Assessment Validation Methods",
+        "section_header": True,
+    },
     "performance_assessment_validation_methods": {
-        "title": "Performance Assessment Validation Methods"
+        "title": "Performance Assessment Validation Methods",
+        "subsection": True,
     },
     "performance_assessment_validation_uncertainties": {
-        "title": "Performance Assessment Validation Uncertainties"
+        "title": "Performance Assessment Validation Uncertainties",
+        "subsection": True,
     },
     "performance_assessment_validation_errors": {
-        "title": "Performance Assessment Validation Errors"
+        "title": "Performance Assessment Validation Errors",
+        "subsection": True,
     },
-    "data_access_input_data": {"title": "Data Access Input Data"},
-    "data_access_output_data": {"title": "Data Access Output Data"},
-    "data_access_related_urls": {"title": "Data Access Related URLs"},
-    "journal_dicsussion": {"title": "Discussion"},
+    "data_access": {"title": "Data Access", "section_header": True},
+    "data_access_input_data": {"title": "Input Data Access", "subsection": True},
+    "data_access_output_data": {"title": "Output Data Access", "subsection": True},
+    "data_access_related_urls": {"title": "Important Related URLs", "subsection": True},
+    "data_availability": {"title": "Data Availability"},
+    "journal_discussion": {"title": "Discussion"},
     "journal_acknowledgements": {"title": "Acknowledgements"},
     "contacts": {"title": "Contacts"},
 }
@@ -91,18 +110,20 @@ def generate_contact(contact_link: ContactsLinkOutput) -> List:
 
     for k in ["uuid", "url"]:
         if contact.get(k):
-            paragraph = section.Paragraph(f"{k.title()}:")
+            paragraph = section.Paragraph(f"{k.title()}:", numbering=False)
             paragraph.append(NoEscape(contact[k]))
             latex_contact.append(paragraph)
 
     if contact.get("mechanisms"):
         for mechanism in contact["mechanisms"]:
-            paragraph = section.Paragraph(f"{mechanism['mechanism_type']}:")
+            paragraph = section.Paragraph(
+                f"{mechanism['mechanism_type']}:", numbering=False
+            )
             paragraph.append(mechanism["mechanism_value"])
             latex_contact.append(paragraph)
 
     if contact_link.roles:
-        paragraph = section.Paragraph("Roles:")
+        paragraph = section.Paragraph("Roles:", numbering=False)
         paragraph.append(", ".join(r for r in contact_link.roles))
         latex_contact.append(paragraph)
 
@@ -147,7 +168,10 @@ def reference(reference_id: str) -> NoEscape:
 TEXT_WRAPPERS = {
     "superscript": lambda e: f"\\textsuperscript{{{e}}}",
     "subscript": lambda e: f"\\textsubscript{{{e}}}",
-    "underline": lambda e: f"\\underline{{{e}}}",
+    # use the `\ul` command instead of the `\underline` as
+    # `\underline` "wraps" the argument in a horizontal box
+    # which doesn't allow for linebreaks
+    "underline": lambda e: f"\\ul{{{e}}}",
     "italic": lambda e: f"\\textit{{{e}}}",
     "bold": lambda e: f"\\textbf{{{e}}}",
 }
@@ -195,10 +219,10 @@ def process_data_access_url(access_url: document.DataAccessUrl) -> List[NoEscape
     Returns a list of Latex formatted commands, to be appended in order
     to the Latex document, to display a single data acccess url
     """
-    p1 = section.Paragraph(wrap_text({"text": "Access url:", "bold": True}))  # type: ignore
+    p1 = section.Paragraph(wrap_text({"text": "Access url:", "bold": True}), numbering=False)  # type: ignore
     p1.append(hyperlink(access_url["url"], access_url["url"]))
 
-    p2 = section.Paragraph(wrap_text({"text": "Description:", "bold": True}))  # type: ignore
+    p2 = section.Paragraph(wrap_text({"text": "Description:", "bold": True}), numbering=False)  # type: ignore
     p2.append(access_url["description"])
     return [p1, p2]
 
@@ -211,14 +235,16 @@ def process_data_access_urls(data: List[document.DataAccessUrl]) -> List:
     """
     urls = []
     for i, access_url in enumerate(data):
-        s = Subsection(f"Entry #{str(i+1)}")
+        s = Subsubsection(f"Entry #{str(i+1)}")
         for command in process_data_access_url(access_url):
             s.append(command)
         urls.append(s)
     return urls
 
 
-def process_algorithm_variables(data: List[document.AlgorithmVariable]) -> NoEscape:
+def process_algorithm_variables(
+    data: List[document.AlgorithmVariable], caption
+) -> NoEscape:
     """
     Returns a Latex formatted table representing algorithm input or output variables,
     wrapped with a NoEscape command. The text processing commands are applied to each
@@ -249,6 +275,8 @@ def process_algorithm_variables(data: List[document.AlgorithmVariable]) -> NoEsc
         na_rep=" ",
         columns=["long_name", "unit"],
         header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
+        caption=caption,
+        position="H",
     )
     return NoEscape(latex_table)
 
@@ -298,14 +326,13 @@ def generate_bib_reference(data: document.PublicationReference) -> str:
     """
     reference_id = bib_reference_name(data["id"])
     reference = ""
-    for e in ["title", "pages", "publisher", "year", "volume"]:
+    for e in ["title", "pages", "publisher", "year", "volume", "number"]:
         if data.get(e):
-            reference += f'{e}="{data[e]}",\n'
+            reference += f"{e}={{{data[e]}}},\n"
     if data.get("authors"):
-        reference += f"author=\"{data['authors']}\",\n"
-    # Can't use both VOLUME and NUMBER fields in bibtex
+        reference += f"author={{{data['authors']}}},\n"
 
-    return f"@BOOK{{{reference_id},\n{reference}}}"
+    return f"@article{{{reference_id},\n{reference}}}"
 
 
 def generate_bib_file(references: List[document.PublicationReference], filepath: str):
@@ -398,71 +425,133 @@ def process(
         return process_table(table, caption=caption)
 
 
-def setup_document(atbd: Atbds, filepath: str, journal: bool = False) -> Document:
+def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     """
-    Creates a new Latex document instance and adds packages/metadata commands
-    necessary for the document style (eg: line numbering and spacing, math
-    char support, table of contents generation)
+    Generates a Latex document with associated Bibtex file
     """
+    [atbd_version] = atbd.versions
+
+    # parse as Pydantic model and return to dict to enforce data integrity
+    document_data = document.Document.parse_obj(atbd_version.document).dict()
+
+    contacts_data = atbd_version.contacts_link
+
+    document_class = "agujournal2019" if journal else "article"
     doc = Document(
         default_filepath=filepath,
-        documentclass=Command("documentclass", options=["12pt"], arguments="article",),
-        fontenc="T1",
-        inputenc="utf8",
+        documentclass=Command("documentclass", arguments=document_class,),
         # use Latin-Math Modern pacakge for char support
         lmodern=True,
-        textcomp=True,
-        page_numbers=True,
-        indent=True,
     )
+
     for p in [
-        "color",
-        "url",
-        "graphicx",
         "float",
-        "amsmath",
-        "array",
         "booktabs",
+        "soul",
     ]:
         doc.packages.append(Package(p))
 
+    if not journal:
+
+        doc.preamble.append(
+            NoEscape("\\PassOptionsToPackage{hyphens}{url}\\RequirePackage{hyperref}")
+        )
+        doc.preamble.append(
+            Command(
+                "hypersetup",
+                arguments="colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
+            )
+        )
+        # The apacite package is added using the `usepackage` command
+        # instead of the `Package()` funciton to ensure that apacite
+        # will be loaded after `hyperref` - with breaks things if the
+        # two packages are loaded in the reverse order:
+        # https://tex.stackexchange.com/a/316288
+        doc.preamble.append(Command("usepackage", arguments="apacite"))
+
     if journal:
-        doc.packages.append(Package("setspace"))
-        doc.preamble.append(Command("doublespacing"))
 
         doc.packages.append(Package("lineno"))
         doc.preamble.append(Command("linenumbers"))
 
-    doc.packages.append(Package("hyperref"))
-    doc.preamble.append(
-        Command(
-            "hypersetup",
-            arguments=f"colorlinks={str(journal).lower()},linkcolor=blue,filecolor=magenta,urlcolor=blue",
+    doc.append(Command("title", arguments=atbd.title))
+
+    if journal:
+        doc.preamble.append(
+            Command("journalname", arguments="American Geophysical Union")
         )
-    )
 
-    doc.preamble.append(Command("title", arguments=atbd.title))
-    doc.preamble.append(Command("date", arguments=NoEscape("\\today")))
+    affiliations = []
+    authors = []
 
-    doc.append(Command("maketitle"))
+    contacts_data = sorted(contacts_data, key=lambda x: x.contact.last_name)
+
+    for contact_link in contacts_data:
+
+        author = f"{contact_link.contact.first_name} {contact_link.contact.last_name}"
+
+        if not journal or not contact_link.affiliations:
+            authors.append(author)
+            continue
+
+        affiliation_indices = []
+        for affiliation in contact_link.affiliations:
+            if affiliation not in affiliations:
+                affiliations.append(affiliation)
+            affiliation_indices.append(str(affiliations.index(affiliation) + 1))
+
+        author += f'\\affil{{{",".join(affiliation_indices)}}}'
+
+        authors.append(author)
+
+    if journal:
+
+        doc.append(Command("authors", arguments=NoEscape(", ".join(authors)),))
+        for i, affiliation in enumerate(affiliations):
+            doc.append(Command("affiliation", arguments=[str(i + 1), affiliation]))
+
+        corresponding_author = [
+            contact_link.contact
+            for contact_link in contacts_data
+            if RolesEnum.CORRESPONDING_AUTHOR in contact_link.roles
+        ]
+        if not corresponding_author:
+            corresponding_author_fullname = "No corresponding author found"
+            corresponding_author_email = "No email found"
+        else:
+            corresponding_author = corresponding_author[0]
+            corresponding_author_fullname = f"{corresponding_author.first_name} {corresponding_author.last_name}"  # type: ignore
+
+            corresponding_author_email = [
+                mechanism.mechanism_value  # type: ignore
+                for mechanism in corresponding_author.mechanisms  # type: ignore
+                if mechanism.mechanism_type == ContactMechanismEnum.EMAIL
+            ]
+            if corresponding_author_email:
+                corresponding_author_email = corresponding_author_email[0]
+
+        doc.append(
+            Command(
+                "correspondingauthor",
+                arguments=[corresponding_author_fullname, corresponding_author_email],
+            )
+        )
+
+    else:
+        doc.append(Command("author", arguments=NoEscape("\\and ".join(authors))))
+        doc.append(Command("maketitle"))
 
     if not journal:
         doc.append(Command("tableofcontents"))
-    return doc
 
-
-def generate_latex(atbd: Atbds, filepath: str, journal=False):
-    """
-    Generates a Latex document with associated Bibtex file
-    """
-
-    [atbd_version] = atbd.versions
-    document_data = atbd_version.document
-    contacts_data = atbd_version.contacts_link
-    doc = setup_document(atbd, filepath, journal=journal)
+    if journal:
+        doc.append(Command("begin", arguments="keypoints"))
+        for keypoint in document_data["key_points"].split("\n"):
+            doc.append(Command("item", arguments=keypoint))
+        doc.append(Command("end", arguments="keypoints"))
 
     generate_bib_file(
-        document_data.get("publication_references", []), filepath=f"{filepath}.bib",
+        document_data["publication_references"], filepath=f"{filepath}.bib",
     )
     section_name: str
     info: Any
@@ -476,6 +565,23 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
         ]:
             continue
 
+        if section_name == "abstract":
+            doc.append(Command("begin", "abstract"))
+            if not document_data.get(section_name):
+                doc.append("Abstract Unavailable")
+            else:
+                doc.append(document_data[section_name])
+            doc.append(Command("end", "abstract"))
+            continue
+
+        # Version Description is the only field that doesn't get rendered at all
+        # if it's not found in the database data (as opposed to other field which)
+        # get displayed as "Content Unavailable"
+        if section_name == "version_description" and not document_data.get(
+            "version_description"
+        ):
+            continue
+
         s = Section(info["title"])
 
         if info.get("subsection"):
@@ -485,6 +591,21 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             s = Subsubsection(info["title"])
 
         doc.append(s)
+
+        if info.get("section_header"):
+            # section header means that no content is needed
+            continue
+
+        if section_name == "plain_summary":
+            doc.append(document_data[section_name])
+            continue
+
+        if section_name == "keywords" and atbd_version.keywords:
+            doc.append(Command("begin", arguments="itemize"))
+            for keyword in atbd_version.keywords:
+                doc.append(Command("item", arguments=keyword["label"]))
+            doc.append(Command("end", arguments="itemize"))
+            continue
 
         if section_name == "contacts":
             for contact in process_contacts(contacts_data):
@@ -500,7 +621,12 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             "algorithm_output_variables",
         ]:
 
-            doc.append(process_algorithm_variables(document_data[section_name]))
+            doc.append(
+                process_algorithm_variables(
+                    data=document_data[section_name],
+                    caption=document_data[f"{section_name}_caption"],
+                )
+            )
             continue
 
         if section_name in [
@@ -509,6 +635,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             "data_access_output_data",
             "data_access_related_urls",
         ]:
+
             for url in process_data_access_urls(document_data[section_name]):
                 doc.append(url)
             continue
@@ -518,7 +645,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):
             doc.append(process(item, atbd_id=atbd.id))
             continue
 
-    doc.append(Command("bibliographystyle", arguments="abbrv"))
+    if not journal:
+        doc.append(Command("bibliographystyle", arguments="apacite"))
+
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
 
     return doc
@@ -542,6 +671,8 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
 
     latex_document.generate_pdf(
         filepath=filepath,
+        # clean=True,
+        # clean_tex=True,
         clean=False,
         clean_tex=False,
         # latexmk automatically performs the multiple runs necessary
@@ -550,7 +681,8 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
         # the `--pdfxe` flag loads the Xelatex pacakge necessary for
         # the compiler to manage image positioning within the pdf document
         # and native unicode character handling
-        compiler_args=["--pdfxe"],
+        compiler_args=["--pdfxe", "-e", "$max_repeat=10"],
+        silent=False,
     )
 
     return f"{filepath}.pdf"

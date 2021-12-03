@@ -3,6 +3,7 @@ RUN apt-get update \
     && apt-get install -y \
     locales \
     texlive-latex-recommended \
+    texlive-bibtex-extra \
     texlive-xetex \
     latexmk\
     wget libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config gcc \
@@ -16,6 +17,13 @@ COPY ./README.md /app/README.md
 COPY ./app/ /app/app/
 COPY ./setup.py /app/setup.py
 
+# Style file for AGU journal pdf
+#RUN mkdir -p /usr/share/texlive/texmf-dist/tex/xetex/agujournal2019/
+#COPY ./app/pdf/agujournal2019.cls /usr/share/texlive/texmf-dist/tex/xetex/agujournal2019/
+RUN mkdir -p /usr/share/texlive/texmf-dist/tex/latex/agujournal2019/
+COPY ./app/pdf/agujournal2019.cls /usr/share/texlive/texmf-dist/tex/latex/agujournal2019/
+# register the new .cls file
+RUN mktexlsr 
 
 RUN pip install --upgrade pip
 RUN pip install . -t .

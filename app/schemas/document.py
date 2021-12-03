@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from enum import Enum
-from typing import Dict, List, Optional, Union
+from enum import Enum, unique
+from typing import Dict, List, Literal, Optional, Union
 
-from pydantic import AnyUrl, BaseModel, root_validator, validator
+from pydantic import AnyUrl, BaseModel, validator
 
 
+@unique
 class TypesEnum(str, Enum):
     """Enum for all possible WYSIWYG node types"""
 
@@ -31,72 +32,71 @@ class TypesEnum(str, Enum):
 class TextLeaf(BaseModel):
     """Leaf Node:"""
 
-    text: str
+    text: str = ""
     underline: Optional[Union[str, bool]]
     italic: Optional[Union[str, bool]]
     bold: Optional[Union[str, bool]]
     subscript: Optional[Union[str, bool]]
     superscript: Optional[Union[str, bool]]
 
-    @root_validator()
-    def validate(cls, values: Dict[str, Union[str, bool]]):
+    @validator("underline", "italic", "bold", "subscript", "superscript")
+    def _remove_formatting_if_text_empty(
+        cls, v: Union[str, bool], values: Dict[str, Union[str, bool]], field: str
+    ) -> bool:
         """Ensure that formatting is not applied to empty text (will break latex)"""
-        for formatting in ["underline", "italic", "bold", "subscript", "superscript"]:
-            if isinstance(values.get(formatting), str):
-                if values["text"] == "":
-                    raise ValueError(
-                        f"Text formatting option {formatting} cannot be applied to empty text"
-                    )
 
-                # type ignore below because mypy complains that `.lower()` cannot be
-                # applied to values[formatting] because it might be boolean (even
-                # though we've already validated that `values[formatting]` is type(str))
-                values[formatting] = values[formatting].lower() == "true"  # type: ignore
+        # cast to bool
+        if isinstance(v, str):
+            v = v.lower() == "true"
 
-        return values
+        # set the formatting option to None if no text is present
+        # (this happens if multiple lines were bolded, for example)
+        if v and not values["text"]:
+            return None
+
+        return v
 
 
 class BaseNode(BaseModel):
     """Generic WYSIWYG node type"""
 
-    type: str
+    type: TypesEnum
+    id: Optional[str]
     children: List[TextLeaf]
 
 
 class LinkNode(BaseNode):
     """href Link WYSIWYG node"""
 
-    type: TypesEnum
+    type: Literal[TypesEnum.link]
     url: AnyUrl
-    children: List[TextLeaf]
 
 
 class ReferenceNode(BaseNode):
     """Reference to bib item WYSIWYG node"""
 
-    type: TypesEnum
+    type: Literal[TypesEnum.reference]
     refId: str
-    children: List[TextLeaf]
 
 
 class DivNode(BaseNode):
     """Generic text container WYSIWYG node"""
 
-    type: TypesEnum
-    children: List[Union[TextLeaf, LinkNode, ReferenceNode]]
+    type: Literal[TypesEnum.div]
+    children: List[Union[LinkNode, ReferenceNode, TextLeaf]]
 
 
 class OrderedListNode(BaseNode):
     """Ordered (numerical) List WYSIWYG node"""
 
-    type: TypesEnum
+    type: Literal[TypesEnum.ordered_list]
     children: List[ListItemNode]
 
 
 class UnorderedListNode(BaseNode):
     """Unordered (bullet points) list WYSIWYG node"""
 
-    type: TypesEnum
+    type: Literal[TypesEnum.unordered_list]
     children: List[ListItemNode]
 
 
@@ -104,8 +104,8 @@ class ListItemNode(BaseNode):
     """List item node that gets wrapped with OrderedList or UnorderedList.
     List items can also contain other orderd or unordered lists"""
 
-    type: TypesEnum
-    children: List[Union[DivNode, OrderedListNode, UnorderedListNode]]
+    type: Literal[TypesEnum.list_item]
+    children: List[Union[OrderedListNode, UnorderedListNode, DivNode]]
 
 
 # OrderedList and UnorderedList are both possible children
@@ -119,46 +119,34 @@ UnorderedListNode.update_forward_refs()
 class SubsectionNode(BaseNode):
     """Custom/user defined `sub-sections` items"""
 
-    id: str
-    type: TypesEnum
-
-    @root_validator()
-    def _validate(cls, values):
-        print("SUBSECTION node")
-        print("PINGPONG: ", values)
-        return values
+    type: Literal[TypesEnum.subsection]
 
 
 class EquationNode(BaseNode):
     """Equation WYSIWYG node"""
 
-    type: TypesEnum
+    type: Literal[TypesEnum.equation]
 
 
 class ImageNode(BaseNode):
     """Image WYSIWYG node"""
 
-    type: TypesEnum
     objectKey: str
-
-    @root_validator()
-    def _validate(cls, values):
-        print("\nIMAGE NODE")
-        print("PINGPONG: ", values)
-        return values
+    type: Literal[TypesEnum.image]
 
 
 class CaptionNode(BaseNode):
     """Caption nodes (for Table or Image WYSIWYG nodes)"""
 
-    type: TypesEnum
+    type: Literal[TypesEnum.caption]
+    children: List[Union[LinkNode, ReferenceNode, TextLeaf]]
 
 
 class ImageBlockNode(BaseNode):
     """Image block node (contains image and caption)"""
 
-    type: TypesEnum
-    children: List[Union[ImageNode, CaptionNode]]
+    type: Literal[TypesEnum.image_block]
+    children: List[Union[CaptionNode, ImageNode]]
 
     @validator("children")
     def _validate_children(cls, v):
@@ -167,6 +155,7 @@ class ImageBlockNode(BaseNode):
                 "`Children` field of `Image-Block` type must contain one `Image` model and"
                 " one `Caption` model"
             )
+        # TODO: make this more pythonic
         if not (
             all([isinstance(v[0], ImageNode), isinstance(v[1], CaptionNode)])
             or all([isinstance(v[0], CaptionNode), isinstance(v[1], ImageNode)])
@@ -182,28 +171,28 @@ class ImageBlockNode(BaseNode):
 class TableCellNode(BaseNode):
     """Table cell WYSIWYG node"""
 
-    type: TypesEnum
+    type: Literal[TypesEnum.table_cell]
     children: List[DivNode]
 
 
 class TableRowNode(BaseNode):
     """Table row WYSIWYG node"""
 
-    type: TypesEnum
+    type: Literal[TypesEnum.table_row]
     children: List[TableCellNode]
 
 
 class TableNode(BaseNode):
     """Table WYSIWYG node"""
 
-    type: TypesEnum
+    type: Literal[TypesEnum.table]
     children: List[TableRowNode]
 
 
 class TableBlockNode(BaseNode):
     """Wrapper for Table WYSIWYG node and Caption WYSIWYG nodes"""
 
-    type: TypesEnum
+    type: Literal[TypesEnum.table_block]
     children: List[Union[TableNode, CaptionNode]]
 
     @validator("children")
@@ -227,8 +216,8 @@ class TableBlockNode(BaseNode):
 class DataAccessUrl(BaseModel):
     """Data Access URL"""
 
-    url: AnyUrl
-    description: str
+    url: Optional[Union[AnyUrl, str]] = ""
+    description: Optional[str] = ""
 
 
 class DivWrapperNode(BaseModel):
@@ -267,29 +256,44 @@ class SectionWrapper(BaseModel):
 
     children: List[
         Union[
-            DivNode,
+            ImageBlockNode,
             OrderedListNode,
             UnorderedListNode,
-            ImageBlockNode,
-            SubsectionNode,
             TableBlockNode,
+            SubsectionNode,
             EquationNode,
+            DivNode,
         ]
     ]
 
 
-class Document(BaseModel):
+class DocumentSummary(BaseModel):
+    """Document node to be returned in the `SummaryOutput` of
+    Atbds and AtbdVersions.
+    """
+
+    abstract: Optional[str]
+
+
+class Document(DocumentSummary):
     """Top level `document` node"""
 
+    plain_summary: Optional[str] = ""
+    key_points: Optional[str] = ""
+    version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
     historical_perspective: Optional[SectionWrapper]
+    additional_information: Optional[SectionWrapper]
     algorithm_description: Optional[SectionWrapper]
+    data_availability: Optional[SectionWrapper]
     scientific_theory: Optional[SectionWrapper]
     scientific_theory_assumptions: Optional[SectionWrapper]
     mathematical_theory: Optional[SectionWrapper]
     mathematical_theory_assumptions: Optional[SectionWrapper]
     algorithm_input_variables: Optional[List[AlgorithmVariable]]
+    algorithm_input_variables_caption: Optional[str]
     algorithm_output_variables: Optional[List[AlgorithmVariable]]
+    algorithm_output_variables_caption: Optional[str]
     algorithm_implementations: Optional[List[DataAccessUrl]]
     algorithm_usage_constraints: Optional[SectionWrapper]
     performance_assessment_validation_methods: Optional[SectionWrapper]
@@ -300,14 +304,14 @@ class Document(BaseModel):
     data_access_related_urls: Optional[List[DataAccessUrl]]
     journal_discussion: Optional[SectionWrapper]
     journal_acknowledgements: Optional[SectionWrapper]
-    publication_references: Optional[List[PublicationReference]]
+    publication_references: Optional[List[PublicationReference]] = []
 
     @validator(
         "algorithm_implementations",
         "data_access_input_data",
         "data_access_output_data",
         "data_access_related_urls",
-        whole=True,
     )
-    def _check_if_list_has_value(cls, value):
-        return value or None
+    def _print(cls, v):
+        # Filter out items that are missing both URL and Description
+        return list(filter(lambda d: d.url or d.description, v))
