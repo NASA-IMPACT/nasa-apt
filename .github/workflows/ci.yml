@@ -84,8 +84,8 @@ jobs:
           pip install -e .[deploy] --no-binary xmlsec
       - name: Install CDK
         run: npm install -g aws-cdk
-      - name: Bootstrap CDK 
-        run: cdk bootstrap
+      # - name: Bootstrap CDK 
+      #   run: cdk bootstrap
       - name: Deploy stack
         run: cdk deploy nasa-apt-api-lambda-dev --require-approval never
   deploy-prod: 
