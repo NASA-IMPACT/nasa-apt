@@ -18,3 +18,4 @@ publication_checklist [tables] 2021-11-08T17:34:58Z Daniel da Silva <daniel@keen
 gcmd_keywords [tables] 2021-11-12T15:34:13Z Leo Thomas <leo@MacBook-Pro.local> # Adds KMS keywords from the GCMD API to AtbdVersions
 contact_affiliations [tables] 2021-11-12T16:33:35Z Leo Thomas <leo@MacBook-Pro.local> # Adds contact affiliations (text[]) to conact_version relation
 drop_contact_roles [contact_roles] 2021-11-15T19:16:45Z Leo Thomas <leo@MacBook-Pro> # Migrates the contact roles to a text array
+@v2.1.0-beta 2021-12-03T15:28:49Z Leo Thomas <leo@MacBook-Pro.lan> # Tag v2.1.0-beta release 2021_12_03
