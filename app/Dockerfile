@@ -30,4 +30,5 @@ RUN pip install . -t .
 
 
 COPY lambda/handler.py ./handler.py
-
+RUN chmod 644 ./handler.py
+RUN chmod -R 755 /app
