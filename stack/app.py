@@ -69,10 +69,18 @@ class nasaAPTLambdaStack(core.Stack):
             description=f"Security group for {id}-downloader-rds",
         )
 
+        lambda_security_group = ec2.SecurityGroup(
+            self,
+            id=f"{id}-lambda-security-group",
+            vpc=vpc,
+            allow_all_outbound=True,
+            description=f"Security group for {id}-dowloader-rds",
+        )
+
         rds_security_group.add_ingress_rule(
-            peer=ec2.Peer.any_ipv4(),
+            peer=lambda_security_group,
             connection=ec2.Port.tcp(5432),
-            description="Allow all traffic for Postgres",
+            description="Allow traffic to Postgres Security Group from Lambda Security Group",
         )
 
         # TODO: add bootstrapping lambda as a custom resource to be run by cloudformation
@@ -87,7 +95,7 @@ class nasaAPTLambdaStack(core.Stack):
             vpc=vpc,
             # publicly_accessible=True,
             security_groups=[rds_security_group],
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
             engine=rds.DatabaseInstanceEngine.POSTGRES,
             # Upgraded to t3 small RDS instance since t2 small no longer
             # supports postgres 13+
@@ -173,6 +181,9 @@ class nasaAPTLambdaStack(core.Stack):
             memory_size=memory,
             timeout=core.Duration.seconds(timeout),
             environment=lambda_env,
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
+            security_groups=[lambda_security_group],
         )
 
         if concurrent:
