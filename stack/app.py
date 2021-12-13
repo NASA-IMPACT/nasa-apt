@@ -54,11 +54,20 @@ class nasaAPTLambdaStack(core.Stack):
             vpc = ec2.Vpc(
                 self,
                 id=f"{id}-vpc",
-                nat_gateways=0,
+                nat_gateways=1,
                 subnet_configuration=[
                     ec2.SubnetConfiguration(
                         name="PublicSubnet1", subnet_type=ec2.SubnetType.PUBLIC
-                    )
+                    ),
+                    ec2.SubnetConfiguration(
+                        name="PublicSubnet2", subnet_type=ec2.SubnetType.PUBLIC
+                    ),
+                    ec2.SubnetConfiguration(
+                        name="PrivateSubnet1", subnet_type=ec2.SubnetType.PRIVATE
+                    ),
+                    ec2.SubnetConfiguration(
+                        name="PrivateSubnet1", subnet_type=ec2.SubnetType.PRIVATE
+                    ),
                 ],
             )
         rds_security_group = ec2.SecurityGroup(
@@ -66,7 +75,7 @@ class nasaAPTLambdaStack(core.Stack):
             id=f"{id}-rds-security-group",
             vpc=vpc,
             allow_all_outbound=True,
-            description=f"Security group for {id}-downloader-rds",
+            description=f"Security group for {id}-rds",
         )
 
         lambda_security_group = ec2.SecurityGroup(
@@ -74,13 +83,19 @@ class nasaAPTLambdaStack(core.Stack):
             id=f"{id}-lambda-security-group",
             vpc=vpc,
             allow_all_outbound=True,
-            description=f"Security group for {id}-dowloader-rds",
+            description=f"Security group for {id}-lambda",
         )
 
         rds_security_group.add_ingress_rule(
             peer=lambda_security_group,
             connection=ec2.Port.tcp(5432),
             description="Allow traffic to Postgres Security Group from Lambda Security Group",
+        )
+
+        rds_security_group.add_ingress_rule(
+            peer=ec2.Peer.ipv4(vpc.vpc_cidr_block),
+            connection=ec2.Port.tcp(5432),
+            description="Allow ssh traffic from bastion host EC2 for sqitch deployment",
         )
 
         # TODO: add bootstrapping lambda as a custom resource to be run by cloudformation
