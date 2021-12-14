@@ -82,10 +82,10 @@ SECTIONS = {
     "data_access_input_data": {"title": "Input Data Access", "subsection": True},
     "data_access_output_data": {"title": "Output Data Access", "subsection": True},
     "data_access_related_urls": {"title": "Important Related URLs", "subsection": True},
-    "data_availability": {"title": "Data Availability"},
     "journal_discussion": {"title": "Discussion"},
     "journal_acknowledgements": {"title": "Acknowledgements"},
-    "contacts": {"title": "Contacts"},
+    "data_availability": {"title": "Open Research"},
+    # "contacts": {"title": "Contacts"},
 }
 
 
@@ -391,7 +391,7 @@ def process(
         section_title = NoEscape(
             " ".join(d for d in process_text_content(data["children"]))
         )
-        return Subsubsection(section_title)
+        return Subsubsection(section_title, numbering=False)
 
     if data.get("type") == "equation":
         return Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
@@ -488,7 +488,11 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     for contact_link in contacts_data:
 
-        author = f"{contact_link.contact.first_name} {contact_link.contact.last_name}"
+        initials = "".join(
+            [f"{n[0].upper()}." for n in contact_link.contact.first_name.split(" ")]
+        )
+
+        author = f"{initials} {contact_link.contact.last_name}"
 
         if not journal or not contact_link.affiliations:
             authors.append(author)
@@ -582,7 +586,10 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         ):
             continue
 
-        s = Section(info["title"])
+        s = Section(
+            info["title"],
+            numbering=False if section_name in ["plain_summary", "keywords"] else True,
+        )
 
         if info.get("subsection"):
             s = Subsection(info["title"])
