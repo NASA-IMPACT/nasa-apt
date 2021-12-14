@@ -584,10 +584,15 @@ submitted to {\it \thejournalname}}\vskip24pt}}
 \def\affiliation#1#2{\vskip-.5\parskip\relax{\centering{\footnotesize
 $^{#1}$#2\relax}\vskip-\parskip}}
 
-\def\correspondingauthor#1#2{{\let\@thefnmark\relax\@footnotetext{\noindent\vrule
-height 18pt width0pt\relax\hbox to-8pt{}{\small
-Corresponding author: #1,
-{\tt #2}}}}}
+% \def\correspondingauthor#1#2{{\let\@thefnmark\relax\@footnotetext{\noindent\vrule
+% height 18pt width0pt\relax\hbox to-8pt{}{\small
+% Corresponding author: #1,
+% {\tt #2}}}}}
+
+% Removing the corresponding author from the footnote was specifically requested by 
+% Impact team
+\def\correspondingauthor#1#2{{\vskip12pt \centering \normalsize Corresponding author: #1, (#2)\vskip12pt}}
+
 
 %% Used to send footnote to bottom of page when entered in \authors{} field.
 \def\thanks#1{{\renewcommand\thefootnote{\@fnsymbol\c@footnote}%
