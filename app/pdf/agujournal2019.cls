@@ -591,7 +591,7 @@ $^{#1}$#2\relax}\vskip-\parskip}}
 
 % Removing the corresponding author from the footnote was specifically requested by 
 % Impact team
-\def\correspondingauthor#1#2{{\vskip12pt \centering \normalsize Corresponding author: #1, (#2)\vskip12pt}}
+\def\correspondingauthor#1#2{{\vskip12pt \centering \normalsize Corresponding author: #1 ({\tt #2})\vskip12pt}}
 
 
 %% Used to send footnote to bottom of page when entered in \authors{} field.
