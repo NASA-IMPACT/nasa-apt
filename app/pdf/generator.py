@@ -235,7 +235,7 @@ def process_data_access_urls(data: List[document.DataAccessUrl]) -> List:
     """
     urls = []
     for i, access_url in enumerate(data):
-        s = Subsubsection(f"Entry #{str(i+1)}")
+        s = Subsubsection(NoEscape(f"\\normalfont{{Entry \\#{str(i+1)}}}"))
         for command in process_data_access_url(access_url):
             s.append(command)
         urls.append(s)
@@ -277,6 +277,7 @@ def process_algorithm_variables(
         header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
         caption=caption,
         position="H",
+        longtable=True,
     )
     return NoEscape(latex_table)
 
@@ -306,6 +307,7 @@ def process_table(data: document.TableNode, caption: str) -> NoEscape:
         column_format=column_format,
         caption=caption,
         position="H",
+        longtable=True,
     )
 
     return NoEscape(latex_table)
@@ -388,10 +390,11 @@ def process(
         # return process(data["children"][0])
 
     if data.get("type") == "sub-section":
-        section_title = NoEscape(
-            " ".join(d for d in process_text_content(data["children"]))
+        section_title = " ".join(d for d in process_text_content(data["children"]))
+
+        return Subsubsection(
+            NoEscape(f"\\normalfont{{\\itshape{{{section_title}}}}}"), numbering=False
         )
-        return Subsubsection(section_title, numbering=False)
 
     if data.get("type") == "equation":
         return Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
@@ -444,11 +447,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         lmodern=True,
     )
 
-    for p in [
-        "float",
-        "booktabs",
-        "soul",
-    ]:
+    for p in ["float", "booktabs", "soul", "longtable"]:
         doc.packages.append(Package(p))
 
     if not journal:
@@ -551,6 +550,11 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     if journal:
         doc.append(Command("begin", arguments="keypoints"))
         for keypoint in document_data["key_points"].split("\n"):
+            # Some people skip 2 lines between each key point,
+            # which creates and extra, blank, bullet in the Key Points
+            # section of the document Title page.
+            if not keypoint:
+                continue
             doc.append(Command("item", arguments=keypoint))
         doc.append(Command("end", arguments="keypoints"))
 
@@ -581,8 +585,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         # Version Description is the only field that doesn't get rendered at all
         # if it's not found in the database data (as opposed to other field which)
         # get displayed as "Content Unavailable"
-        if section_name == "version_description" and not document_data.get(
-            "version_description"
+        if section_name == "version_description" and (
+            not document_data.get("version_description")
+            or not process(document_data.get("version_description"))
         ):
             continue
 
@@ -592,10 +597,16 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         )
 
         if info.get("subsection"):
-            s = Subsection(info["title"])
+            title = info["title"]
+            if journal:
+                title = NoEscape(f"\\normalfont{{{title}}}")
+            s = Subsection(title)
 
         if info.get("subsubsection"):
-            s = Subsubsection(info["title"])
+            title = info["title"]
+            if journal:
+                title = NoEscape(f"\\normalfont{{{title}}}")
+            s = Subsubsection(title)
 
         doc.append(s)
 
