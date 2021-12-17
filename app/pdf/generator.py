@@ -12,7 +12,6 @@ from pylatex import (
     Enumerate,
     Figure,
     Itemize,
-    Math,
     NoEscape,
     Package,
     Section,
@@ -150,8 +149,7 @@ def hyperlink(url: str, text: str) -> NoEscape:
     NoEscape command to ensure the string gets processed as a
     command, and not plain text.
     """
-    text = utils.escape_latex(text)
-    return NoEscape(f"\\href{{{url}}}{{{text}}}")
+    return NoEscape(f"\\url{{{url}}}")
 
 
 def reference(reference_id: str) -> NoEscape:
@@ -265,13 +263,10 @@ def process_algorithm_variables(
         parsed_data, orient="columns"
     )
 
-    # TODO: make this dynamic, instead of based on the number of pixels in a page
-    # page width is 426 pts - divide into 3/4 and 1/4 sections for algorithm name and units
-    column_format = f"p{{{int(426/4)*3}pt}} p{{{int(426/4)}pt}}"
     latex_table = algorithm_variables_dataframe.to_latex(
         index=False,
         escape=False,
-        column_format=column_format,
+        column_format="p{0.75\\linewidth}p{0.25\\linewidth}",
         na_rep=" ",
         columns=["long_name", "unit"],
         header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
@@ -279,6 +274,7 @@ def process_algorithm_variables(
         position="H",
         longtable=True,
     )
+
     return NoEscape(latex_table)
 
 
@@ -296,15 +292,12 @@ def process_table(data: document.TableNode, caption: str) -> NoEscape:
 
     dataframe = pd.DataFrame(rows[1:], columns=rows[0])
 
-    column_formats = [f"p{{{1/len(rows[0])}\\linewidth}}" for _ in rows[0]]
-    column_format = "".join(column_formats)
-
     pd.set_option("max_colwidth", None)
     latex_table = dataframe.to_latex(
         index=False,
         escape=False,
         na_rep=" ",
-        column_format=column_format,
+        column_format="".join([f"p{{{1/len(rows[0])}\\linewidth}}" for _ in rows[0]]),
         caption=caption,
         position="H",
         longtable=True,
@@ -327,12 +320,19 @@ def generate_bib_reference(data: document.PublicationReference) -> str:
     reference to be saved to a `.bib` file
     """
     reference_id = bib_reference_name(data["id"])
+    del data["id"]
     reference = ""
-    for e in ["title", "pages", "publisher", "year", "volume", "number"]:
-        if data.get(e):
-            reference += f"{e}={{{data[e]}}},\n"
-    if data.get("authors"):
-        reference += f"author={{{data['authors']}}},\n"
+
+    for k, v in data.items():
+        if not v:
+            continue
+        if k == "series":
+            reference += f"journal={{{v}}},\n"
+            continue
+        if k == "authors":
+            reference += f"author={{{v}}},\n"
+            continue
+        reference += f"{k}={{{v}}},\n"
 
     return f"@article{{{reference_id},\n{reference}}}"
 
@@ -397,7 +397,10 @@ def process(
         )
 
     if data.get("type") == "equation":
-        return Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
+        eq = data["children"][0]["text"].replace("\\\\", "\\")
+        return NoEscape(f"\\begin{{equation}}{eq}\\end{{equation}}")
+
+        # return Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
 
     if data.get("type") == "image-block":
         [img] = filter(lambda d: d["type"] == "img", data["children"])
@@ -442,18 +445,18 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     document_class = "agujournal2019" if journal else "article"
     doc = Document(
         default_filepath=filepath,
-        documentclass=Command("documentclass", arguments=document_class,),
-        # use Latin-Math Modern pacakge for char support
+        documentclass=Command("documentclass", arguments=document_class),
+        # use Latin-Math Modern package for char support
         lmodern=True,
     )
 
-    for p in ["float", "booktabs", "soul", "longtable"]:
+    for p in ["float", "booktabs", "soul", "longtable", "amsmath"]:
         doc.packages.append(Package(p))
 
     if not journal:
 
         doc.preamble.append(
-            NoEscape("\\PassOptionsToPackage{hyphens}{url}\\RequirePackage{hyperref}")
+            NoEscape("\\PassOptionsToPackage{hyphens}{url}\\usepackage{hyperref}")
         )
         doc.preamble.append(
             Command(
@@ -461,6 +464,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 arguments="colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
             )
         )
+        # doc.preamble.append(Package("url", options="hyphens"))
         # The apacite package is added using the `usepackage` command
         # instead of the `Package()` funciton to ensure that apacite
         # will be loaded after `hyperref` - with breaks things if the
