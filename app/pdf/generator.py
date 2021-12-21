@@ -149,7 +149,7 @@ def hyperlink(url: str, text: str) -> NoEscape:
     NoEscape command to ensure the string gets processed as a
     command, and not plain text.
     """
-    return NoEscape(f"\\url{{{url}}}")
+    return NoEscape(f"\\href{{{url}}}{{\\nolinkurl{{{text}}}}}")
 
 
 def reference(reference_id: str) -> NoEscape:
@@ -326,6 +326,8 @@ def generate_bib_reference(data: document.PublicationReference) -> str:
     for k, v in data.items():
         if not v:
             continue
+        #  `series` gets changed to `journal` since `series` isn't a field used in
+        # the `@article` citation type of `apacite`
         if k == "series":
             reference += f"journal={{{v}}},\n"
             continue
@@ -456,15 +458,18 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     if not journal:
 
         doc.preamble.append(
-            NoEscape("\\PassOptionsToPackage{hyphens}{url}\\usepackage{hyperref}")
+            NoEscape(
+                "\\PassOptionsToPackage{obeyspaces,hyphens}{url}\\usepackage{hyperref}"
+            )
         )
+
         doc.preamble.append(
             Command(
                 "hypersetup",
-                arguments="colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
+                arguments="breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
             )
         )
-        # doc.preamble.append(Package("url", options="hyphens"))
+        doc.preamble.append(Command("urlstyle", arguments="same"))
         # The apacite package is added using the `usepackage` command
         # instead of the `Package()` funciton to ensure that apacite
         # will be loaded after `hyperref` - with breaks things if the

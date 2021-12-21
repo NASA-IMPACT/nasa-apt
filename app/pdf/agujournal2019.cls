@@ -1154,9 +1154,9 @@ width0pt\relax}\\*\noindent\ignorespaces}
 %\renewcommand\NAT@open{(} \renewcommand\NAT@close{)}   %xx Parens by default, but not using anyways.  DC
 
 % hyperref MUST be loaded before APACite 
-\PassOptionsToPackage{hyphens}{url}\RequirePackage{hyperref}
-% \RequirePackage{hyperref}
-\hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black}%
+\PassOptionsToPackage{obeyspaces,hyphens}{url}\RequirePackage{hyperref}
+\urlstyle{same}
+\hypersetup{breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black}%
 
 \RequirePackage{apacite}
 %\RequirePackage{natbib}
