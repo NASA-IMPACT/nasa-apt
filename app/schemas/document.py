@@ -249,6 +249,10 @@ class PublicationReference(BaseModel):
     pages: Optional[str]
     isbn: Optional[str]
     year: Optional[str]
+    report_number: Optional[str]
+    doi: Optional[str]
+    online_resource: Optional[str]
+    other_reference_details: Optional[str]
 
 
 class SectionWrapper(BaseModel):
