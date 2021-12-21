@@ -317,5 +317,7 @@ class Document(DocumentSummary):
         "data_access_related_urls",
     )
     def _print(cls, v):
+        if not v:
+            return []
         # Filter out items that are missing both URL and Description
         return list(filter(lambda d: d.url or d.description, v))
