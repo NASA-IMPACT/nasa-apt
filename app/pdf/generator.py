@@ -185,12 +185,14 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
 
     """
     e = utils.escape_latex(data["text"])
+    # e = data["text"]
 
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option) and e.strip(" ") != "":
             e = command(e)
 
     # TODO: should this be wrapped with NoEscape?
+
     return NoEscape(e)
 
 
@@ -371,9 +373,7 @@ def process(
     Latex document.
     """
     if data.get("type") in ["p", "caption"]:
-        # p = section.Paragraph("")
-        # p.append(NoEscape(" ".join(d for d in process_text_content(data["children"]))))
-        # return p
+
         return NoEscape(" ".join(d for d in process_text_content(data["children"])))
 
     if data.get("type") in ["ul", "ol"]:
@@ -448,12 +448,20 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     doc = Document(
         default_filepath=filepath,
         documentclass=Command("documentclass", arguments=document_class),
-        # use Latin-Math Modern package for char support
+        # disable inputenc and fontspec because we are compiling using
+        # xelatex which accepts unicode chars by defaults
+        inputenc=None,
+        fontenc=None,
+        # use textcomp for additional character support
+        textcomp=True,
+        # use Latin-Math Modern package for char suppor
         lmodern=True,
     )
 
-    for p in ["float", "booktabs", "soul", "longtable", "amsmath"]:
+    for p in ["float", "booktabs", "soul", "longtable", "amsmath", "fontspec"]:
         doc.packages.append(Package(p))
+
+    doc.preamble.append(Command("setmainfont", arguments=NoEscape("Latin Modern Math")))
 
     if not journal:
 
@@ -708,7 +716,8 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
         # the `--pdfxe` flag loads the Xelatex pacakge necessary for
         # the compiler to manage image positioning within the pdf document
         # and native unicode character handling
-        compiler_args=["--pdfxe", "-e", "$max_repeat=10"],
+        compiler_args=["-pdfxe", "-e", "$max_repeat=10"],
+        # silent=True,
         silent=False,
     )
 
