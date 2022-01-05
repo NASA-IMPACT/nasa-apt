@@ -217,8 +217,8 @@ class nasaAPTLambdaStack(core.Stack):
         api_gateway = apigw.HttpApi(
             self,
             f"{id}-endpoint",
-            default_integration=apigw_integrations.LambdaProxyIntegration(
-                handler=lambda_function
+            default_integration=apigw_integrations.HttpLambdaIntegration(
+                f"{id}-apigw-lambda-integration", handler=lambda_function
             ),
         )
         core.CfnOutput(

@@ -12,7 +12,6 @@ from pylatex import (
     Enumerate,
     Figure,
     Itemize,
-    Math,
     NoEscape,
     Package,
     Section,
@@ -82,10 +81,10 @@ SECTIONS = {
     "data_access_input_data": {"title": "Input Data Access", "subsection": True},
     "data_access_output_data": {"title": "Output Data Access", "subsection": True},
     "data_access_related_urls": {"title": "Important Related URLs", "subsection": True},
-    "data_availability": {"title": "Data Availability"},
     "journal_discussion": {"title": "Discussion"},
     "journal_acknowledgements": {"title": "Acknowledgements"},
-    "contacts": {"title": "Contacts"},
+    "data_availability": {"title": "Open Research"},
+    # "contacts": {"title": "Contacts"},
 }
 
 
@@ -150,8 +149,7 @@ def hyperlink(url: str, text: str) -> NoEscape:
     NoEscape command to ensure the string gets processed as a
     command, and not plain text.
     """
-    text = utils.escape_latex(text)
-    return NoEscape(f"\\href{{{url}}}{{{text}}}")
+    return NoEscape(f"\\href{{{url}}}{{\\nolinkurl{{{text}}}}}")
 
 
 def reference(reference_id: str) -> NoEscape:
@@ -187,12 +185,14 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
 
     """
     e = utils.escape_latex(data["text"])
+    # e = data["text"]
 
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option) and e.strip(" ") != "":
             e = command(e)
 
     # TODO: should this be wrapped with NoEscape?
+
     return NoEscape(e)
 
 
@@ -235,7 +235,7 @@ def process_data_access_urls(data: List[document.DataAccessUrl]) -> List:
     """
     urls = []
     for i, access_url in enumerate(data):
-        s = Subsubsection(f"Entry #{str(i+1)}")
+        s = Subsubsection(NoEscape(f"\\normalfont{{Entry \\#{str(i+1)}}}"))
         for command in process_data_access_url(access_url):
             s.append(command)
         urls.append(s)
@@ -265,19 +265,18 @@ def process_algorithm_variables(
         parsed_data, orient="columns"
     )
 
-    # TODO: make this dynamic, instead of based on the number of pixels in a page
-    # page width is 426 pts - divide into 3/4 and 1/4 sections for algorithm name and units
-    column_format = f"p{{{int(426/4)*3}pt}} p{{{int(426/4)}pt}}"
     latex_table = algorithm_variables_dataframe.to_latex(
         index=False,
         escape=False,
-        column_format=column_format,
+        column_format="p{0.75\\linewidth}p{0.25\\linewidth}",
         na_rep=" ",
         columns=["long_name", "unit"],
         header=["\\textbf{{Name}}", "\\textbf{{Unit}}"],
         caption=caption,
         position="H",
+        longtable=True,
     )
+
     return NoEscape(latex_table)
 
 
@@ -295,17 +294,15 @@ def process_table(data: document.TableNode, caption: str) -> NoEscape:
 
     dataframe = pd.DataFrame(rows[1:], columns=rows[0])
 
-    column_formats = [f"p{{{1/len(rows[0])}\\linewidth}}" for _ in rows[0]]
-    column_format = "".join(column_formats)
-
     pd.set_option("max_colwidth", None)
     latex_table = dataframe.to_latex(
         index=False,
         escape=False,
         na_rep=" ",
-        column_format=column_format,
+        column_format="".join([f"p{{{1/len(rows[0])}\\linewidth}}" for _ in rows[0]]),
         caption=caption,
         position="H",
+        longtable=True,
     )
 
     return NoEscape(latex_table)
@@ -325,12 +322,21 @@ def generate_bib_reference(data: document.PublicationReference) -> str:
     reference to be saved to a `.bib` file
     """
     reference_id = bib_reference_name(data["id"])
+    del data["id"]
     reference = ""
-    for e in ["title", "pages", "publisher", "year", "volume", "number"]:
-        if data.get(e):
-            reference += f"{e}={{{data[e]}}},\n"
-    if data.get("authors"):
-        reference += f"author={{{data['authors']}}},\n"
+
+    for k, v in data.items():
+        if not v:
+            continue
+        #  `series` gets changed to `journal` since `series` isn't a field used in
+        # the `@article` citation type of `apacite`
+        if k == "series":
+            reference += f"journal={{{v}}},\n"
+            continue
+        if k == "authors":
+            reference += f"author={{{v}}},\n"
+            continue
+        reference += f"{k}={{{v}}},\n"
 
     return f"@article{{{reference_id},\n{reference}}}"
 
@@ -367,9 +373,7 @@ def process(
     Latex document.
     """
     if data.get("type") in ["p", "caption"]:
-        # p = section.Paragraph("")
-        # p.append(NoEscape(" ".join(d for d in process_text_content(data["children"]))))
-        # return p
+
         return NoEscape(" ".join(d for d in process_text_content(data["children"])))
 
     if data.get("type") in ["ul", "ol"]:
@@ -388,13 +392,17 @@ def process(
         # return process(data["children"][0])
 
     if data.get("type") == "sub-section":
-        section_title = NoEscape(
-            " ".join(d for d in process_text_content(data["children"]))
+        section_title = " ".join(d for d in process_text_content(data["children"]))
+
+        return Subsubsection(
+            NoEscape(f"\\normalfont{{\\itshape{{{section_title}}}}}"), numbering=False
         )
-        return Subsubsection(section_title)
 
     if data.get("type") == "equation":
-        return Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
+        eq = data["children"][0]["text"].replace("\\\\", "\\")
+        return NoEscape(f"\\begin{{equation}}{eq}\\end{{equation}}")
+
+        # return Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
 
     if data.get("type") == "image-block":
         [img] = filter(lambda d: d["type"] == "img", data["children"])
@@ -439,29 +447,37 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     document_class = "agujournal2019" if journal else "article"
     doc = Document(
         default_filepath=filepath,
-        documentclass=Command("documentclass", arguments=document_class,),
-        # use Latin-Math Modern pacakge for char support
+        documentclass=Command("documentclass", arguments=document_class),
+        # disable inputenc and fontspec because we are compiling using
+        # xelatex which accepts unicode chars by defaults
+        inputenc=None,
+        fontenc=None,
+        # use textcomp for additional character support
+        textcomp=True,
+        # use Latin-Math Modern package for char suppor
         lmodern=True,
     )
 
-    for p in [
-        "float",
-        "booktabs",
-        "soul",
-    ]:
+    for p in ["float", "booktabs", "soul", "longtable", "amsmath", "fontspec"]:
         doc.packages.append(Package(p))
+
+    doc.preamble.append(Command("setmainfont", arguments=NoEscape("Latin Modern Math")))
 
     if not journal:
 
         doc.preamble.append(
-            NoEscape("\\PassOptionsToPackage{hyphens}{url}\\RequirePackage{hyperref}")
+            NoEscape(
+                "\\PassOptionsToPackage{obeyspaces,hyphens}{url}\\usepackage{hyperref}"
+            )
         )
+
         doc.preamble.append(
             Command(
                 "hypersetup",
-                arguments="colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
+                arguments="breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
             )
         )
+        doc.preamble.append(Command("urlstyle", arguments="same"))
         # The apacite package is added using the `usepackage` command
         # instead of the `Package()` funciton to ensure that apacite
         # will be loaded after `hyperref` - with breaks things if the
@@ -488,7 +504,11 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     for contact_link in contacts_data:
 
-        author = f"{contact_link.contact.first_name} {contact_link.contact.last_name}"
+        initials = "".join(
+            [f"{n[0].upper()}." for n in contact_link.contact.first_name.split(" ")]
+        )
+
+        author = f"{initials} {contact_link.contact.last_name}"
 
         if not journal or not contact_link.affiliations:
             authors.append(author)
@@ -547,6 +567,11 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     if journal:
         doc.append(Command("begin", arguments="keypoints"))
         for keypoint in document_data["key_points"].split("\n"):
+            # Some people skip 2 lines between each key point,
+            # which creates and extra, blank, bullet in the Key Points
+            # section of the document Title page.
+            if not keypoint:
+                continue
             doc.append(Command("item", arguments=keypoint))
         doc.append(Command("end", arguments="keypoints"))
 
@@ -577,18 +602,28 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         # Version Description is the only field that doesn't get rendered at all
         # if it's not found in the database data (as opposed to other field which)
         # get displayed as "Content Unavailable"
-        if section_name == "version_description" and not document_data.get(
-            "version_description"
+        if section_name == "version_description" and (
+            not document_data.get("version_description")
+            or not process(document_data.get("version_description"))
         ):
             continue
 
-        s = Section(info["title"])
+        s = Section(
+            info["title"],
+            numbering=False if section_name in ["plain_summary", "keywords"] else True,
+        )
 
         if info.get("subsection"):
-            s = Subsection(info["title"])
+            title = info["title"]
+            if journal:
+                title = NoEscape(f"\\normalfont{{{title}}}")
+            s = Subsection(title)
 
         if info.get("subsubsection"):
-            s = Subsubsection(info["title"])
+            title = info["title"]
+            if journal:
+                title = NoEscape(f"\\normalfont{{{title}}}")
+            s = Subsubsection(title)
 
         doc.append(s)
 
@@ -681,7 +716,8 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
         # the `--pdfxe` flag loads the Xelatex pacakge necessary for
         # the compiler to manage image positioning within the pdf document
         # and native unicode character handling
-        compiler_args=["--pdfxe", "-e", "$max_repeat=10"],
+        compiler_args=["-pdfxe", "-e", "$max_repeat=10"],
+        # silent=True,
         silent=False,
     )
 
