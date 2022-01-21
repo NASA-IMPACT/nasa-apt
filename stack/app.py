@@ -160,14 +160,7 @@ class nasaAPTLambdaStack(core.Stack):
             if config.STAGE.lower() == "prod"
             else core.RemovalPolicy.DESTROY,
         )
-        # logs_access = iam.PolicyStatement(
-        #     actions=[
-        #         "logs:CreateLogGroup",
-        #         "logs:CreateLogStream",
-        #         "logs:PutLogEvents",
-        #     ],
-        #     resources=["*"],
-        # )
+
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
 
         frontend_url = config.FRONTEND_URL
@@ -208,12 +201,11 @@ class nasaAPTLambdaStack(core.Stack):
             self, f"{id}-lambda", **lambda_function_props
         )
         lambda_function.add_to_role_policy(ses_access)
-        # lambda_function.add_to_role_policy(logs_access)
         database.secret.grant_read(lambda_function)
         esdomain.grant_read_write(lambda_function)
         bucket.grant_read_write(lambda_function)
-        # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
 
+        # defines an API Gateway Http API resource backed by our custom lambda function.
         api_gateway = apigw.HttpApi(
             self,
             f"{id}-endpoint",
@@ -249,6 +241,7 @@ class nasaAPTLambdaStack(core.Stack):
                 ),
                 email_style=cognito.VerificationEmailStyle.LINK,
             ),
+            sign_in_case_sensitive=False,
             removal_policy=core.RemovalPolicy.RETAIN
             if config.STAGE.lower() == "prod"
             else core.RemovalPolicy.DESTROY,
