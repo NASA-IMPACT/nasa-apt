@@ -54,19 +54,19 @@ class nasaAPTLambdaStack(core.Stack):
             vpc = ec2.Vpc(
                 self,
                 id=f"{id}-vpc",
-                nat_gateways=1,
+                max_azs=2,
                 subnet_configuration=[
                     ec2.SubnetConfiguration(
-                        name="PublicSubnet1", subnet_type=ec2.SubnetType.PUBLIC
+                        name=f"{id}-public-subnet1", subnet_type=ec2.SubnetType.PUBLIC
                     ),
                     ec2.SubnetConfiguration(
-                        name="PublicSubnet2", subnet_type=ec2.SubnetType.PUBLIC
+                        name=f"{id}-public-subnet2", subnet_type=ec2.SubnetType.PUBLIC
                     ),
                     ec2.SubnetConfiguration(
-                        name="PrivateSubnet1", subnet_type=ec2.SubnetType.PRIVATE
+                        name=f"{id}-private-subnet1", subnet_type=ec2.SubnetType.PRIVATE
                     ),
                     ec2.SubnetConfiguration(
-                        name="PrivateSubnet1", subnet_type=ec2.SubnetType.PRIVATE
+                        name=f"{id}-private-subnet2", subnet_type=ec2.SubnetType.PRIVATE
                     ),
                 ],
             )
@@ -100,23 +100,22 @@ class nasaAPTLambdaStack(core.Stack):
 
         # TODO: add bootstrapping lambda as a custom resource to be run by cloudformation
 
-        database = rds.DatabaseInstance(
-            self,
-            f"{id}-postgres-db",
+        rds_params = dict(
             credentials=rds.Credentials.from_generated_secret(
                 username="masteruser", secret_name=f"{id}-database-secrets"
             ),
             allocated_storage=10,
             vpc=vpc,
-            # publicly_accessible=True,
             security_groups=[rds_security_group],
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
             engine=rds.DatabaseInstanceEngine.POSTGRES,
             # Upgraded to t3 small RDS instance since t2 small no longer
             # supports postgres 13+
             instance_type=ec2.InstanceType.of(
                 ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL
             ),
+            instance_identifier=f"{id}-database",
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            publicly_accessible=True,
             database_name="nasadb",
             backup_retention=core.Duration.days(7),
             deletion_protection=config.STAGE.lower() == "prod",
@@ -124,6 +123,13 @@ class nasaAPTLambdaStack(core.Stack):
             if config.STAGE.lower() == "prod"
             else core.RemovalPolicy.DESTROY,
         )
+        if config.GCC_MODE:
+            rds_params["vpc_subnets"] = ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE
+            )
+            rds_params["publicly_accessible"] = False
+
+        database = rds.DatabaseInstance(self, f"{id}-postgres-db", **rds_params)
 
         core.CfnOutput(
             self,
