@@ -21,6 +21,9 @@ SOURCE_STACK_NAME = args.source_stack_name
 
 
 def serialize_user_pool_users_to_csv(user_pool_id: str) -> str:
+
+    csv_header = cognito_client.get_csv_header(UserPoolId=user_pool_id)["CSVHeader"]
+
     resp = cognito_client.list_users(UserPoolId=user_pool_id)
     users = resp["Users"]
     while "PaginationToken" in resp:
@@ -31,8 +34,27 @@ def serialize_user_pool_users_to_csv(user_pool_id: str) -> str:
 
     users = [{a["Name"]: a["Value"] for a in u["Attributes"]} for u in users]
 
+    # Store users with subs for mapping old user subs to new user subs
+    with open(f"{user_pool_id}-users-subs.json", "w") as f:
+        f.write(json.dumps(users))
+
+    # store users without subs into the csv file that will be uploaded to start
+    # the user import process
+    # add email to the `cognito:username` field in order to allow users to sign
+    # is using emails as a username attribute
+    users = [
+        {
+            "cognito:username": user["email"],
+            "cognito:mfa_enabled": "false",
+            "phone_number_verified": "false",
+            "email_verified": "true",
+            **{k: v for k, v in user.items() if k != "sub"},
+        }
+        for user in users
+    ]
+
     with open(f"{user_pool_id}-users.csv", "w", newline="") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=users[0].keys())
+        writer = csv.DictWriter(csvfile, fieldnames=csv_header)
         writer.writeheader()
         writer.writerows(users)
 

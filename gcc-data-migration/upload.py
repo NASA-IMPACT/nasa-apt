@@ -1,9 +1,7 @@
 import argparse
-import csv
 import json
-import os
+import re
 import subprocess
-import sys
 import time
 from typing import Dict, List
 
@@ -67,16 +65,32 @@ def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
 
     # Upload users file
     with open(SOURCE_COGNITO_USERS_FILE, "r") as f:
-        requests.put(user_import_job["PreSignedUrl"], data=f.read())
+        r = requests.put(
+            user_import_job["PreSignedUrl"],
+            data=f.read(),
+            headers={
+                "x-amz-server-side-encryption": "aws:kms",
+                "Content-Disposition": "attachment;filename=filename.csv",
+            },
+        )
+        if not r.status_code == 200:
+            raise Exception(r.text)
+
+    resp = cognito_client.describe_user_import_job(
+        UserPoolId=target_user_pool_id, JobId=user_import_job["JobId"]
+    )
 
     resp = cognito_client.start_user_import_job(
         UserPoolId=target_user_pool_id, JobId=user_import_job["JobId"]
     )["UserImportJob"]
-    while resp["Status"] in ["Pending", "InProgross"]:
+    while resp["Status"] in ["Pending", "InProgress", "Stopping"]:
         time.sleep(5)
+        resp = cognito_client.describe_user_import_job(
+            UserPoolId=target_user_pool_id, JobId=user_import_job["JobId"]
+        )["UserImportJob"]
 
     if not resp["Status"] == "Succeeded":
-        raise Exception("User import job FAILED: ", resp["UserImportJob"])
+        raise Exception("User import job FAILED: ", resp)
 
     resp = cognito_client.list_users(UserPoolId=target_user_pool_id)
     target_users = resp["Users"]
@@ -90,8 +104,8 @@ def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
         {a["Name"]: a["Value"] for a in u["Attributes"]} for u in target_users
     ]
 
-    with open(SOURCE_COGNITO_USERS_FILE, "r") as f:
-        source_users = csv.DictReader(f=f.readlines())
+    with open(SOURCE_COGNITO_USERS_FILE.replace(".csv", "-subs.json"), "r") as f:
+        source_users = json.loads(f.read())
 
     user_mapping = [{"email": u["email"], "target_sub": u["sub"]} for u in target_users]
 
@@ -100,7 +114,6 @@ def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
             source_user
             for source_user in source_users
             if source_user["email"] == target_user["email"]
-            and source_user["preferred_usernae"] == target_user["preferred_username"]
         ]
         target_user["source_sub"] = source_user["sub"]
 
@@ -122,12 +135,30 @@ def upload_to_database(
         database_dump = f.read()
 
     for user in user_mapping:
-        database_dump_with_new_ids = database_dump.replace(
-            user["source_sub"], user["target_sub"]
-        )
+        database_dump = database_dump.replace(user["source_sub"], user["target_sub"])
+
+    [CURATOR_SUB] = [
+        target_user["target_sub"]
+        for target_user in user_mapping
+        if target_user["email"] == "curator@apt.com"
+    ]
+
+    def replace_missing_sub_with_curator_sub(match):
+
+        if match.group(0) in [
+            target_user["target_sub"] for target_user in user_mapping
+        ]:
+            return match.group(0)
+        return CURATOR_SUB
+
+    database_dump = re.sub(
+        r"[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}",
+        replace_missing_sub_with_curator_sub,
+        database_dump,
+    )
 
     with open(SOURCE_DATABASE_DUMP_FILE, "w") as f:
-        f.write(database_dump_with_new_ids)
+        f.write(database_dump)
 
     secrets = json.loads(
         secretsmanager_client.get_secret_value(SecretId=database_secrets_manager_arn)[
