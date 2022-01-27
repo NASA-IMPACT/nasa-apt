@@ -140,7 +140,13 @@ class nasaAPTLambdaStack(core.Stack):
             ),
         )
 
-        bucket_params = dict(scope=self, id=f"{id}")
+        bucket_params = dict(
+            scope=self,
+            id=f"{id}",
+            removal_policy=core.RemovalPolicy.RETAIN
+            if config.STAGE.lower() == "prod"
+            else core.RemovalPolicy.DESTROY,
+        )
         if config.S3_BUCKET:
             bucket_params["bucket_name"] = config.S3_BUCKET
         bucket = s3.Bucket(**bucket_params)

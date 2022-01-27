@@ -117,6 +117,14 @@ def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
         ]
         target_user["source_sub"] = source_user["sub"]
 
+        # Add users to groups
+        [group] = source_user["cognito:groups"]
+        cognito_client.admin_add_user_to_group(
+            UserPoolId=target_user_pool_id,
+            Username=target_user["target_sub"],
+            GroupName=group,
+        )
+
     if any([user.get("source_sub") is None for user in user_mapping]):
         raise Exception("Some target users missing source_subs", user_mapping)
 

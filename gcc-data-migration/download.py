@@ -2,6 +2,7 @@ import argparse
 import csv
 import json
 import subprocess
+from typing import Dict, List, Union
 
 import boto3
 
@@ -21,18 +22,20 @@ SOURCE_STACK_NAME = args.source_stack_name
 
 
 def serialize_user_pool_users_to_csv(user_pool_id: str) -> str:
-
-    csv_header = cognito_client.get_csv_header(UserPoolId=user_pool_id)["CSVHeader"]
-
-    resp = cognito_client.list_users(UserPoolId=user_pool_id)
-    users = resp["Users"]
-    while "PaginationToken" in resp:
-        resp = cognito_client.list_users(
-            UserPoolId=user_pool_id, PaginationToken=resp["PaginationToken"]
-        )
-        users.extend(resp["Users"])
-
-    users = [{a["Name"]: a["Value"] for a in u["Attributes"]} for u in users]
+    users = []
+    for group in ["curator", "contributor"]:
+        paginator = cognito_client.get_paginator("list_users_in_group")
+        response = paginator.paginate(UserPoolId=user_pool_id, GroupName=group)
+        for page in response:
+            users.extend(
+                [
+                    {
+                        "cognito:groups": [group],
+                        **{a["Name"]: a["Value"] for a in user["Attributes"]},
+                    }
+                    for user in page.get("Users", [])
+                ]
+            )
 
     # Store users with subs for mapping old user subs to new user subs
     with open(f"{user_pool_id}-users-subs.json", "w") as f:
@@ -42,21 +45,23 @@ def serialize_user_pool_users_to_csv(user_pool_id: str) -> str:
     # the user import process
     # add email to the `cognito:username` field in order to allow users to sign
     # is using emails as a username attribute
-    users = [
+    cognito_users: List[Dict[str, Union[str, List[str]]]] = [
         {
             "cognito:username": user["email"],
             "cognito:mfa_enabled": "false",
             "phone_number_verified": "false",
             "email_verified": "true",
-            **{k: v for k, v in user.items() if k != "sub"},
+            **{k: v for k, v in user.items() if k not in ["sub", "cognito:groups"]},
         }
         for user in users
     ]
 
+    csv_header = cognito_client.get_csv_header(UserPoolId=user_pool_id)["CSVHeader"]
+
     with open(f"{user_pool_id}-users.csv", "w", newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=csv_header)
         writer.writeheader()
-        writer.writerows(users)
+        writer.writerows(cognito_users)
 
     return f"{user_pool_id}-users.csv"
 
