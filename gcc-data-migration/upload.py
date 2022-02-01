@@ -59,8 +59,9 @@ def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
     user_import_job = cognito_client.create_user_import_job(
         JobName=f"{TARGET_STACK_NAME}-user-import",
         UserPoolId=target_user_pool_id,
-        # DevSeed
-        CloudWatchLogsRoleArn="arn:aws:iam::552819999234:role/GrantCognitoAccessToCloudWatchLogs",
+        # DevSeed: arn:aws:iam::552819999234:role/GrantCognitoAccessToCloudWatchLogs
+        # GCC: arn:aws:iam::237694371684:role/CognitoAccessToCloudwatch
+        CloudWatchLogsRoleArn="arn:aws:iam::237694371684:role/CognitoAccessToCloudwatch",
     )["UserImportJob"]
 
     # Upload users file
