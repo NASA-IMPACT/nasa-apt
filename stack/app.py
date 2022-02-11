@@ -48,12 +48,18 @@ class nasaAPTLambdaStack(core.Stack):
             )
             core.Aspects.of(self).add(PermissionBoundaryAspect(permission_boundary))
 
+        if config.GCC_MODE and not config.VPC_ID:
+            raise Exception(
+                "Unable to create VPC in GCC, please use pre-configured VPC. Contact GCC admin for more info"
+            )
+
         if config.VPC_ID:
             vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID)
         else:
             vpc = ec2.Vpc(
                 self,
                 id=f"{id}-vpc",
+                # nat gateway added by default
                 max_azs=2,
                 subnet_configuration=[
                     ec2.SubnetConfiguration(
@@ -91,12 +97,12 @@ class nasaAPTLambdaStack(core.Stack):
             connection=ec2.Port.tcp(5432),
             description="Allow traffic to Postgres Security Group from Lambda Security Group",
         )
-
-        rds_security_group.add_ingress_rule(
-            peer=ec2.Peer.ipv4(vpc.vpc_cidr_block),
-            connection=ec2.Port.tcp(5432),
-            description="Allow ssh traffic from bastion host EC2 for sqitch deployment",
-        )
+        if config.GCC_MODE:
+            rds_security_group.add_ingress_rule(
+                peer=ec2.Peer.ipv4(vpc.vpc_cidr_block),
+                connection=ec2.Port.tcp(5432),
+                description="Allow ssh traffic from bastion host EC2 for sqitch deployment",
+            )
 
         # TODO: add bootstrapping lambda as a custom resource to be run by cloudformation
 
