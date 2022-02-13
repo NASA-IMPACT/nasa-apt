@@ -80,7 +80,7 @@ class nasaAPTLambdaStack(core.Stack):
             self,
             id=f"{id}-rds-security-group",
             vpc=vpc,
-            allow_all_outbound=True,
+            # allow_all_outbound=True,
             description=f"Security group for {id}-rds",
         )
 
@@ -97,6 +97,9 @@ class nasaAPTLambdaStack(core.Stack):
             connection=ec2.Port.tcp(5432),
             description="Allow traffic to Postgres Security Group from Lambda Security Group",
         )
+
+        # Grant ingress from the VPC's CIDR, which allows access from an EC2 jumpbox
+        # hosted in the VPC
         if config.GCC_MODE:
             rds_security_group.add_ingress_rule(
                 peer=ec2.Peer.ipv4(vpc.vpc_cidr_block),
