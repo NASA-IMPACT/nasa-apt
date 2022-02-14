@@ -1,6 +1,7 @@
 """
 CDK Stack definition code for NASA APT API
 """
+import os
 from typing import Any
 
 import config
@@ -14,13 +15,14 @@ from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
 from aws_cdk import core
+from permissions_boundary import PermissionBoundaryAspect
 
 
 class nasaAPTLambdaStack(core.Stack):
     """
     Covid API Lambda Stack
 
-    This code is freely adapted from
+    This code is freely adapted from:
     - https://github.com/leothomas/titiler/blob/10df64fbbdd342a0762444eceebaac18d8867365/stack/app.py author: @leothomas
     - https://github.com/ciaranevans/titiler/blob/3a4e04cec2bd9b90e6f80decc49dc3229b6ef569/stack/app.py author: @ciaranevans
 
@@ -39,17 +41,39 @@ class nasaAPTLambdaStack(core.Stack):
         """Define stack."""
         super().__init__(scope, id, **kwargs)
 
+        if config.GCC_MODE:
+            print("DEPLOYING WITH GCC PERMISSIONS BOUNDARY APPLIED")
+            permission_boundary = iam.ManagedPolicy.from_managed_policy_name(
+                self, "PermissionsBoundary", "mcp-tenantOperator"
+            )
+            core.Aspects.of(self).add(PermissionBoundaryAspect(permission_boundary))
+
+        if config.GCC_MODE and not config.VPC_ID:
+            raise Exception(
+                "Unable to create VPC in GCC, please use pre-configured VPC. Contact GCC admin for more info"
+            )
+
         if config.VPC_ID:
             vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID)
         else:
             vpc = ec2.Vpc(
                 self,
                 id=f"{id}-vpc",
-                nat_gateways=0,
+                # nat gateway added by default
+                max_azs=2,
                 subnet_configuration=[
                     ec2.SubnetConfiguration(
-                        name="PublicSubnet1", subnet_type=ec2.SubnetType.PUBLIC
-                    )
+                        name=f"{id}-public-subnet1", subnet_type=ec2.SubnetType.PUBLIC
+                    ),
+                    ec2.SubnetConfiguration(
+                        name=f"{id}-public-subnet2", subnet_type=ec2.SubnetType.PUBLIC
+                    ),
+                    ec2.SubnetConfiguration(
+                        name=f"{id}-private-subnet1", subnet_type=ec2.SubnetType.PRIVATE
+                    ),
+                    ec2.SubnetConfiguration(
+                        name=f"{id}-private-subnet2", subnet_type=ec2.SubnetType.PRIVATE
+                    ),
                 ],
             )
         rds_security_group = ec2.SecurityGroup(
@@ -57,34 +81,47 @@ class nasaAPTLambdaStack(core.Stack):
             id=f"{id}-rds-security-group",
             vpc=vpc,
             allow_all_outbound=True,
-            description=f"Security group for {id}-downloader-rds",
+            description=f"Security group for {id}-rds",
+        )
+
+        lambda_security_group = ec2.SecurityGroup(
+            self,
+            id=f"{id}-lambda-security-group",
+            vpc=vpc,
+            allow_all_outbound=True,
+            description=f"Security group for {id}-lambda",
         )
 
         rds_security_group.add_ingress_rule(
-            peer=ec2.Peer.any_ipv4(),
+            peer=lambda_security_group,
             connection=ec2.Port.tcp(5432),
-            description="Allow all traffic for Postgres",
+            description="Allow traffic to Postgres Security Group from Lambda Security Group",
         )
+        if config.GCC_MODE:
+            rds_security_group.add_ingress_rule(
+                peer=ec2.Peer.ipv4(vpc.vpc_cidr_block),
+                connection=ec2.Port.tcp(5432),
+                description="Allow ssh traffic from bastion host EC2 for sqitch deployment",
+            )
 
         # TODO: add bootstrapping lambda as a custom resource to be run by cloudformation
 
-        database = rds.DatabaseInstance(
-            self,
-            f"{id}-postgres-db",
+        rds_params = dict(
             credentials=rds.Credentials.from_generated_secret(
                 username="masteruser", secret_name=f"{id}-database-secrets"
             ),
             allocated_storage=10,
             vpc=vpc,
-            publicly_accessible=True,
             security_groups=[rds_security_group],
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             engine=rds.DatabaseInstanceEngine.POSTGRES,
             # Upgraded to t3 small RDS instance since t2 small no longer
             # supports postgres 13+
             instance_type=ec2.InstanceType.of(
                 ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL
             ),
+            instance_identifier=f"{id}-database",
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            publicly_accessible=True,
             database_name="nasadb",
             backup_retention=core.Duration.days(7),
             deletion_protection=config.STAGE.lower() == "prod",
@@ -92,15 +129,30 @@ class nasaAPTLambdaStack(core.Stack):
             if config.STAGE.lower() == "prod"
             else core.RemovalPolicy.DESTROY,
         )
+        if config.GCC_MODE:
+            rds_params["vpc_subnets"] = ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE
+            )
+            rds_params["publicly_accessible"] = False
+
+        database = rds.DatabaseInstance(self, f"{id}-postgres-db", **rds_params)
 
         core.CfnOutput(
             self,
             f"{id}-database-secret-arn",
             value=database.secret.secret_arn,
-            description="Arn of the SecretsManager instance holding the connection info for Postgres DB",
+            description=(
+                "Arn of the SecretsManager instance holding the connection info for Postgres DB"
+            ),
         )
 
-        bucket_params = dict(scope=self, id=f"{id}")
+        bucket_params = dict(
+            scope=self,
+            id=f"{id}",
+            removal_policy=core.RemovalPolicy.RETAIN
+            if config.STAGE.lower() == "prod"
+            else core.RemovalPolicy.DESTROY,
+        )
         if config.S3_BUCKET:
             bucket_params["bucket_name"] = config.S3_BUCKET
         bucket = s3.Bucket(**bucket_params)
@@ -112,8 +164,8 @@ class nasaAPTLambdaStack(core.Stack):
             capacity=elasticsearch.CapacityConfig(
                 data_node_instance_type="t2.small.elasticsearch", data_nodes=1,
             ),
-            # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in AWS
-            # (and can't start with a `-` character)
+            # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in
+            # AWS (and can't start with a `-` character)
             domain_name=f"{id}-elastic"[-28:].strip("-"),
             ebs=elasticsearch.EbsOptions(
                 enabled=True,
@@ -122,15 +174,11 @@ class nasaAPTLambdaStack(core.Stack):
                 volume_type=ec2.EbsDeviceVolumeType.GP2,
             ),
             automated_snapshot_start_hour=0,
+            removal_policy=core.RemovalPolicy.RETAIN
+            if config.STAGE.lower() == "prod"
+            else core.RemovalPolicy.DESTROY,
         )
-        logs_access = iam.PolicyStatement(
-            actions=[
-                "logs:CreateLogGroup",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents",
-            ],
-            resources=["*"],
-        )
+
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
 
         frontend_url = config.FRONTEND_URL
@@ -159,6 +207,9 @@ class nasaAPTLambdaStack(core.Stack):
             memory_size=memory,
             timeout=core.Duration.seconds(timeout),
             environment=lambda_env,
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
+            security_groups=[lambda_security_group],
         )
 
         if concurrent:
@@ -168,12 +219,11 @@ class nasaAPTLambdaStack(core.Stack):
             self, f"{id}-lambda", **lambda_function_props
         )
         lambda_function.add_to_role_policy(ses_access)
-        lambda_function.add_to_role_policy(logs_access)
         database.secret.grant_read(lambda_function)
         esdomain.grant_read_write(lambda_function)
         bucket.grant_read_write(lambda_function)
-        # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
 
+        # defines an API Gateway Http API resource backed by our custom lambda function.
         api_gateway = apigw.HttpApi(
             self,
             f"{id}-endpoint",
@@ -209,6 +259,10 @@ class nasaAPTLambdaStack(core.Stack):
                 ),
                 email_style=cognito.VerificationEmailStyle.LINK,
             ),
+            sign_in_case_sensitive=False,
+            removal_policy=core.RemovalPolicy.RETAIN
+            if config.STAGE.lower() == "prod"
+            else core.RemovalPolicy.DESTROY,
         )
 
         lambda_function.add_to_role_policy(
@@ -295,7 +349,7 @@ for key, value in {
     "Client": config.CLIENT,
 }.items():
     if value:
-        core.Tag.add(app, key, value)
+        core.Tags.of(app).add(key, value)
 
 
 lambda_stackname = f"{config.PROJECT_NAME}-lambda-{config.STAGE}"
@@ -305,6 +359,10 @@ nasaAPTLambdaStack(
     memory=config.MEMORY,
     timeout=config.TIMEOUT,
     concurrent=config.MAX_CONCURRENT,
+    env=dict(
+        account=os.environ["CDK_DEFAULT_ACCOUNT"],
+        region=os.environ["CDK_DEFAULT_REGION"],
+    ),
 )
 
 app.synth()

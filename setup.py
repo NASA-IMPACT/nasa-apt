@@ -25,8 +25,7 @@ inst_reqs = [
     "pylatex==1.4.1",
     "fastapi_permissions==0.2.7",
     "mangum>=0.9.0",
-    "awslambdaric==1.2.0"
-    # "SQLAlchemy-Utils==0.37.0",
+    "awslambdaric==1.2.0",
 ]
 extra_reqs = {
     "dev": ["pre-commit", "flake8", "black", "mypy", "isort"],

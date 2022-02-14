@@ -62,3 +62,5 @@ S3_BUCKET = os.environ.get("S3_BUCKET")
 NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
     "NOTIFICATIONS_FROM env var required"
 )
+
+GCC_MODE = bool(os.environ.get("GCC_MODE"))
