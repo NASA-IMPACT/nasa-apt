@@ -56,7 +56,7 @@ extra_reqs = {
 
 setup(
     name="nasa_apt",
-    version="2.2.2-beta",
+    version="2.2.3-beta",
     description=u"API for the NASA Algorith Publication Tool",
     long_description=long_description,
     long_description_content_type="text/markdown",
