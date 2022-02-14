@@ -59,14 +59,22 @@ class nasaAPTLambdaStack(core.Stack):
             vpc = ec2.Vpc(
                 self,
                 id=f"{id}-vpc",
-                # nat gateway added by default
+                cidr="10.0.0.0/16",
                 max_azs=2,
+                nat_gateways=1,
+                # nat_gateways=0,
+                # max_azs=1,
                 subnet_configuration=[
                     ec2.SubnetConfiguration(
-                        name=f"{id}-public-subnet1", subnet_type=ec2.SubnetType.PUBLIC
+                        name="public-subnet",
+                        # name="PublicSubnet1",
+                        subnet_type=ec2.SubnetType.PUBLIC,
+                        cidr_mask=24,
                     ),
                     ec2.SubnetConfiguration(
-                        name=f"{id}-private-subnet1", subnet_type=ec2.SubnetType.PRIVATE
+                        name="private-subnet",
+                        subnet_type=ec2.SubnetType.PRIVATE,
+                        cidr_mask=28,
                     ),
                 ],
             )
@@ -122,10 +130,9 @@ class nasaAPTLambdaStack(core.Stack):
             database_name="nasadb",
             backup_retention=core.Duration.days(7),
             deletion_protection=config.STAGE.lower() == "prod",
-            removal_policy=core.RemovalPolicy.SNAPSHOT
-            if config.STAGE.lower() == "prod"
-            else core.RemovalPolicy.DESTROY,
+            removal_policy=core.RemovalPolicy.SNAPSHOT,
         )
+
         if config.GCC_MODE:
             rds_params["vpc_subnets"] = ec2.SubnetSelection(
                 subnet_type=ec2.SubnetType.PRIVATE
