@@ -1,3 +1,4 @@
+"""Utility script for loading existing data from disk to the APT backend."""
 import argparse
 import json
 import re
@@ -56,6 +57,12 @@ secretsmanager_client = boto3.client("secretsmanager")
 
 
 def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
+    """Launches a user import job using a local CSV file. Then queries
+    the newley created users, adding them to the groups they were
+    originally part of, and then returns a mapping containing the old and new
+    user sub for each user. This mapping will be used to replace the user subs
+    in the database file, to appropriately re-assign ATBD, Versions, Comments,
+    etc to their original owners"""
     user_import_job = cognito_client.create_user_import_job(
         JobName=f"{TARGET_STACK_NAME}-user-import",
         UserPoolId=target_user_pool_id,
@@ -140,6 +147,9 @@ def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
 def upload_to_database(
     database_secrets_manager_arn: str, user_mapping: List[Dict]
 ) -> str:
+    """Uploads data from disk to an RDS postgres instance. Uses the
+    provided user_mapping to replace the user subs of data in the local
+    file with the user subs of the newly created users in cognito."""
     with open(SOURCE_DATABASE_DUMP_FILE, "r") as f:
         database_dump = f.read()
 
@@ -186,6 +196,7 @@ def upload_to_database(
 
 
 def upload_s3_bucket_content(s3_bucket_name):
+    """Sync from local file to S3 bucket"""
     subprocess.Popen(
         f"aws s3 sync ./{SOURCE_S3_BUCKET_CONTENTS_DIR} s3://{s3_bucket_name}",
         shell=True,
@@ -196,6 +207,7 @@ def upload_s3_bucket_content(s3_bucket_name):
 
 
 if __name__ == "__main__":
+    """Run migration --> upload"""
 
     stack_resources = cf_client.describe_stack_resources(StackName=TARGET_STACK_NAME)[
         "StackResources"

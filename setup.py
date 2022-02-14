@@ -28,7 +28,7 @@ inst_reqs = [
     "awslambdaric==1.2.0",
 ]
 extra_reqs = {
-    "dev": ["pre-commit", "flake8", "black", "mypy", "isort"],
+    "dev": ["pre-commit", "flake8", "black==21.12b0", "mypy", "isort"],
     "deploy": [
         "python-dotenv",
         "aws-cdk.core>=1.136.0",

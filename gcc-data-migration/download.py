@@ -1,3 +1,4 @@
+"""Utility script for downloading all stateful data from an APT backend stack, in order to migrate it to a new backend."""
 import argparse
 import csv
 import json
@@ -22,6 +23,12 @@ SOURCE_STACK_NAME = args.source_stack_name
 
 
 def serialize_user_pool_users_to_csv(user_pool_id: str) -> str:
+    """Generates 2 files:
+    - a .csv file with user info (but no user subs) to be used in a Cognito user import job
+    - a .json file that contains email, preferred_username and user sub for each user, to
+    be used to replace cognito subs in the database file when uploading database content
+    """
+
     users = []
     for group in ["curator", "contributor"]:
         paginator = cognito_client.get_paginator("list_users_in_group")
@@ -67,6 +74,7 @@ def serialize_user_pool_users_to_csv(user_pool_id: str) -> str:
 
 
 def serialize_postgres_data_to_file(database_secrets_manager_arn: str) -> str:
+    """Download postgres data to disk"""
     secrets = json.loads(
         secretsmanager_client.get_secret_value(SecretId=database_secrets_manager_arn)[
             "SecretString"
@@ -86,6 +94,7 @@ def serialize_postgres_data_to_file(database_secrets_manager_arn: str) -> str:
 
 
 def serialize_s3_bucket_to_local_dir(s3_bucket_name: str) -> str:
+    """Download S3 bucket content to disk"""
 
     subprocess.Popen(
         f"aws s3 sync s3://{s3_bucket_name} ./{s3_bucket_name}-files",
@@ -97,7 +106,7 @@ def serialize_s3_bucket_to_local_dir(s3_bucket_name: str) -> str:
 
 
 if __name__ == "__main__":
-
+    """Run migration --> download"""
     stack_resources = cf_client.describe_stack_resources(StackName=SOURCE_STACK_NAME)[
         "StackResources"
     ]
