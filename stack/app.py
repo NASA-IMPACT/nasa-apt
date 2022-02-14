@@ -66,13 +66,7 @@ class nasaAPTLambdaStack(core.Stack):
                         name=f"{id}-public-subnet1", subnet_type=ec2.SubnetType.PUBLIC
                     ),
                     ec2.SubnetConfiguration(
-                        name=f"{id}-public-subnet2", subnet_type=ec2.SubnetType.PUBLIC
-                    ),
-                    ec2.SubnetConfiguration(
                         name=f"{id}-private-subnet1", subnet_type=ec2.SubnetType.PRIVATE
-                    ),
-                    ec2.SubnetConfiguration(
-                        name=f"{id}-private-subnet2", subnet_type=ec2.SubnetType.PRIVATE
                     ),
                 ],
             )
