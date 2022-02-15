@@ -62,12 +62,9 @@ class nasaAPTLambdaStack(core.Stack):
                 cidr="10.0.0.0/16",
                 max_azs=2,
                 nat_gateways=1,
-                # nat_gateways=0,
-                # max_azs=1,
                 subnet_configuration=[
                     ec2.SubnetConfiguration(
                         name="public-subnet",
-                        # name="PublicSubnet1",
                         subnet_type=ec2.SubnetType.PUBLIC,
                         cidr_mask=24,
                     ),
@@ -78,11 +75,11 @@ class nasaAPTLambdaStack(core.Stack):
                     ),
                 ],
             )
+
         rds_security_group = ec2.SecurityGroup(
             self,
             id=f"{id}-rds-security-group",
             vpc=vpc,
-            # allow_all_outbound=True,
             description=f"Security group for {id}-rds",
         )
 
