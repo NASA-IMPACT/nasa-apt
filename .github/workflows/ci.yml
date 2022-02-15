@@ -68,7 +68,7 @@ jobs:
       - name: Make .env file
         run: |
           cat <<EOF >> .env
-          STAGE=dev
+          STAGE=staging
           API_VERSION_STRING=/v2
           # Frontend Url used to set CORS origin for FastAPI
           APT_FRONTEND_URL=https://nasa-apt.surge.sh
@@ -87,7 +87,7 @@ jobs:
       - name: Bootstrap CDK  
         run: cdk bootstrap
       - name: Deploy stack
-        run: cdk deploy nasa-apt-api-lambda-dev --require-approval never
+        run: cdk deploy nasa-apt-api-lambda-staging --require-approval never
   deploy-prod: 
     needs: [test]
     if: github.event.ref == 'refs/heads/master' 
