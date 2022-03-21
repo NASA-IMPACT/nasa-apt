@@ -100,6 +100,7 @@ def create_new_version(
         major=latest_version.major + 1,
         minor=0,
         status="DRAFT",
+        publication_checklist=latest_version.publication_checklist,
         document=update_document,
         created_by=user.sub,
         last_updated_by=user.sub,

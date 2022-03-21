@@ -212,4 +212,4 @@ The release description should have a [changelog](https://gist.github.com/vgeorg
 
 # License
 
-This project is licensed under **The MIT License (MIT)**, see the [LICENSE](LICENSE.md) file for more details.
+This project is licensed under **The MIT License (MIT)**, see the [LICENSE](LICENSE) file for more details.
