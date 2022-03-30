@@ -486,10 +486,10 @@
     <main class="page__main">
       <h1>Error generating PDF</h1>
 
-      <p>We weren&apos;t able to generate a PDF for <strong>{{ATBD NAME HERE}}</strong></p>
+      <p>We weren&apos;t able to generate a PDF for <strong>{{atbd_title}}</strong></p>
       <p>These are the errors we found:</p>
       <div class="cb">
-        <pre><code>{{print errors lines}}</code></pre>
+        <pre><code>{{parsed_error}}</code></pre>
       </div>
 
       <p>You can:</p>
@@ -497,7 +497,7 @@
         <li>
           Refresh this page as the compiler might be able to resolve certain errors on its own.
         </li>
-        <li>Return to your <a href="{{url to apt frontend}}">ATBD in Algorithm Publication Tool</a></li>
+        <li>Return to your <a href="{{return_link}}">ATBD in Algorithm Publication Tool</a>.</li>
         <li>Report your error through APT&apos;s feedback form if this keeps happening.</li>
       </ol>
 
@@ -506,7 +506,7 @@
           <button class="cb-expand">Click to view the full error output</button>
         </div>
         <div class="cb__body">
-          <pre><code>{{print full error lines}}</code></pre>
+          <pre><code>{{full_error}}</code></pre>
         </div>
       </div>
     </main>
@@ -518,7 +518,7 @@
       const btn = expCb.querySelector('.cb-expand');
       const body = expCb.querySelector('.cb__body');
       body.style.maxHeight = body.scrollHeight + 'px';
-      
+
       expCb.querySelector('.cb-expand').addEventListener('click', function () {
         expCb.classList.toggle('collapsed');
       })

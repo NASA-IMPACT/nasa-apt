@@ -102,7 +102,9 @@ def get_pdf(
     except CalledProcessError as e:
         atbd_link = f"{config.FRONTEND_URL}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
         return HTMLResponse(
-            content=generate_html_content_for_error(error=e, return_link=atbd_link)
+            content=generate_html_content_for_error(
+                error=e, return_link=atbd_link, atbd_title=atbd.title
+            )
         )
 
     return FileResponse(path=local_pdf_filepath, filename=pdf_key.split("/")[-1])

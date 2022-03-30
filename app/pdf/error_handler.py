@@ -335,113 +335,31 @@ class LogCheck(object):
         return int(ms[-1]) + 1
 
 
-STYLE_HTML_COMPONENT = """
-.collapsible {
-  background-color: #777;
-  color: white;
-  cursor: pointer;
-  padding: 18px;
-  width: 100%;
-  border: none;
-  text-align: left;
-  outline: none;
-  font-size: 15px;
-}
-
-.active, .collapsible:hover {
-  background-color: #555;
-}
-
-.collapsible:after {
-  content: '\\002B';
-  color: white;
-  font-weight: bold;
-  float: right;
-  margin-left: 5px;
-}
-
-.active:after {
-  content: "\\2212";
-}
-
-.latex {
-    background-color: #f1f1f1;
-    padding: 0 18px;
-    overflow: hidden;
-}
-
-.content {
-  padding: 0 18px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.2s ease-out;
-  background-color: #f1f1f1;
-}
-"""
-
-# Ew Javascript!
-SCRIPT_HTML_COMPONENT = """
-var coll = document.getElementsByClassName("collapsible");
-var i;
-
-for (i = 0; i < coll.length; i++) {
-coll[i].addEventListener("click", function() {
-    this.classList.toggle("active");
-    var content = this.nextElementSibling;
-    if (content.style.maxHeight){
-    content.style.maxHeight = null;
-    } else {
-    content.style.maxHeight = content.scrollHeight + "px";
-    }
-});
-}"""
-
-
-def generate_html_content_for_error(error: CalledProcessError, return_link: str):
+def generate_html_content_for_error(
+    error: CalledProcessError, return_link: str, atbd_title: str
+):
     """
     Generates an HTML page with error messages extracted from the LaTeX compiler output
     """
 
-    lines = error.output.decode("utf-8", errors="ignore").splitlines()
-    body = "<h3>We're sorry, it looks like we weren't able to generate a PDF for your ATBD</h3>"
+    full_error = error.output.decode("utf-8", errors="ignore").splitlines()
     parser = LogCheck()
-    parser.lines = lines
+    parser.lines = full_error
     errs = list(parser.errors)
+    parsed_errors = (
+        "<p>Unable to parse error message. Please see below for full output</p>"
+    )
     if errs:
-        body += "<h4>Here are errors that we were able to parse from the LaTeX compiler logs: </h4>"
-        error_content = ""
+        parsed_errors = ""
         for e in errs:
             e.setdefault("line", "-")
-            error_content += (
-                f"<p><tt>{e['text']}<br>Line {e['line']}: {e['code']}</tt></p>"
-            )
-        body += f'<div class="latex">{error_content}</div>'
+            parsed_errors += f"<p>{e['text']}<br>Line {e['line']}: {e['code']}</p>"
 
-    body += (
-        f'<h4>Click <a href="{return_link}">here</a> to return to your ATBD in APT. '
+    with open("./app/pdf/error.html", "r") as f:
+        error_html = f.read()
+    return (
+        error_html.replace("{{atbd_title}}", atbd_title)
+        .replace("{{parsed_error}}", parsed_errors)
+        .replace("{{full_error}}", "<br>".join(full_error))
+        .replace("{{return_link}}", return_link)
     )
-    body += "You can also try to refresh this page, the compiler might be able to resolve certain "
-    body += "errors on its own.</h4>"
-
-    body += f"""
-<button class="collapsible">Click here for the full LaTex compiler output</button>
-<div class="content">
-  <p><tt>{'<br>'.join(lines)}</tt</p>
-</div>"""
-
-    return f"""
-<html>
-    <style>
-    {STYLE_HTML_COMPONENT}
-    </style>
-    <head>
-        <title>PDF generation failed</title>
-    </head>
-    <body>
-        {body}
-        <script>
-        {SCRIPT_HTML_COMPONENT}
-        </script>
-    </body>
-</html>
-"""
