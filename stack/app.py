@@ -258,7 +258,7 @@ class nasaAPTLambdaStack(core.Stack):
                     "Please verify you account by clicking on {##Verify Email##}.<br><br>"
                     "Your account only needs to be verified once. If your account "
                     "is already verified, you can return to the "
-                    f"<a href='{frontend_url[:-1] if frontend_url.endswith('/') else frontend_url}/signin'>Algorithm Publication Tool</a> to sign in."
+                    f"<a href='{frontend_url.strip('/')}/signin'>Algorithm Publication Tool</a> to sign in."
                     "<br><br>"
                     "Sincerely,<br>The NASA APT team"
                 ),
