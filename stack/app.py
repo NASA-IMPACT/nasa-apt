@@ -254,9 +254,13 @@ class nasaAPTLambdaStack(core.Stack):
             user_verification=cognito.UserVerificationConfig(
                 # TODO: this email body can contain HTML tags for a better user experience
                 email_body=(
-                    "Thank you for signing up to the Algorithm Publication Tool.<br>Please "
-                    "verify you account by clicking on {##Verify Email##}.<br>Sincerely,"
-                    "<br>The NASA APT team"
+                    "Thank you for signing up to the Algorithm Publication Tool.<br>"
+                    "Please verify you account by clicking on {##Verify Email##}.<br><br>"
+                    "Your account only needs to be verified once. If your account "
+                    "is already verified, you can return to the "
+                    f"<a href='{frontend_url.strip('/')}/signin'>Algorithm Publication Tool</a> to sign in."
+                    "<br><br>"
+                    "Sincerely,<br>The NASA APT team"
                 ),
                 email_style=cognito.VerificationEmailStyle.LINK,
             ),
