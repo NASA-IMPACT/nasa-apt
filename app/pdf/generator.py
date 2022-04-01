@@ -578,12 +578,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     if journal:
         doc.append(Command("begin", arguments="keypoints"))
         for keypoint in document_data["key_points"].split("\n"):
-            # Some people skip 2 lines between each key point,
-            # which creates and extra, blank, bullet in the Key Points
-            # section of the document Title page.
-            if not keypoint:
-                continue
-            doc.append(Command("item", arguments=keypoint))
+            doc.append(Command("item", arguments=keypoint.strip("-") or " "))
         doc.append(Command("end", arguments="keypoints"))
 
     generate_bib_file(

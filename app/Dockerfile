@@ -18,8 +18,6 @@ COPY ./app/ /app/app/
 COPY ./setup.py /app/setup.py
 
 # Style file for AGU journal pdf
-#RUN mkdir -p /usr/share/texlive/texmf-dist/tex/xetex/agujournal2019/
-#COPY ./app/pdf/agujournal2019.cls /usr/share/texlive/texmf-dist/tex/xetex/agujournal2019/
 RUN mkdir -p /usr/share/texlive/texmf-dist/tex/latex/agujournal2019/
 COPY ./app/pdf/agujournal2019.cls /usr/share/texlive/texmf-dist/tex/latex/agujournal2019/
 # register the new .cls file
