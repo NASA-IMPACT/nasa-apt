@@ -559,6 +559,16 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     else:
         doc.append(Command("author", arguments=NoEscape("\\and ".join(authors))))
+        doc.append(
+            Command(
+                "date",
+                arguments=NoEscape(
+                    atbd_version.published_at.strftime("%B %d, %Y")
+                    if atbd_version.published_at
+                    else "{{}}"
+                ),
+            )
+        )
         doc.append(Command("maketitle"))
 
     if not journal:
