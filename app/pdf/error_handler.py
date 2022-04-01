@@ -336,7 +336,12 @@ class LogCheck(object):
 
 
 def generate_html_content_for_error(
-    error: CalledProcessError, return_link: str, atbd_title: str
+    error: CalledProcessError,
+    return_link: str,
+    atbd_id: str,
+    atbd_title: str,
+    atbd_version: str,
+    pdf_type: str,
 ):
     """
     Generates an HTML page with error messages extracted from the LaTeX compiler output
@@ -345,21 +350,25 @@ def generate_html_content_for_error(
     full_error = error.output.decode("utf-8", errors="ignore").splitlines()
     parser = LogCheck()
     parser.lines = full_error
+
     errs = list(parser.errors)
-    parsed_errors = (
+    parsed_errors = [
         "<p>Unable to parse error message. Please see below for full output</p>"
-    )
+    ]
     if errs:
-        parsed_errors = ""
+        parsed_errors = []
         for e in errs:
             e.setdefault("line", "-")
-            parsed_errors += f"<p>{e['text']}<br>Line {e['line']}: {e['code']}</p>"
+            parsed_errors.append(f"{e['text']}<br>Line {e['line']}: {e['code']}")
 
     with open("./app/pdf/error.html", "r") as f:
         error_html = f.read()
     return (
-        error_html.replace("{{atbd_title}}", atbd_title)
-        .replace("{{parsed_error}}", parsed_errors)
-        .replace("{{full_error}}", "<br>".join(full_error))
+        error_html.replace("{{atbd_id}}", str(atbd_id))
+        .replace("{{atbd_title}}", atbd_title)
+        .replace("{{atbd_version}}", atbd_version)
+        .replace("{{pdf_type}}", pdf_type)
+        .replace("{{parsed_error}}", "\n".join(parsed_errors))
+        .replace("{{full_error}}", "\n".join(full_error))
         .replace("{{return_link}}", return_link)
     )

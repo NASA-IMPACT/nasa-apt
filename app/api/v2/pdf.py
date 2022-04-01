@@ -103,7 +103,12 @@ def get_pdf(
         atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
         return HTMLResponse(
             content=generate_html_content_for_error(
-                error=e, return_link=atbd_link, atbd_title=atbd.title
+                error=e,
+                return_link=atbd_link,
+                atbd_id=atbd.id,
+                atbd_title=atbd.title,
+                atbd_version=f"v{atbd_version.major}.{atbd_version.minor}",
+                pdf_type="Journal" if journal else "Regular",
             )
         )
 

@@ -486,10 +486,14 @@
     <main class="page__main">
       <h1>Error generating PDF</h1>
 
-      <p>We weren&apos;t able to generate a PDF for <strong>{{atbd_title}}</strong></p>
+      <p>We weren&apos;t able to generate a PDF for:</p>
       <p>These are the errors we found:</p>
       <div class="cb">
-        <pre><code>{{parsed_error}}</code></pre>
+        <pre><code>Title: {{atbd_title}}
+Version: {{atbd_id}}/{{atbd_version}}
+PDF Type: {{pdf_type}}
+
+{{parsed_error}}</code></pre>
       </div>
 
       <p>You can:</p>
@@ -500,7 +504,8 @@
         <li>Return to your <a href="{{return_link}}">ATBD in Algorithm Publication Tool</a>.</li>
       </ol>
 
-      <p>If this keeps happening, report your error through <a href="{{return_link}}?feedback=true">APT&apos;s feedback form</a> including the action you are trying to complete and the error information above.</p>
+      <p>If this keeps happening, report your error through <a href="{{return_link}}?feedback=true">APT&apos;s feedback
+          form</a> including the error information above.</p>
 
       <div id='full-error' class="cb collapsed" data-expandable>
         <div class="cb__header">
