@@ -706,9 +706,10 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
 
     latex_document.generate_pdf(
         filepath=filepath,
-        # clean=True,
-        # clean_tex=True,
-        clean=False,
+        # XeTeX generates multiple intermediate files (`.aux`, `.log`, etc)
+        # that we want to remove
+        clean=True,
+        # Keep the generated `.tex` file
         clean_tex=False,
         # latexmk automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
@@ -716,9 +717,9 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
         # the `--pdfxe` flag loads the Xelatex pacakge necessary for
         # the compiler to manage image positioning within the pdf document
         # and native unicode character handling
-        compiler_args=["-pdfxe", "-e", "$max_repeat=10"],
-        # silent=True,
-        silent=False,
+        compiler_args=["-pdfxe", "-interaction=batchmode", "-e", "$max_repeat=10"],
+        # Hides compiler output, except in case of error
+        silent=True,
     )
 
     return f"{filepath}.pdf"

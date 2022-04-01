@@ -12,42 +12,41 @@ services:
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
     command: postgres -c log_statement=all
-  
-  bootstrapper: 
+
+  bootstrapper:
     # Sets up the necessary AWS resources in Localstack and 
     # loads fixture data in the database
-    build: 
+    build:
       context: ./
       dockerfile: ./fixture_data/bootstrapper.Dockerfile
     command: "sh fixture_data/setup.sh"
-    volumes: 
+    volumes:
       - ./db:/db
       - ./db:/var/lib/postgresql/data
       - ./fixture_data/:/db/fixture_data
-    environment: 
+    environment:
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
       AWS_DEFAULT_REGION: us-east-1
-      S3_BUCKET: nasa-apt-dev-files  
+      S3_BUCKET: nasa-apt-dev-files
       POSTGRES_DB: nasadb
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
       USER_POOL_NAME: dev-users
       APP_CLIENT_NAME: dev-client
-    depends_on: 
+    depends_on:
       - db-ready
       - localstack-ready
   mail:
     image: namshi/smtp
     restart: always
-    ports: 
+    ports:
       - "25:25"
-    environment: 
+    environment:
       MAILNAME: developmentseed.org
       DISABLE_IPV6: 1
-      
-      
+
   elastic:
     # Elastic db for local development only.
     # For staging/production, add elasticache instance
@@ -61,23 +60,21 @@ services:
       - http.cors.allow-credentials=true
     ports:
       - "9200:9200"
-  
+
   localstack:
     # localstack for local development only. AWS S3 used for staging/production
     image: localstack/localstack:0.12.13
-    #image: localstack/localstack:latest
     environment:
       LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
       SERVICES: s3,secretsmanager,cognito,ses
       DEBUG: 1 # Uncomment to increase localstack logging output
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
-      AWS_DEFAULT_REGION: us-east-1     
+      AWS_DEFAULT_REGION: us-east-1
       EXTRA_CORS_ALLOWED_ORIGINS: http://localhost:9000
-      
     ports:
       - "4566:4566"
-      
+
   api:
     build:
       context: ./
@@ -109,7 +106,7 @@ services:
       ELASTICSEARCH_URL: elastic:9200
       APT_FRONTEND_URL: $APT_FRONTEND_URL
       USER_POOL_NAME: dev-users
-      APP_CLIENT_NAME: dev-client 
+      APP_CLIENT_NAME: dev-client
       NOTIFICATIONS_FROM: no-reply@ds.io
     depends_on:
       - bootstrapper
@@ -125,4 +122,3 @@ services:
     depends_on:
       - localstack
     command: localstack:4566
-  

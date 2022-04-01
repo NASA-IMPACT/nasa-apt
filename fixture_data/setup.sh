@@ -253,38 +253,38 @@ echo "USER POOL ID: ${pool_id}"
 echo "APP CLIENT ID: ${client_id}"
  
 # Create test users (curators, authors, reviewers and an owner)
-curator_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username curator@example.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Carlos Curator"}, {"Name":"email","Value":"curator@example.com"}]' | jq -rc '.User.Username')
-aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username curator@example.com --password Password123! --permanent 
+curator_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username curator@apt.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Carlos Curator"}, {"Name":"email","Value":"curator@apt.com"}]' | jq -rc '.User.Username')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username curator@apt.com --password Password123! --permanent 
 echo "Curator sub: ${curator_sub}"
 
-owner_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username owner@example.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Owner Olivia"}, {"Name":"email","Value":"owner@example.com"}]' | jq -rc '.User.Username')
-aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username owner@example.com --password Password123! --permanent 
-#aws --endpoint-url http://localstack:4566 cognito-idp admin-confirm-sign-up --user-pool-id "${pool_id}"  --username owner@example.com
+owner_sub=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username owner@apt.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Owner Olivia"}, {"Name":"email","Value":"owner@apt.com"}]' | jq -rc '.User.Username')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username owner@apt.com --password Password123! --permanent 
+#aws --endpoint-url http://localstack:4566 cognito-idp admin-confirm-sign-up --user-pool-id "${pool_id}"  --username owner@apt.com
 echo "Owner sub: ${owner_sub}"
 
-author_sub_1=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username author1@example.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Andre Author"}, {"Name":"email","Value":"author1@example.com"}]' | jq -rc '.User.Username')
-aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username author1@example.com --password Password123! --permanent
+author_sub_1=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username author1@apt.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Andre Author"}, {"Name":"email","Value":"author1@apt.com"}]' | jq -rc '.User.Username')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username author1@apt.com --password Password123! --permanent
 echo "Author sub 1: ${author_sub_1}"
 
-author_sub_2=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username author2@example.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Anita Author"}, {"Name":"email","Value":"author2@example.com"}]' | jq -rc '.User.Username')
-aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username author2@example.com --password Password123! --permanent
+author_sub_2=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username author2@apt.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Anita Author"}, {"Name":"email","Value":"author2@apt.com"}]' | jq -rc '.User.Username')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username author2@apt.com --password Password123! --permanent
 echo "Author sub 2: ${author_sub_2}"
 
-author_sub_3=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username author3@example.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Allison Author"}, {"Name":"email","Value":"author3@example.com"}]' | jq -rc '.User.Username')
-aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username author3@example.com --password Password123! --permanent
+author_sub_3=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username author3@apt.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Allison Author"}, {"Name":"email","Value":"author3@apt.com"}]' | jq -rc '.User.Username')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username author3@apt.com --password Password123! --permanent
 echo "Author sub 3: ${author_sub_3}"
 
 
-reviewer_sub_1=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username reviewer1@example.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Ricardo Reviewer"}, {"Name":"email","Value":"reviwer1@example.com"}]' | jq -rc '.User.Username')
-aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username reviewer1@example.com --password Password123! --permanent
+reviewer_sub_1=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username reviewer1@apt.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Ricardo Reviewer"}, {"Name":"email","Value":"reviwer1@apt.com"}]' | jq -rc '.User.Username')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username reviewer1@apt.com --password Password123! --permanent
 echo "Reviwers sub 1: ${reviewer_sub_1}"
 
-reviewer_sub_2=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username reviewer2@example.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Ronald Reviewer"}, {"Name":"email","Value":"reviewer2@example.com"}]' | jq -rc '.User.Username')
-aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username reviewer2@example.com --password Password123! --permanent
+reviewer_sub_2=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username reviewer2@apt.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Ronald Reviewer"}, {"Name":"email","Value":"reviewer2@apt.com"}]' | jq -rc '.User.Username')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username reviewer2@apt.com --password Password123! --permanent
 echo "Reviewer sub 2: ${reviewer_sub_2}"
 
-reviewer_sub_3=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username reviewer3@example.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Rita Reviewer"}, {"Name":"email","Value":"reviewer3@example.com"}]' | jq -rc '.User.Username')
-aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username reviewer3@example.com --password Password123! --permanent
+reviewer_sub_3=$(aws --endpoint-url http://localstack:4566 cognito-idp admin-create-user --user-pool-id ${pool_id} --username reviewer3@apt.com --user-attributes '[{"Name":"email_verified", "Value":"true"},{"Name":"preferred_username","Value":"Rita Reviewer"}, {"Name":"email","Value":"reviewer3@apt.com"}]' | jq -rc '.User.Username')
+aws --endpoint-url http://localstack:4566 cognito-idp admin-set-user-password --user-pool-id "${pool_id}" --username reviewer3@apt.com --password Password123! --permanent
 
 
 
