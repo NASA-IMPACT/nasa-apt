@@ -28,7 +28,7 @@ inst_reqs = [
     "awslambdaric==1.2.0",
 ]
 extra_reqs = {
-    "dev": ["pre-commit", "flake8", "black==21.12b0", "mypy", "isort"],
+    "dev": ["pre-commit", "flake8", "black", "mypy", "isort"],
     "deploy": [
         "python-dotenv",
         "aws-cdk.core>=1.136.0",
@@ -57,7 +57,7 @@ extra_reqs = {
 setup(
     name="nasa_apt",
     version="2.2.3-beta",
-    description=u"API for the NASA Algorith Publication Tool",
+    description="API for the NASA Algorith Publication Tool",
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3",
@@ -69,7 +69,7 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     keywords="",
-    author=u"Development Seed",
+    author="Development Seed",
     author_email="info@developmentseed.org",
     url="https://github.com/developmentseed/nasa-apt",
     license="MIT",

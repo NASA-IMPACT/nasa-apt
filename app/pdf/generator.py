@@ -573,6 +573,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     if not journal:
         doc.append(Command("tableofcontents"))
+        doc.append(Command("newpage"))
 
     if journal:
         doc.append(Command("begin", arguments="keypoints"))
