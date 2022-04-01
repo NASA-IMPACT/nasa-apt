@@ -100,7 +100,7 @@ def get_pdf(
     try:
         local_pdf_filepath = generate_pdf(atbd=atbd, filepath=pdf_key, journal=journal)
     except CalledProcessError as e:
-        atbd_link = f"{config.FRONTEND_URL}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
+        atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
         return HTMLResponse(
             content=generate_html_content_for_error(
                 error=e, return_link=atbd_link, atbd_title=atbd.title
