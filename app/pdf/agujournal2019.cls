@@ -517,25 +517,29 @@
 
 %% Running heads ===>>>
 
-  %% unless we need these, leave these uncommented
-    \let\@mkboth\@gobbletwo
-    \let\chaptermark\@gobble
-    \let\sectionmark\@gobble
-  %%
+  % %% unless we need these, leave these uncommented
+  %   \let\@mkboth\@gobbletwo
+  %   \let\chaptermark\@gobble
+  %   \let\sectionmark\@gobble
+  % %%
 
-\def\ps@headings{\def\@oddfoot{\centerline{\small --\the\c@page--}}
-\let\@evenfoot\@oddfoot
-%% \thejournalname set with \journalname{} command; if not you will get a request to set
-%% the journal name with \journalname{}
-\def\@oddhead{\vbox to 0pt{\vss\centerline{\color{ltgray}\small manuscript
-submitted to {\it \thejournalname}}\vskip24pt}}
-\let\@evenhead\@oddhead
-}
+%% =========================== NOTE: ===================================================
+%% The following `\ps@headings' definition and activation are commented out because they 
+%% have been re-implemented in the PDF generator class. They are implemented there in order 
+%% to make the same custom headings style available to both the regulard and journal PDFs
 
+% \def\ps@headings{\def\@oddfoot{\centerline{\small --\the\c@page--}}
+% \let\@evenfoot\@oddfoot
+% %% \thejournalname set with \journalname{} command; if not you will get a request to set
+% %% the journal name with \journalname{}
+% \def\@oddhead{\vbox to 0pt{\vss\centerline{\color{ltgray}\small manuscript
+% submitted to {\it \thejournalname}}\vskip24pt}}
+% \let\@evenhead\@oddhead
+% }
 
-
-%% After ps@headings is defined, now we use it to activate the definitions
-\ps@headings
+% %% After ps@headings is defined, now we use it to activate the definitions
+% \ps@headings
+%% =========================== / NOTE / ==============================================
 
 %%% Footnotes
 

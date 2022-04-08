@@ -191,8 +191,6 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
         if data.get(option) and e.strip(" ") != "":
             e = command(e)
 
-    # TODO: should this be wrapped with NoEscape?
-
     return NoEscape(e)
 
 
@@ -448,7 +446,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     doc = Document(
         default_filepath=filepath,
         documentclass=Command("documentclass", arguments=document_class),
-        # disable inputenc and fontspec because we are compiling using
+        # disable inputenc and fontenc because we are compiling using
         # xelatex which accepts unicode chars by defaults
         inputenc=None,
         fontenc=None,
@@ -458,10 +456,22 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         lmodern=True,
     )
 
-    for p in ["float", "booktabs", "soul", "longtable", "amsmath", "fontspec"]:
+    for p in [
+        "float",
+        "booktabs",
+        "soul",
+        "longtable",
+        "amsmath",
+        "fontspec",
+        "fancyhdr",
+        "xcolor",
+    ]:
         doc.packages.append(Package(p))
 
     doc.preamble.append(Command("setmainfont", arguments=NoEscape("Latin Modern Math")))
+    doc.preamble.append(
+        Command("definecolor", arguments=["ltgray", "cmyk", ".12,0,0,.3"])
+    )
 
     if not journal:
 
@@ -479,7 +489,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         )
         doc.preamble.append(Command("urlstyle", arguments="same"))
         # The apacite package is added using the `usepackage` command
-        # instead of the `Package()` funciton to ensure that apacite
+        # instead of the `Package()` function to ensure that apacite
         # will be loaded after `hyperref` - with breaks things if the
         # two packages are loaded in the reverse order:
         # https://tex.stackexchange.com/a/316288
@@ -490,12 +500,63 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         doc.packages.append(Package("lineno"))
         doc.preamble.append(Command("linenumbers"))
 
-    doc.append(Command("title", arguments=atbd.title))
+    # TODO: re-implement the following functionality using pylatex's `UnsafeCommand` class.
+    # eg:
+    # new_comm = UnsafeCommand('newcommand', '\exampleCommand', options=3,
+    #                         extra_arguments=r'\color{#1} #2 #3 \color{black}')
+    # doc.append(new_comm)
+    # # Use our newly created command with different arguments
+    # doc.append(ExampleCommand(arguments=Arguments('blue', 'Hello', 'World!')))
 
+    header_content = ""
     if journal:
-        doc.preamble.append(
-            Command("journalname", arguments="American Geophysical Union")
-        )
+        header_content += "\\vss\\centerline{\\color{ltgray}\\small Manuscript submitted to {\\it Earth and Space Science}}"
+        header_content += " \\vss\\centerline{ }"  # ensures line break
+    header_content += "\\vss\\centerline{\\color{ltgray}\\small This ATBD was downloaded from the NASA Algorithm Publication Tool (APT)}"
+
+    header_def = f"""\\makeatletter
+        \\let\\@mkboth\\@gobbletwo
+        \\let\\chaptermark\\@gobble
+        \\let\\sectionmark\\@gobble
+
+
+        \\def\\ps@headings{{
+            \\def\\@oddfoot{{
+                \\centerline{{
+                    \\small --\\the\\c@page--
+                }}
+            }}
+            \\let\\@evenfoot\\@oddfoot
+            \\def\\@oddhead{{\\vbox to 0pt{{{header_content}\\vskip12pt}}}}
+            \\let\\@evenhead\\@oddhead
+        }}
+        \\ps@headings
+
+        \\def\\@maketitle{{
+            \\newpage
+            \\vskip 2em
+            \\begin{{center}}
+                \\let \\footnote \\thanks
+                {{\\LARGE \\@title \\par}}
+                \\vskip 1.5em
+                {{
+                    \\large\\lineskip .5em
+                    \\begin{{tabular}}[t]{{c}}
+                        \\@author
+                    \\end{{tabular}}\\par
+                }}
+                \\vskip 1em
+                {{\\large \\@date}}
+            \\end{{center}}
+            \\par
+            \\vskip 1.5em
+        }}
+
+        \\makeatother
+        """
+    doc.preamble.append(NoEscape(header_def))
+
+    doc.append(Command("title", arguments=atbd.title))
 
     affiliations = []
     authors = []
@@ -565,11 +626,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 arguments=NoEscape(
                     atbd_version.published_at.strftime("%B %d, %Y")
                     if atbd_version.published_at
-                    else "{{}}"
+                    else "{}"
                 ),
             )
         )
-        doc.append(Command("maketitle"))
+        doc.append(Command("makeatletter"))
+        doc.append(Command("@maketitle"))
+        doc.append(Command("makeatother"))
 
     if not journal:
         doc.append(Command("tableofcontents"))
