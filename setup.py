@@ -16,7 +16,6 @@ inst_reqs = [
     "pydantic==1.5.1",
     "requests==2.23.0",
     "requests-aws4auth==1.0",
-    "uvicorn==0.11.3",
     "python-multipart==0.0.5",
     "python-jose==3.2.0",
     "SQLAlchemy==1.3.23",
@@ -28,7 +27,7 @@ inst_reqs = [
     "awslambdaric==1.2.0",
 ]
 extra_reqs = {
-    "dev": ["pre-commit", "flake8", "black", "mypy", "isort"],
+    "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort"],
     "deploy": [
         "python-dotenv",
         "aws-cdk.core>=1.136.0",
