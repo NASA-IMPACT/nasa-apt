@@ -204,6 +204,7 @@ def process_text_content(
     result = []
     for d in data:
         if d.get("type") == "a":
+            print("HYPERLINK: ", hyperlink(d["url"], d["children"][0]["text"]))
             result.append(hyperlink(d["url"], d["children"][0]["text"]))
         elif d.get("type") == "ref":
             result.append(reference(d["refId"]))
@@ -469,31 +470,29 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         doc.packages.append(Package(p))
 
     doc.preamble.append(Command("setmainfont", arguments=NoEscape("Latin Modern Math")))
+
+    # adds a custom light grey colour used for the document heading
     doc.preamble.append(
         Command("definecolor", arguments=["ltgray", "cmyk", ".12,0,0,.3"])
     )
 
-    if not journal:
+    doc.preamble.append(NoEscape("\\PassOptionsToPackage{obeyspaces,hyphens}{url}"))
+    doc.preamble.append(NoEscape("\\usepackage{hyperref}"))
 
-        doc.preamble.append(
-            NoEscape(
-                "\\PassOptionsToPackage{obeyspaces,hyphens}{url}\\usepackage{hyperref}"
-            )
+    doc.preamble.append(
+        Command(
+            "hypersetup",
+            arguments="breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
         )
+    )
+    doc.preamble.append(Command("urlstyle", arguments="same"))
 
-        doc.preamble.append(
-            Command(
-                "hypersetup",
-                arguments="breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
-            )
-        )
-        doc.preamble.append(Command("urlstyle", arguments="same"))
-        # The apacite package is added using the `usepackage` command
-        # instead of the `Package()` function to ensure that apacite
-        # will be loaded after `hyperref` - with breaks things if the
-        # two packages are loaded in the reverse order:
-        # https://tex.stackexchange.com/a/316288
-        doc.preamble.append(Command("usepackage", arguments="apacite"))
+    # The apacite package is added using the `usepackage` command
+    # instead of the `Package()` function to ensure that apacite
+    # will be loaded after `hyperref` - with breaks things if the
+    # two packages are loaded in the reverse order:
+    # https://tex.stackexchange.com/a/316288
+    doc.preamble.append(Command("usepackage", arguments="apacite"))
 
     if journal:
 
