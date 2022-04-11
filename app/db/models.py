@@ -60,7 +60,12 @@ class AtbdVersions(Base):
     """AtbdVersions"""
 
     __tablename__ = "atbd_versions"
-    atbd_id = Column(Integer(), ForeignKey("atbds.id"), primary_key=True, index=True,)
+    atbd_id = Column(
+        Integer(),
+        ForeignKey("atbds.id"),
+        primary_key=True,
+        index=True,
+    )
     major = Column(Integer(), primary_key=True, server_default="1")
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="DRAFT", nullable=False)
@@ -225,8 +230,16 @@ class AtbdVersionsContactsAssociation(Base):
         ),
     )
 
-    atbd_id = Column(Integer(), nullable=False, primary_key=True,)
-    major = Column(Integer(), nullable=False, primary_key=True,)
+    atbd_id = Column(
+        Integer(),
+        nullable=False,
+        primary_key=True,
+    )
+    major = Column(
+        Integer(),
+        nullable=False,
+        primary_key=True,
+    )
 
     contact_id = Column(
         Integer(), ForeignKey("contacts.id"), nullable=False, primary_key=True
@@ -270,8 +283,16 @@ class Threads(Base):
         ),
     )
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
-    atbd_id = Column(Integer(), nullable=False, primary_key=True,)
-    major = Column(Integer(), nullable=False, primary_key=True,)
+    atbd_id = Column(
+        Integer(),
+        nullable=False,
+        primary_key=True,
+    )
+    major = Column(
+        Integer(),
+        nullable=False,
+        primary_key=True,
+    )
     status = Column(String(), server_default="OPEN", nullable=False)
     section = Column(String(), nullable=False)
     created_by = Column(String(), nullable=False)
@@ -317,7 +338,10 @@ class Comments(Base):
     __tablename__ = "comments"
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
     thread_id = Column(
-        Integer(), ForeignKey("threads.id"), primary_key=True, index=True,
+        Integer(),
+        ForeignKey("threads.id"),
+        primary_key=True,
+        index=True,
     )
     created_by = Column(String(), nullable=False)
     created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)

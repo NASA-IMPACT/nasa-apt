@@ -32,7 +32,10 @@ def filter_atbd_versions(principals: List[str], atbd: Atbds, error=True) -> Atbd
 
 
 def check_atbd_permissions(
-    principals: List[str], action: str, atbd: Atbds, all_versions: bool = True,
+    principals: List[str],
+    action: str,
+    atbd: Atbds,
+    all_versions: bool = True,
 ) -> bool:
     """
     Applies a permission check for any action to all of the atbd's versions

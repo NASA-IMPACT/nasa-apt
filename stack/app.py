@@ -163,7 +163,8 @@ class nasaAPTLambdaStack(core.Stack):
             f"{id}-elasticsearch-domain",
             version=elasticsearch.ElasticsearchVersion.V7_7,
             capacity=elasticsearch.CapacityConfig(
-                data_node_instance_type="t2.small.elasticsearch", data_nodes=1,
+                data_node_instance_type="t2.small.elasticsearch",
+                data_nodes=1,
             ),
             # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in
             # AWS (and can't start with a `-` character)
@@ -336,7 +337,8 @@ class nasaAPTLambdaStack(core.Stack):
         )
 
         lambda_function.add_environment(
-            key="USER_POOL_NAME", value=user_pool.node.id,
+            key="USER_POOL_NAME",
+            value=user_pool.node.id,
         )
         lambda_function.add_environment(
             key="APP_CLIENT_NAME", value=app_client.user_pool_client_name
