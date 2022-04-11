@@ -102,7 +102,9 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         serializing the Atbd to the database."""
 
         atbd = Atbds(
-            **atbd_input.dict(), created_by=user_sub, last_updated_by=user_sub,
+            **atbd_input.dict(),
+            created_by=user_sub,
+            last_updated_by=user_sub,
         )
         db.add(atbd)
         db.commit()

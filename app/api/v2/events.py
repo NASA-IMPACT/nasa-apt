@@ -114,7 +114,8 @@ def accept_closed_review_request_handler(
     [version] = atbd.versions
 
     version_input = versions.Update(
-        reviewers=payload["reviewers"], status="CLOSED_REVIEW",
+        reviewers=payload["reviewers"],
+        status="CLOSED_REVIEW",
     )
 
     # performs the validation checks to make sure each of the

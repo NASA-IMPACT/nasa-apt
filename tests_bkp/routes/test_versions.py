@@ -117,17 +117,21 @@ def test_create_version(
 
     # check unauthenticated access
     with pytest.raises(Exception):
-        result = test_client.post(f"/v2/atbds/{atbd.id}/versions",)
+        result = test_client.post(
+            f"/v2/atbds/{atbd.id}/versions",
+        )
         result.raise_for_status()
 
     with pytest.raises(Exception):
         result = test_client.post(
-            "/v2/atbds/999/versions", headers=authenticated_headers,
+            "/v2/atbds/999/versions",
+            headers=authenticated_headers,
         )
         result.raise_for_status()
     with pytest.raises(Exception):
         result = test_client.post(
-            f"/v2/atbds/{atbd.id}/versions", headers=authenticated_headers,
+            f"/v2/atbds/{atbd.id}/versions",
+            headers=authenticated_headers,
         )
         result.raise_for_status()
 
@@ -136,7 +140,8 @@ def test_create_version(
     db_session.commit()
 
     result = test_client.post(
-        f"/v2/atbds/{atbd.id}/versions", headers=authenticated_headers,
+        f"/v2/atbds/{atbd.id}/versions",
+        headers=authenticated_headers,
     )
     result.raise_for_status()
     db_session.refresh(atbd)
@@ -158,12 +163,15 @@ def test_update_version(
 
     # check unauthenticated access
     with pytest.raises(Exception):
-        result = test_client.post(f"/v2/atbds/{atbd.id}/versions/999",)
+        result = test_client.post(
+            f"/v2/atbds/{atbd.id}/versions/999",
+        )
         result.raise_for_status()
 
     with pytest.raises(Exception):
         result = test_client.post(
-            f"/v2/atbds/999/versions/{version.major}", headers=authenticated_headers,
+            f"/v2/atbds/999/versions/{version.major}",
+            headers=authenticated_headers,
         )
         result.raise_for_status()
 
@@ -287,7 +295,8 @@ def test_update_version_contacts(
     assert version.contacts_link[0].roles == "{}"
 
     result = test_client.get(
-        f"/v2/atbds/{atbd.id}/versions/{version.major}", headers=authenticated_headers,
+        f"/v2/atbds/{atbd.id}/versions/{version.major}",
+        headers=authenticated_headers,
     )
 
     result.raise_for_status()
@@ -434,7 +443,11 @@ def test_update_minor_version_number(
 ):
 
     atbd = atbds_factory.create()
-    version = atbd_versions_factory.create(atbd_id=atbd.id, minor=1, status="Draft",)
+    version = atbd_versions_factory.create(
+        atbd_id=atbd.id,
+        minor=1,
+        status="Draft",
+    )
     # check can't bump minor version on un-published Version
     with pytest.raises(Exception):
         result = test_client.post(
@@ -489,15 +502,25 @@ def test_delete_version(
     mocked_validate_cognito_token,
 ):
     atbd = atbds_factory.create()
-    version = atbd_versions_factory.create(atbd_id=atbd.id, minor=1, status="Draft",)
+    version = atbd_versions_factory.create(
+        atbd_id=atbd.id,
+        minor=1,
+        status="Draft",
+    )
     with pytest.raises(Exception):
-        result = test_client.delete(f"/v2/atbds/9999/versions/{version.major}",)
+        result = test_client.delete(
+            f"/v2/atbds/9999/versions/{version.major}",
+        )
         result.raise_for_status()
     with pytest.raises(Exception):
-        result = test_client.delete(f"/v2/atbds/{atbd.id}/versions/9999",)
+        result = test_client.delete(
+            f"/v2/atbds/{atbd.id}/versions/9999",
+        )
         result.raise_for_status()
     with pytest.raises(Exception):
-        result = test_client.delete(f"/v2/atbds/{atbd.id}/versions/{version.major}",)
+        result = test_client.delete(
+            f"/v2/atbds/{atbd.id}/versions/{version.major}",
+        )
         result.raise_for_status()
 
     result = test_client.delete(
@@ -527,7 +550,9 @@ def test_atbd_versions_ordering(
     # versions get returned in order of creation
     for _ in range(10):
 
-        atbd_versions_factory.create(atbd_id=random.choice([atbd1.id, atbd2.id]),)
+        atbd_versions_factory.create(
+            atbd_id=random.choice([atbd1.id, atbd2.id]),
+        )
 
         time.sleep(0.2)
 

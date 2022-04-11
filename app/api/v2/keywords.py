@@ -38,5 +38,9 @@ def gcmd_kms_passthrough(request: Request):
 
     params = {**dict(request.query_params), "format": "json"}
     url = request.url.path.replace(f"{API_VERSION_STRING}/kms/", BASEURL)
-    r = re.request(method=request.method, url=url, params=params,)
+    r = re.request(
+        method=request.method,
+        url=url,
+        params=params,
+    )
     return Response(content=r.content, status_code=r.status_code, headers=r.headers)

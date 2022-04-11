@@ -220,7 +220,8 @@ def atbd_versions_factory(db_session):
         major = factory.Faker("pyint")
         minor = factory.Faker("pyint")
         status = factory.Faker(
-            "random_element", elements=["Draft", "Review", "Published"],
+            "random_element",
+            elements=["Draft", "Review", "Published"],
         )
         document = DOCUMENT
 
@@ -245,7 +246,9 @@ def atbds_factory(db_session):
     class AtbdsFactory(BaseFactory):
         title = factory.Faker("pystr")
         alias = fuzzy.FuzzyText(
-            length=15, prefix="x9-", chars="qwertyuiopasdfghjklzxcvbnm",
+            length=15,
+            prefix="x9-",
+            chars="qwertyuiopasdfghjklzxcvbnm",
         )
         created_by = factory.Faker("pystr")
         last_updated_by = factory.Faker("pystr")
