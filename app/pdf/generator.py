@@ -204,7 +204,6 @@ def process_text_content(
     result = []
     for d in data:
         if d.get("type") == "a":
-            print("HYPERLINK: ", hyperlink(d["url"], d["children"][0]["text"]))
             result.append(hyperlink(d["url"], d["children"][0]["text"]))
         elif d.get("type") == "ref":
             result.append(reference(d["refId"]))
