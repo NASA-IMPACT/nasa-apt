@@ -89,7 +89,11 @@
 
 %% xcolor.sty
 \RequirePackage{xcolor}
-\RequirePackage{url}
+
+%% Comment out the loading of this package as it gets loaded within the 
+%% latex generator class with addition options to ensure that the compiler 
+%% doesn't strip whitespaces from the link text and enables line breaks in the URL
+%\RequirePackage{url}
 
 %% for better track changes
 %\RequirePackage{trackchanges}
@@ -1157,12 +1161,18 @@ width0pt\relax}\\*\noindent\ignorespaces}
 % When using NatBib, this sets brackets for citations:
 %\renewcommand\NAT@open{(} \renewcommand\NAT@close{)}   %xx Parens by default, but not using anyways.  DC
 
-% hyperref MUST be loaded before APACite 
-\PassOptionsToPackage{obeyspaces,hyphens}{url}\RequirePackage{hyperref}
-\urlstyle{same}
-\hypersetup{breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black}%
+%% ================================= NOTE: =========================================================
+%% hyperref and apacite will be loaded in the pdf generator class since they need to be made 
+%% available to both the journal and regular pdfs 
 
-\RequirePackage{apacite}
+%% hyperref MUST be loaded before APACite 
+%\PassOptionsToPackage{obeyspaces,hyphens}{url}\RequirePackage{hyperref}
+%\urlstyle{same}
+%\hypersetup{breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black}%
+
+%\RequirePackage{apacite}
+%% ================================= /NOTE/ =========================================================
+
 %\RequirePackage{natbib}
 \let\cite\shortcite %xx So get et al. with three authors the first time.
 %\let\citep\shortcite %xx A natbib command.
