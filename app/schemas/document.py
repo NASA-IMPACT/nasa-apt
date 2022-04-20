@@ -276,13 +276,13 @@ class DocumentSummary(BaseModel):
     Atbds and AtbdVersions.
     """
 
-    abstract: Optional[str]
+    abstract: Optional[SectionWrapper]
 
 
 class Document(DocumentSummary):
     """Top level `document` node"""
 
-    plain_summary: Optional[str] = ""
+    plain_summary: Optional[SectionWrapper]
     key_points: Optional[str] = ""
     version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
