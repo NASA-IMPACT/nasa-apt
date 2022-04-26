@@ -19,3 +19,5 @@ gcmd_keywords [tables] 2021-11-12T15:34:13Z Leo Thomas <leo@MacBook-Pro.local> #
 contact_affiliations [tables] 2021-11-12T16:33:35Z Leo Thomas <leo@MacBook-Pro.local> # Adds contact affiliations (text[]) to conact_version relation
 drop_contact_roles [contact_roles] 2021-11-15T19:16:45Z Leo Thomas <leo@MacBook-Pro> # Migrates the contact roles to a text array
 @v2.1.0-beta 2021-12-03T15:28:49Z Leo Thomas <leo@MacBook-Pro.lan> # Tag v2.1.0-beta release 2021_12_03
+
+summary_abstract_rich_text 2022-04-26T15:17:32Z Leo Thomas <leo@MacBook-Pro-2.local> # Convert the abstract and plain_summary fields of the document object to rich text objects
