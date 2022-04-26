@@ -351,15 +351,18 @@ def generate_html_content_for_error(
     parser = LogCheck()
     parser.lines = full_error
 
-    errs = list(parser.errors)
-    parsed_errors = [
-        "<p>Unable to parse error message. Please see below for full output</p>"
-    ]
-    if errs:
+    try:
+        parsed_errors = [
+            f"{e['text']}<br>Line {e.get('line', 'UNKOWN')}: error code {e.get('code', 'UNKOWN')}"
+            for e in list(parser.errors)
+        ]
+    except Exception:
         parsed_errors = []
-        for e in errs:
-            e.setdefault("line", "-")
-            parsed_errors.append(f"{e['text']}<br>Line {e['line']}: {e['code']}")
+
+    if not parsed_errors:
+        parsed_errors = [
+            "<p>Unable to parse error message. Please see below for full output</p>"
+        ]
 
     with open("./app/pdf/error.html", "r") as f:
         error_html = f.read()
