@@ -195,6 +195,9 @@ class FullOutput(AtbdVersionSummaryOutput):
             if isinstance(d, _document.EquationNode):
                 return PublicationUnits(images=0, tables=0, words=1)
 
+            if isinstance(d, _document.EquationInlineNode):
+                return PublicationUnits(images=0, tables=0, words=1)
+
             if isinstance(d, _document.TableNode):
                 return PublicationUnits(images=0, tables=1, words=0)
 

@@ -20,6 +20,7 @@ class TypesEnum(str, Enum):
     unordered_list = "ul"
     subsection = "sub-section"
     equation = "equation"
+    equation_inline = "equation-inline"
     image = "img"
     image_block = "image-block"
     table_cell = "td"
@@ -79,11 +80,18 @@ class ReferenceNode(BaseNode):
     refId: str
 
 
+class EquationInlineNode(BaseNode):
+    """Inline Equation WYSIWYG node"""
+
+    type: Literal[TypesEnum.equation_inline]
+    isInline: Optional[bool]
+
+
 class DivNode(BaseNode):
     """Generic text container WYSIWYG node"""
 
     type: Literal[TypesEnum.div]
-    children: List[Union[LinkNode, ReferenceNode, TextLeaf]]
+    children: List[Union[LinkNode, ReferenceNode, TextLeaf, EquationInlineNode]]
 
 
 class OrderedListNode(BaseNode):
@@ -126,6 +134,7 @@ class EquationNode(BaseNode):
     """Equation WYSIWYG node"""
 
     type: Literal[TypesEnum.equation]
+    isInline: Optional[bool]
 
 
 class ImageNode(BaseNode):
