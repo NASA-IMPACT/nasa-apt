@@ -275,6 +275,7 @@ class SectionWrapper(BaseModel):
             TableBlockNode,
             SubsectionNode,
             EquationNode,
+            EquationInlineNode,
             DivNode,
         ]
     ]
