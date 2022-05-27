@@ -84,14 +84,14 @@ class EquationInlineNode(BaseNode):
     """Inline Equation WYSIWYG node"""
 
     type: Literal[TypesEnum.equation_inline]
-    isInline: Optional[bool]
+    # isInline: Optional[bool]
 
 
 class DivNode(BaseNode):
     """Generic text container WYSIWYG node"""
 
     type: Literal[TypesEnum.div]
-    children: List[Union[LinkNode, ReferenceNode, TextLeaf, EquationInlineNode]]
+    children: List[Union[LinkNode, ReferenceNode, EquationInlineNode, TextLeaf]]
 
 
 class OrderedListNode(BaseNode):
@@ -134,7 +134,6 @@ class EquationNode(BaseNode):
     """Equation WYSIWYG node"""
 
     type: Literal[TypesEnum.equation]
-    isInline: Optional[bool]
 
 
 class ImageNode(BaseNode):
@@ -275,7 +274,6 @@ class SectionWrapper(BaseModel):
             TableBlockNode,
             SubsectionNode,
             EquationNode,
-            EquationInlineNode,
             DivNode,
         ]
     ]
@@ -326,7 +324,7 @@ class Document(DocumentSummary):
         "data_access_output_data",
         "data_access_related_urls",
     )
-    def _print(cls, v):
+    def _filter_incomplete_objects(cls, v):
         if not v:
             return []
         # Filter out items that are missing both URL and Description

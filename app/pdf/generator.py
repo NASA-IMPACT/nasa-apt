@@ -195,7 +195,12 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
 
 
 def process_text_content(
-    data: Union[document.TextLeaf, document.ReferenceNode, document.LinkNode]
+    data: Union[
+        document.TextLeaf,
+        document.ReferenceNode,
+        document.LinkNode,
+        document.EquationInlineNode,
+    ]
 ) -> List[NoEscape]:
     """
     Returns a list of text base elements (text, reference or hyperlink)
@@ -207,9 +212,19 @@ def process_text_content(
             result.append(hyperlink(d["url"], d["children"][0]["text"]))
         elif d.get("type") == "ref":
             result.append(reference(d["refId"]))
+        elif d.get("type") == "equation-inline":
+            result.append(NoEscape(f'${d["children"][0]["text"]}$'))
         else:
             result.append(wrap_text(d))
     return result
+
+
+"""
+if data.get("type") == "equation-inline":
+        eq = data["children"][0]["text"].replace("\\\\", "\\")
+        # Wrap equation in a single `$` char to enable inline equation
+        return NoEscape()
+"""
 
 
 def process_data_access_url(access_url: document.DataAccessUrl) -> List[NoEscape]:
@@ -399,13 +414,6 @@ def process(
     if data.get("type") == "equation":
         eq = data["children"][0]["text"].replace("\\\\", "\\")
         return NoEscape(f"\\begin{{equation}}{eq}\\end{{equation}}")
-
-    if data.get("type") == "equation-inline":
-        eq = data["children"][0]["text"].replace("\\\\", "\\")
-        # Wrap equation in a single `$` char to enable inline equation
-        return NoEscape(f"${eq}$")
-
-        # return Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
 
     if data.get("type") == "image-block":
         [img] = filter(lambda d: d["type"] == "img", data["children"])
