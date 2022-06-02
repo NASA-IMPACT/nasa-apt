@@ -139,7 +139,9 @@ def update_atbd(
         principals=principals, action="update", atbd=atbd, all_versions=False
     )
 
-    if atbd.alias != atbd_input.alias and any([v.status == "PUBLISHED" for v in atbd.versions]):
+    if atbd.alias != atbd_input.alias and any(
+        [v.status == "PUBLISHED" for v in atbd.versions]
+    ):
         raise HTTPException(
             status_code=400,
             detail="Update not allowed for an ATBD with a published version",
