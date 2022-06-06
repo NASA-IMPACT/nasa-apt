@@ -219,14 +219,6 @@ def process_text_content(
     return result
 
 
-"""
-if data.get("type") == "equation-inline":
-        eq = data["children"][0]["text"].replace("\\\\", "\\")
-        # Wrap equation in a single `$` char to enable inline equation
-        return NoEscape()
-"""
-
-
 def process_data_access_url(access_url: document.DataAccessUrl) -> List[NoEscape]:
     """
     Returns a list of Latex formatted commands, to be appended in order
