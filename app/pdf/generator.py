@@ -195,7 +195,12 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
 
 
 def process_text_content(
-    data: Union[document.TextLeaf, document.ReferenceNode, document.LinkNode]
+    data: Union[
+        document.TextLeaf,
+        document.ReferenceNode,
+        document.LinkNode,
+        document.EquationInlineNode,
+    ]
 ) -> List[NoEscape]:
     """
     Returns a list of text base elements (text, reference or hyperlink)
@@ -207,6 +212,8 @@ def process_text_content(
             result.append(hyperlink(d["url"], d["children"][0]["text"]))
         elif d.get("type") == "ref":
             result.append(reference(d["refId"]))
+        elif d.get("type") == "equation-inline":
+            result.append(NoEscape(f'${d["children"][0]["text"]}$'))
         else:
             result.append(wrap_text(d))
     return result
@@ -399,8 +406,6 @@ def process(
     if data.get("type") == "equation":
         eq = data["children"][0]["text"].replace("\\\\", "\\")
         return NoEscape(f"\\begin{{equation}}{eq}\\end{{equation}}")
-
-        # return Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
 
     if data.get("type") == "image-block":
         [img] = filter(lambda d: d["type"] == "img", data["children"])
@@ -665,10 +670,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
         if section_name == "abstract":
             doc.append(Command("begin", "abstract"))
-            if not document_data.get(section_name):
-                doc.append("Abstract Unavailable")
-            else:
-                doc.append(document_data[section_name])
+
+            for item in document_data[section_name].get(
+                "children", [CONTENT_UNAVAILABLE]
+            ):
+                doc.append(NoEscape("\n"))
+                doc.append(process(item, atbd_id=atbd.id))
+
             doc.append(Command("end", "abstract"))
             continue
 
@@ -704,9 +712,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             # section header means that no content is needed
             continue
 
-        if section_name == "plain_summary":
-            doc.append(document_data[section_name])
-            continue
+        # if section_name == "plain_summary":
+        #     doc.append(document_data[section_name])
+        #     continue
 
         if section_name == "keywords" and atbd_version.keywords:
             doc.append(Command("begin", arguments="itemize"))

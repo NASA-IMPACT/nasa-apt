@@ -60,6 +60,9 @@ class ElasticsearchAtbdVersion(BaseModel):
             if isinstance(d, _document.EquationNode):
                 return
 
+            if isinstance(d, _document.EquationInlineNode):
+                return
+
             if any(
                 isinstance(d, i)
                 for i in (
