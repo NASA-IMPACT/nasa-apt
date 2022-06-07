@@ -89,6 +89,7 @@ class AtbdVersions(Base):
     reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
     journal_status = Column(String())
     keywords = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
+    locked_by = Column(String(), nullable=True)
 
     def __repr__(self):
         """String representation"""

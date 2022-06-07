@@ -258,6 +258,15 @@ def list_cognito_users(groups="curator,contributor"):
     return (app_users, str(uuid4()))
 
 
+def get_cognito_user(sub: str):
+    client = cognito_client()
+    user = client.admin_get_user(
+        UserPoolId=config.USER_POOL_ID,
+        Username=sub
+    )
+    return user
+
+
 def process_users_input(
     version_input: versions.Update,
     atbd_version: AtbdVersions,

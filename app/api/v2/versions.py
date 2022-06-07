@@ -17,9 +17,10 @@ from app.users.cognito import (
     get_active_user_principals,
     process_users_input,
     update_atbd_contributor_info,
+    get_cognito_user
 )
 
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 router = APIRouter()
 
@@ -247,6 +248,42 @@ def update_atbd_version(
     atbd = update_atbd_contributor_info(principals, atbd)
 
     return atbd
+
+@router.post(
+    "/atbds/{atbd_id}/versions/{version}/lock",
+)
+def lock_atbd_version(
+    atbd_id: str,
+    version: str,
+    db: DbSession = Depends(get_db_session),
+    user: CognitoUser = Depends(require_user),
+    principals=Depends(get_active_user_principals),
+):
+    major, _ = get_major_from_version_string(version)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+
+    atbd_version: AtbdVersions
+    [atbd_version] = atbd.versions
+    version_acl = atbd_version.__acl__()
+
+    check_permissions(
+        principals=principals, action="update", acl=version_acl
+    )
+
+    if (atbd_version.locked_by is not None and not atbd_version.locked_by == user.sub):
+        locking_user = get_cognito_user(atbd_version.locked_by)
+        locking_user_name = list(
+            filter(lambda x: x["Name"] == "preferred_username", locking_user["UserAttributes"])
+        )[0]["Value"]
+
+        raise HTTPException(status_code=409, detail=f"The ATBD version is locked by {locking_user_name}.")
+    else:
+        crud_versions.update(
+            db=db,
+            db_obj=atbd_version,
+            obj_in=versions.LockUpdate(locked_by=user.sub),
+        )
+        return {"detail": "ATBD version successfully locked."}
 
 
 @router.delete(
