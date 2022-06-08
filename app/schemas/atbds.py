@@ -16,12 +16,12 @@ class Update(BaseModel):
     title: Optional[str]
 
     @validator("alias")
-    def _restrict_to_32_chars(cls, v):
-        if len(v) > 32:
+    def _restrict_to_32_chars(cls, alias):
+        if alias and len(alias) > 32:
             raise HTTPException(
                 status_code=400, detail="Alias cannot be longer than 32 characters"
             )
-        return v
+        return alias
 
 
 class Create(BaseModel):
