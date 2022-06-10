@@ -671,7 +671,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         if section_name == "abstract":
             doc.append(Command("begin", "abstract"))
 
-            for item in document_data[section_name].get(
+            for item in document_data.get(section_name, {}).get(
                 "children", [CONTENT_UNAVAILABLE]
             ):
                 doc.append(NoEscape("\n"))
