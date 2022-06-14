@@ -1,13 +1,28 @@
 """CRUD operations for ATBD Versions."""
 
+from sqlalchemy.orm import Session
+
 from app.crud.base import CRUDBase
 from app.db.db_session import DbSession
 from app.db.models import Atbds, AtbdVersions
-from app.schemas.versions import Create, FullOutput, Update
+from app.schemas.versions import Create, FullOutput, Update, LockUpdate
 
 
 class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
     """CRUDVersions"""
+
+    def set_lock(
+        self, db: Session, *, version: AtbdVersions, obj_in: LockUpdate
+    ):
+        """Queries the item in the DB, updates the class's attributes and
+        re-inserts into the DB."""
+        update_data = obj_in.dict(exclude_unset=True, exclude_none=False)
+        setattr(version, 'locked_by', update_data['locked_by'])
+
+        db.add(version)
+        db.commit()
+        db.refresh(version)
+        return version
 
     def delete(self, db: DbSession, atbd: Atbds, version: AtbdVersions):
         """

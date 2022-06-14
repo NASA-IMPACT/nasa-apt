@@ -1,6 +1,7 @@
 """ATBD Versions endpoint."""
 import datetime
 from typing import List
+from sqlalchemy import null
 
 from app.api.utils import get_major_from_version_string
 from app.crud.atbds import crud_atbds
@@ -276,14 +277,74 @@ def lock_atbd_version(
             filter(lambda x: x["Name"] == "preferred_username", locking_user["UserAttributes"])
         )[0]["Value"]
 
-        raise HTTPException(status_code=409, detail=f"The ATBD version is locked by {locking_user_name}.")
+        raise HTTPException(status_code=409, detail=f"{locking_user_name} is currently editing this document.")
     else:
-        crud_versions.update(
+        crud_versions.set_lock(
             db=db,
-            db_obj=atbd_version,
+            version=atbd_version,
             obj_in=versions.LockUpdate(locked_by=user.sub),
         )
         return {"detail": "ATBD version successfully locked."}
+
+
+@router.post(
+    "/atbds/{atbd_id}/versions/{version}/unlock",
+)
+def unlock_atbd_version(
+    atbd_id: str,
+    version: str,
+    db: DbSession = Depends(get_db_session),
+    user: CognitoUser = Depends(require_user),
+    principals=Depends(get_active_user_principals),
+):
+    major, _ = get_major_from_version_string(version)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+
+    atbd_version: AtbdVersions
+    [atbd_version] = atbd.versions
+    version_acl = atbd_version.__acl__()
+
+    check_permissions(
+        principals=principals, action="update", acl=version_acl
+    )
+
+    crud_versions.set_lock(
+        db=db,
+        version=atbd_version,
+        obj_in=versions.LockUpdate(locked_by=user.sub),
+    )
+    return {"detail": "ATBD version successfully locked."}
+
+
+@router.post(
+    "/atbds/{atbd_id}/versions/{version}/clearlock",
+)
+def clearlock_atbd_version(
+    atbd_id: str,
+    version: str,
+    db: DbSession = Depends(get_db_session),
+    user: CognitoUser = Depends(require_user),
+    principals=Depends(get_active_user_principals),
+):
+    major, _ = get_major_from_version_string(version)
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+
+    atbd_version: AtbdVersions
+    [atbd_version] = atbd.versions
+    version_acl = atbd_version.__acl__()
+
+    check_permissions(
+        principals=principals, action="update", acl=version_acl
+    )
+
+    if (atbd_version.locked_by is not None and atbd_version.locked_by == user.sub):
+        crud_versions.set_lock(
+            db=db,
+            version=atbd_version,
+            obj_in=versions.LockUpdate(locked_by=None),  # TODO: How to set a value to NULL?
+        )
+
+    return {"detail": "Lock on ATBD version successfully cleared."}
 
 
 @router.delete(

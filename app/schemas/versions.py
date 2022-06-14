@@ -341,4 +341,4 @@ class AdminUpdate(Update):
 
 
 class LockUpdate(BaseModel):
-    locked_by: str
+    locked_by: Union[str, None]
