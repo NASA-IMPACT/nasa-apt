@@ -110,6 +110,9 @@ class AtbdVersions(Base):
         acl = []
         for grantee, actions in acls.ATBD_VERSION_ACLS.items():
 
+            if grantee == "lock_owner":
+                grantee = f"user:{self.locked_by}"
+
             if grantee == "owner":
                 grantee = f"user:{self.owner}"
 
@@ -121,8 +124,9 @@ class AtbdVersions(Base):
 
             for action in actions:
 
-                if action.get("status") and self.status not in action["status"]:
-                    continue
+                for key, allowed_values in actions.get("conditions", {}).items():
+                    if not getattr(self, key) in allowed_values:
+                        continue
 
                 permission = (
                     fastapi_permissions.Deny

@@ -89,7 +89,7 @@ def update_user_info(
                 principals=principals,
                 action=f"view_{contributor_type}",
                 acl=version_acl,
-                error=False,
+                raise_exception=False,
             ):
                 setattr(data_model, attr, app_users[user_sub].dict(by_alias=True))
             else:
@@ -151,7 +151,10 @@ def update_version_contributor_info(principals: List[str], version: AtbdVersions
     )
 
     if check_permissions(
-        principals=principals, action="view_owner", acl=version_acl, error=False
+        principals=principals,
+        action="view_owner",
+        acl=version_acl,
+        raise_exception=False,
     ):
         version.owner = app_users[version.owner].dict(by_alias=True)
 
@@ -161,7 +164,10 @@ def update_version_contributor_info(principals: List[str], version: AtbdVersions
         )
 
     if check_permissions(
-        principals=principals, action="view_authors", acl=version_acl, error=False
+        principals=principals,
+        action="view_authors",
+        acl=version_acl,
+        raise_exception=False,
     ):
 
         version.authors = [
@@ -176,7 +182,10 @@ def update_version_contributor_info(principals: List[str], version: AtbdVersions
         ]
 
     if check_permissions(
-        principals=principals, action="view_reviewers", acl=version_acl, error=False
+        principals=principals,
+        action="view_reviewers",
+        acl=version_acl,
+        raise_exception=False,
     ):
 
         version.reviewers = [
@@ -259,12 +268,10 @@ def list_cognito_users(groups="curator,contributor"):
 
 
 def get_cognito_user(sub: str):
+    """Returns a single user from cognito"""
     client = cognito_client()
-    user = client.admin_get_user(
-        UserPoolId=config.USER_POOL_ID,
-        Username=sub
-    )
-    return user
+    user = client.admin_get_user(UserPoolId=config.USER_POOL_ID, Username=sub)
+    return users.CognitoUser(user)
 
 
 def process_users_input(

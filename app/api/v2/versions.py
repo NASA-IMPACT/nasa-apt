@@ -1,7 +1,8 @@
 """ATBD Versions endpoint."""
 import datetime
 from typing import List
-from sqlalchemy import null
+
+from numpy import require
 
 from app.api.utils import get_major_from_version_string
 from app.crud.atbds import crud_atbds
@@ -16,9 +17,9 @@ from app.search.elasticsearch import remove_atbd_from_index
 from app.users.auth import get_user, require_user
 from app.users.cognito import (
     get_active_user_principals,
+    get_cognito_user,
     process_users_input,
     update_atbd_contributor_info,
-    get_cognito_user
 )
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -241,7 +242,7 @@ def update_atbd_version(
         obj_in=versions.AdminUpdate(
             **version_input.dict(),
             last_updated_by=user.sub,
-            last_updated_at=datetime.datetime.now(datetime.timezone.utc)
+            last_updated_at=datetime.datetime.now(datetime.timezone.utc),
         ),
     )
 
@@ -250,101 +251,109 @@ def update_atbd_version(
 
     return atbd
 
-@router.post(
-    "/atbds/{atbd_id}/versions/{version}/lock",
-)
-def lock_atbd_version(
+
+@router.put("/atbds/{atbd_id}/versions/{version}/lock")
+def secure_atbd_version_lock(
     atbd_id: str,
     version: str,
     db: DbSession = Depends(get_db_session),
-    user: CognitoUser = Depends(require_user),
+    user: CognitoUser = Depends(require),
     principals=Depends(get_active_user_principals),
 ):
+    """
+    Sets locked_by field of ATBD Version to current user.
+    Succeeds if either the `locked_by` field is empty or already belongs
+    to the user requesting the operation.
+    Raises an exception if the `locked_by` field belongs to a different user
+    """
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
 
     atbd_version: AtbdVersions
     [atbd_version] = atbd.versions
-    version_acl = atbd_version.__acl__()
 
-    check_permissions(
-        principals=principals, action="update", acl=version_acl
-    )
-
-    if (atbd_version.locked_by is not None and not atbd_version.locked_by == user.sub):
-        locking_user = get_cognito_user(atbd_version.locked_by)
-        locking_user_name = list(
-            filter(lambda x: x["Name"] == "preferred_username", locking_user["UserAttributes"])
-        )[0]["Value"]
-
-        raise HTTPException(status_code=409, detail=f"{locking_user_name} is currently editing this document.")
-    else:
-        crud_versions.set_lock(
-            db=db,
-            version=atbd_version,
-            obj_in=versions.LockUpdate(locked_by=user.sub),
+    if not check_permissions(
+        principals=principals,
+        action="secure_lock",
+        acl=atbd_version.__acl__(),
+        raise_exception=False,
+    ):
+        # return exception
+        lock_owner = get_cognito_user(atbd_version.locked_by)
+        raise HTTPException(
+            status_code=423,
+            detail={
+                "message": f"ATBD Version locked, {lock_owner.preferred_username} ({lock_owner.email}) is currently editing this document",
+                "lock_owner": {
+                    "email": lock_owner.email,
+                    "preferred_username": lock_owner.preferred_username,
+                },
+            },
         )
-        return {"detail": "ATBD version successfully locked."}
 
-
-@router.post(
-    "/atbds/{atbd_id}/versions/{version}/unlock",
-)
-def unlock_atbd_version(
-    atbd_id: str,
-    version: str,
-    db: DbSession = Depends(get_db_session),
-    user: CognitoUser = Depends(require_user),
-    principals=Depends(get_active_user_principals),
-):
-    major, _ = get_major_from_version_string(version)
-    atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
-
-    atbd_version: AtbdVersions
-    [atbd_version] = atbd.versions
-    version_acl = atbd_version.__acl__()
-
-    check_permissions(
-        principals=principals, action="update", acl=version_acl
-    )
-
-    crud_versions.set_lock(
+    crud_versions.update(
         db=db,
-        version=atbd_version,
-        obj_in=versions.LockUpdate(locked_by=user.sub),
+        db_obj=atbd_version,
+        obj_in=versions.Update(**atbd_version.dict(), locked_by=user.sub),
     )
-    return {"detail": "ATBD version successfully locked."}
+    # TODO: this returned object (and the exception above) should be typed objects (pydantic)
+    return {
+        "lock_owner": {
+            "email": user.email,
+            "preferred_username": user.preferred_username,
+        }
+    }
 
 
-@router.post(
-    "/atbds/{atbd_id}/versions/{version}/clearlock",
-)
-def clearlock_atbd_version(
+@router.delete("/atbds/{atbd_id}/versions/{version}/lock")
+def release_atbd_version_lock(
     atbd_id: str,
     version: str,
+    override: bool = False,
     db: DbSession = Depends(get_db_session),
-    user: CognitoUser = Depends(require_user),
+    user: CognitoUser = Depends(require),
     principals=Depends(get_active_user_principals),
 ):
+    """
+    Sets ATBD Version lock back to None.
+    Returns 200 if the ATBD Version lock belongs to the user AND
+    the `override` flag IS NOT set to True
+    Returns 200 if the ATBD Version lock DOES NOT belong to the user
+    AND the `override` flag IS set to True
+    Raises exception if the ATBD Version lock belongs to a different
+    user AND the override flag is not set to True
+    """
     major, _ = get_major_from_version_string(version)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
 
     atbd_version: AtbdVersions
     [atbd_version] = atbd.versions
-    version_acl = atbd_version.__acl__()
 
-    check_permissions(
-        principals=principals, action="update", acl=version_acl
-    )
-
-    if (atbd_version.locked_by is not None and atbd_version.locked_by == user.sub):
-        crud_versions.set_lock(
-            db=db,
-            version=atbd_version,
-            obj_in=versions.LockUpdate(locked_by=None),  # TODO: How to set a value to NULL?
+    if not override and not check_permissions(
+        principals=principals,
+        action="release_lock",
+        acl=atbd_version.__acl__(),
+        raise_exception=False,
+    ):
+        # return exception
+        lock_owner = get_cognito_user(atbd_version.locked_by)
+        raise HTTPException(
+            status_code=423,
+            detail={
+                "message": f"ATBD Version locked, {lock_owner.preferred_username} ({lock_owner.email}) is currently editing this document",
+                "lock_owner": {
+                    "email": lock_owner.email,
+                    "preferred_username": lock_owner.preferred_username,
+                },
+            },
         )
 
-    return {"detail": "Lock on ATBD version successfully cleared."}
+    crud_versions.update(
+        db=db,
+        db_obj=atbd_version,
+        obj_in=versions.Update(**atbd_version.dict(), locked_by=None),
+    )
+    return {}
 
 
 @router.delete(

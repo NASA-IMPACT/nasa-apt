@@ -1,23 +1,25 @@
 """CRUD operations for ATBD Versions."""
 
+from typing import Union
+
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
 from app.db.db_session import DbSession
 from app.db.models import Atbds, AtbdVersions
-from app.schemas.versions import Create, FullOutput, Update, LockUpdate
+from app.schemas.versions import Create, FullOutput, Update
 
 
 class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
     """CRUDVersions"""
 
     def set_lock(
-        self, db: Session, *, version: AtbdVersions, obj_in: LockUpdate
+        self, db: Session, *, version: AtbdVersions, locked_by: Union[str, None]
     ):
-        """Queries the item in the DB, updates the class's attributes and
-        re-inserts into the DB."""
-        update_data = obj_in.dict(exclude_unset=True, exclude_none=False)
-        setattr(version, 'locked_by', update_data['locked_by'])
+        """Custom method used instead of CRUDBase update, which ignores
+        None type fields"""
+
+        version.locked_by = locked_by
 
         db.add(version)
         db.commit()
