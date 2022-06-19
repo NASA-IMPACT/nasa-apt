@@ -31,6 +31,7 @@ def list_atbds(
 ):
     """Lists all ATBDs with summary version info (only versions with status
     `Published` will be displayed if the user is not logged in)"""
+
     if role:
         if not user:
             raise HTTPException(

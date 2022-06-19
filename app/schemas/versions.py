@@ -323,7 +323,6 @@ class Update(BaseModel):
     authors: Optional[List[str]]
     reviewers: Optional[List[str]]
     journal_status: Optional[JournalStatusEnum]
-    locked_by: Optional[str]
 
 
 class AdminUpdate(Update):
@@ -339,3 +338,16 @@ class AdminUpdate(Update):
     # since from the API side, each reviewer should have
     # a review status associated with their user sub
     reviewers: Optional[List[Dict[str, str]]]  # type: ignore
+
+
+class LockOwner(BaseModel):
+    """Lock owner model"""
+
+    email: str
+    preferred_username: str
+
+
+class LockOutput(BaseModel):
+    """Output for lock owner query"""
+
+    locked_by: LockOwner

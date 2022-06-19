@@ -27,6 +27,7 @@ def filter_atbd_versions(
             raise_exception=False,
         )
     ]
+
     if not versions:
         if not raise_exception:
             return None

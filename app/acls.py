@@ -4,9 +4,6 @@ from typing import Dict, List, Tuple
 import fastapi_permissions
 
 ATBD_VERSION_ACLS: Dict = {
-    fastapi_permissions.Everyone: [
-        {"action": "view", "conditions": {"status": "PUBLISHED"}}
-    ],
     "owner": [
         {"action": "view"},
         {"action": "delete", "conditions": {"status": ["DRAFT"]}},
@@ -35,19 +32,20 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "join_authors", "deny": True},
         {"action": "edit"},
         {"action": "offer_ownership"},
-        {
-            "action": "update",
-            "conditions": {
-                "status": [
-                    "DRAFT",
-                    "CLOSED_REVIEW_REQUESTED",
-                    "OPEN_REVIEW",
-                    "PUBLICATION_REQUESTED",
-                    "PUBLICATION",
-                    "PUBLISHED",
-                ],
-            },
-        },
+        # {
+        #     "action": "update",
+        #     "conditions": {
+        #         "locked_by": [None],
+        #         "status": [
+        #             "DRAFT",
+        #             "CLOSED_REVIEW_REQUESTED",
+        #             "OPEN_REVIEW",
+        #             "PUBLICATION_REQUESTED",
+        #             "PUBLICATION",
+        #             "PUBLISHED",
+        #         ],
+        #     },
+        # },
         {
             "action": "secure_lock",
             "conditions": {
@@ -75,19 +73,20 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "view"},
         {"action": "comment"},
         {"action": "edit"},
-        {
-            "action": "update",
-            "conditions": {
-                "status": [
-                    "DRAFT",
-                    "CLOSED_REVIEW_REQUESTED",
-                    "OPEN_REVIEW",
-                    "PUBLICATION_REQUESTED",
-                    "PUBLICATION",
-                    "PUBLISHED",
-                ],
-            },
-        },
+        # {
+        #     "action": "update",
+        #     "conditions": {
+        #         "locked_by": [None],
+        #         "status": [
+        #             "DRAFT",
+        #             "CLOSED_REVIEW_REQUESTED",
+        #             "OPEN_REVIEW",
+        #             "PUBLICATION_REQUESTED",
+        #             "PUBLICATION",
+        #             "PUBLISHED",
+        #         ],
+        #     },
+        # },
         {
             "action": "secure_lock",
             "conditions": {
@@ -129,6 +128,19 @@ ATBD_VERSION_ACLS: Dict = {
         # granted `secure_lock`, as the lock owner
         {"action": "secure_lock"},
         {"action": "release_lock"},
+        {
+            "action": "update",
+            "conditions": {
+                "status": [
+                    "DRAFT",
+                    "CLOSED_REVIEW_REQUESTED",
+                    "OPEN_REVIEW",
+                    "PUBLICATION_REQUESTED",
+                    "PUBLICATION",
+                    "PUBLISHED",
+                ],
+            },
+        },
     ],
     "reviewers": [
         {"action": "view"},
@@ -196,6 +208,9 @@ ATBD_VERSION_ACLS: Dict = {
             "conditions": {"status": ["PUBLICATION_REQUESTED"]},
         },
         {"action": "publish", "conditions": {"status": ["PUBLICATION"]}},
+    ],
+    fastapi_permissions.Everyone: [
+        {"action": "view", "conditions": {"status": ["PUBLISHED"]}}
     ],
 }
 

@@ -124,15 +124,15 @@ class AtbdVersions(Base):
 
             for action in actions:
 
-                for key, allowed_values in actions.get("conditions", {}).items():
-                    if not getattr(self, key) in allowed_values:
-                        continue
+                permission = fastapi_permissions.Deny
 
-                permission = (
-                    fastapi_permissions.Deny
-                    if action.get("deny")
-                    else fastapi_permissions.Allow
-                )
+                if not action.get("deny") and all(
+                    [
+                        getattr(self, key) in allowed_values
+                        for key, allowed_values in action.get("conditions", {}).items()
+                    ]
+                ):
+                    permission = fastapi_permissions.Allow
 
                 if isinstance(grantee, str):
                     acl.append((permission, grantee, action["action"]))

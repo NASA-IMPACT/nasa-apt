@@ -20,11 +20,10 @@ class CRUDVersions(CRUDBase[AtbdVersions, FullOutput, Create, Update]):
         None type fields"""
 
         version.locked_by = locked_by
-
         db.add(version)
         db.commit()
         db.refresh(version)
-        return version
+        return {}
 
     def delete(self, db: DbSession, atbd: Atbds, version: AtbdVersions):
         """

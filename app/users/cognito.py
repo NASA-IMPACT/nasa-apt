@@ -20,7 +20,6 @@ from fastapi import BackgroundTasks, Depends
 def get_active_user_principals(user: users.User = Depends(get_user)) -> List[str]:
     """Returns the principals for a user, to be used when validating permissions
     to perform certain actions or requests"""
-
     principals = [permissions.Everyone]
     if user:
         principals.extend([permissions.Authenticated, f"user:{user.sub}"])
@@ -271,7 +270,9 @@ def get_cognito_user(sub: str):
     """Returns a single user from cognito"""
     client = cognito_client()
     user = client.admin_get_user(UserPoolId=config.USER_POOL_ID, Username=sub)
-    return users.CognitoUser(user)
+    print("USER: ", user)
+    print("KEYS: ", user.keys())
+    return users.CognitoUser(**user)
 
 
 def process_users_input(

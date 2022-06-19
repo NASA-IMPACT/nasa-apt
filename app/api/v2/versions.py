@@ -2,8 +2,6 @@
 import datetime
 from typing import List
 
-from numpy import require
-
 from app.api.utils import get_major_from_version_string
 from app.crud.atbds import crud_atbds
 from app.crud.contacts import crud_contacts_associations
@@ -252,12 +250,14 @@ def update_atbd_version(
     return atbd
 
 
-@router.put("/atbds/{atbd_id}/versions/{version}/lock")
+@router.put(
+    "/atbds/{atbd_id}/versions/{version}/lock", response_model=versions.LockOutput
+)
 def secure_atbd_version_lock(
     atbd_id: str,
     version: str,
     db: DbSession = Depends(get_db_session),
-    user: CognitoUser = Depends(require),
+    user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
     """
@@ -280,6 +280,7 @@ def secure_atbd_version_lock(
     ):
         # return exception
         lock_owner = get_cognito_user(atbd_version.locked_by)
+
         raise HTTPException(
             status_code=423,
             detail={
@@ -291,14 +292,9 @@ def secure_atbd_version_lock(
             },
         )
 
-    crud_versions.update(
-        db=db,
-        db_obj=atbd_version,
-        obj_in=versions.Update(**atbd_version.dict(), locked_by=user.sub),
-    )
-    # TODO: this returned object (and the exception above) should be typed objects (pydantic)
+    crud_versions.set_lock(db, version=atbd_version, locked_by=user.sub)
     return {
-        "lock_owner": {
+        "locked_by": {
             "email": user.email,
             "preferred_username": user.preferred_username,
         }
@@ -311,7 +307,7 @@ def release_atbd_version_lock(
     version: str,
     override: bool = False,
     db: DbSession = Depends(get_db_session),
-    user: CognitoUser = Depends(require),
+    user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
     """
@@ -335,7 +331,6 @@ def release_atbd_version_lock(
         acl=atbd_version.__acl__(),
         raise_exception=False,
     ):
-        # return exception
         lock_owner = get_cognito_user(atbd_version.locked_by)
         raise HTTPException(
             status_code=423,

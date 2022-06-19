@@ -39,6 +39,10 @@ class CognitoUser(AnonymousUser):
 
     @root_validator(pre=True)
     def _unpack_attributes(cls, values):
+        # list_users_in_group response model has user attributes
+        # under `Attributes` whereas the admin_get_user response model
+        # lists user attributes under `UserAttributes`. TODO: check
+        # which key contains the user attributes and handle accordingly
         if "Attributes" not in values:
             return values
 
