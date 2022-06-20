@@ -4,6 +4,31 @@ from typing import Dict, List, Tuple
 import fastapi_permissions
 
 ATBD_VERSION_ACLS: Dict = {
+    "lock_owner": [
+        # grant `secure_lock` to the lock owner to ensure idempotency of the
+        # PUT /lock operation (lock owner should be able to request secure the
+        # lock on an ATBD version lock they already own withour raising an
+        # exception). The permissions will be granted sequentially, so
+        # the lock_owner, who is also part of the "authors" or "owners" group
+        # fill first be granted `secure_lock` only if the locked_by field is
+        # None (which it isn't, since they've locked it), and then will be
+        # granted `secure_lock`, as the lock owner
+        {"action": "secure_lock"},
+        {"action": "release_lock"},
+        {
+            "action": "update",
+            "conditions": {
+                "status": [
+                    "DRAFT",
+                    "CLOSED_REVIEW_REQUESTED",
+                    "OPEN_REVIEW",
+                    "PUBLICATION_REQUESTED",
+                    "PUBLICATION",
+                    "PUBLISHED",
+                ],
+            },
+        },
+    ],
     "owner": [
         {"action": "view"},
         {"action": "delete", "conditions": {"status": ["DRAFT"]}},
@@ -116,31 +141,6 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "view_curators"},
         {"action": "view_comments"},
         {"action": "comment"},
-    ],
-    "lock_owner": [
-        # grant `secure_lock` to the lock owner to ensure idempotency of the
-        # PUT /lock operation (lock owner should be able to request secure the
-        # lock on an ATBD version lock they already own withour raising an
-        # exception). The permissions will be granted sequentially, so
-        # the lock_owner, who is also part of the "authors" or "owners" group
-        # fill first be granted `secure_lock` only if the locked_by field is
-        # None (which it isn't, since they've locked it), and then will be
-        # granted `secure_lock`, as the lock owner
-        {"action": "secure_lock"},
-        {"action": "release_lock"},
-        {
-            "action": "update",
-            "conditions": {
-                "status": [
-                    "DRAFT",
-                    "CLOSED_REVIEW_REQUESTED",
-                    "OPEN_REVIEW",
-                    "PUBLICATION_REQUESTED",
-                    "PUBLICATION",
-                    "PUBLISHED",
-                ],
-            },
-        },
     ],
     "reviewers": [
         {"action": "view"},

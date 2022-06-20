@@ -325,6 +325,12 @@ def release_atbd_version_lock(
     atbd_version: AtbdVersions
     [atbd_version] = atbd.versions
 
+    # return 200 + empty object is no lock exists to ensure idempotency
+    # of delete request (ie: can make the same call multiple times with
+    # the same)
+    if atbd_version.locked_by is None:
+        return {}
+
     if not override and not check_permissions(
         principals=principals,
         action="release_lock",
@@ -343,11 +349,7 @@ def release_atbd_version_lock(
             },
         )
 
-    crud_versions.update(
-        db=db,
-        db_obj=atbd_version,
-        obj_in=versions.Update(**atbd_version.dict(), locked_by=None),
-    )
+    crud_versions.set_lock(db, version=atbd_version, locked_by=None)
     return {}
 
 
@@ -370,6 +372,7 @@ def delete_atbd_version(
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     atbd_version: AtbdVersions
     [atbd_version] = atbd.versions
+
     check_permissions(
         principals=principals, action="delete", acl=atbd_version.__acl__()
     )

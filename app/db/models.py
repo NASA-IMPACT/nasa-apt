@@ -109,7 +109,6 @@ class AtbdVersions(Base):
 
         acl = []
         for grantee, actions in acls.ATBD_VERSION_ACLS.items():
-
             if grantee == "lock_owner":
                 grantee = f"user:{self.locked_by}"
 

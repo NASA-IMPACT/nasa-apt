@@ -270,8 +270,6 @@ def get_cognito_user(sub: str):
     """Returns a single user from cognito"""
     client = cognito_client()
     user = client.admin_get_user(UserPoolId=config.USER_POOL_ID, Username=sub)
-    print("USER: ", user)
-    print("KEYS: ", user.keys())
     return users.CognitoUser(**user)
 
 

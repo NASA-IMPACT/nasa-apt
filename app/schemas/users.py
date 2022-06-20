@@ -41,12 +41,19 @@ class CognitoUser(AnonymousUser):
     def _unpack_attributes(cls, values):
         # list_users_in_group response model has user attributes
         # under `Attributes` whereas the admin_get_user response model
-        # lists user attributes under `UserAttributes`. TODO: check
-        # which key contains the user attributes and handle accordingly
-        if "Attributes" not in values:
+        # lists user attributes under `UserAttributes`. The following
+        # line searches through the provided values, searching for
+        # either the `Attribuets` or the `UserAttributes` key to then
+        # use to reformat the values of the data model.
+
+        user_attributes_key = next(
+            (k for k in values.keys() if k in ["Attributes", "UserAttributes"]), None
+        )
+
+        if not user_attributes_key:
             return values
 
-        for attribute in values["Attributes"]:
+        for attribute in values[user_attributes_key]:
             if attribute["Name"] in [
                 "email",
                 "sub",
