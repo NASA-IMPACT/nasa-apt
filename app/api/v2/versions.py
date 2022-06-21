@@ -257,6 +257,7 @@ def secure_atbd_version_lock(
     atbd_id: str,
     version: str,
     db: DbSession = Depends(get_db_session),
+    override: bool = False,
     user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
 ):
@@ -272,7 +273,7 @@ def secure_atbd_version_lock(
     atbd_version: AtbdVersions
     [atbd_version] = atbd.versions
 
-    if not check_permissions(
+    if not override and not check_permissions(
         principals=principals,
         action="secure_lock",
         acl=atbd_version.__acl__(),
@@ -305,7 +306,6 @@ def secure_atbd_version_lock(
 def release_atbd_version_lock(
     atbd_id: str,
     version: str,
-    override: bool = False,
     db: DbSession = Depends(get_db_session),
     user: CognitoUser = Depends(require_user),
     principals=Depends(get_active_user_principals),
@@ -331,7 +331,7 @@ def release_atbd_version_lock(
     if atbd_version.locked_by is None:
         return {}
 
-    if not override and not check_permissions(
+    if not check_permissions(
         principals=principals,
         action="release_lock",
         acl=atbd_version.__acl__(),
