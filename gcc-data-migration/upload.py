@@ -96,9 +96,11 @@ def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
         resp = cognito_client.describe_user_import_job(
             UserPoolId=target_user_pool_id, JobId=user_import_job["JobId"]
         )["UserImportJob"]
-
+    
     if not resp["Status"] == "Succeeded":
         raise Exception("User import job FAILED: ", resp)
+
+    print(f"User import job finished. Imported users: {resp['ImportedUsers']}, skipped: {resp['SkippedUsers']}, failed: {resp['FailedUsers']}")
 
     resp = cognito_client.list_users(UserPoolId=target_user_pool_id)
     target_users = resp["Users"]

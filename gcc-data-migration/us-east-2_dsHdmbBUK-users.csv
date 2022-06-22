@@ -1,0 +1,18 @@
+name,given_name,family_name,middle_name,nickname,preferred_username,profile,picture,website,email,email_verified,gender,birthdate,zoneinfo,locale,phone_number,phone_number_verified,address,updated_at,cognito:mfa_enabled,cognito:username
+,,,,,kaulfusa,,,,aaron.s.kaulfus@nasa.gov,true,,,,,,false,,,false,aaron.s.kaulfus@nasa.gov
+,,,,,Leo Thomas,,,,leo+curator@developmentseed.org,true,,,,,,false,,,false,leo+curator@developmentseed.org
+,,,,,Daniel da Silva,,,,daniel@developmentseed.org,true,,,,,,false,,,false,daniel@developmentseed.org
+,,,,,Leo Test Sign Up,,,,leo+testsignup1@developmentseed.org,false,,,,,,false,,,false,leo+testsignup1@developmentseed.org
+,,,,,dbekaert,,,,David.Bekaert@jpl.nasa.gov,true,,,,,,false,,,false,David.Bekaert@jpl.nasa.gov
+,,,,,Leo Thomas,,,,leo+prod1@developmentseed.org,true,,,,,,false,,,false,leo+prod1@developmentseed.org
+,,,,,Kaylin,,,,kaylin.m.bugbee@nasa.gov,true,,,,,,false,,,false,kaylin.m.bugbee@nasa.gov
+,,,,,jju,,,,junchang.ju@nasa.gov,true,,,,,,false,,,false,junchang.ju@nasa.gov
+,,,,,sjlewis,,,,Steven.J.Lewis@jpl.nasa.gov,true,,,,,,false,,,false,Steven.J.Lewis@jpl.nasa.gov
+,,,,,bwbaker2,,,,bwbaker2@una.edu,true,,,,,,false,,,false,bwbaker2@una.edu
+,,,,,Deborah,,,,dks0017@uah.edu,true,,,,,,false,,,false,dks0017@uah.edu
+,,,,,htang,,,,htang@umd.edu,true,,,,,,false,,,false,htang@umd.edu
+,,,,,jkellner,,,,james_r_kellner@brown.edu,true,,,,,,false,,,false,james_r_kellner@brown.edu
+,,,,,armstonj,,,,armston@umd.edu,true,,,,,,false,,,false,armston@umd.edu
+,,,,,freitagb,,,,brian.m.freitag@nasa.gov,true,,,,,,false,,,false,brian.m.freitag@nasa.gov
+,,,,,bwbaker1,,,,bwb0013@uah.edu,true,,,,,,false,,,false,bwb0013@uah.edu
+,,,,,ashishacharya,,,,aa0132@uah.edu,true,,,,,,false,,,false,aa0132@uah.edu
