@@ -15,6 +15,7 @@ Original License:
 
 import re
 from subprocess import CalledProcessError
+from typing import Tuple
 
 
 # The function `_' is defined here to prepare for internationalization.
@@ -335,8 +336,40 @@ class LogCheck(object):
         return int(ms[-1]) + 1
 
 
+def extract_error_content(e: Exception) -> Tuple[str, str]:
+    """
+    Attempts to extract a set of well-formatted, human readable error messsages,
+    that can directly inserted into the HTML of the error page.
+    Also returns full error message in case the exception cannot be successfully
+    parsed.
+    """
+    # CalledProcessError is raised by the subprocess library when an external command
+    # executed within a python script fails. In this case, its the command that starts
+    # the LaTeX --> PDF compilation, which relys on an external compiling lib.
+    if isinstance(e, CalledProcessError):
+        full_error = e.output.decode("utf-8", errors="ignore").splitlines()
+        parser = LogCheck()
+        parser.lines = full_error
+
+        try:
+            parsed_errors = [
+                f"{e['text']}<br>Line {e.get('line', 'UNKOWN')}: error code {e.get('code', 'UNKOWN')}"
+                for e in list(parser.errors)
+            ]
+        except Exception:
+            parsed_errors = []
+
+        if not parsed_errors:
+            parsed_errors = [
+                "<p>Unable to parse error message. Please see below for full output</p>"
+            ]
+        return "\n".join(parsed_errors), "\n".join(full_error)
+
+    return str(e), repr(e)
+
+
 def generate_html_content_for_error(
-    error: CalledProcessError,
+    error: Exception,
     return_link: str,
     atbd_id: str,
     atbd_title: str,
@@ -346,32 +379,17 @@ def generate_html_content_for_error(
     """
     Generates an HTML page with error messages extracted from the LaTeX compiler output
     """
-
-    full_error = error.output.decode("utf-8", errors="ignore").splitlines()
-    parser = LogCheck()
-    parser.lines = full_error
-
-    try:
-        parsed_errors = [
-            f"{e['text']}<br>Line {e.get('line', 'UNKOWN')}: error code {e.get('code', 'UNKOWN')}"
-            for e in list(parser.errors)
-        ]
-    except Exception:
-        parsed_errors = []
-
-    if not parsed_errors:
-        parsed_errors = [
-            "<p>Unable to parse error message. Please see below for full output</p>"
-        ]
+    parsed_errors, full_error = extract_error_content(error)
 
     with open("./app/pdf/error.html", "r") as f:
         error_html = f.read()
+
     return (
         error_html.replace("{{atbd_id}}", str(atbd_id))
         .replace("{{atbd_title}}", atbd_title)
         .replace("{{atbd_version}}", atbd_version)
         .replace("{{pdf_type}}", pdf_type)
-        .replace("{{parsed_error}}", "\n".join(parsed_errors))
-        .replace("{{full_error}}", "\n".join(full_error))
+        .replace("{{parsed_error}}", parsed_errors)
+        .replace("{{full_error}}", full_error)
         .replace("{{return_link}}", return_link)
     )
