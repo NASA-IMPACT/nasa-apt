@@ -113,7 +113,7 @@ def get_threads_stats(
             principals=principals,
             action="view",
             acl=r.AtbdVersions.__acl__(),
-            error=False,
+            raise_exception=False,
         )
     ]
 

@@ -89,6 +89,7 @@ class AtbdVersions(Base):
     reviewers = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
     journal_status = Column(String())
     keywords = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
+    locked_by = Column(String(), nullable=True)
 
     def __repr__(self):
         """String representation"""
@@ -108,6 +109,8 @@ class AtbdVersions(Base):
 
         acl = []
         for grantee, actions in acls.ATBD_VERSION_ACLS.items():
+            if grantee == "lock_owner":
+                grantee = f"user:{self.locked_by}"
 
             if grantee == "owner":
                 grantee = f"user:{self.owner}"
@@ -120,14 +123,15 @@ class AtbdVersions(Base):
 
             for action in actions:
 
-                if action.get("status") and self.status not in action["status"]:
-                    continue
+                permission = fastapi_permissions.Deny
 
-                permission = (
-                    fastapi_permissions.Deny
-                    if action.get("deny")
-                    else fastapi_permissions.Allow
-                )
+                if not action.get("deny") and all(
+                    [
+                        getattr(self, key) in allowed_values
+                        for key, allowed_values in action.get("conditions", {}).items()
+                    ]
+                ):
+                    permission = fastapi_permissions.Allow
 
                 if isinstance(grantee, str):
                     acl.append((permission, grantee, action["action"]))

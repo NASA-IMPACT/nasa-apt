@@ -8,7 +8,9 @@ import fastapi_permissions
 from fastapi import HTTPException
 
 
-def filter_atbd_versions(principals: List[str], atbd: Atbds, error=True) -> Atbds:
+def filter_atbd_versions(
+    principals: List[str], atbd: Atbds, raise_exception=True
+) -> Atbds:
     """
     Applies a permission check to a list of ATBDs, returning only the versions
     that the user is allowed to see. If an ATBD has NO versions that the user is
@@ -19,14 +21,18 @@ def filter_atbd_versions(principals: List[str], atbd: Atbds, error=True) -> Atbd
         version
         for version in atbd.versions
         if check_permissions(
-            principals=principals, action="view", acl=version.__acl__(), error=False
+            principals=principals,
+            action="view",
+            acl=version.__acl__(),
+            raise_exception=False,
         )
     ]
+
     if not versions:
-        if error:
-            raise HTTPException(status_code=404, detail="No atbds found")
-        else:
+        if not raise_exception:
             return None
+        raise HTTPException(status_code=404, detail="No atbds found")
+
     atbd.versions = versions
     return atbd
 
@@ -50,7 +56,7 @@ def check_atbd_permissions(
             principals=principals,
             action=action,
             acl=[(fastapi_permissions.Allow, "role:contributor", "create_atbd")],
-            error=False,
+            raise_exception=False,
         ):
             raise HTTPException(
                 status_code=403, detail="User is not allowed to create a new ATBD"
@@ -59,7 +65,10 @@ def check_atbd_permissions(
 
     permissions = [
         check_permissions(
-            principals=principals, action=action, acl=version.__acl__(), error=False
+            principals=principals,
+            action=action,
+            acl=version.__acl__(),
+            raise_exception=False,
         )
         for version in atbd.versions
     ]
@@ -76,17 +85,18 @@ def check_atbd_permissions(
 
 
 def check_permissions(
-    principals: List[str], action: str, acl: List[Tuple], error=True
+    principals: List[str], action: str, acl: List[Tuple], raise_exception=True
 ) -> bool:
     """Applies permission check for the requested action. Can be configured to either
     raise an exception or return a boolean"""
     if not fastapi_permissions.has_permission(principals, action, acl):
-        if error:
-            action_name = " ".join([x.capitalize() for x in action.split("_")])
-            raise HTTPException(
-                status_code=403,
-                detail=f"{action_name} for ATBD Version is not allowed",
-            )
-        else:
+        # don't raise an exception, return bool
+        if not raise_exception:
             return False
+
+        action_name = " ".join([x.capitalize() for x in action.split("_")])
+        raise HTTPException(
+            status_code=403,
+            detail=f"{action_name} for ATBD Version is not allowed",
+        )
     return True

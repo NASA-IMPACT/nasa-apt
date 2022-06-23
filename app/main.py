@@ -4,7 +4,8 @@
 from app import config
 from app.api.v2.api import api_router
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
@@ -25,7 +26,7 @@ if config.BACKEND_CORS_ORIGINS:
         CORSMiddleware,
         allow_origins=origins,
         allow_credentials=True,
-        allow_methods=["HEAD", "GET", "POST", "DELETE"],
+        allow_methods=["HEAD", "GET", "POST", "PUT", "DELETE"],
         allow_headers=["*"],
     )
 
