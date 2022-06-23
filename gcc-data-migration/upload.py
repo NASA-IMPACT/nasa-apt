@@ -120,11 +120,16 @@ def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
     user_mapping = [{"email": u["email"], "target_sub": u["sub"]} for u in target_users]
 
     for target_user in user_mapping:
-        [source_user] = [
+        source_user = [
             source_user
             for source_user in source_users
-            if source_user["email"] == target_user["email"]
+            # cast email's to lower case since the User Pool has been updated
+            # to be case insensitive
+            if source_user["email"].lower() == target_user["email"].lower()
         ]
+        if not len(source_user) == 1: 
+            raise Exception("Unable to find source user for user: ", target_user, ". Source user: ", source_users)
+        [source_user] = source_user 
         target_user["source_sub"] = source_user["sub"]
 
         # Add users to groups
@@ -161,7 +166,7 @@ def upload_to_database(
     [CURATOR_SUB] = [
         target_user["target_sub"]
         for target_user in user_mapping
-        if target_user["email"] == "curator@apt.com"
+        if target_user["email"] == "leo+curator@developmentseed.org"
     ]
 
     def replace_missing_sub_with_curator_sub(match):
