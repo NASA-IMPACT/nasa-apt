@@ -31,6 +31,7 @@ def list_atbds(
 ):
     """Lists all ATBDs with summary version info (only versions with status
     `Published` will be displayed if the user is not logged in)"""
+
     if role:
         if not user:
             raise HTTPException(
@@ -44,9 +45,9 @@ def list_atbds(
     # TODO: use a generator and only yield non `None` objects?
 
     atbds = [
-        filter_atbd_versions(principals, atbd, error=False)
+        filter_atbd_versions(principals, atbd, raise_exception=False)
         for atbd in crud_atbds.scan(db=db, role=role, status=status)
-        if filter_atbd_versions(principals, atbd, error=False) is not None
+        if filter_atbd_versions(principals, atbd, raise_exception=False) is not None
     ]
 
     for atbd in atbds:

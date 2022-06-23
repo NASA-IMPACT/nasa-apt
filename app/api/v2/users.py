@@ -51,7 +51,7 @@ def list_users(
                 principals=get_active_user_principals(user),
                 action="receive_ownership",
                 acl=version_acl,
-                error=False,
+                raise_exception=False,
             )
         ]
     if user_filter == "invite_authors":
@@ -66,7 +66,7 @@ def list_users(
                 principals=get_active_user_principals(user),
                 action="join_authors",
                 acl=version_acl,
-                error=False,
+                raise_exception=False,
             )
         ]
     if user_filter == "invite_reviewers":
@@ -81,7 +81,7 @@ def list_users(
                 principals=get_active_user_principals(user),
                 action="join_reviewers",
                 acl=version_acl,
-                error=False,
+                raise_exception=False,
             )
         ]
 
