@@ -2,7 +2,7 @@ name,given_name,family_name,middle_name,nickname,preferred_username,profile,pict
 ,,,,,kaulfusa,,,,aaron.s.kaulfus@nasa.gov,true,,,,,,false,,,false,aaron.s.kaulfus@nasa.gov
 ,,,,,Leo Thomas,,,,leo+curator@developmentseed.org,true,,,,,,false,,,false,leo+curator@developmentseed.org
 ,,,,,Daniel da Silva,,,,daniel@developmentseed.org,true,,,,,,false,,,false,daniel@developmentseed.org
-,,,,,Leo Test Sign Up,,,,leo+testsignup1@developmentseed.org,false,,,,,,false,,,false,leo+testsignup1@developmentseed.org
+,,,,,Leo Test Sign Up,,,,leo+testsignup1@developmentseed.org,true,,,,,,false,,,false,leo+testsignup1@developmentseed.org
 ,,,,,dbekaert,,,,David.Bekaert@jpl.nasa.gov,true,,,,,,false,,,false,David.Bekaert@jpl.nasa.gov
 ,,,,,Leo Thomas,,,,leo+prod1@developmentseed.org,true,,,,,,false,,,false,leo+prod1@developmentseed.org
 ,,,,,Kaylin,,,,kaylin.m.bugbee@nasa.gov,true,,,,,,false,,,false,kaylin.m.bugbee@nasa.gov
