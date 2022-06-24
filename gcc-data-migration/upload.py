@@ -176,9 +176,10 @@ def upload_to_database(
         ]:
             return match.group(0)
         return CURATOR_SUB
-
+    
     database_dump = re.sub(
-        r"[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}",
+        # matches cognito subs while ignoring filenames with a UUID
+        r"([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})(?!\.(jpg|JPG|jpeg|JPEG|png|PNG))",
         replace_missing_sub_with_curator_sub,
         database_dump,
     )

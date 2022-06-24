@@ -4,6 +4,7 @@ import json
 from typing import Any, Dict, List
 
 import boto3
+import os
 import requests
 from requests_aws4auth import AWS4Auth
 
@@ -16,17 +17,17 @@ from fastapi import HTTPException
 
 logger.info("ELASTICSEARCH_URL %s", config.ELASTICSEARCH_URL)
 
+REGION = os.getenv("AWS_REGION", "us-west-2")
 
 def aws_auth():
     """Provides an AWS4AUth object in ordere to authenticate against the
     ElasticSearch instance"""
     logger.info("Getting AWS Auth Credentials")
-    region = "us-east-1"
-    credentials = boto3.Session().get_credentials()
+    credentials = boto3.Session(region_name=REGION).get_credentials()
     awsauth = AWS4Auth(
         credentials.access_key,
         credentials.secret_key,
-        region,
+        REGION,
         "es",
         session_token=credentials.token,
     )
