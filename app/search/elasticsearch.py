@@ -1,10 +1,10 @@
 """Provide functionality for indexing and searching documents in ElasticSearch"""
 import datetime
 import json
+import os
 from typing import Any, Dict, List
 
 import boto3
-import os
 import requests
 from requests_aws4auth import AWS4Auth
 
@@ -18,6 +18,7 @@ from fastapi import HTTPException
 logger.info("ELASTICSEARCH_URL %s", config.ELASTICSEARCH_URL)
 
 REGION = os.getenv("AWS_REGION", "us-west-2")
+
 
 def aws_auth():
     """Provides an AWS4AUth object in ordere to authenticate against the
