@@ -100,6 +100,10 @@ def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
     if not resp["Status"] == "Succeeded":
         raise Exception("User import job FAILED: ", resp)
 
+    print(
+        f"User import job finished. Imported users: {resp['ImportedUsers']}, skipped: {resp['SkippedUsers']}, failed: {resp['FailedUsers']}"
+    )
+
     resp = cognito_client.list_users(UserPoolId=target_user_pool_id)
     target_users = resp["Users"]
     while "PaginationToken" in resp:
@@ -118,15 +122,30 @@ def import_cognito_users(target_user_pool_id: str) -> List[Dict]:
     user_mapping = [{"email": u["email"], "target_sub": u["sub"]} for u in target_users]
 
     for target_user in user_mapping:
-        [source_user] = [
+        source_user = [
             source_user
             for source_user in source_users
-            if source_user["email"] == target_user["email"]
+            # cast email's to lower case since the User Pool has been updated
+            # to be case insensitive
+            if source_user["email"].lower() == target_user["email"].lower()
         ]
-        target_user["source_sub"] = source_user["sub"]
+        if not len(source_user) == 1:
+            raise Exception(
+                "Unable to find source user for user: ",
+                target_user,
+                ". Source user: ",
+                source_users,
+            )
+        [source_user] = source_user
+
+        # ignore on the following lines because mypy beleives `source_user`
+        # is still type List, as defined on line 125, even though
+        # `source_user` has been converted to a dict in line 139
+        target_user["source_sub"] = source_user["sub"]  # type: ignore
 
         # Add users to groups
-        [group] = source_user["cognito:groups"]
+        [group] = source_user["cognito:groups"]  # type: ignore
+
         cognito_client.admin_add_user_to_group(
             UserPoolId=target_user_pool_id,
             Username=target_user["target_sub"],
@@ -159,7 +178,7 @@ def upload_to_database(
     [CURATOR_SUB] = [
         target_user["target_sub"]
         for target_user in user_mapping
-        if target_user["email"] == "curator@apt.com"
+        if target_user["email"] == "leo+curator@developmentseed.org"
     ]
 
     def replace_missing_sub_with_curator_sub(match):
@@ -171,7 +190,8 @@ def upload_to_database(
         return CURATOR_SUB
 
     database_dump = re.sub(
-        r"[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}",
+        # matches cognito subs while ignoring filenames with a UUID
+        r"([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})(?!\.(jpg|JPG|jpeg|JPEG|png|PNG))",
         replace_missing_sub_with_curator_sub,
         database_dump,
     )

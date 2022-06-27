@@ -44,7 +44,7 @@ class nasaAPTLambdaStack(core.Stack):
         if config.GCC_MODE:
             print("DEPLOYING WITH GCC PERMISSIONS BOUNDARY APPLIED")
             permission_boundary = iam.ManagedPolicy.from_managed_policy_name(
-                self, "PermissionsBoundary", "mcp-tenantOperator"
+                self, "PermissionsBoundary", "mcp-tenantOperator-APIG"
             )
             core.Aspects.of(self).add(PermissionBoundaryAspect(permission_boundary))
 
@@ -299,8 +299,8 @@ class nasaAPTLambdaStack(core.Stack):
             f"{id}-apt-app-client",
             auth_flows=cognito.AuthFlow(user_password=True),
             o_auth=cognito.OAuthSettings(
-                callback_urls=[config.FRONTEND_URL],
-                logout_urls=[config.FRONTEND_URL],
+                callback_urls=[config.FRONTEND_URL, "http://localhost:9000"],
+                logout_urls=[config.FRONTEND_URL, "http://localhost:9000"],
                 flows=cognito.OAuthFlows(implicit_code_grant=True),
                 scopes=[
                     cognito.OAuthScope.OPENID,
