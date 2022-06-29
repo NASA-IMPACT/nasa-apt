@@ -22,3 +22,4 @@ drop_contact_roles [contact_roles] 2021-11-15T19:16:45Z Leo Thomas <leo@MacBook-
 
 summary_abstract_rich_text 2022-04-26T15:17:32Z Leo Thomas <leo@MacBook-Pro-2.local> # Convert the abstract and plain_summary fields of the document object to rich text objects
 version_lock [tables] 2022-06-01T06:57:35Z Oliver Roick <oroick@192-168-1-106.tpgi.com.au> # Add locked_by field to atbd_versions
+@v2.4.0-beta 2022-06-29T16:19:41Z Leo Thomas <leo@MacBook-Pro-2> # Tag v2.4.0-beta release 2022_06_25

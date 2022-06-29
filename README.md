@@ -1,6 +1,6 @@
 # nasa-apt
 
-**Version:** 2.0.0
+**Version:** v2.4.0
 
 Code and issues relevant to the NASA APT project
 
