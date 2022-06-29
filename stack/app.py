@@ -44,7 +44,7 @@ class nasaAPTLambdaStack(core.Stack):
         if config.GCC_MODE:
             print("DEPLOYING WITH GCC PERMISSIONS BOUNDARY APPLIED")
             permission_boundary = iam.ManagedPolicy.from_managed_policy_name(
-                self, "PermissionsBoundary", "mcp-tenantOperator"
+                self, "PermissionsBoundary", "mcp-tenantOperator-APIG"
             )
             core.Aspects.of(self).add(PermissionBoundaryAspect(permission_boundary))
 
@@ -163,7 +163,8 @@ class nasaAPTLambdaStack(core.Stack):
             f"{id}-elasticsearch-domain",
             version=elasticsearch.ElasticsearchVersion.V7_7,
             capacity=elasticsearch.CapacityConfig(
-                data_node_instance_type="t2.small.elasticsearch", data_nodes=1,
+                data_node_instance_type="t2.small.elasticsearch",
+                data_nodes=1,
             ),
             # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in
             # AWS (and can't start with a `-` character)
@@ -254,9 +255,13 @@ class nasaAPTLambdaStack(core.Stack):
             user_verification=cognito.UserVerificationConfig(
                 # TODO: this email body can contain HTML tags for a better user experience
                 email_body=(
-                    "Thank you for signing up to the Algorithm Publication Tool.<br>Please "
-                    "verify you account by clicking on {##Verify Email##}.<br>Sincerely,"
-                    "<br>The NASA APT team"
+                    "Thank you for signing up to the Algorithm Publication Tool.<br>"
+                    "Please verify you account by clicking on {##Verify Email##}.<br><br>"
+                    "Your account only needs to be verified once. If your account "
+                    "is already verified, you can return to the "
+                    f"<a href='{frontend_url.strip('/')}/signin'>Algorithm Publication Tool</a> to sign in."
+                    "<br><br>"
+                    "Sincerely,<br>The NASA APT team"
                 ),
                 email_style=cognito.VerificationEmailStyle.LINK,
             ),
@@ -294,8 +299,8 @@ class nasaAPTLambdaStack(core.Stack):
             f"{id}-apt-app-client",
             auth_flows=cognito.AuthFlow(user_password=True),
             o_auth=cognito.OAuthSettings(
-                callback_urls=[config.FRONTEND_URL],
-                logout_urls=[config.FRONTEND_URL],
+                callback_urls=[config.FRONTEND_URL, "http://localhost:9000"],
+                logout_urls=[config.FRONTEND_URL, "http://localhost:9000"],
                 flows=cognito.OAuthFlows(implicit_code_grant=True),
                 scopes=[
                     cognito.OAuthScope.OPENID,
@@ -332,7 +337,8 @@ class nasaAPTLambdaStack(core.Stack):
         )
 
         lambda_function.add_environment(
-            key="USER_POOL_NAME", value=user_pool.node.id,
+            key="USER_POOL_NAME",
+            value=user_pool.node.id,
         )
         lambda_function.add_environment(
             key="APP_CLIENT_NAME", value=app_client.user_pool_client_name

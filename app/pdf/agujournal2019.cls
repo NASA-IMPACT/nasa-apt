@@ -89,7 +89,11 @@
 
 %% xcolor.sty
 \RequirePackage{xcolor}
-\RequirePackage{url}
+
+%% Comment out the loading of this package as it gets loaded within the 
+%% latex generator class with addition options to ensure that the compiler 
+%% doesn't strip whitespaces from the link text and enables line breaks in the URL
+%\RequirePackage{url}
 
 %% for better track changes
 %\RequirePackage{trackchanges}
@@ -517,25 +521,29 @@
 
 %% Running heads ===>>>
 
-  %% unless we need these, leave these uncommented
-    \let\@mkboth\@gobbletwo
-    \let\chaptermark\@gobble
-    \let\sectionmark\@gobble
-  %%
+  % %% unless we need these, leave these uncommented
+  %   \let\@mkboth\@gobbletwo
+  %   \let\chaptermark\@gobble
+  %   \let\sectionmark\@gobble
+  % %%
 
-\def\ps@headings{\def\@oddfoot{\centerline{\small --\the\c@page--}}
-\let\@evenfoot\@oddfoot
-%% \thejournalname set with \journalname{} command; if not you will get a request to set
-%% the journal name with \journalname{}
-\def\@oddhead{\vbox to 0pt{\vss\centerline{\color{ltgray}\small manuscript
-submitted to {\it \thejournalname}}\vskip24pt}}
-\let\@evenhead\@oddhead
-}
+%% =========================== NOTE: ===================================================
+%% The following `\ps@headings' definition and activation are commented out because they 
+%% have been re-implemented in the PDF generator class. They are implemented there in order 
+%% to make the same custom headings style available to both the regulard and journal PDFs
 
+% \def\ps@headings{\def\@oddfoot{\centerline{\small --\the\c@page--}}
+% \let\@evenfoot\@oddfoot
+% %% \thejournalname set with \journalname{} command; if not you will get a request to set
+% %% the journal name with \journalname{}
+% \def\@oddhead{\vbox to 0pt{\vss\centerline{\color{ltgray}\small manuscript
+% submitted to {\it \thejournalname}}\vskip24pt}}
+% \let\@evenhead\@oddhead
+% }
 
-
-%% After ps@headings is defined, now we use it to activate the definitions
-\ps@headings
+% %% After ps@headings is defined, now we use it to activate the definitions
+% \ps@headings
+%% =========================== / NOTE / ==============================================
 
 %%% Footnotes
 
@@ -1153,12 +1161,18 @@ width0pt\relax}\\*\noindent\ignorespaces}
 % When using NatBib, this sets brackets for citations:
 %\renewcommand\NAT@open{(} \renewcommand\NAT@close{)}   %xx Parens by default, but not using anyways.  DC
 
-% hyperref MUST be loaded before APACite 
-\PassOptionsToPackage{obeyspaces,hyphens}{url}\RequirePackage{hyperref}
-\urlstyle{same}
-\hypersetup{breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black}%
+%% ================================= NOTE: =========================================================
+%% hyperref and apacite will be loaded in the pdf generator class since they need to be made 
+%% available to both the journal and regular pdfs 
 
-\RequirePackage{apacite}
+%% hyperref MUST be loaded before APACite 
+%\PassOptionsToPackage{obeyspaces,hyphens}{url}\RequirePackage{hyperref}
+%\urlstyle{same}
+%\hypersetup{breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black}%
+
+%\RequirePackage{apacite}
+%% ================================= /NOTE/ =========================================================
+
 %\RequirePackage{natbib}
 \let\cite\shortcite %xx So get et al. with three authors the first time.
 %\let\citep\shortcite %xx A natbib command.

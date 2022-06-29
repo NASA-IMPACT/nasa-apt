@@ -1,6 +1,6 @@
 # nasa-apt
 
-**Version:** 2.0.0
+**Version:** v2.4.0
 
 Code and issues relevant to the NASA APT project
 
@@ -111,14 +111,14 @@ LOCALSTACK_API_KEY=...
 When running the front-end locally, the `sign-up` functionality will still point to the hosted UI - meaning that it will not be possible to sign up. To mitigate this, users will be created when spinning up the APIl.
 
 The following test users will be created (all with the same password: `Password123!`)
-- Carlos Curator (email: `curator@example.com`)
-- Olivia Owner (email: `owner@example.com`)
-- Andre Author (email: `author1@example.com`)
-- Anita Author (email: `author2@example.com`)
-- Allison Author (email: `author3@example.com`)
-- Ricardo Reviewer (email: `reviewer1@example.com`)
-- Ronald Reviewer (email: `reviwer2@example.com`)
-- Rita Reviewer (email: `reviewer3@example.com`)
+- Carlos Curator (email: `curator@apt.com`)
+- Olivia Owner (email: `owner@apt.com`)
+- Andre Author (email: `author1@apt.com`)
+- Anita Author (email: `author2@apt.com`)
+- Allison Author (email: `author3@apt.com`)
+- Ricardo Reviewer (email: `reviewer1@apt.com`)
+- Ronald Reviewer (email: `reviwer2@apt.com`)
+- Rita Reviewer (email: `reviewer3@apt.com`)
 
 In order to authenticated with the locally running instance of cognito, the frontend needs to know the User Pool ID and the User Pool Client ID to authenticate against. These values will be printed in the output of the locally running API, but can also be accessed with the following commands: 
 

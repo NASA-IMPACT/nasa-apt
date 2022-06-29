@@ -6,6 +6,7 @@ from app.api.utils import get_major_from_version_string, s3_client
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import Atbds, AtbdVersions
+from app.pdf.error_handler import generate_html_content_for_error
 from app.pdf.generator import generate_pdf
 
 from fastapi import APIRouter, BackgroundTasks, Depends
@@ -98,27 +99,18 @@ def get_pdf(
     try:
         local_pdf_filepath = generate_pdf(atbd=atbd, filepath=pdf_key, journal=journal)
     except Exception as e:
-        if not e.__dict__.get("output"):
-            raise e
 
-        atbd_link = f"{config.FRONTEND_URL}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
+        atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
 
-        pdf_compiler_output = [
-            f"<p>{line}</p>" for line in str(e.__dict__["output"]).split("\\n")
-        ]
         return HTMLResponse(
-            content=f"""
-<html>
-    <head>
-        <title>PDF generation error</title>
-    </head>
-    <body>
-        <h1>We were unable to generate the requested PDF. Please click <a href="{atbd_link}">here</a> to return to the document.</h1>
-        <h2>Here is the LaTex PDF compiler output, if you're a geek:</h2>
-        {"".join(pdf_compiler_output)}
-    </body>
-</html>
-"""
+            content=generate_html_content_for_error(
+                error=e,
+                return_link=atbd_link,
+                atbd_id=atbd.id,
+                atbd_title=atbd.title,
+                atbd_version=f"v{atbd_version.major}.{atbd_version.minor}",
+                pdf_type="Journal" if journal else "Regular",
+            )
         )
 
     return FileResponse(path=local_pdf_filepath, filename=pdf_key.split("/")[-1])

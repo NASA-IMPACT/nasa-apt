@@ -191,13 +191,16 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
         if data.get(option) and e.strip(" ") != "":
             e = command(e)
 
-    # TODO: should this be wrapped with NoEscape?
-
     return NoEscape(e)
 
 
 def process_text_content(
-    data: Union[document.TextLeaf, document.ReferenceNode, document.LinkNode]
+    data: Union[
+        document.TextLeaf,
+        document.ReferenceNode,
+        document.LinkNode,
+        document.EquationInlineNode,
+    ]
 ) -> List[NoEscape]:
     """
     Returns a list of text base elements (text, reference or hyperlink)
@@ -209,6 +212,8 @@ def process_text_content(
             result.append(hyperlink(d["url"], d["children"][0]["text"]))
         elif d.get("type") == "ref":
             result.append(reference(d["refId"]))
+        elif d.get("type") == "equation-inline":
+            result.append(NoEscape(f'${d["children"][0]["text"]}$'))
         else:
             result.append(wrap_text(d))
     return result
@@ -402,8 +407,6 @@ def process(
         eq = data["children"][0]["text"].replace("\\\\", "\\")
         return NoEscape(f"\\begin{{equation}}{eq}\\end{{equation}}")
 
-        # return Math(data=NoEscape(data["children"][0]["text"].replace("\\\\", "\\")))
-
     if data.get("type") == "image-block":
         [img] = filter(lambda d: d["type"] == "img", data["children"])
         [caption] = filter(lambda d: d["type"] == "caption", data["children"])
@@ -448,7 +451,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     doc = Document(
         default_filepath=filepath,
         documentclass=Command("documentclass", arguments=document_class),
-        # disable inputenc and fontspec because we are compiling using
+        # disable inputenc and fontenc because we are compiling using
         # xelatex which accepts unicode chars by defaults
         inputenc=None,
         fontenc=None,
@@ -458,44 +461,105 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         lmodern=True,
     )
 
-    for p in ["float", "booktabs", "soul", "longtable", "amsmath", "fontspec"]:
+    for p in [
+        "float",
+        "booktabs",
+        "soul",
+        "longtable",
+        "amsmath",
+        "fontspec",
+        "fancyhdr",
+        "xcolor",
+    ]:
         doc.packages.append(Package(p))
 
     doc.preamble.append(Command("setmainfont", arguments=NoEscape("Latin Modern Math")))
 
-    if not journal:
+    # adds a custom light grey colour used for the document heading
+    doc.preamble.append(
+        Command("definecolor", arguments=["ltgray", "cmyk", ".12,0,0,.3"])
+    )
 
-        doc.preamble.append(
-            NoEscape(
-                "\\PassOptionsToPackage{obeyspaces,hyphens}{url}\\usepackage{hyperref}"
-            )
-        )
+    doc.preamble.append(NoEscape("\\PassOptionsToPackage{obeyspaces,hyphens}{url}"))
+    doc.preamble.append(NoEscape("\\usepackage{hyperref}"))
 
-        doc.preamble.append(
-            Command(
-                "hypersetup",
-                arguments="breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
-            )
+    doc.preamble.append(
+        Command(
+            "hypersetup",
+            arguments="breaklinks=true,colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,citecolor=black",
         )
-        doc.preamble.append(Command("urlstyle", arguments="same"))
-        # The apacite package is added using the `usepackage` command
-        # instead of the `Package()` funciton to ensure that apacite
-        # will be loaded after `hyperref` - with breaks things if the
-        # two packages are loaded in the reverse order:
-        # https://tex.stackexchange.com/a/316288
-        doc.preamble.append(Command("usepackage", arguments="apacite"))
+    )
+    doc.preamble.append(Command("urlstyle", arguments="same"))
+
+    # The apacite package is added using the `usepackage` command
+    # instead of the `Package()` function to ensure that apacite
+    # will be loaded after `hyperref` - with breaks things if the
+    # two packages are loaded in the reverse order:
+    # https://tex.stackexchange.com/a/316288
+    doc.preamble.append(Command("usepackage", arguments="apacite"))
 
     if journal:
 
         doc.packages.append(Package("lineno"))
         doc.preamble.append(Command("linenumbers"))
 
-    doc.append(Command("title", arguments=atbd.title))
+    # TODO: re-implement the following functionality using pylatex's `UnsafeCommand` class.
+    # eg:
+    # new_comm = UnsafeCommand('newcommand', '\exampleCommand', options=3,
+    #                         extra_arguments=r'\color{#1} #2 #3 \color{black}')
+    # doc.append(new_comm)
+    # # Use our newly created command with different arguments
+    # doc.append(ExampleCommand(arguments=Arguments('blue', 'Hello', 'World!')))
 
+    header_content = ""
     if journal:
-        doc.preamble.append(
-            Command("journalname", arguments="American Geophysical Union")
-        )
+        header_content += "\\vss\\centerline{\\color{ltgray}\\small Manuscript submitted to {\\it Earth and Space Science}}"
+        header_content += " \\vss\\centerline{ }"  # ensures line break
+    header_content += "\\vss\\centerline{\\color{ltgray}\\small This ATBD was downloaded from the NASA Algorithm Publication Tool (APT)}"
+
+    header_def = f"""\\makeatletter
+        \\let\\@mkboth\\@gobbletwo
+        \\let\\chaptermark\\@gobble
+        \\let\\sectionmark\\@gobble
+
+
+        \\def\\ps@headings{{
+            \\def\\@oddfoot{{
+                \\centerline{{
+                    \\small --\\the\\c@page--
+                }}
+            }}
+            \\let\\@evenfoot\\@oddfoot
+            \\def\\@oddhead{{\\vbox to 0pt{{{header_content}\\vskip12pt}}}}
+            \\let\\@evenhead\\@oddhead
+        }}
+        \\ps@headings
+
+        \\def\\@maketitle{{
+            \\newpage
+            \\vskip 2em
+            \\begin{{center}}
+                \\let \\footnote \\thanks
+                {{\\LARGE \\@title \\par}}
+                \\vskip 1.5em
+                {{
+                    \\large\\lineskip .5em
+                    \\begin{{tabular}}[t]{{c}}
+                        \\@author
+                    \\end{{tabular}}\\par
+                }}
+                \\vskip 1em
+                {{\\large \\@date}}
+            \\end{{center}}
+            \\par
+            \\vskip 1.5em
+        }}
+
+        \\makeatother
+        """
+    doc.preamble.append(NoEscape(header_def))
+
+    doc.append(Command("title", arguments=atbd.title))
 
     affiliations = []
     authors = []
@@ -526,7 +590,12 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     if journal:
 
-        doc.append(Command("authors", arguments=NoEscape(", ".join(authors)),))
+        doc.append(
+            Command(
+                "authors",
+                arguments=NoEscape(", ".join(authors)),
+            )
+        )
         for i, affiliation in enumerate(affiliations):
             doc.append(Command("affiliation", arguments=[str(i + 1), affiliation]))
 
@@ -559,24 +628,33 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     else:
         doc.append(Command("author", arguments=NoEscape("\\and ".join(authors))))
-        doc.append(Command("maketitle"))
+        doc.append(
+            Command(
+                "date",
+                arguments=NoEscape(
+                    atbd_version.published_at.strftime("%B %d, %Y")
+                    if atbd_version.published_at
+                    else "{}"
+                ),
+            )
+        )
+        doc.append(Command("makeatletter"))
+        doc.append(Command("@maketitle"))
+        doc.append(Command("makeatother"))
 
     if not journal:
         doc.append(Command("tableofcontents"))
+        doc.append(Command("newpage"))
 
     if journal:
         doc.append(Command("begin", arguments="keypoints"))
         for keypoint in document_data["key_points"].split("\n"):
-            # Some people skip 2 lines between each key point,
-            # which creates and extra, blank, bullet in the Key Points
-            # section of the document Title page.
-            if not keypoint:
-                continue
-            doc.append(Command("item", arguments=keypoint))
+            doc.append(Command("item", arguments=keypoint.strip("-") or " "))
         doc.append(Command("end", arguments="keypoints"))
 
     generate_bib_file(
-        document_data["publication_references"], filepath=f"{filepath}.bib",
+        document_data["publication_references"],
+        filepath=f"{filepath}.bib",
     )
     section_name: str
     info: Any
@@ -592,10 +670,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
         if section_name == "abstract":
             doc.append(Command("begin", "abstract"))
-            if not document_data.get(section_name):
-                doc.append("Abstract Unavailable")
-            else:
-                doc.append(document_data[section_name])
+
+            for item in document_data.get(section_name, {}).get(
+                "children", [CONTENT_UNAVAILABLE]
+            ):
+                doc.append(NoEscape("\n"))
+                doc.append(process(item, atbd_id=atbd.id))
+
             doc.append(Command("end", "abstract"))
             continue
 
@@ -631,9 +712,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             # section header means that no content is needed
             continue
 
-        if section_name == "plain_summary":
-            doc.append(document_data[section_name])
-            continue
+        # if section_name == "plain_summary":
+        #     doc.append(document_data[section_name])
+        #     continue
 
         if section_name == "keywords" and atbd_version.keywords:
             doc.append(Command("begin", arguments="itemize"))
@@ -706,9 +787,10 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
 
     latex_document.generate_pdf(
         filepath=filepath,
-        # clean=True,
-        # clean_tex=True,
-        clean=False,
+        # XeTeX generates multiple intermediate files (`.aux`, `.log`, etc)
+        # that we want to remove
+        clean=True,
+        # Keep the generated `.tex` file
         clean_tex=False,
         # latexmk automatically performs the multiple runs necessary
         # to include the bibliography, table of contents, etc
@@ -716,9 +798,9 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
         # the `--pdfxe` flag loads the Xelatex pacakge necessary for
         # the compiler to manage image positioning within the pdf document
         # and native unicode character handling
-        compiler_args=["-pdfxe", "-e", "$max_repeat=10"],
-        # silent=True,
-        silent=False,
+        compiler_args=["-pdfxe", "-interaction=batchmode", "-e", "$max_repeat=10"],
+        # Hides compiler output, except in case of error
+        silent=True,
     )
 
     return f"{filepath}.pdf"

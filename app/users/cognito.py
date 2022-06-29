@@ -20,7 +20,6 @@ from fastapi import BackgroundTasks, Depends
 def get_active_user_principals(user: users.User = Depends(get_user)) -> List[str]:
     """Returns the principals for a user, to be used when validating permissions
     to perform certain actions or requests"""
-
     principals = [permissions.Everyone]
     if user:
         principals.extend([permissions.Authenticated, f"user:{user.sub}"])
@@ -89,7 +88,7 @@ def update_user_info(
                 principals=principals,
                 action=f"view_{contributor_type}",
                 acl=version_acl,
-                error=False,
+                raise_exception=False,
             ):
                 setattr(data_model, attr, app_users[user_sub].dict(by_alias=True))
             else:
@@ -151,7 +150,10 @@ def update_version_contributor_info(principals: List[str], version: AtbdVersions
     )
 
     if check_permissions(
-        principals=principals, action="view_owner", acl=version_acl, error=False
+        principals=principals,
+        action="view_owner",
+        acl=version_acl,
+        raise_exception=False,
     ):
         version.owner = app_users[version.owner].dict(by_alias=True)
 
@@ -161,7 +163,10 @@ def update_version_contributor_info(principals: List[str], version: AtbdVersions
         )
 
     if check_permissions(
-        principals=principals, action="view_authors", acl=version_acl, error=False
+        principals=principals,
+        action="view_authors",
+        acl=version_acl,
+        raise_exception=False,
     ):
 
         version.authors = [
@@ -176,7 +181,10 @@ def update_version_contributor_info(principals: List[str], version: AtbdVersions
         ]
 
     if check_permissions(
-        principals=principals, action="view_reviewers", acl=version_acl, error=False
+        principals=principals,
+        action="view_reviewers",
+        acl=version_acl,
+        raise_exception=False,
     ):
 
         version.reviewers = [
@@ -258,6 +266,13 @@ def list_cognito_users(groups="curator,contributor"):
     return (app_users, str(uuid4()))
 
 
+def get_cognito_user(sub: str):
+    """Returns a single user from cognito"""
+    client = cognito_client()
+    user = client.admin_get_user(UserPoolId=config.USER_POOL_ID, Username=sub)
+    return users.CognitoUser(**user)
+
+
 def process_users_input(
     version_input: versions.Update,
     atbd_version: AtbdVersions,
@@ -327,7 +342,9 @@ def process_users_input(
 
     if version_input.authors:
         check_permissions(
-            principals=principals, action="invite_authors", acl=atbd_version.__acl__(),
+            principals=principals,
+            action="invite_authors",
+            acl=atbd_version.__acl__(),
         )
 
         for author in version_input.authors:
@@ -353,7 +370,9 @@ def process_users_input(
 
     if version_input.owner and version_input.owner != atbd_version.owner:
         check_permissions(
-            principals=principals, action="offer_ownership", acl=atbd_version.__acl__(),
+            principals=principals,
+            action="offer_ownership",
+            acl=atbd_version.__acl__(),
         )
 
         cognito_owner = app_users[version_input.owner]

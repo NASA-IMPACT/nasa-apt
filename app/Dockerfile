@@ -7,7 +7,6 @@ RUN apt-get update \
     texlive-xetex \
     texlive-science \
     latexmk\
-    wget libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config gcc \
     && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
@@ -19,10 +18,10 @@ COPY ./app/ /app/app/
 COPY ./setup.py /app/setup.py
 
 # Style file for AGU journal pdf
-#RUN mkdir -p /usr/share/texlive/texmf-dist/tex/xetex/agujournal2019/
-#COPY ./app/pdf/agujournal2019.cls /usr/share/texlive/texmf-dist/tex/xetex/agujournal2019/
 RUN mkdir -p /usr/share/texlive/texmf-dist/tex/latex/agujournal2019/
 COPY ./app/pdf/agujournal2019.cls /usr/share/texlive/texmf-dist/tex/latex/agujournal2019/
+# make class file readable to latex compiler
+RUN chmod 644 /usr/share/texlive/texmf-dist/tex/latex/agujournal2019/agujournal2019.cls
 # register the new .cls file
 RUN mktexlsr 
 

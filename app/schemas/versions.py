@@ -97,7 +97,9 @@ class PublicationUnits(BaseModel):
 
         """
         return PublicationUnits(
-            words=d + self.words, images=d + self.images, tables=d + self.tables,
+            words=d + self.words,
+            images=d + self.images,
+            tables=d + self.tables,
         )
 
 
@@ -191,6 +193,9 @@ class FullOutput(AtbdVersionSummaryOutput):
                 return _helper(d.text)
 
             if isinstance(d, _document.EquationNode):
+                return PublicationUnits(images=0, tables=0, words=1)
+
+            if isinstance(d, _document.EquationInlineNode):
                 return PublicationUnits(images=0, tables=0, words=1)
 
             if isinstance(d, _document.TableNode):
@@ -333,3 +338,16 @@ class AdminUpdate(Update):
     # since from the API side, each reviewer should have
     # a review status associated with their user sub
     reviewers: Optional[List[Dict[str, str]]]  # type: ignore
+
+
+class LockOwner(BaseModel):
+    """Lock owner model"""
+
+    email: str
+    preferred_username: str
+
+
+class LockOutput(BaseModel):
+    """Output for lock owner query"""
+
+    locked_by: LockOwner

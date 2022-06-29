@@ -87,5 +87,5 @@ if __name__ == "__main__":
         except botocore.exceptions.EndpointConnectionError:
             pass
         print(f"Not all resources ready, sleeping {2 ** count} seconds")
-        time.sleep(2 ** count)
+        time.sleep(2**count)
         count += 1

@@ -20,6 +20,7 @@ class TypesEnum(str, Enum):
     unordered_list = "ul"
     subsection = "sub-section"
     equation = "equation"
+    equation_inline = "equation-inline"
     image = "img"
     image_block = "image-block"
     table_cell = "td"
@@ -79,11 +80,18 @@ class ReferenceNode(BaseNode):
     refId: str
 
 
+class EquationInlineNode(BaseNode):
+    """Inline Equation WYSIWYG node"""
+
+    type: Literal[TypesEnum.equation_inline]
+    # isInline: Optional[bool]
+
+
 class DivNode(BaseNode):
     """Generic text container WYSIWYG node"""
 
     type: Literal[TypesEnum.div]
-    children: List[Union[LinkNode, ReferenceNode, TextLeaf]]
+    children: List[Union[LinkNode, ReferenceNode, EquationInlineNode, TextLeaf]]
 
 
 class OrderedListNode(BaseNode):
@@ -276,13 +284,13 @@ class DocumentSummary(BaseModel):
     Atbds and AtbdVersions.
     """
 
-    abstract: Optional[str]
+    abstract: Optional[SectionWrapper]
 
 
 class Document(DocumentSummary):
     """Top level `document` node"""
 
-    plain_summary: Optional[str] = ""
+    plain_summary: Optional[SectionWrapper]
     key_points: Optional[str] = ""
     version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
@@ -316,7 +324,7 @@ class Document(DocumentSummary):
         "data_access_output_data",
         "data_access_related_urls",
     )
-    def _print(cls, v):
+    def _filter_incomplete_objects(cls, v):
         if not v:
             return []
         # Filter out items that are missing both URL and Description

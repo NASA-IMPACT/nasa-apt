@@ -126,7 +126,9 @@ def test_create_contact(
         del contact["first_name"]
         del contact["_sa_instance_state"]
         result = test_client.post(
-            "/v2/contacts", headers=authenticated_headers, data=json.dumps(contact),
+            "/v2/contacts",
+            headers=authenticated_headers,
+            data=json.dumps(contact),
         )
         result.raise_for_status()
 
@@ -137,7 +139,9 @@ def test_create_contact(
     ]
     del contact["_sa_instance_state"]
     result = test_client.post(
-        "/v2/contacts", headers=authenticated_headers, data=json.dumps(contact),
+        "/v2/contacts",
+        headers=authenticated_headers,
+        data=json.dumps(contact),
     )
     db_session.close()
 
@@ -158,7 +162,9 @@ def test_create_contact(
     del contact["_sa_instance_state"]
 
     result = test_client.post(
-        "/v2/contacts", headers=authenticated_headers, data=json.dumps(contact),
+        "/v2/contacts",
+        headers=authenticated_headers,
+        data=json.dumps(contact),
     )
     result.raise_for_status()
     db_session.close()
@@ -224,7 +230,8 @@ def test_delete_contact(
         result.raise_for_status()
 
     result = test_client.delete(
-        f"/v2/contacts/{contact.id}", headers=authenticated_headers,
+        f"/v2/contacts/{contact.id}",
+        headers=authenticated_headers,
     )
     result.raise_for_status()
     assert db_session.query(Contacts).all() == []
