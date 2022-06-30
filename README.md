@@ -4,12 +4,13 @@
 
 Code and issues relevant to the NASA APT project
 
-![Backend Architecture Diagram](./v2.4.0-beta_arch_diagram.png)
-
 ## Components: 
 - [FastAPI](https://fastapi.tiangolo.com/): provides the routes/methods for the REST API. Uses [Pydantic](https://pydantic-docs.helpmanual.io/) for data validation, [SQLAlchemy](https://www.sqlalchemy.org/) for database connection and ORM and [PyLatex](https://jeltef.github.io/PyLaTeX/current/) for Latex/PDF document generation
 - [Postgresql](https://www.postgresql.org/): Database where ATBD and ATBD Version content is stored
 - [ElasticSearch](https://www.elastic.co/elasticsearch/): Document indexing to provide full-text searching of ATBD documents
+
+### Diagram
+![Backend Architecture Diagram](./v2.4.0-beta_architecture_diagram.png)
 
 ### AWS Deployment: 
 The API is deployed to AWS using [AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html). To get started with CDK you will need to have `npm` installed. Follow the steps in the link above to get started. 
