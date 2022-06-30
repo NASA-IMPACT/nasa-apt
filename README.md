@@ -4,6 +4,8 @@
 
 Code and issues relevant to the NASA APT project
 
+![Backend Architecture Diagram](./v2.4.0-beta_arch_diagram.png)
+
 ## Components: 
 - [FastAPI](https://fastapi.tiangolo.com/): provides the routes/methods for the REST API. Uses [Pydantic](https://pydantic-docs.helpmanual.io/) for data validation, [SQLAlchemy](https://www.sqlalchemy.org/) for database connection and ORM and [PyLatex](https://jeltef.github.io/PyLaTeX/current/) for Latex/PDF document generation
 - [Postgresql](https://www.postgresql.org/): Database where ATBD and ATBD Version content is stored
