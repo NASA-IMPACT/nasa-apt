@@ -14,6 +14,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_kms as kms
 from aws_cdk import core
 from permissions_boundary import PermissionBoundaryAspect
 
@@ -161,7 +162,7 @@ class nasaAPTLambdaStack(core.Stack):
         opensearch_domain = opensearch.Domain(
             self,
             f"{id}-opensearch-domain",
-            version=opensearch.EngineVerision.OPENSEARCH_1_3,
+            version=opensearch.EngineVersion.OPENSEARCH_1_0,
             capacity=opensearch.CapacityConfig(
                 data_node_instance_type="t2.small.search",
                 data_nodes=1,
@@ -373,3 +374,67 @@ nasaAPTLambdaStack(
 )
 
 app.synth()
+
+"""
+class contains resources deployed to aid in migrating APT's ElasticSearch instance to an AWS OpenSearch instance
+"""
+class OpensearchMigrationStack(core.Stack):
+
+    def __init__(
+        self,
+        scope: core.Construct,
+        id: str,
+        **kwargs: Any,
+    ) -> None:
+        """Define stack."""
+        super().__init__(scope, id, **kwargs)
+
+        # KMS encryption key 
+        migration_kms_key = kms.Key(self, "apt-opensearch-key")
+
+        # S3 Bucket for migration snapshot(s)
+        bucket_params = dict(
+            scope=self,
+            id=f"{id}",
+            encryption = s3.BucketEncryption.KMS,
+            encryption_key = migration_kms_key,
+            removal_policy=core.RemovalPolicy.RETAIN
+            if config.STAGE.lower() == "prod"
+            else core.RemovalPolicy.DESTROY,
+        )
+        if config.S3_BUCKET:
+            bucket_params["bucket_name"] = config.MIGRATION_S3_BUCKET
+        migration_bucket = s3.Bucket(**bucket_params)
+        assert(migration_bucket.encryption_key == migration_kms_key)
+
+        # IAM Access Policy for s3 migration bucket
+        result = migration_bucket.add_to_resource_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:CreateBucket",
+                    "s3:DeleteObject",
+                    "s3:GetBucketLocation",
+                    "s3:GetObject",
+                    "s3:GetObjectAttributes",
+                    "s3:ListAllMyBuckets",
+                    "s3:ListBucket",
+                    "s3:PutObject",
+                    "s3:PutObjectAcl",
+                    "s3:RestoreObject"
+                ],
+                resources=[f"arn:aws:s3:::${config.MIGRATION_S3_BUCKET}/*"],
+                # delegate access permissions to the account
+                principals=[iam.AccountPrincipal(self.account)]
+            )
+        )
+
+# create migration stack
+migration_stackname = f"{config.PROJECT_NAME}-opensearch-migration-{config.STAGE}"
+OpensearchMigrationStack(
+    app,
+    migration_stackname,
+    env=dict(
+        account=os.environ["CDK_DEFAULT_ACCOUNT"],
+        region=os.environ["CDK_DEFAULT_REGION"],
+    ),
+)

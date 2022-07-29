@@ -17,3 +17,8 @@ Pipfile*
 .coverage*
 .tox*
 **/opensearch
+
+# documentation
+**/opensearch_local
+# dir created by virtual env when using cdk
+**/apt-stack
