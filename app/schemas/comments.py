@@ -1,6 +1,6 @@
 """Schemas for Comments Model"""
 from datetime import datetime
-from typing import Union
+from typing import List, Union
 
 from pydantic import BaseModel
 
