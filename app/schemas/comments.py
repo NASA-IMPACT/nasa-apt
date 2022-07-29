@@ -1,6 +1,6 @@
 """Schemas for Comments Model"""
 from datetime import datetime
-from typing import List, Union
+from typing import Optional, List, Union
 
 from pydantic import BaseModel
 
@@ -11,11 +11,13 @@ class Create(BaseModel):
     """Create first comment"""
 
     body: str
+    notify: Optional[List[str]]
 
 
-class AdminCreate(Create):
+class AdminCreate(BaseModel):
     """Create comment"""
 
+    body: str
     thread_id: int
     created_by: str
     last_updated_by: str

@@ -37,32 +37,44 @@ def notify_atbd_version_contributors(
     """
     app_users, _ = cognito.list_cognito_users()
 
-    user_notifications = [
-        UserNotification(
-            **app_users[atbd_version.owner].dict(),
-            notification=notification,
-            data=data,
-        )  # type: ignore
-    ]
+    user_notifications = []
 
-    user_notifications.extend(
-        [
+    if (len(data['notify']) > 0):
+        user_notifications = [
             UserNotification(
-                **app_users[author].dict(), notification=notification, data=data  # type: ignore
+                **app_users[user_sub].dict(),
+                notification=notification,
+                data=data,
             )
-            for author in atbd_version.authors
+            for user_sub in data['notify']
         ]
-    )
-    user_notifications.extend(
-        [
+    else:
+        user_notifications = [
             UserNotification(
-                **app_users[reviewer["sub"]].dict(),
+                **app_users[atbd_version.owner].dict(),
                 notification=notification,
                 data=data,
             )  # type: ignore
-            for reviewer in atbd_version.reviewers
         ]
-    )
+
+        user_notifications.extend(
+            [
+                UserNotification(
+                    **app_users[author].dict(), notification=notification, data=data  # type: ignore
+                )
+                for author in atbd_version.authors
+            ]
+        )
+        user_notifications.extend(
+            [
+                UserNotification(
+                    **app_users[reviewer["sub"]].dict(),
+                    notification=notification,
+                    data=data,
+                )  # type: ignore
+                for reviewer in atbd_version.reviewers
+            ]
+        )
     return notify_users(
         user_notifications=user_notifications,
         atbd_title=atbd_title,
