@@ -69,7 +69,7 @@ class Output(BaseModel):
     last_updated_by: Union[users.CognitoUser, users.AnonymousUser]
     last_updated_at: datetime
     comment_count: Optional[int]
-    notify: List[str]
+    notify: Optional[List[str]]
 
     class Config:
         """Config."""
