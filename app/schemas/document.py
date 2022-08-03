@@ -285,6 +285,7 @@ class DocumentSummary(BaseModel):
     """
 
     abstract: Optional[SectionWrapper]
+    version_description: Optional[SectionWrapper]
 
 
 class Document(DocumentSummary):
@@ -292,7 +293,6 @@ class Document(DocumentSummary):
 
     plain_summary: Optional[SectionWrapper]
     key_points: Optional[str] = ""
-    version_description: Optional[SectionWrapper]
     introduction: Optional[SectionWrapper]
     historical_perspective: Optional[SectionWrapper]
     additional_information: Optional[SectionWrapper]
