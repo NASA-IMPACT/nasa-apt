@@ -427,14 +427,16 @@ class OpensearchMigrationStack(core.Stack):
                 principals=[iam.AccountPrincipal(self.account)]
             )
         )
-
+app2 = core.App()
 # create migration stack
 migration_stackname = f"{config.PROJECT_NAME}-opensearch-migration-{config.STAGE}"
 OpensearchMigrationStack(
-    app,
+    app2,
     migration_stackname,
     env=dict(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
 )
+
+app2.synth()
