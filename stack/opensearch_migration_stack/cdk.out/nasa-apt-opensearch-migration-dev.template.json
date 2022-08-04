@@ -1,0 +1,262 @@
+{
+ "Resources": {
+  "aptopensearchkey563A37DF": {
+   "Type": "AWS::KMS::Key",
+   "Properties": {
+    "KeyPolicy": {
+     "Statement": [
+      {
+       "Action": [
+        "kms:Create*",
+        "kms:Describe*",
+        "kms:Enable*",
+        "kms:List*",
+        "kms:Put*",
+        "kms:Update*",
+        "kms:Revoke*",
+        "kms:Disable*",
+        "kms:Get*",
+        "kms:Delete*",
+        "kms:ScheduleKeyDeletion",
+        "kms:CancelKeyDeletion",
+        "kms:GenerateDataKey",
+        "kms:TagResource",
+        "kms:UntagResource"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":iam::552819999234:root"
+          ]
+         ]
+        }
+       },
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "nasa-apt-opensearch-migration-dev/apt-opensearch-key/Resource"
+   }
+  },
+  "nasaaptopensearchmigrationdevBFA980B3": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "KMSMasterKeyID": {
+         "Fn::GetAtt": [
+          "aptopensearchkey563A37DF",
+          "Arn"
+         ]
+        },
+        "SSEAlgorithm": "aws:kms"
+       }
+      }
+     ]
+    },
+    "PublicAccessBlockConfiguration": {
+     "BlockPublicAcls": true,
+     "BlockPublicPolicy": true,
+     "IgnorePublicAcls": true,
+     "RestrictPublicBuckets": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "nasa-apt-opensearch-migration-dev/nasa-apt-opensearch-migration-dev/Resource"
+   }
+  },
+  "nasaaptopensearchmigrationdevPolicy4344B596": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "nasaaptopensearchmigrationdevBFA980B3"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:DeleteObject",
+        "s3:GetObject",
+        "s3:PutObject"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":iam::552819999234:root"
+          ]
+         ]
+        }
+       },
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "nasaaptopensearchmigrationdevBFA980B3",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": "s3:ListBucket",
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":iam::552819999234:root"
+          ]
+         ]
+        }
+       },
+       "Resource": {
+        "Fn::GetAtt": [
+         "nasaaptopensearchmigrationdevBFA980B3",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "nasa-apt-opensearch-migration-dev/nasa-apt-opensearch-migration-dev/Policy/Resource"
+   }
+  },
+  "nasaaptopensearchmigrationdevsnapshotroleCB7BB96B": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "opensearchservice.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Description": "\"This role allows Opensearch to assume responsibilities for taking an index snapshot from ElasticSearch/OpenSearch and storing it to S3\")\n        ",
+    "RoleName": "nasa-apt-opensearch-migration-dev-snapshot-role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "nasa-apt-opensearch-migration-dev/nasa-apt-opensearch-migration-dev-snapshot-role/Resource"
+   }
+  },
+  "migrationstacknamesnapshotpolicy416B99E4": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "iam:PassRole",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "nasaaptopensearchmigrationdevsnapshotroleCB7BB96B",
+         "Arn"
+        ]
+       },
+       "Sid": "PassRolePermissionForSnapshotRole"
+      },
+      {
+       "Action": "es:ESHttpPut",
+       "Effect": "Allow",
+       "Resource": "arn:aws:es:us-east-1:552819999234:domain/t-api-lambda-staging-elastic",
+       "Sid": "AllowEsHTTPPutOnOpenSearchDomain"
+      },
+      {
+       "Action": [
+        "s3:DeleteObject",
+        "s3:GetObject",
+        "s3:PutObject"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "nasaaptopensearchmigrationdevBFA980B3",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       },
+       "Sid": "AllowS3ObjectInteractions"
+      },
+      {
+       "Action": "s3:ListBucket",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "nasaaptopensearchmigrationdevBFA980B3",
+         "Arn"
+        ]
+       },
+       "Sid": "AllowS3BucketInteractions"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "migrationstacknamesnapshotpolicy416B99E4",
+    "Roles": [
+     {
+      "Ref": "nasaaptopensearchmigrationdevsnapshotroleCB7BB96B"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "nasa-apt-opensearch-migration-dev/{migration_stackname}-snapshot-policy/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/0WMQQqDMBBFz+I+jogg7a7UZTeSniBMpzSNJpBJEAm5e6sRXL0//z+mhbbvoa1uauEaX6ZJ6DxBegaFRgzOcvARgxjeVhK76JGy2NxkZob0oHWb/siCO0j3iIZ2+0gFo5s0rmdd7iy0miFJN9H+f+NpHk7OYlzDx9mmgwtcqy9rXftog54JZOEPVg5FNsUAAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "nasa-apt-opensearch-migration-dev/CDKMetadata/Default"
+   }
+  }
+ }
+}
