@@ -303,6 +303,7 @@ class Threads(Base):
     created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
     last_updated_by = Column(String(), nullable=False)
     last_updated_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+    notify = Column(types.ARRAY(String), nullable=True)
 
     comments = relationship(
         "Comments",
