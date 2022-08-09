@@ -23,3 +23,5 @@ Pipfile*
 # dir created by virtual env when using cdk
 **/apt-stack
 **/opensearch
+**/stack/**/cdk.out
+opensearch-changeset.*
