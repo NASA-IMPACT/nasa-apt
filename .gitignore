@@ -25,3 +25,4 @@ Pipfile*
 **/opensearch
 **/stack/**/cdk.out
 opensearch-changeset.*
+opensearch_migration
