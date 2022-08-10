@@ -182,6 +182,15 @@ class nasaAPTLambdaStack(core.Stack):
             else core.RemovalPolicy.DESTROY,
         )
 
+        # Add an access policy to the opensearch domain
+        opensearch_domain.add_access_policies(
+            iam.PolicyStatement(
+                actions=["es:*"],
+                resources=[f"{opensearch_domain.domain_arn}/*"],
+                principals=[iam.AccountPrincipal(self.account)]
+            )
+        )
+
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
 
         frontend_url = config.FRONTEND_URL
