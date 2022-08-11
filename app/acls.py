@@ -23,7 +23,6 @@ ATBD_VERSION_ACLS: Dict = {
                     "CLOSED_REVIEW_REQUESTED",
                     "OPEN_REVIEW",
                     "PUBLICATION_REQUESTED",
-                    "PUBLICATION",
                     "PUBLISHED",
                 ],
             },
@@ -49,7 +48,7 @@ ATBD_VERSION_ACLS: Dict = {
         {
             "action": "update_journal_publication_status",
             "conditions": {
-                "status": ["PUBLICATION", "PUBLISHED"],
+                "status": ["PUBLISHED"],
             },
         },
         {"action": "update_journal_status"},
@@ -66,7 +65,6 @@ ATBD_VERSION_ACLS: Dict = {
         #             "CLOSED_REVIEW_REQUESTED",
         #             "OPEN_REVIEW",
         #             "PUBLICATION_REQUESTED",
-        #             "PUBLICATION",
         #             "PUBLISHED",
         #         ],
         #     },
@@ -80,7 +78,6 @@ ATBD_VERSION_ACLS: Dict = {
                     "CLOSED_REVIEW_REQUESTED",
                     "OPEN_REVIEW",
                     "PUBLICATION_REQUESTED",
-                    "PUBLICATION",
                     "PUBLISHED",
                 ],
             },
@@ -107,7 +104,6 @@ ATBD_VERSION_ACLS: Dict = {
         #             "CLOSED_REVIEW_REQUESTED",
         #             "OPEN_REVIEW",
         #             "PUBLICATION_REQUESTED",
-        #             "PUBLICATION",
         #             "PUBLISHED",
         #         ],
         #     },
@@ -121,7 +117,6 @@ ATBD_VERSION_ACLS: Dict = {
                     "CLOSED_REVIEW_REQUESTED",
                     "OPEN_REVIEW",
                     "PUBLICATION_REQUESTED",
-                    "PUBLICATION",
                     "PUBLISHED",
                 ],
             },
@@ -132,7 +127,7 @@ ATBD_VERSION_ACLS: Dict = {
         {
             "action": "update_journal_publication_status",
             "conditions": {
-                "status": ["PUBLICATION", "PUBLISHED"],
+                "status": ["PUBLISHED"],
             },
         },
         {"action": "update_journal_status"},
@@ -179,7 +174,6 @@ ATBD_VERSION_ACLS: Dict = {
                     "CLOSED_REVIEW",
                     "OPEN_REVIEW",
                     "PUBLICATION_REQUESTED",
-                    "PUBLICATION",
                     "PUBLISHED",
                 ],
             },
@@ -199,15 +193,7 @@ ATBD_VERSION_ACLS: Dict = {
             },
         },
         {"action": "open_review", "conditions": {"status": ["CLOSED_REVIEW"]}},
-        {
-            "action": "deny_publication_request",
-            "conditions": {"status": ["PUBLICATION_REQUESTED"]},
-        },
-        {
-            "action": "accept_publication_request",
-            "conditions": {"status": ["PUBLICATION_REQUESTED"]},
-        },
-        {"action": "publish", "conditions": {"status": ["PUBLICATION"]}},
+        {"action": "publish", "conditions": {"status": ["PUBLICATION_REQUESTED"]}},
     ],
     fastapi_permissions.Everyone: [
         {"action": "view", "conditions": {"status": ["PUBLISHED"]}}
