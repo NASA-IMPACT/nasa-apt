@@ -191,7 +191,10 @@ def create_thread(
         atbd_title=atbd.title,
         atbd_id=atbd.id,
         user=user,
-        data={"section": thread.section},
+        data={
+            "section": thread.section,
+            "notify": thread.notify
+        },
     )
 
     return thread
@@ -295,7 +298,10 @@ def create_comment(
         atbd_title=atbd.title,
         atbd_id=atbd.id,
         user=user,
-        data={"section": thread.section},
+        data={
+            "section": thread.section,
+            "notify": comment_input.notify
+        },
     )
 
     return comment

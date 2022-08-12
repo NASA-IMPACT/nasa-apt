@@ -26,6 +26,7 @@ class AdminCreate(BaseModel):
     section: str
     created_by: str
     last_updated_by: str
+    notify: Optional[List[str]]
 
 
 class Create(BaseModel):
@@ -36,6 +37,7 @@ class Create(BaseModel):
     version: str
     section: str
     major: Optional[int]
+    notify: Optional[List[str]]
 
     @validator("major", always=True)
     def _extract_major(cls, v, values) -> int:
@@ -67,6 +69,7 @@ class Output(BaseModel):
     last_updated_by: Union[users.CognitoUser, users.AnonymousUser]
     last_updated_at: datetime
     comment_count: Optional[int]
+    notify: Optional[List[str]]
 
     class Config:
         """Config."""
