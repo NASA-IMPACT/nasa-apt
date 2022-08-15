@@ -42,9 +42,9 @@ def notify_atbd_version_contributors(
     if (len(data['notify']) > 0):
         user_notifications = [
             UserNotification(
-                **app_users[user_sub].dict(),
+                **app_users[user_sub].dict(), # type: ignore
                 notification=notification,
-                data=data, # type: ignore
+                data=data
             )
             for user_sub in data['notify']
         ]
