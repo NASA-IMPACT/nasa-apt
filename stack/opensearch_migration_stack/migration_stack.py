@@ -3,18 +3,13 @@ CDK Stack definition code for Open Search Migration
 """
 import os
 from typing import Any
-
-# import config from parent dir
 import sys
 sys.path.append("../")
 import config
-
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_kms as kms
 from aws_cdk import core
-from aws_cdk import aws_opensearchservice
-
 """
 class contains resources deployed to aid in migrating APT's ElasticSearch instance to an AWS OpenSearch instance
 """
@@ -22,6 +17,19 @@ class contains resources deployed to aid in migrating APT's ElasticSearch instan
 migration_stackname = f"{config.PROJECT_NAME}-{config.STAGE}"
 
 class OpensearchMigrationStack(core.Stack):
+    """
+        This stack is passed on stack/app.py stack.
+        Resources included here:
+        - KMS key
+        -- encrypts the S3 bucket
+        - S3 bucket
+        -- set to receive snapshots from opensearch domain
+        - IAM policies
+        -- allows access to the S3 bucket from opensearch, sets a role used for snapshots and opensearch index migrations
+        -- allows actions upon ES (Opensearch service) domains
+        -- allows opensearch service to assume a role for creating and saving snapshots to an s3 bucket
+
+    """
 
     def __init__(
         self,
@@ -54,7 +62,7 @@ class OpensearchMigrationStack(core.Stack):
         assert(migration_bucket.encryption_key == migration_kms_key)
 
         # IAM Access Policy for s3 migration bucket
-        result = migration_bucket.add_to_resource_policy(
+        migration_bucket.add_to_resource_policy(
             iam.PolicyStatement(
                 actions=[
                     "s3:DeleteObject",
@@ -67,7 +75,7 @@ class OpensearchMigrationStack(core.Stack):
             )
         )
         # add supporting policy to the same bucket
-        result2 = migration_bucket.add_to_resource_policy(
+        migration_bucket.add_to_resource_policy(
             iam.PolicyStatement(
                 actions=["s3:ListBucket"],
                 resources=[f"{migration_bucket.bucket_arn}"],
