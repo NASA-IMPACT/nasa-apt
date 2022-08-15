@@ -44,7 +44,7 @@ def notify_atbd_version_contributors(
             UserNotification(
                 **app_users[user_sub].dict(),
                 notification=notification,
-                data=data,
+                data=data, # type: ignore
             )
             for user_sub in data['notify']
         ]
