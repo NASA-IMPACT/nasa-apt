@@ -45,12 +45,7 @@ ATBD_VERSION_ACLS: Dict = {
         },
         {"action": "create_new_version", "conditions": {"status": ["PUBLISHED"]}},
         {"action": "bump_minor_version", "conditions": {"status": ["PUBLISHED"]}},
-        {
-            "action": "update_journal_publication_status",
-            "conditions": {
-                "status": ["PUBLISHED"],
-            },
-        },
+        {"action": "update_journal_publication_status"},
         {"action": "update_journal_status"},
         {"action": "join_reviewers", "deny": True},
         {"action": "join_authors", "deny": True},
@@ -124,12 +119,7 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "override_release_lock"},
         {"action": "create_new_version", "conditions": {"status": ["PUBLISHED"]}},
         {"action": "bump_minor_version", "conditions": {"status": ["PUBLISHED"]}},
-        {
-            "action": "update_journal_publication_status",
-            "conditions": {
-                "status": ["PUBLISHED"],
-            },
-        },
+        {"action": "update_journal_publication_status"},
         {"action": "update_journal_status"},
         {"action": "view_owner"},
         {"action": "view_authors"},
