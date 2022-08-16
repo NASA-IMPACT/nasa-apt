@@ -38,6 +38,7 @@ def notify_atbd_version_contributors(
     app_users, _ = cognito.list_cognito_users()
 
     user_notifications = []
+    curators = (user for (_, user) in app_users.items() if 'curator' in user.cognito_groups)
 
     if (len(data['notify']) > 0):
         user_notifications = [
@@ -46,8 +47,21 @@ def notify_atbd_version_contributors(
                 notification=notification,
                 data=data
             )
-            for user_sub in data['notify']
+            for user_sub in data['notify'] if user_sub != 'curators'
         ]
+
+        notify_curators = 'curators' in data['notify']
+        if notify_curators:
+            user_notifications.extend(
+                [
+                    UserNotification(
+                        **curator.dict(),
+                        notification=notification,
+                        data=data,
+                    )
+                    for curator in curators
+                ]
+            )
     else:
         user_notifications = [
             UserNotification(
