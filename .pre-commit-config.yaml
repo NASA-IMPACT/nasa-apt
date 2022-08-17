@@ -21,7 +21,8 @@ repos:
               # E501 let black handle all line length decisions
               # W503 black conflicts with "line break before operator" rule
               # E203 black conflicts with "whitespace before ':'" rule
-              "--ignore=E501,W503,E203",
+              # F401 module imported but unused. Flake8 may have issues recognizing a import's use in nested infrastructure code when deploying multiple stacks
+              "--ignore=E501,W503,E203,F401",
             ]
   
     - repo: https://github.com/PyCQA/pydocstyle
