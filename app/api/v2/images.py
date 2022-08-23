@@ -60,6 +60,5 @@ def get_image(
         print(error.response["Error"])
         if error.response["Error"]["Code"] == "NoSuchKey":
             raise HTTPException(
-                status_code=404,
-                detail=f"Image {key} not found in database",
+                status_code=404, detail=f"Image {key} not found in database"
             )

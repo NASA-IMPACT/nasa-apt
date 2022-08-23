@@ -89,9 +89,7 @@ def create_new_version(
     """
     [latest_version] = crud_atbds.get(db=db, atbd_id=atbd_id, version=-1).versions
     check_permissions(
-        principals=principals,
-        action="create_new_version",
-        acl=latest_version.__acl__(),
+        principals=principals, action="create_new_version", acl=latest_version.__acl__()
     )
     update_document = latest_version.document
     update_document["version_description"] = None

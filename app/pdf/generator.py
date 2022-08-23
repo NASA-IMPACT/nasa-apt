@@ -590,12 +590,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     if journal:
 
-        doc.append(
-            Command(
-                "authors",
-                arguments=NoEscape(", ".join(authors)),
-            )
-        )
+        doc.append(Command("authors", arguments=NoEscape(", ".join(authors))))
         for i, affiliation in enumerate(affiliations):
             doc.append(Command("affiliation", arguments=[str(i + 1), affiliation]))
 
@@ -653,8 +648,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         doc.append(Command("end", arguments="keypoints"))
 
     generate_bib_file(
-        document_data["publication_references"],
-        filepath=f"{filepath}.bib",
+        document_data["publication_references"], filepath=f"{filepath}.bib"
     )
     section_name: str
     info: Any
@@ -732,10 +726,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
             continue
 
-        if section_name in [
-            "algorithm_input_variables",
-            "algorithm_output_variables",
-        ]:
+        if section_name in ["algorithm_input_variables", "algorithm_output_variables"]:
 
             doc.append(
                 process_algorithm_variables(

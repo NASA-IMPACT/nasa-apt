@@ -62,11 +62,7 @@ class CRUDBase(
         )
 
     def create(
-        self,
-        db_session: Session,
-        *,
-        obj_in: CreateSchemaType,
-        commit=True,
+        self, db_session: Session, *, obj_in: CreateSchemaType, commit=True
     ) -> ModelType:
         """Insert a new item into the DB"""
         obj_in_data = jsonable_encoder(obj_in)
@@ -78,11 +74,7 @@ class CRUDBase(
         return db_obj
 
     def upsert(
-        self,
-        db_session: Session,
-        *,
-        commit=True,
-        obj_in: CreateSchemaType,
+        self, db_session: Session, *, commit=True, obj_in: CreateSchemaType
     ) -> None:
         """
         Create object if object does not exist in DB. Update record to new

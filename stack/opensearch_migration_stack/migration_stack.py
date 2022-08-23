@@ -34,12 +34,7 @@ class OpensearchMigrationStack(core.Stack):
 
     """
 
-    def __init__(
-        self,
-        scope: core.Construct,
-        id: str,
-        **kwargs: Any,
-    ) -> None:
+    def __init__(self, scope: core.Construct, id: str, **kwargs: Any) -> None:
         """Define stack."""
         super().__init__(scope, id, **kwargs)
 

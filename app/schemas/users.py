@@ -54,11 +54,7 @@ class CognitoUser(AnonymousUser):
             return values
 
         for attribute in values[user_attributes_key]:
-            if attribute["Name"] in [
-                "email",
-                "sub",
-                "preferred_username",
-            ]:
+            if attribute["Name"] in ["email", "sub", "preferred_username"]:
                 values[attribute["Name"]] = attribute["Value"]
         return values
 

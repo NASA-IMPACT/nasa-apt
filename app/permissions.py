@@ -38,10 +38,7 @@ def filter_atbd_versions(
 
 
 def check_atbd_permissions(
-    principals: List[str],
-    action: str,
-    atbd: Atbds,
-    all_versions: bool = True,
+    principals: List[str], action: str, atbd: Atbds, all_versions: bool = True
 ) -> bool:
     """
     Applies a permission check for any action to all of the atbd's versions
@@ -96,7 +93,6 @@ def check_permissions(
 
         action_name = " ".join([x.capitalize() for x in action.split("_")])
         raise HTTPException(
-            status_code=403,
-            detail=f"{action_name} for ATBD Version is not allowed",
+            status_code=403, detail=f"{action_name} for ATBD Version is not allowed"
         )
     return True

@@ -114,8 +114,7 @@ def accept_closed_review_request_handler(
     [version] = atbd.versions
 
     version_input = versions.Update(
-        reviewers=payload["reviewers"],
-        status="CLOSED_REVIEW",
+        reviewers=payload["reviewers"], status="CLOSED_REVIEW"
     )
 
     # performs the validation checks to make sure each of the
@@ -310,10 +309,10 @@ ACTIONS: Dict[str, Dict[str, Any]] = {
     "deny_closed_review_request": {
         "custom_handler": deny_request_with_comment(
             next_status="DRAFT", notification="deny_closed_review_request"
-        ),
+        )
     },
     "accept_closed_review_request": {
-        "custom_handler": accept_closed_review_request_handler,
+        "custom_handler": accept_closed_review_request_handler
     },
     "open_review": {
         "next_status": "OPEN_REVIEW",

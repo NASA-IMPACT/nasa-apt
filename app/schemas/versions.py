@@ -97,9 +97,7 @@ class PublicationUnits(BaseModel):
 
         """
         return PublicationUnits(
-            words=d + self.words,
-            images=d + self.images,
-            tables=d + self.tables,
+            words=d + self.words, images=d + self.images, tables=d + self.tables
         )
 
 

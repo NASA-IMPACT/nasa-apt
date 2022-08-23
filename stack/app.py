@@ -164,8 +164,7 @@ class nasaAPTLambdaStack(core.Stack):
             f"{id}-opensearch-domain",
             version=opensearch.EngineVersion.OPENSEARCH_1_0,
             capacity=opensearch.CapacityConfig(
-                data_node_instance_type="t3.medium.search",
-                data_nodes=1,
+                data_node_instance_type="t3.medium.search", data_nodes=1
             ),
             # slice last 28 chars since Open Search Domains can't have a name longer than 28 chars in
             # AWS (and can't start with a `-` character)
@@ -346,10 +345,7 @@ class nasaAPTLambdaStack(core.Stack):
             description="User pool domain",
         )
 
-        lambda_function.add_environment(
-            key="USER_POOL_NAME",
-            value=user_pool.node.id,
-        )
+        lambda_function.add_environment(key="USER_POOL_NAME", value=user_pool.node.id)
         lambda_function.add_environment(
             key="APP_CLIENT_NAME", value=app_client.user_pool_client_name
         )

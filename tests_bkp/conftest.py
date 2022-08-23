@@ -220,8 +220,7 @@ def atbd_versions_factory(db_session):
         major = factory.Faker("pyint")
         minor = factory.Faker("pyint")
         status = factory.Faker(
-            "random_element",
-            elements=["Draft", "Review", "Published"],
+            "random_element", elements=["Draft", "Review", "Published"]
         )
         document = DOCUMENT
 
@@ -246,9 +245,7 @@ def atbds_factory(db_session):
     class AtbdsFactory(BaseFactory):
         title = factory.Faker("pystr")
         alias = fuzzy.FuzzyText(
-            length=15,
-            prefix="x9-",
-            chars="qwertyuiopasdfghjklzxcvbnm",
+            length=15, prefix="x9-", chars="qwertyuiopasdfghjklzxcvbnm"
         )
         created_by = factory.Faker("pystr")
         last_updated_by = factory.Faker("pystr")
@@ -309,7 +306,5 @@ def mocked_send_to_elasticsearch():
 @pytest.fixture
 def mocked_validate_cognito_token():
     with patch("app.auth.cognito.validate_token") as mocked_validate_cognito_token:
-        mocked_validate_cognito_token.return_value = {
-            "sub": "123abc456def",
-        }
+        mocked_validate_cognito_token.return_value = {"sub": "123abc456def"}
         yield mocked_validate_cognito_token

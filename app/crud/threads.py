@@ -68,10 +68,7 @@ class CRUDThreads(CRUDBase[Threads, Output, Create, Update]):
                 )
             )
             .outerjoin(Threads)
-            .group_by(
-                AtbdVersions.atbd_id,
-                AtbdVersions.major,
-            )
+            .group_by(AtbdVersions.atbd_id, AtbdVersions.major)
             .all()
         )
 

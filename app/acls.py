@@ -24,7 +24,7 @@ ATBD_VERSION_ACLS: Dict = {
                     "OPEN_REVIEW",
                     "PUBLICATION_REQUESTED",
                     "PUBLISHED",
-                ],
+                ]
             },
         },
     ],
@@ -34,9 +34,7 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "request_closed_review", "conditions": {"status": ["DRAFT"]}},
         {
             "action": "cancel_closed_review_request",
-            "conditions": {
-                "status": ["CLOSED_REVIEW_REQUESTED"],
-            },
+            "conditions": {"status": ["CLOSED_REVIEW_REQUESTED"]},
         },
         {"action": "request_publication", "conditions": {"status": ["OPEN_REVIEW"]}},
         {
@@ -165,7 +163,7 @@ ATBD_VERSION_ACLS: Dict = {
                     "OPEN_REVIEW",
                     "PUBLICATION_REQUESTED",
                     "PUBLISHED",
-                ],
+                ]
             },
         },
         {"action": "invite_authors"},
@@ -178,9 +176,7 @@ ATBD_VERSION_ACLS: Dict = {
         },
         {
             "action": "accept_closed_review_request",
-            "conditions": {
-                "status": ["CLOSED_REVIEW_REQUESTED"],
-            },
+            "conditions": {"status": ["CLOSED_REVIEW_REQUESTED"]},
         },
         {"action": "open_review", "conditions": {"status": ["CLOSED_REVIEW"]}},
         {"action": "publish", "conditions": {"status": ["PUBLICATION_REQUESTED"]}},

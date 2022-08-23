@@ -101,11 +101,7 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         which needs to be saved as a field of the AtbdVersion, gets generated when
         serializing the Atbd to the database."""
 
-        atbd = Atbds(
-            **atbd_input.dict(),
-            created_by=user_sub,
-            last_updated_by=user_sub,
-        )
+        atbd = Atbds(**atbd_input.dict(), created_by=user_sub, last_updated_by=user_sub)
         db.add(atbd)
         db.commit()
         db.refresh(atbd)
