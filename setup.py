@@ -30,7 +30,7 @@ extra_reqs = {
     "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort"],
     "deploy": [
         "python-dotenv",
-        "aws-cdk.core>=2.34.2",
+        "aws-cdk.core>=1.169.0",
         "aws-cdk.aws_lambda>=2.34.2",
         "aws-cdk.aws_apigatewayv2>=2.34.2",
         "aws-cdk.aws_apigatewayv2_integrations>=2.34.2",
