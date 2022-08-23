@@ -1,10 +1,6 @@
 
 name: Deploy APT API
-on:
-  push:
-    branches:
-      - master
-      - develop
+on: [push]
 jobs: 
   lint:
     runs-on: ubuntu-latest
@@ -24,7 +20,7 @@ jobs:
         pip install -e .[dev] --no-binary xmlsec
     - name: Run linting
       run: |
-        pre-commit run --all-files
+        pre-commit run -vvv --all-files
   test: 
     needs: [lint]
     runs-on: ubuntu-latest
