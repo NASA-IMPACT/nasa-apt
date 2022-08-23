@@ -4,7 +4,7 @@ repos:
       hooks:
         - id: black
           language_version: python3
-          args: ["--safe","--skip-magic-trailing-comma","--target-version py38","--verbose"]
+          args: ["--safe","--skip-magic-trailing-comma","--target-version" ,"py38","--verbose"]
   
     - repo: https://github.com/PyCQA/isort
       rev: 5.4.2
