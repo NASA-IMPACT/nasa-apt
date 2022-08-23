@@ -29,7 +29,7 @@ def monkeysession(request):
     mpatch.setenv("AWS_ACCESS_KEY_ID", "patch")
     mpatch.setenv("AWS_SECRET_ACCESS_KEY", "patch")
     mpatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
-    mpatch.setenv("ELASTICSEARCH_URL", "patch")
+    mpatch.setenv("OPENSEARCH_URL", "patch")
     mpatch.setenv("POSTGRES_ADMIN_CREDENTIALS_ARN", "mocked_secrets_manager_arn")
     mpatch.setenv("API_VERSION_STRING", "/v2")
     mpatch.setenv("PROJECT_NAME", "project_name")
