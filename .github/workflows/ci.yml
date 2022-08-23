@@ -79,7 +79,7 @@ jobs:
           pip install --upgrade pip setuptools wheel 
           pip install -e .[deploy] --no-binary xmlsec
       - name: Install CDK
-        run: npm install -g aws-cdk@1.x
+        run: npm install -g aws-cdk@2.34.2
       - name: Bootstrap CDK  
         run: cdk bootstrap
       - name: Deploy stack
@@ -122,7 +122,7 @@ jobs:
   #         pip install --upgrade pip setuptools wheel 
   #         pip install -e .[deploy] --no-binary xmlsec
   #     - name: Install CDK
-  #       run: npm install -g aws-cdk
+  #       run: npm install -g aws-cdk@2.34.2
   #     - name: Bootstrap CDK 
   #       run: cdk bootstrap
   #     - name: Deploy stack
