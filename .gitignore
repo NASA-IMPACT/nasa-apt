@@ -26,3 +26,7 @@ Pipfile*
 **/stack/**/cdk.out
 opensearch-changeset.*
 opensearch_migration
+
+# deployment build and dist files
+**/build
+**/dist
