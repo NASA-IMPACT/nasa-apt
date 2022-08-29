@@ -1,10 +1,10 @@
-"""Opensearch Endpoint."""
+"""Elasticsearch Endpoint."""
 
 import boto3
 import requests
 from requests_aws4auth import AWS4Auth
 
-from app.config import OPENSEARCH_URL
+from app.config import ELASTICSEARCH_URL
 from app.logs import logger
 
 # from app.auth.saml import User, get_user
@@ -13,7 +13,7 @@ from app.users.auth import get_user
 
 from fastapi import APIRouter, Depends, HTTPException
 
-logger.info("OPENSEARCH_URL %s", OPENSEARCH_URL)
+logger.info("ELASTICSEARCH_URL %s", ELASTICSEARCH_URL)
 
 router = APIRouter()
 
@@ -42,7 +42,7 @@ def search_elastic(request: dict, user: User = Depends(get_user)):
     """
     Proxies POST json to elastic search endpoint
     """
-    url = f"{OPENSEARCH_URL}/atbd/_search"
+    url = f"{ELASTICSEARCH_URL}/atbd/_search"
 
     logger.info("User %s", user)
     logger.info("data: %s", request)

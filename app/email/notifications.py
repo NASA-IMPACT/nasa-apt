@@ -3,7 +3,6 @@ import json
 import os
 from string import Template
 from typing import Any, Dict, List, Mapping, Optional
-
 from app import config
 from app.api.utils import ses_client
 from app.db.models import AtbdVersions
@@ -38,12 +37,14 @@ def notify_atbd_version_contributors(
 
     user_notifications = []
 
-    if len(data["notify"]) > 0:
+    if (len(data['notify']) > 0):
         user_notifications = [
             UserNotification(
-                **app_users[user_sub].dict(), notification=notification, data=data
+                **app_users[user_sub].dict(),
+                notification=notification,
+                data=data
             )
-            for user_sub in data["notify"]
+            for user_sub in data['notify']
         ]
     else:
         user_notifications = [
@@ -51,13 +52,13 @@ def notify_atbd_version_contributors(
                 **app_users[atbd_version.owner].dict(),
                 notification=notification,
                 data=data,
-            )
+            ) 
         ]
 
         user_notifications.extend(
             [
                 UserNotification(
-                    **app_users[author].dict(), notification=notification, data=data
+                    **app_users[author].dict(), notification=notification, data=data 
                 )
                 for author in atbd_version.authors
             ]
@@ -68,7 +69,7 @@ def notify_atbd_version_contributors(
                     **app_users[reviewer["sub"]].dict(),
                     notification=notification,
                     data=data,
-                )
+                ) 
                 for reviewer in atbd_version.reviewers
             ]
         )

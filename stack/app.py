@@ -9,12 +9,12 @@ from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_iam as iam
-from aws_cdk import aws_kms as kms
-from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_opensearchservice as opensearch
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_kms as kms
 from aws_cdk import core
 from permissions_boundary import PermissionBoundaryAspect
 
@@ -187,7 +187,7 @@ class nasaAPTLambdaStack(core.Stack):
             iam.PolicyStatement(
                 actions=["es:*"],
                 resources=[f"{opensearch_domain.domain_arn}/*"],
-                principals=[iam.AccountPrincipal(self.account)],
+                principals=[iam.AccountPrincipal(self.account)]
             )
         )
 
@@ -383,3 +383,4 @@ nasaAPTLambdaStack(
 )
 
 app.synth()
+
