@@ -83,7 +83,7 @@ jobs:
       - name: Bootstrap CDK  
         run: cdk bootstrap
       - name: Deploy stack
-        run: cdk deploy nasa-apt-api-lambda-staging --require-approval never
+        run: cdk deploy nasa-apt-api-staging --require-approval never
   # deploy-prod: 
   #   needs: [test]
   #   if: github.event.ref == 'refs/heads/master' 
