@@ -15,7 +15,7 @@ from app.schemas.elasticsearch import ElasticsearchAtbd
 
 from fastapi import HTTPException
 
-logger.info("OPENSEARCH_URL %s", config.OPENSEARCH_URL)
+logger.info("ELASTICSEARCH_URL %s", config.ELASTICSEARCH_URL)
 
 REGION = os.getenv("AWS_REGION", "us-west-2")
 
@@ -49,7 +49,7 @@ def send_to_elastic(data: List[Dict]):
     """
     # bulk commands must end with newline
     data_string = "\n".join(json.dumps(d, default=_default) for d in data) + "\n"
-    url = f"http://{config.OPENSEARCH_URL}/atbd/_bulk"
+    url = f"http://{config.ELASTICSEARCH_URL}/atbd/_bulk"
 
     auth = aws_auth()
     print("SENDING DATA: ", data_string)

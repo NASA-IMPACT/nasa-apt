@@ -28,8 +28,8 @@ POSTGRES_ADMIN_CREDENTIALS_ARN = os.environ.get(
 ) or exit("POSTGRES_ADMIN_CREDENTIALS_ARN env var required")
 
 
-OPENSEARCH_URL = os.environ.get("OPENSEARCH_URL") or exit(
-    "OPENSEARCH_URL env var required"
+ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL") or exit(
+    "ELASTICSEARCH_URL env var required"
 )
 
 
