@@ -359,7 +359,7 @@ for key, value in {
         core.Tags.of(app).add(key, value)
 
 
-lambda_stackname = f"{config.PROJECT_NAME}-lambda-{config.STAGE}"
+lambda_stackname = f"{config.PROJECT_NAME}-{config.STAGE}"
 nasaAPTLambdaStack(
     app,
     lambda_stackname,
