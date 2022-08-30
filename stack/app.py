@@ -5,11 +5,12 @@ import os
 from typing import Any
 
 import config
+
+# from aws_cdk import aws_elasticsearch as elasticsearch
 from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_elasticsearch as elasticsearch
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
@@ -156,28 +157,28 @@ class nasaAPTLambdaStack(core.Stack):
             bucket_params["bucket_name"] = config.S3_BUCKET
         bucket = s3.Bucket(**bucket_params)
 
-        esdomain = elasticsearch.Domain(
-            self,
-            f"{id}-elasticsearch-domain",
-            version=elasticsearch.ElasticsearchVersion.V7_7,
-            capacity=elasticsearch.CapacityConfig(
-                data_node_instance_type="t2.small.elasticsearch",
-                data_nodes=1,
-            ),
-            # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in
-            # AWS (and can't start with a `-` character)
-            domain_name=f"{id}-elastic"[-28:].strip("-"),
-            ebs=elasticsearch.EbsOptions(
-                enabled=True,
-                iops=0,
-                volume_size=10,
-                volume_type=ec2.EbsDeviceVolumeType.GP2,
-            ),
-            automated_snapshot_start_hour=0,
-            removal_policy=core.RemovalPolicy.RETAIN
-            if config.STAGE.lower() == "prod"
-            else core.RemovalPolicy.DESTROY,
-        )
+        # esdomain = elasticsearch.Domain(
+        #     self,
+        #     f"{id}-elasticsearch-domain",
+        #     version=elasticsearch.ElasticsearchVersion.V7_7,
+        #     capacity=elasticsearch.CapacityConfig(
+        #         data_node_instance_type="t2.small.elasticsearch",
+        #         data_nodes=1,
+        #     ),
+        #     # slice last 28 chars since Elastic Domains can't have a name longer than 28 chars in
+        #     # AWS (and can't start with a `-` character)
+        #     domain_name=f"{id}-elastic"[-28:].strip("-"),
+        #     ebs=elasticsearch.EbsOptions(
+        #         enabled=True,
+        #         iops=0,
+        #         volume_size=10,
+        #         volume_type=ec2.EbsDeviceVolumeType.GP2,
+        #     ),
+        #     automated_snapshot_start_hour=0,
+        #     removal_policy=core.RemovalPolicy.RETAIN
+        #     if config.STAGE.lower() == "prod"
+        #     else core.RemovalPolicy.DESTROY,
+        # )
 
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
 
@@ -188,7 +189,8 @@ class nasaAPTLambdaStack(core.Stack):
             APT_FRONTEND_URL=frontend_url,
             BACKEND_CORS_ORIGINS=config.BACKEND_CORS_ORIGINS,
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
-            ELASTICSEARCH_URL=esdomain.domain_endpoint,
+            ELASTICSEARCH_URL="https://iam.void",
+            # ELASTICSEARCH_URL=esdomain.domain_endpoint,
             S3_BUCKET=bucket.bucket_name,
             NOTIFICATIONS_FROM=config.NOTIFICATIONS_FROM,
             MODULE_NAME="nasa_apt.main",
@@ -220,7 +222,7 @@ class nasaAPTLambdaStack(core.Stack):
         )
         lambda_function.add_to_role_policy(ses_access)
         database.secret.grant_read(lambda_function)
-        esdomain.grant_read_write(lambda_function)
+        # esdomain.grant_read_write(lambda_function)
         bucket.grant_read_write(lambda_function)
 
         # defines an API Gateway Http API resource backed by our custom lambda function.
