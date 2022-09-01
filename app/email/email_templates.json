@@ -55,14 +55,6 @@
         "subject": "Publication request cancelled",
         "content": "<p>Hi $preferred_username,</p> <p>$app_user has removed their request for publication of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
-    "deny_publication_request": {
-        "subject": "Publication request denied",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has denied the request for publication of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> with this note: $comment.</p><p>Sincerely,</p><p>The APT Team</p>"
-    },
-    "accept_publication_request": {
-        "subject": "Publication request accepted",
-        "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has accepted the request for publication of the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>!</p><p>Sincerely,</p><p>The APT Team</p>"
-    },
     "publish": {
         "subject": "Atbd version published",
         "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has published the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>!</p><p>Sincerely,</p><p>The APT Team</p>"

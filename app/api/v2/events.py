@@ -327,15 +327,6 @@ ACTIONS: Dict[str, Dict[str, Any]] = {
         "next_status": "OPEN_REVIEW",
         "notify": ["curators"],
     },
-    "deny_publication_request": {
-        "custom_handler": deny_request_with_comment(
-            next_status="OPEN_REVIEW", notification="deny_publication_request"
-        ),
-    },
-    "accept_publication_request": {
-        "next_status": "PUBLICATION",
-        "notify": ["owner", "authors", "reviewers"],
-    },
     "publish": {"custom_handler": publish_handler},
     "bump_minor_version": {"custom_handler": bump_minor_version_handler},
     "update_review_status": {"custom_handler": update_review_status_handler},

@@ -2,7 +2,7 @@
 import json
 import os
 from string import Template
-from typing import Any, Dict, List, Mapping, Optional, TypedDict
+from typing import Any, Dict, List, Mapping, Optional
 
 from app import config
 from app.api.utils import ses_client
@@ -14,8 +14,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 EMAIL_TEMPLATES = json.load(open(os.path.join(dir_path, "email_templates.json"), "r"))
 
 
-# TODO: use an enum for notification
-class UserNotification(TypedDict):
+class UserNotification(Dict):
     """Object representing a notification to be sent to an app user"""
 
     email: str
@@ -40,12 +39,10 @@ def notify_atbd_version_contributors(
     user_notifications = []
     curators = (user for (_, user) in app_users.items() if 'curator' in user.cognito_groups)
 
-    if (len(data['notify']) > 0):
+    if len(data["notify"]) > 0:
         user_notifications = [
             UserNotification(
-                **app_users[user_sub].dict(), # type: ignore
-                notification=notification,
-                data=data
+                **app_users[user_sub].dict(), notification=notification, data=data
             )
             for user_sub in data['notify'] if user_sub != 'curators'
         ]
@@ -68,13 +65,13 @@ def notify_atbd_version_contributors(
                 **app_users[atbd_version.owner].dict(),
                 notification=notification,
                 data=data,
-            )  # type: ignore
+            )
         ]
 
         user_notifications.extend(
             [
                 UserNotification(
-                    **app_users[author].dict(), notification=notification, data=data  # type: ignore
+                    **app_users[author].dict(), notification=notification, data=data
                 )
                 for author in atbd_version.authors
             ]
@@ -85,7 +82,7 @@ def notify_atbd_version_contributors(
                     **app_users[reviewer["sub"]].dict(),
                     notification=notification,
                     data=data,
-                )  # type: ignore
+                )
                 for reviewer in atbd_version.reviewers
             ]
         )

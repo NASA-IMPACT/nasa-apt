@@ -67,23 +67,24 @@ POSTGRES_HOST = pg_credentials["host"]
 USER_POOL_NAME = os.environ.get("USER_POOL_NAME") or exit(
     "USER_POOL_NAME env var required"
 )
+
 APP_CLIENT_NAME = os.environ.get("APP_CLIENT_NAME") or exit(
     "APP_CLIENT_NAME env var required"
 )
 
-
+# call AWS cognito-idp api to list user pools, if user pool name is found, grab user_pool id for the name
 [USER_POOL_ID] = [
-    x["Id"]
-    for x in cognito.list_user_pools(MaxResults=60)["UserPools"]
-    if x["Name"] == USER_POOL_NAME
+    user_pool["Id"]
+    for user_pool in cognito.list_user_pools(MaxResults=60)["UserPools"]
+    if user_pool["Name"] == USER_POOL_NAME
 ]
 
 [APP_CLIENT_ID] = [
-    x["ClientId"]
-    for x in cognito.list_user_pool_clients(MaxResults=60, UserPoolId=USER_POOL_ID)[
-        "UserPoolClients"
-    ]
-    if x["ClientName"] == APP_CLIENT_NAME
+    user_pool_clients["ClientId"]
+    for user_pool_clients in cognito.list_user_pool_clients(
+        MaxResults=60, UserPoolId=USER_POOL_ID
+    )["UserPoolClients"]
+    if user_pool_clients["ClientName"] == APP_CLIENT_NAME
 ]
 
 COGNITO_KEYS_URL = f"https://cognito-idp.{AWS_REGION}.amazonaws.com/{USER_POOL_ID}/.well-known/jwks.json"
