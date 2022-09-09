@@ -30,3 +30,6 @@ opensearch_migration
 # deployment build and dist files
 **/build
 **/dist
+
+# changesets
+changeset.txt

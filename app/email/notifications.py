@@ -40,6 +40,12 @@ def notify_atbd_version_contributors(
     curators = (
         user for (_, user) in app_users.items() if "curator" in user.cognito_groups
     )
+    # TODO remove comment and test code
+    print("################ \n")
+    print(f"{data},DATA PRIOR TO PUBLISH")
+    print("################ \n")
+
+    # data.update({"notify": "owner@apt.com"})
 
     if len(data["notify"]) > 0:
         user_notifications = [

@@ -1,6 +1,6 @@
 """
 Collects various config values that are needed by the API. Most of these a
-allow the API to contact other resources (database, elasticsearch, etc) and
+allow the API to contact other resources (database, opensearch, etc) and
 are set by the CDK stack at deployment.
 """
 import json
@@ -28,8 +28,8 @@ POSTGRES_ADMIN_CREDENTIALS_ARN = os.environ.get(
 ) or exit("POSTGRES_ADMIN_CREDENTIALS_ARN env var required")
 
 
-ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL") or exit(
-    "ELASTICSEARCH_URL env var required"
+OPENSEARCH_URL = os.environ.get("OPENSEARCH_URL") or exit(
+    "OPENSEARCH_URL env var required"
 )
 
 

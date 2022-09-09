@@ -8,7 +8,7 @@ from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.permissions import check_atbd_permissions, filter_atbd_versions
 from app.schemas import atbds, users
-from app.search.elasticsearch import remove_atbd_from_index
+from app.search.opensearch import remove_atbd_from_index
 from app.users.auth import get_user, require_user
 from app.users.cognito import get_active_user_principals, update_atbd_contributor_info
 
@@ -129,7 +129,7 @@ def update_atbd(
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Updates an ATBD (either Title or Alias). Raises 400 if the user
-    is not logged in. Re-indexes all corresponding items in Elasticsearch
+    is not logged in. Re-indexes all corresponding items in opensearch
     with the new/updated values"""
 
     # Get latest version - ability to udpate an atbd is given
@@ -172,7 +172,7 @@ def delete_atbd(
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Deletes an ATBD (and all child versions). Removes all associated
-    items in the Elasticsearch index."""
+    items in the opensearch index."""
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
     check_atbd_permissions(principals=principals, action="delete", atbd=atbd)
 
