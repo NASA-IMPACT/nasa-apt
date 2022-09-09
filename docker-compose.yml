@@ -12,6 +12,9 @@ services:
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
     command: postgres -c log_statement=all
+    networks:
+      - opensearch-net
+      - default
 
   bootstrapper:
     # Sets up the necessary AWS resources in Localstack and 
@@ -46,27 +49,60 @@ services:
     environment:
       MAILNAME: developmentseed.org
       DISABLE_IPV6: 1
+    networks:
+      - opensearch-net
+      - default
 
-  elastic:
-    # Elastic db for local development only.
-    # For staging/production, add elasticache instance
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+  opensearch:
+    # Opensearch instance for local development only.
+    image: opensearchproject/opensearch:1.0.1
+    # set env var for single node opensearch cluste
     environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-main
+      - node.master=true
       - discovery.type=single-node
-      - http.port=9200
-      - http.cors.allow-origin=*
+      - bootstrap.memory_lock=true 
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - http.cors.allow-origin=*,http://localhost:9000/,http://localhost:8000,http://localhost:8000/,http://localhost:8000/v2/,https://localhost:8000/v2
       - http.cors.enabled=true
-      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - http.cors.allow-headers="X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization"
       - http.cors.allow-credentials=true
+      - plugins.security.disabled=true # this option should be used for development and test ONLY
     ports:
       - "9200:9200"
+      - "9600:9600" # required for Performance Analyzer
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data1:/usr/share/opensearch/data
+      # - ./opensearch_spec/opensearch_config.yml:/usr/share/opensearch/config/opensearch.yml
+    networks:
+      - opensearch-net
+      - default
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:1.0.1
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch-main:9200"]' # must be a string with no spaces when specified as an environment variable
+    networks:
+      - opensearch-net
+      - default
 
   localstack:
     # localstack for local development only. AWS S3 used for staging/production
     image: localstack/localstack:0.12.13
     environment:
       LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
-      SERVICES: s3,secretsmanager,cognito,ses
+      SERVICES: s3,secretsmanager,cognito,ses, opensearch
       DEBUG: 1 # Uncomment to increase localstack logging output
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
@@ -74,6 +110,9 @@ services:
       EXTRA_CORS_ALLOWED_ORIGINS: http://localhost:9000
     ports:
       - "4566:4566"
+    networks:
+      - opensearch-net
+      - default
 
   api:
     build:
@@ -101,24 +140,39 @@ services:
       S3_BUCKET: nasa-apt-dev-files
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
       # This URL omits the "http://" in order to remain consistent
-      # with the value of the URL returned by the ElasticSearch Domain 
+      # with the value of the URL returned by the opensearch Domain 
       # CDK component
-      ELASTICSEARCH_URL: elastic:9200
+      OPENSEARCH_URL: $OPENSEARCH_URL
       APT_FRONTEND_URL: $APT_FRONTEND_URL
       USER_POOL_NAME: dev-users
       APP_CLIENT_NAME: dev-client
       NOTIFICATIONS_FROM: no-reply@ds.io
     depends_on:
       - bootstrapper
+    networks:
+      - opensearch-net
+      - default
 
   db-ready:
     image: dadarek/wait-for-dependencies
     depends_on:
       - db
     command: db:5432
+    networks:
+      - opensearch-net
+      - default
 
   localstack-ready:
     image: dadarek/wait-for-dependencies
     depends_on:
       - localstack
     command: localstack:4566
+    networks:
+      - opensearch-net
+
+volumes:
+  opensearch-data1:
+    name: opensearch-data1
+
+networks:
+  opensearch-net:

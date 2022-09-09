@@ -11,7 +11,7 @@ def test_list_atbds_unauthenticated(
     db_session,
     atbds_factory,
     atbd_versions_factory,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
     assert json.loads(test_client.get("/v2/atbds").content) == []
@@ -46,7 +46,7 @@ def test_list_atbds_authenticated(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
     assert (
@@ -79,7 +79,7 @@ def test_get_atbd_by_id_unauthenticated(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
@@ -112,7 +112,7 @@ def test_get_atbd_by_id_authenticated(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
@@ -144,7 +144,7 @@ def test_get_atbd_by_alias_unauthenticated(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
@@ -177,7 +177,7 @@ def test_get_atbd_by_alias_authenticated(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
@@ -303,7 +303,7 @@ def test_update_atbd_by_id(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
 
@@ -362,7 +362,7 @@ def test_update_atbd_by_alias(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
 
@@ -422,7 +422,7 @@ def test_delete_atbd_by_id(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
@@ -450,7 +450,7 @@ def test_delete_atbd_by_alias(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
     with pytest.raises(Exception):
@@ -481,7 +481,7 @@ def test_atbd_existence_check_by_id(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
 
@@ -510,7 +510,7 @@ def test_atbd_existence_check_by_alias(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
 
@@ -543,7 +543,7 @@ def test_publish_atbd_by_id(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
     s3_bucket,
 ):
@@ -618,7 +618,7 @@ def test_atbd_timestamps(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
 

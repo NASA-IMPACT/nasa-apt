@@ -11,7 +11,7 @@ from app.db.models import AtbdVersions
 from app.permissions import check_permissions
 from app.schemas import atbds, versions, versions_contacts
 from app.schemas.users import CognitoUser
-from app.search.elasticsearch import remove_atbd_from_index
+from app.search.opensearch import remove_atbd_from_index
 from app.users.auth import get_user, require_user
 from app.users.cognito import (
     get_active_user_principals,
@@ -138,7 +138,7 @@ def update_atbd_version(
     atbd version. This makes it possible to update the roles of a contact_link without
     having to delete and recreate it.
 
-    Updates to the ATBD will also trigger re-indexing of the atbd in elasticsearch
+    Updates to the ATBD will also trigger re-indexing of the atbd in opensearch
 
     Raises an exception if: minor is provided but the version does NOT have
     status=`Published` or if minor is provided but is not exactly one more than the

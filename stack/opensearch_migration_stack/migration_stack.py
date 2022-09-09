@@ -13,7 +13,7 @@ from aws_cdk import core
 
 sys.path.append("../")
 """
-class contains resources deployed to aid in migrating APT's ElasticSearch instance to an AWS OpenSearch instance
+class contains resources deployed to aid in migrating APT's opensearch instance to an AWS OpenSearch instance
 """
 # stack name
 migration_stackname = f"{config.PROJECT_NAME}-{config.STAGE}"
@@ -83,7 +83,7 @@ class OpensearchMigrationStack(core.Stack):
         )
 
         # Snapshot IAM role which delegates permissions to OpenSearch
-        role_description = """"This role allows Opensearch to assume responsibilities for taking an index snapshot from ElasticSearch/OpenSearch and storing it to S3")
+        role_description = """"This role allows Opensearch to assume responsibilities for taking an index snapshot from opensearch/OpenSearch and storing it to S3")
         """
         role = iam.Role(
             self,
@@ -95,10 +95,8 @@ class OpensearchMigrationStack(core.Stack):
         # after role is created, attach supporting policies
         if role:
 
-            # var for the elasticsearch domain that is being migrated from
-            es_domain_migration_source_arn = (
-                "arn:aws:es:us-east-1:552819999234:domain/t-api-lambda-staging-elastic"
-            )
+            # var for the opensearch domain that is being migrated from
+            es_domain_migration_source_arn = "arn:aws:es:us-east-1:552819999234:domain/t-api-lambda-staging-opensearch"
 
             # see sid for comments
             role.attach_inline_policy(

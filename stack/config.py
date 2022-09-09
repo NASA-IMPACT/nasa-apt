@@ -65,4 +65,4 @@ NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
 
 GCC_MODE = bool(os.environ.get("GCC_MODE"))
 
-MIGRATION_S3_BUCKET = "elastic-to-opensearch-migration-22"
+MIGRATION_S3_BUCKET = "opensearch-to-opensearch-migration-22"
