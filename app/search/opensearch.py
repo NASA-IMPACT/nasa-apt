@@ -115,9 +115,9 @@ def remove_atbd_from_index(atbd: Atbds = None, version: AtbdVersions = None):
         )
 
     try:
-        # directly delete the documents
         for version in atbd.versions:
-            # TODO, build this with Query DSL, remove loop, call opensearch_client once with DSL query to cover expected documents
+            # TODO use Opensearch DSL query lang to cover expected documents
+
             response = opensearch_client.delete(
                 index="atbd", id=f"{atbd.id}_v{version.major}"
             )
