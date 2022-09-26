@@ -23,7 +23,6 @@ from app.users.auth import get_user
 
 from fastapi import APIRouter, Depends, HTTPException
 
-logger.info("OPENSEARCH_URL %s", OPENSEARCH_URL)
 REGION = os.getenv("AWS_REGION", "us-west-2")
 
 router = APIRouter()
@@ -33,9 +32,6 @@ def aws_auth():
     """Outputs an Opensearch service client. Low level client authorizes against the boto3 session and associated AWS credentials"""
     logger.info("Getting AWS Auth Credentials")
     port = 9200
-    host = (
-        "opensearch"  # hardcoded as to reference the container within the same network
-    )
     credentials = boto3.Session(region_name=REGION).get_credentials()
     service = "es"
     awsauth = AWS4Auth(
@@ -47,7 +43,7 @@ def aws_auth():
     )
 
     opensearch_client = OpenSearch(
-        hosts=[{"host": host, "port": port}],
+        hosts=[{"host": OPENSEARCH_URL, "port": 9200}],
         http_auth=awsauth,
         use_ssl=False,
         verify_certs=False,

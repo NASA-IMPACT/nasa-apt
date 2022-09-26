@@ -1,6 +1,5 @@
-version: '3.8'
+version: "3.8"
 services:
-
   db:
     # Postgres db for local development only.
     # For staging/production, see RDS instance in stack/app.py
@@ -12,12 +11,9 @@ services:
       POSTGRES_USER: masteruser
       POSTGRES_PASSWORD: password
     command: postgres -c log_statement=all
-    networks:
-      - opensearch-net
-      - default
 
   bootstrapper:
-    # Sets up the necessary AWS resources in Localstack and 
+    # Sets up the necessary AWS resources in Localstack and
     # loads fixture data in the database
     build:
       context: ./
@@ -49,20 +45,18 @@ services:
     environment:
       MAILNAME: developmentseed.org
       DISABLE_IPV6: 1
-    networks:
-      - opensearch-net
-      - default
 
-  opensearch:
+  opensearch-node1:
     # Opensearch instance for local development only.
     image: opensearchproject/opensearch:1.0.1
-    # set env var for single node opensearch cluste
+    container_name: opensearch-node1
+    # set env var for single node opensearch cluster
     environment:
       - cluster.name=opensearch-cluster
-      - node.name=opensearch-main
+      - node.name=opensearch-node1
       - node.master=true
       - discovery.type=single-node
-      - bootstrap.memory_lock=true 
+      - bootstrap.memory_lock=true
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
       - http.cors.allow-origin=*,http://localhost:9000/,http://localhost:8000,http://localhost:8000/,http://localhost:8000/v2/,https://localhost:8000/v2
       - http.cors.enabled=true
@@ -82,20 +76,6 @@ services:
     volumes:
       - opensearch-data1:/usr/share/opensearch/data
       # - ./opensearch_spec/opensearch_config.yml:/usr/share/opensearch/config/opensearch.yml
-    networks:
-      - opensearch-net
-      - default
-
-  opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:1.0.1
-    container_name: opensearch-dashboards
-    ports:
-      - 5601:5601
-    environment:
-      OPENSEARCH_HOSTS: '["https://opensearch-main:9200"]' # must be a string with no spaces when specified as an environment variable
-    networks:
-      - opensearch-net
-      - default
 
   localstack:
     # localstack for local development only. AWS S3 used for staging/production
@@ -110,9 +90,6 @@ services:
       EXTRA_CORS_ALLOWED_ORIGINS: http://localhost:9000
     ports:
       - "4566:4566"
-    networks:
-      - opensearch-net
-      - default
 
   api:
     build:
@@ -140,7 +117,7 @@ services:
       S3_BUCKET: nasa-apt-dev-files
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
       # This URL omits the "http://" in order to remain consistent
-      # with the value of the URL returned by the opensearch Domain 
+      # with the value of the URL returned by the opensearch Domain
       # CDK component
       OPENSEARCH_URL: $OPENSEARCH_URL
       APT_FRONTEND_URL: $APT_FRONTEND_URL
@@ -149,30 +126,19 @@ services:
       NOTIFICATIONS_FROM: no-reply@ds.io
     depends_on:
       - bootstrapper
-    networks:
-      - opensearch-net
-      - default
 
   db-ready:
     image: dadarek/wait-for-dependencies
     depends_on:
       - db
     command: db:5432
-    networks:
-      - opensearch-net
-      - default
 
   localstack-ready:
     image: dadarek/wait-for-dependencies
     depends_on:
       - localstack
     command: localstack:4566
-    networks:
-      - opensearch-net
 
 volumes:
   opensearch-data1:
     name: opensearch-data1
-
-networks:
-  opensearch-net:
