@@ -93,7 +93,7 @@ def create_new_version(
         action="create_new_version",
         acl=latest_version.__acl__(),
     )
-    update_document = latest_version.document
+    update_document = latest_version.document.copy()
     update_document["version_description"] = None
 
     new_version_input = versions.Create(
