@@ -42,10 +42,18 @@ def notify_atbd_version_contributors(
     )
     # TODO remove comment and test code
     print("################ \n")
-    print(f"{data},DATA PRIOR TO PUBLISH")
+    print(f"{data},DATA PRIOR TO NOTIFICATION")
     print("################ \n")
 
-    # data.update({"notify": "owner@apt.com"})
+    # combine reviewers, authors lists into one list
+    notify = [] + atbd_version.authors
+
+    # reviewers is dict, extract and append subs of users to notify
+    for id_dict in atbd_version.reviewers[:-1]:
+
+        notify.append(id_dict["sub"])
+
+    data.update({"notify": notify})
 
     if len(data["notify"]) > 0:
         user_notifications = [

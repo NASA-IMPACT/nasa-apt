@@ -7,8 +7,8 @@ with open("README.md") as f:
     long_description = f.read()
 
 inst_reqs = [
-    "boto3==1.13.18",
-    "botocore==1.16.18",
+    "boto3>=1.24",
+    "botocore>=1.27.51",
     "fastapi==0.54.1",
     "gunicorn==20.0.4",
     "latex==0.7.0",
@@ -26,6 +26,7 @@ inst_reqs = [
     "fastapi_permissions==0.2.7",
     "mangum>=0.9.0",
     "awslambdaric==1.2.0",
+    "aws-lambda-powertools==1.29.2",
 ]
 extra_reqs = {
     "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort"],
