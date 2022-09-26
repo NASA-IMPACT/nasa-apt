@@ -177,6 +177,11 @@ class nasaAPTLambdaStack(core.Stack):
             removal_policy=core.RemovalPolicy.RETAIN
             if config.STAGE.lower() == "prod"
             else core.RemovalPolicy.DESTROY,
+            # logging
+            # logging=opensearch.LoggingOptions(
+            #     app_log_enabled=True,
+            #     # audit_log_enabled=True
+            # )
         )
 
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
@@ -220,7 +225,16 @@ class nasaAPTLambdaStack(core.Stack):
         )
         lambda_function.add_to_role_policy(ses_access)
         database.secret.grant_read(lambda_function)
-        # osdomain.grant_read_write(lambda_function)
+        """account or service principal rights to read/write the opensearch domain note that this will vary depending on deployment destination"""
+        os_access_policy = iam.PolicyStatement(sid="osAccessPolicy")
+        os_access_policy.add_arn_principal(f"{lambda_function.function_arn}")
+        os_access_policy.add_actions("es:ESHttp*")
+        os_access_policy.add_resources(f"{osdomain.domain_arn}/*")
+        # # add policy to domain
+        # osdomain.add_access_policies(os_access_policy)
+
+        # grant lambda read/write
+        osdomain.grant_read_write(lambda_function)
         bucket.grant_read_write(lambda_function)
 
         # defines an API Gateway Http API resource backed by our custom lambda function.
