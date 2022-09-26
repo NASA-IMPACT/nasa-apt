@@ -28,8 +28,6 @@ def aws_auth():
     host is hardcoded as to reference the container within the same network
     """
     logger.info("Getting AWS Auth Credentials")
-    port = 9200
-    host = "opensearch"
     credentials = boto3.Session(region_name=REGION).get_credentials()
     service = "es"
     awsauth = AWS4Auth(
@@ -41,7 +39,7 @@ def aws_auth():
     )
 
     opensearch_client = OpenSearch(
-        hosts=[{"host": host, "port": port}],
+        hosts=[{"host": OPENSEARCH_URL, "port": 9200}],
         http_auth=awsauth,
         use_ssl=False,
         verify_certs=False,
