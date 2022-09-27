@@ -1,9 +1,6 @@
 """ATBDs endpoint."""
 import datetime
-import json
 from typing import List
-
-from aws_lambda_powertools import Logger
 from sqlalchemy import exc
 
 from app.crud.atbds import crud_atbds
@@ -14,9 +11,7 @@ from app.search.opensearch import remove_atbd_from_index
 from app.users.auth import get_user, require_user
 from app.users.cognito import get_active_user_principals, update_atbd_contributor_info
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
-
-logger = Logger(service="mangum")
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 router = APIRouter()
 
@@ -26,29 +21,15 @@ router = APIRouter()
     responses={200: dict(description="Return a list of all available ATBDs")},
     response_model=List[atbds.SummaryOutput],
 )
-async def list_atbds(
+def list_atbds(
     role: str = None,
     status: str = None,
     user: users.CognitoUser = Depends(get_user),
     db: DbSession = Depends(get_db_session),
     principals: List[str] = Depends(get_active_user_principals),
-    # add observable request object
-    request=Request,
 ):
     """Lists all ATBDs with summary version info (only versions with status
-    `Published` will be displayed if the user is not logged in)"""
-    # log the request
-
-    print("######################### \n ")
-    print(request.client, "INCOMING REQUEST")
-    print("######################### \n ")
-    print("######################### \n ")
-    print("Logging as Logger error")
-
-    print("######################### \n ")
-
-    print("THE RESPONSE \n ")
-    print("######################### \n ")
+    `Published` will be displayed if the user is not logged in)"""    
     if role:
         if not user:
             raise HTTPException(

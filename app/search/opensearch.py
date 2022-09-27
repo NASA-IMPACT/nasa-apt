@@ -3,14 +3,12 @@ import datetime
 import json
 import os
 from typing import Any, Dict, List
-from urllib.request import Request
 
 import boto3
-import requests
-from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection
+from opensearchpy import OpenSearch, RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
 
-from app.config import AWS_REGION, OPENSEARCH_URL
+from app.config import OPENSEARCH_URL, OPENSEARCH_PORT
 from app.db.models import Atbds, AtbdVersions
 from app.logs import logger
 from app.schemas.opensearch import OpensearchAtbd
@@ -39,7 +37,7 @@ def aws_auth():
     )
 
     opensearch_client = OpenSearch(
-        hosts=[{"host": OPENSEARCH_URL, "port": 9200}],
+        hosts=[{"host": OPENSEARCH_URL, "port": OPENSEARCH_PORT}],
         http_auth=awsauth,
         use_ssl=False,
         verify_certs=False,

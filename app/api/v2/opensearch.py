@@ -1,27 +1,21 @@
 """opensearch Endpoint."""
 import json
 import os
-import traceback
-from urllib.request import Request
 
 import boto3
-import requests
 from opensearchpy import (
-    AWSV4SignerAuth,
     OpenSearch,
     RequestsHttpConnection,
-    Urllib3HttpConnection,
 )
 from requests_aws4auth import AWS4Auth
 
-from app.config import OPENSEARCH_URL
+from app.config import OPENSEARCH_URL, OPENSEARCH_PORT
 from app.logs import logger
 
-# from app.auth.saml import User, get_user
 from app.schemas.users import User
 from app.users.auth import get_user
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 REGION = os.getenv("AWS_REGION", "us-west-2")
 
@@ -31,7 +25,6 @@ router = APIRouter()
 def aws_auth():
     """Outputs an Opensearch service client. Low level client authorizes against the boto3 session and associated AWS credentials"""
     logger.info("Getting AWS Auth Credentials")
-    port = 9200
     credentials = boto3.Session(region_name=REGION).get_credentials()
     service = "es"
     awsauth = AWS4Auth(
@@ -43,7 +36,7 @@ def aws_auth():
     )
 
     opensearch_client = OpenSearch(
-        hosts=[{"host": OPENSEARCH_URL, "port": 9200}],
+        hosts=[{"host": OPENSEARCH_URL, "port": OPENSEARCH_PORT}],
         http_auth=awsauth,
         use_ssl=False,
         verify_certs=False,
