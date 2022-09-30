@@ -1,6 +1,7 @@
 """ATBDs endpoint."""
 import datetime
 from typing import List
+
 from sqlalchemy import exc
 
 from app.crud.atbds import crud_atbds
@@ -29,7 +30,7 @@ def list_atbds(
     principals: List[str] = Depends(get_active_user_principals),
 ):
     """Lists all ATBDs with summary version info (only versions with status
-    `Published` will be displayed if the user is not logged in)"""    
+    `Published` will be displayed if the user is not logged in)"""
     if role:
         if not user:
             raise HTTPException(

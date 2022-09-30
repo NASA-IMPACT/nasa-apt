@@ -8,7 +8,7 @@ import boto3
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
 
-from app.config import OPENSEARCH_URL, OPENSEARCH_PORT
+from app.config import OPENSEARCH_PORT, OPENSEARCH_URL
 from app.db.models import Atbds, AtbdVersions
 from app.logs import logger
 from app.schemas.opensearch import OpensearchAtbd
@@ -63,20 +63,13 @@ def send_to_opensearch(data: List[Dict]):
     try:
         # init client
         opensearch_client = aws_auth()
-        print("SENDING DATA: ", data_string)
-
-        logger.info("sending %s", data_string)
-
         # bulk index
         response = opensearch_client.bulk(body=data_string, index="atbd")
-
-        logger.info(f"bulk indexing {data_string}")
 
     except Exception as e:
         raise e
 
     else:
-        print("RESPONSE: ", response)
         # return value of 'object' is expected
         return dict(response)
 
@@ -130,10 +123,6 @@ def add_atbd_to_index(atbd: Atbds):
     wich will all be updated in the opensearch. If the ATBD version data (document,
     citation, etc) has been updated, then the `atbd` input param
     will only contain a single version, and only that version will be updated."""
-    # TODO, remove comment
-    print("################ \n")
-    print("ADD ATBD TO INDEX CALLED")
-    print("################ \n")
     es_commands = []
     for version in atbd.versions:
 

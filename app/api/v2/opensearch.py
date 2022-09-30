@@ -3,15 +3,11 @@ import json
 import os
 
 import boto3
-from opensearchpy import (
-    OpenSearch,
-    RequestsHttpConnection,
-)
+from opensearchpy import OpenSearch, RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
 
-from app.config import OPENSEARCH_URL, OPENSEARCH_PORT
+from app.config import OPENSEARCH_PORT, OPENSEARCH_URL
 from app.logs import logger
-
 from app.schemas.users import User
 from app.users.auth import get_user
 
@@ -53,18 +49,13 @@ def search_opensearch(query: dict, user: User = Depends(get_user)):
     """
 
     document = query
-    # >> {'query': {'bool': {'must': [{'multi_match': {'query': 'sample'}}], 'filter': []}}, 'highlight': {'fields': {'*': {}}}}
-    # TODO Clean up
-    print(document, "the query document")
 
     opensearch_client = aws_auth()
     try:
         response = opensearch_client.search(body=document, index="atbd")
-
         # logger.info("status:%s opensearch_client:%s", opensearch_client.status_code, opensearch_client.text)
         # if not opensearch_client.ok:
         #     raise HTTPException(status_code=opensearch_client.status_code, detail=opensearch_client.text)
-        print(json.dumps(response))
     except Exception as e:
         raise e
 
