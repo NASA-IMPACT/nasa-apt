@@ -5,7 +5,6 @@ are set by the CDK stack at deployment.
 """
 import json
 import os
-
 import boto3
 
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
@@ -35,9 +34,7 @@ if len(OPENSEARCH_URL.split(":")) == 2:
     OPENSEARCH_URL, OPENSEARCH_PORT = OPENSEARCH_URL.split(":")
 else:
     OPENSEARCH_PORT = 80
-
 S3_BUCKET = os.environ.get("S3_BUCKET") or exit("S3_BUCKET env var required")
-
 
 AWS_RESOURCES_ENDPOINT = os.environ.get("AWS_RESOURCES_ENDPOINT")
 

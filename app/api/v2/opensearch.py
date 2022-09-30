@@ -34,7 +34,6 @@ def aws_auth():
         service,
         session_token=credentials.token,
     )
-
     opensearch_client = OpenSearch(
         hosts=[{"host": OPENSEARCH_URL, "port": OPENSEARCH_PORT}],
         http_auth=awsauth,

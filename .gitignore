@@ -17,6 +17,7 @@ Pipfile*
 .coverage*
 .tox*
 **/opensearch
+cdk.context.json
 
 # documentation
 **/opensearch_local
