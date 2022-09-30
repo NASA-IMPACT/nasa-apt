@@ -46,13 +46,12 @@ services:
       MAILNAME: developmentseed.org
       DISABLE_IPV6: 1
 
-  opensearch-node1:
-    # Opensearch instance for local development only.
+  opensearch:
     image: opensearchproject/opensearch:1.0.1
-    # set env var for single node opensearch cluster
+    container_name: opensearch
     environment:
       - cluster.name=opensearch-cluster
-      - node.name=opensearch-node1
+      - node.name=opensearch
       - node.master=true
       - discovery.type=single-node
       - bootstrap.memory_lock=true
@@ -73,7 +72,7 @@ services:
         soft: 65536
         hard: 65536
     volumes:
-      - opensearch-data1:/usr/share/opensearch/data
+      - opensearch-data:/usr/share/opensearch/data
       # - ./opensearch_spec/opensearch_config.yml:/usr/share/opensearch/config/opensearch.yml
 
   localstack:
@@ -139,5 +138,5 @@ services:
     command: localstack:4566
 
 volumes:
-  opensearch-data1:
-    name: opensearch-data1
+  opensearch-data:
+    name: opensearch-data

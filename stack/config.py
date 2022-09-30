@@ -20,8 +20,6 @@ API_VERSION_STRING = os.environ.get("API_VERSION_STRING", "/v2")
 STAGE = os.environ.get("STAGE", "dev")
 OWNER = os.environ.get("OWNER", "Development Seed - Byblos")
 CLIENT = os.environ.get("CLIENT", "NASA Impact")
-DEPLOY_DESTINATION = os.environ.get("DEPLOY_TO", "dev")
-
 
 # Additional environement variable to set in the task/lambda
 TASK_ENV: dict = dict()
@@ -69,15 +67,3 @@ NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
 )
 
 GCC_MODE = bool(os.environ.get("GCC_MODE"))
-
-
-################################################################################
-#                                                                              #
-#                          OPENSEARCH CONFIG                                   #
-#                                                                              #
-################################################################################
-
-# Account/Service principal granted read/write access, based on current account
-
-if not GCC_MODE:
-    DEPLOY_DESTINATION = os.environ.get("DEPLOY_TO", "dev")
