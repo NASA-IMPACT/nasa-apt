@@ -49,7 +49,6 @@ services:
   opensearch-node1:
     # Opensearch instance for local development only.
     image: opensearchproject/opensearch:1.0.1
-    container_name: opensearch-node1
     # set env var for single node opensearch cluster
     environment:
       - cluster.name=opensearch-cluster
