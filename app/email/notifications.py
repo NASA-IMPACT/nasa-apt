@@ -40,10 +40,6 @@ def notify_atbd_version_contributors(
     curators = (
         user for (_, user) in app_users.items() if "curator" in user.cognito_groups
     )
-    # TODO remove comment and test code
-    print("################ \n")
-    print(f"{data},DATA PRIOR TO NOTIFICATION")
-    print("################ \n")
 
     # combine reviewers, authors lists into one list
     notify = [] + atbd_version.authors

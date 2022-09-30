@@ -161,7 +161,7 @@ class nasaAPTLambdaStack(core.Stack):
             f"{id}-opensearch-domain",
             version=opensearch.EngineVersion.OPENSEARCH_1_0,
             capacity=opensearch.CapacityConfig(
-                data_node_instance_type="t3.medium.search",
+                data_node_instance_type="t2.small.search",
                 data_nodes=1,
             ),
             # slice last 28 chars since OPEN Domains can't have a name longer than 28 chars in
