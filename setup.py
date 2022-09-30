@@ -7,15 +7,16 @@ with open("README.md") as f:
     long_description = f.read()
 
 inst_reqs = [
-    "boto3==1.13.18",
-    "botocore==1.16.18",
+    "boto3>=1.24",
+    "botocore>=1.27.51",
     "fastapi==0.54.1",
     "gunicorn==20.0.4",
     "latex==0.7.0",
     "pandas==1.2.0",
     "pydantic==1.5.1",
     "requests==2.23.0",
-    "requests-aws4auth==1.0",
+    "opensearch-py==2.0.0",
+    "requests-aws4auth==1.1.2",
     "python-multipart==0.0.5",
     "python-jose==3.2.0",
     "SQLAlchemy==1.3.23",
@@ -39,7 +40,7 @@ extra_reqs = {
         "aws-cdk.aws_ssm>=1.136.0",
         "aws-cdk.aws_ec2>=1.136.0",
         "aws-cdk.aws_ecs>=1.136.0",
-        "aws-cdk.aws_elasticsearch>=1.136.0",
+        "aws-cdk.aws_opensearchservice",
         "aws-cdk.aws_cognito>=1.136.0",
     ],
     "test": [

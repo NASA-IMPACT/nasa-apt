@@ -14,7 +14,7 @@ def test_check_version_exists(
     db_session,
     atbds_factory,
     atbd_versions_factory,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
     authenticated_headers,
 ):
@@ -68,7 +68,7 @@ def test_get_version(
     db_session,
     atbds_factory,
     atbd_versions_factory,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
     authenticated_headers,
 ):
@@ -107,7 +107,7 @@ def test_create_version(
     db_session,
     atbds_factory,
     atbd_versions_factory,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
     authenticated_headers,
 ):
@@ -153,7 +153,7 @@ def test_update_version(
     db_session,
     atbds_factory,
     atbd_versions_factory,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
     authenticated_headers,
 ):
@@ -189,7 +189,7 @@ def test_update_version(
     db_session.refresh(version)
 
     assert version.changelog == "updated changelog"
-    mocked_send_to_elasticsearch.assert_called()
+    mocked_send_to_opensearch.assert_called()
     mocked_validate_cognito_token.assert_called()
 
     result = test_client.post(
@@ -201,7 +201,7 @@ def test_update_version(
     db_session.refresh(version)
 
     assert version.changelog == "updated changelog part 2"
-    mocked_send_to_elasticsearch.assert_called()
+    mocked_send_to_opensearch.assert_called()
 
 
 def test_update_version_contacts(
@@ -211,7 +211,7 @@ def test_update_version_contacts(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
 
@@ -310,7 +310,7 @@ def test_update_version_document(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
 
@@ -385,7 +385,7 @@ def test_update_version_sections_completed(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
 
@@ -437,7 +437,7 @@ def test_update_minor_version_number(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
     s3_bucket,
 ):
@@ -498,7 +498,7 @@ def test_delete_version(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
     atbd = atbds_factory.create()
@@ -530,7 +530,7 @@ def test_delete_version(
 
     with pytest.raises(Exception):
         db_session.refresh(version)
-    mocked_send_to_elasticsearch.assert_called()
+    mocked_send_to_opensearch.assert_called()
 
 
 def test_atbd_versions_ordering(
@@ -539,7 +539,7 @@ def test_atbd_versions_ordering(
     atbds_factory,
     atbd_versions_factory,
     authenticated_headers,
-    mocked_send_to_elasticsearch,
+    mocked_send_to_opensearch,
     mocked_validate_cognito_token,
 ):
 

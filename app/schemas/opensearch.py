@@ -1,4 +1,4 @@
-"""Pydantic Models for data that get's indexed and searched in ElasticSearch"""
+"""Pydantic Models for data that get's indexed and searched in OpenSearch"""
 import re
 from typing import Any, List, Optional
 
@@ -10,8 +10,8 @@ from app.schemas.versions import Keyword
 from app.schemas.versions_contacts import ContactsLinkOutput
 
 
-class ElasticsearchAtbdVersion(BaseModel):
-    """Elasticsearch document representing an AtbdVersion"""
+class OpensearchAtbdVersion(BaseModel):
+    """Opensearch document representing an AtbdVersion"""
 
     major: int
     minor: int
@@ -25,7 +25,7 @@ class ElasticsearchAtbdVersion(BaseModel):
     class Config:
         """Config."""
 
-        title = "ElasticsearchAtbdVersion"
+        title = "OpensearchAtbdVersion"
         orm_mode = True
 
     @validator("version", always=True)
@@ -82,16 +82,16 @@ class ElasticsearchAtbdVersion(BaseModel):
         }
 
 
-class ElasticsearchAtbd(BaseModel):
-    """Elasticsearch document representing an ATBD"""
+class OpensearchAtbd(BaseModel):
+    """Opensearch document representing an ATBD"""
 
     id: str
     title: str
     alias: Optional[str]
-    version: ElasticsearchAtbdVersion
+    version: OpensearchAtbdVersion
 
     class Config:
         """Config."""
 
-        title = "ElasticsearchAtbdVersion"
+        title = "OpensearchAtbdVersion"
         orm_mode = True

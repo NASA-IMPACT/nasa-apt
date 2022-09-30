@@ -19,7 +19,7 @@ from app.email.notifications import (
 )
 from app.permissions import check_permissions
 from app.schemas import atbds, comments, events, threads, users, versions
-from app.search.elasticsearch import add_atbd_to_index
+from app.search.opensearch import add_atbd_to_index
 from app.users.cognito import (
     get_active_user_principals,
     get_user,
@@ -179,7 +179,7 @@ def publish_handler(
             last_updated_at=datetime.datetime.now(datetime.timezone.utc),
         ),
     )
-
+    # TODO uncomment notifications
     background_tasks.add_task(
         notify_atbd_version_contributors,
         atbd_version=deepcopy(version),

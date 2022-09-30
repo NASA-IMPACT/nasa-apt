@@ -17,6 +17,7 @@ Pipfile*
 .coverage*
 .tox*
 **/opensearch
+cdk.context.json
 
 # documentation
 **/opensearch_local
@@ -30,3 +31,6 @@ opensearch_migration
 # deployment build and dist files
 **/build
 **/dist
+
+# changesets
+changeset.txt

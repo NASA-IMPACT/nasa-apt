@@ -1,13 +1,15 @@
 # nasa-apt
 
-**Version:** v2.4.0
+### nasa-apt-api-dev development branch
+
+**Version:** Development Branch - v2.4.0
 
 Code and issues relevant to the NASA APT project
 
 ## Components: 
 - [FastAPI](https://fastapi.tiangolo.com/): provides the routes/methods for the REST API. Uses [Pydantic](https://pydantic-docs.helpmanual.io/) for data validation, [SQLAlchemy](https://www.sqlalchemy.org/) for database connection and ORM and [PyLatex](https://jeltef.github.io/PyLaTeX/current/) for Latex/PDF document generation
 - [Postgresql](https://www.postgresql.org/): Database where ATBD and ATBD Version content is stored
-- [ElasticSearch](https://www.elastic.co/elasticsearch/): Document indexing to provide full-text searching of ATBD documents
+- [opensearch](https://www.opensearch.co/opensearch/): Document indexing to provide full-text searching of ATBD documents
 
 ### Diagram
 ![Backend Architecture Diagram](./v2.4.0-beta_architecture_diagram.png)
@@ -103,7 +105,7 @@ The API can be run locally for development purposes. To run locally, run:
 ```bash
 docker-compose up --build
 ```
-This will create several docker containers: one for the Postgres database, one for the REST API, one for the ElasticSearch instance and one for a Localstack instance, which mocks AWS resources locally. 
+This will create several docker containers: one for the Postgres database, one for the REST API, one for the opensearch instance and one for a Localstack instance, which mocks AWS resources locally. 
 
 The Localstack container will instantiate a cognito service. The cognito service is a PAID feature of localstack, so you'll need an API key for a localstack PRO account as an env variable (in the `.env` file): 
 
@@ -133,7 +135,7 @@ pool_id=$(AWS_REGION=us-east-1 aws --endpoint-url http://localhost:4566 cognito-
 AWS_REGION=us-east-1 aws --endpoint-url http://localhost:4566 cognito-idp list-user-pool-clients --user-pool-id $pool_id  --no-sign-request --max-results 10 | jq -rc '.UserPoolClients[0] | {ClientId: .ClientId, UserPoolId: .UserPoolId}'
 ```
 
-Upon spinning up, all necessary database migrations (see below) will be run, and the database will be pre-populated with a test ATBD, which has 2 versions, one with status `Published` and one with status `Draft`. The ElasticSearch instance will not be populated with data until an ATBD gets published or the published ATBD gets its minor version bumped. 
+Upon spinning up, all necessary database migrations (see below) will be run, and the database will be pre-populated with a test ATBD, which has 2 versions, one with status `Published` and one with status `Draft`. The opensearch instance will not be populated with data until an ATBD gets published or the published ATBD gets its minor version bumped. 
 
 After running for the first time you can drop the `--build` flag (this flag forces the docker image to be re-built).
 
@@ -146,7 +148,7 @@ Locally, the resources will be available at the following endpoints:
 
 For debugging purposes the data storage resources are available: 
 - The Localstack (AWS) resources are accessible via [http://localhost:4566](http://localhost:4566)
-- The Elasticsearch instance is accessible via [http://localhost:9200](http://localhost:9200)
+- The opensearch instance is accessible via [http://localhost:9200](http://localhost:9200)
 - The Postgres DB is accessible via the username/password/host/port/dbname combo: `masteruser/password/localhost/5432/nasadb`
 
 Note: when running the API locally, localstack mocks the SES implementation, meaning it won't actually send any notification emails. However the content and subject of these emails will appear in the localstack docker container logs. 

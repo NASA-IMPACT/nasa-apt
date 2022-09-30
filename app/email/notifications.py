@@ -41,6 +41,16 @@ def notify_atbd_version_contributors(
         user for (_, user) in app_users.items() if "curator" in user.cognito_groups
     )
 
+    # combine reviewers, authors lists into one list
+    notify = [] + atbd_version.authors
+
+    # reviewers is dict, extract and append subs of users to notify
+    for id_dict in atbd_version.reviewers[:-1]:
+
+        notify.append(id_dict["sub"])
+
+    data.update({"notify": notify})
+
     if len(data["notify"]) > 0:
         user_notifications = [
             UserNotification(

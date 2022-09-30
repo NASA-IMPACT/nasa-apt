@@ -6,20 +6,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+################################################################################
+#                                                                              #
+#                           ENVIRONMENT CONFIG                                 #
+#                                                                              #
+################################################################################
 
 PROJECT_NAME = os.environ.get("PROJECT_NAME", "nasa-apt-api")
 
 # API_VERSION_STRING must start with `/`
-API_VERSION_STRING = os.environ.get("API_VERSION_STRING", "/v1")
+API_VERSION_STRING = os.environ.get("API_VERSION_STRING", "/v2")
 
 STAGE = os.environ.get("STAGE", "dev")
-OWNER = os.environ.get("OWNER", "Leo Thomas")
+OWNER = os.environ.get("OWNER", "Development Seed - Byblos")
 CLIENT = os.environ.get("CLIENT", "NASA Impact")
-
 
 # Additional environement variable to set in the task/lambda
 TASK_ENV: dict = dict()
-
 VPC_ID = os.environ.get("VPC_ID")
 
 
@@ -64,5 +67,3 @@ NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
 )
 
 GCC_MODE = bool(os.environ.get("GCC_MODE"))
-
-MIGRATION_S3_BUCKET = "elastic-to-opensearch-migration-22"
