@@ -72,7 +72,28 @@ def get_pdf(
 
     major, minor = get_major_from_version_string(version)
 
-    atbd: Atbds = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+    try:
+        atbd: Atbds = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+
+    # Add error handling for module import errors in Lambda
+    except (ValueError, AttributeError):
+
+        val_attr_err = Exception(
+            "There was a problem generating this pdf. Ensure that required sections are filled, and please try again."
+        )
+
+        docs_link = f"{config.FRONTEND_URL.strip('/')}/documents/"
+
+        return HTMLResponse(
+            content=generate_html_content_for_error(
+                error=val_attr_err,
+                return_link=docs_link,
+                atbd_id="N/A",
+                atbd_title="N/A",
+                atbd_version="N/A",
+                pdf_type="Journal" if journal else "Regular",
+            )
+        )
 
     # Unpacking the versions list into an array of a single element
     # enforces the assumption that the ATBD will only contain a single
