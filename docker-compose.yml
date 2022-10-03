@@ -46,7 +46,7 @@ services:
       MAILNAME: developmentseed.org
       DISABLE_IPV6: 1
 
-  opensearch:
+  opensearch-node-1:
     image: opensearchproject/opensearch:1.0.1
     container_name: opensearch
     environment:
