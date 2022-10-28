@@ -372,6 +372,7 @@ for key, value in {
 
 
 lambda_stackname = f"{config.PROJECT_NAME}-{config.STAGE}"
+lambda_stackdescription = f"Deploys resources for backend APT {config.PROJECT_NAME}-{config.STAGE} to DevSeed AWS cloud account"
 nasaAPTLambdaStack(
     app,
     lambda_stackname,

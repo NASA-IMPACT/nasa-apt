@@ -12,7 +12,7 @@ inst_reqs = [
     "fastapi==0.54.1",
     "gunicorn==20.0.4",
     "latex==0.7.0",
-    "pandas==1.2.0",
+    "pandas==1.4.0",
     "pydantic==1.5.1",
     "requests==2.23.0",
     "opensearch-py==2.0.0",
