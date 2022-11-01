@@ -168,6 +168,7 @@ def publish_handler(
 ):
     """Handler for ATBD Publication"""
     [version] = atbd.versions
+    print(f"THIS ENTITY SHOULD BE PROCESSED: {[version]}")
     version = crud_versions.update(
         db=db,
         db_obj=version,
