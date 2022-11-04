@@ -209,7 +209,7 @@ def process_text_content(
     result = []
     # allow this function to process only text
     if isinstance(data,str):
-        print("WITHIN PROCESS TEXT CONTENT")
+        print(f"WITHIN PROCESS TEXT CONTENT with data: {data}")
         result.append(wrap_text(data))
     else:
         for d in data:
@@ -705,12 +705,21 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                         continue
                     
                     # also allow only string types
-                    elif isinstance(item,str):
-                        print(f"ENTERING ITEM == STR with section name: {section_name}")
-                        # append
-                        doc.append(NoEscape("\n"))
-                        doc.append(process(item, atbd_id=atbd.id))
-                        # continue
+            # process key points as a text attribute
+                    elif section_name in ["key_points","algorithm_input_variables_caption","algorithm_output_variables_caption"]:
+                        
+                        text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
+                        print(f"PROCESSING KEY POINTS with text content {text_content}")
+                        doc.append(
+                                process_text_content(text_content)
+                            )
+
+                    # handle lists
+                    elif isinstance(item,list):
+                        for _indx,ele in enumerate(item):
+                            print(f"processing list items for section : {section_name}")
+                            print(ele)
+                            doc.append(process(ele, atbd_id=atbd.id))
                     else:
                         print(f"""
                             section_name: {section_name}
@@ -737,7 +746,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 info["title"],
                 numbering=False if section_name in ["plain_summary", "keywords"] else True,
             )
-
+            print("begin several get methods...")
             if info.get("subsection"):
                 title = info["title"]
                 if journal:
@@ -756,9 +765,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 # section header means that no content is needed
                 continue
 
-            # if section_name == "plain_summary":
-            #     doc.append(document_data[section_name])
-            #     continue
+            if section_name == "plain_summary":
+                doc.append(document_data[section_name])
+                continue
 
             if section_name == "keywords" and atbd_version.keywords:
                 doc.append(Command("begin", arguments="itemize"))
@@ -806,21 +815,39 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
             # allow document data sections to be empty or None
             for section_name,item in document_data.items():
-                if item is not None:
-                    document_data[section_name].get("children", [CONTENT_UNAVAILABLE])
+
                 # also allow only string types
-                elif isinstance(item,str):
+                if isinstance(item,str):
                     print(f"ENTERING ITEM == STR with section name: {section_name}")
                     # append
                     doc.append(NoEscape("\n"))
-                    doc.append(process(item, atbd_id=atbd.id))
+                    text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
+                    doc.append(process_text_content(text_content))
                     continue
-                else:
-                    pass
 
-                doc.append(NoEscape("\n"))
-                doc.append(process(item, atbd_id=atbd.id))
-                continue
+                # if item is not None and is not list
+                elif item is not None and isinstance(item,list) == False:
+                    
+                    doc.append(
+                            document_data[section_name].get("children", [CONTENT_UNAVAILABLE])
+                        )
+
+                else:
+                    if isinstance(item,list):
+                        for _indx,ele in enumerate(item):
+                            print(f"processing list items for section : {section_name}")
+                            print(ele)
+                            doc.append(NoEscape("\n"))
+                            doc.append(process(ele, atbd_id=atbd.id))
+                    
+                    elif item is None:
+                        continue
+
+                    print(f"end processing in section name {section_name } for item: {item}")
+
+                    # doc.append(NoEscape("\n"))
+                    # doc.append(process(item, atbd_id=atbd.id))
+                    # continue
 
         if not journal:
             doc.append(Command("bibliographystyle", arguments="apacite"))

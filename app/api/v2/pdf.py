@@ -99,6 +99,7 @@ def get_pdf(
     try:
         local_pdf_filepath = generate_pdf(atbd=atbd, filepath=pdf_key, journal=journal)
     except Exception as e:
+        raise e
         atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
 
         return HTMLResponse(
