@@ -690,6 +690,10 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 "journal_acknowledgements",
                 "journal_discussion",
             ]:
+                # append only text
+                doc.append(
+                        (document_data[section_name]['children'][0]['children'][0]['text'])
+                    )  
                 continue
 
             if section_name == "abstract":
@@ -766,7 +770,10 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 continue
 
             if section_name == "plain_summary":
-                doc.append(document_data[section_name])
+                # append only text
+                doc.append(
+                        (document_data[section_name]['children'][0]['children'][0]['text'])
+                    )
                 continue
 
             if section_name == "keywords" and atbd_version.keywords:
@@ -780,6 +787,12 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 for contact in process_contacts(contacts_data):
                     doc.append(contact)
                 continue
+
+            if section_name == "data_availability":
+                # append only text
+                doc.append(
+                        (document_data[section_name]['children'][0]['children'][0]['text'])
+                    )
             
             # temp try
             try:
