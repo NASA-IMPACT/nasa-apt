@@ -207,15 +207,20 @@ def process_text_content(
     wrapped with the appropriate Latex formatting commands
     """
     result = []
-    for d in data:
-        if d.get("type") == "a":
-            result.append(hyperlink(d["url"], d["children"][0]["text"]))
-        elif d.get("type") == "ref":
-            result.append(reference(d["refId"]))
-        elif d.get("type") == "equation-inline":
-            result.append(NoEscape(f'${d["children"][0]["text"]}$'))
-        else:
-            result.append(wrap_text(d))
+    # allow this function to process only text
+    if isinstance(data,str):
+        print("WITHIN PROCESS TEXT CONTENT")
+        result.append(wrap_text(data))
+    else:
+        for d in data:
+            if d.get("type") == "a":
+                result.append(hyperlink(d["url"], d["children"][0]["text"]))
+            elif d.get("type") == "ref":
+                result.append(reference(d["refId"]))
+            elif d.get("type") == "equation-inline":
+                result.append(NoEscape(f'${d["children"][0]["text"]}$'))
+            else:
+                result.append(wrap_text(d))
     return result
 
 
@@ -377,63 +382,78 @@ def process(
     Returns Latex formatted object for each of these, to be appeneded to the
     Latex document.
     """
-    if data.get("type") in ["p", "caption"]:
+    # temp try catch
+    try:
+        # This if - then block allows data in a user document to be empty, string, or non-dictionary object
+        # First check if data is string type. If true, process_text_content
+        if isinstance(data,str):
+            text_element = {"bold": False, "italic": False, "text": f"{data}" }
+            print(f"CALLING PROCESS_TEXT_CCONTENT    FUNCTION.... with data {data}")
+            data = process_text_content(text_element)
+            return data
+        else:
+            
+            if data.get("type") in ["p", "caption"]:
 
-        return NoEscape(" ".join(d for d in process_text_content(data["children"])))
+                return NoEscape(" ".join(d for d in process_text_content(data["children"])))
 
-    if data.get("type") in ["ul", "ol"]:
-        latex_list = Itemize() if data["type"] == "ul" else Enumerate()
-        for child in data["children"]:
-            # latex_list.add_item(process(child))
-            for item in process(child):
-                latex_list.add_item(item)
-        return latex_list
+            if data.get("type") in ["ul", "ol"]:
+                latex_list = Itemize() if data["type"] == "ul" else Enumerate()
+                for child in data["children"]:
+                    # latex_list.add_item(process(child))
+                    for item in process(child):
+                        latex_list.add_item(item)
+                return latex_list
 
-    if data.get("type") == "li":
-        # TODO: confirm the `li` elements can only have 1 child element
-        # If not, figure out how to handle a list item with different
-        # kinds of children elements (paragraph / other list types)
-        return [process(d) for d in data["children"]]
-        # return process(data["children"][0])
+            if data.get("type") == "li":
+                # TODO: confirm the `li` elements can only have 1 child element
+                # If not, figure out how to handle a list item with different
+                # kinds of children elements (paragraph / other list types)
+                return [process(d) for d in data["children"]]
+                # return process(data["children"][0])
 
-    if data.get("type") == "sub-section":
-        section_title = " ".join(d for d in process_text_content(data["children"]))
+            if data.get("type") == "sub-section":
+                section_title = " ".join(d for d in process_text_content(data["children"]))
 
-        return Subsubsection(
-            NoEscape(f"\\normalfont{{\\itshape{{{section_title}}}}}"), numbering=False
-        )
+                return Subsubsection(
+                    NoEscape(f"\\normalfont{{\\itshape{{{section_title}}}}}"), numbering=False
+                )
 
-    if data.get("type") == "equation":
-        eq = data["children"][0]["text"].replace("\\\\", "\\")
-        return NoEscape(f"\\begin{{equation}}{eq}\\end{{equation}}")
+            if data.get("type") == "equation":
+                eq = data["children"][0]["text"].replace("\\\\", "\\")
+                return NoEscape(f"\\begin{{equation}}{eq}\\end{{equation}}")
 
-    if data.get("type") == "image-block":
-        [img] = filter(lambda d: d["type"] == "img", data["children"])
-        [caption] = filter(lambda d: d["type"] == "caption", data["children"])
+            if data.get("type") == "image-block":
+                [img] = filter(lambda d: d["type"] == "img", data["children"])
+                [caption] = filter(lambda d: d["type"] == "caption", data["children"])
 
-        # lambda execution environment only allows for files to
-        # written to `/tmp` directory
-        s3_client().download_file(
-            Bucket=S3_BUCKET,
-            Key=f"{atbd_id}/images/{img['objectKey']}",
-            Filename=f"/tmp/{img['objectKey']}",
-        )
+                # lambda execution environment only allows for files to
+                # written to `/tmp` directory
+                s3_client().download_file(
+                    Bucket=S3_BUCKET,
+                    Key=f"{atbd_id}/images/{img['objectKey']}",
+                    Filename=f"/tmp/{img['objectKey']}",
+                )
 
-        figure = Figure(position="H")
-        figure.add_image(f"/tmp/{img['objectKey']}")
+                figure = Figure(position="H")
+                figure.add_image(f"/tmp/{img['objectKey']}")
 
-        figure.add_caption(
-            NoEscape(" ".join(d for d in process_text_content(caption["children"])))
-        )
-        return figure
+                figure.add_caption(
+                    NoEscape(" ".join(d for d in process_text_content(caption["children"])))
+                )
+                return figure
 
-    if data.get("type") == "table-block":
-        [table] = filter(lambda d: d["type"] == "table", data["children"])
-        [caption] = filter(lambda d: d["type"] == "caption", data["children"])
-        caption = NoEscape(
-            " ".join(d for d in process_text_content(caption["children"]))
-        )
-        return process_table(table, caption=caption)
+            if data.get("type") == "table-block":
+                [table] = filter(lambda d: d["type"] == "table", data["children"])
+                [caption] = filter(lambda d: d["type"] == "caption", data["children"])
+                caption = NoEscape(
+                    " ".join(d for d in process_text_content(caption["children"]))
+                )
+                return process_table(table, caption=caption)
+
+    except Exception as e:
+        raise e
+    
 
 
 def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
@@ -444,6 +464,8 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     # parse as Pydantic model and return to dict to enforce data integrity
     document_data = document.Document.parse_obj(atbd_version.document).dict()
+    
+    print(f'THE DOCUMENT DATA: {document_data}')
 
     contacts_data = atbd_version.contacts_link
 
@@ -659,114 +681,157 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     section_name: str
     info: Any
 
-    for section_name, info in SECTIONS.items():
-        # Journal Acknowledgements and Journal Discussion are only included in
-        # Journal type pdfs
-        if not journal and section_name in [
-            "journal_acknowledgements",
-            "journal_discussion",
-        ]:
-            continue
+    # temp try catch
+    try:
+        for section_name, info in SECTIONS.items():
+            # Journal Acknowledgements and Journal Discussion are only included in
+            # Journal type pdfs
+            if not journal and section_name in [
+                "journal_acknowledgements",
+                "journal_discussion",
+            ]:
+                continue
 
-        if section_name == "abstract":
-            doc.append(Command("begin", "abstract"))
+            if section_name == "abstract":
+                doc.append(Command("begin", "abstract"))
+                # print(document_data, 'DOCUMENT DATA')
+                # for item in document_data.get(section_name, {}).get(
+                #     "children", [CONTENT_UNAVAILABLE]
+                # ):
+                
+                # allow document data sections to be Falsey values, such as empty strings
+                for section_name,item in document_data.items():
+                    if bool(item) is False: #if it is falsey/
+                        continue
+                    
+                    # also allow only string types
+                    elif isinstance(item,str):
+                        print(f"ENTERING ITEM == STR with section name: {section_name}")
+                        # append
+                        doc.append(NoEscape("\n"))
+                        doc.append(process(item, atbd_id=atbd.id))
+                        # continue
+                    else:
+                        print(f"""
+                            section_name: {section_name}
+                            item: {item}
+                        """)
+                        document_data[section_name].get("children", [CONTENT_UNAVAILABLE])
 
-            for item in document_data.get(section_name, {}).get(
-                "children", [CONTENT_UNAVAILABLE]
+                        doc.append(NoEscape("\n"))
+                        doc.append(process(item, atbd_id=atbd.id))
+
+                doc.append(Command("end", "abstract"))
+                continue
+
+            # Version Description is the only field that doesn't get rendered at all
+            # if it's not found in the database data (as opposed to other field which)
+            # get displayed as "Content Unavailable"
+            if section_name == "version_description" and (
+                not document_data.get("version_description")
+                or not process(document_data.get("version_description"))
             ):
+                continue
+
+            s = Section(
+                info["title"],
+                numbering=False if section_name in ["plain_summary", "keywords"] else True,
+            )
+
+            if info.get("subsection"):
+                title = info["title"]
+                if journal:
+                    title = NoEscape(f"\\normalfont{{{title}}}")
+                s = Subsection(title)
+
+            if info.get("subsubsection"):
+                title = info["title"]
+                if journal:
+                    title = NoEscape(f"\\normalfont{{{title}}}")
+                s = Subsubsection(title)
+
+            doc.append(s)
+
+            if info.get("section_header"):
+                # section header means that no content is needed
+                continue
+
+            # if section_name == "plain_summary":
+            #     doc.append(document_data[section_name])
+            #     continue
+
+            if section_name == "keywords" and atbd_version.keywords:
+                doc.append(Command("begin", arguments="itemize"))
+                for keyword in atbd_version.keywords:
+                    doc.append(Command("item", arguments=keyword["label"]))
+                doc.append(Command("end", arguments="itemize"))
+                continue
+
+            if section_name == "contacts":
+                for contact in process_contacts(contacts_data):
+                    doc.append(contact)
+                continue
+            
+            # temp try
+            try:
+                if not document_data.get(section_name):
+                    doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
+                    continue
+            except Exception as e:
+                raise e
+
+            if section_name in [
+                "algorithm_input_variables",
+                "algorithm_output_variables",
+            ]:
+
+                doc.append(
+                    process_algorithm_variables(
+                        data=document_data[section_name],
+                        caption=document_data[f"{section_name}_caption"],
+                    )
+                )
+                continue
+
+            if section_name in [
+                "algorithm_implementations",
+                "data_access_input_data",
+                "data_access_output_data",
+                "data_access_related_urls",
+            ]:
+
+                for url in process_data_access_urls(document_data[section_name]):
+                    doc.append(url)
+                continue
+
+            # allow document data sections to be empty or None
+            for section_name,item in document_data.items():
+                if item is not None:
+                    document_data[section_name].get("children", [CONTENT_UNAVAILABLE])
+                # also allow only string types
+                elif isinstance(item,str):
+                    print(f"ENTERING ITEM == STR with section name: {section_name}")
+                    # append
+                    doc.append(NoEscape("\n"))
+                    doc.append(process(item, atbd_id=atbd.id))
+                    continue
+                else:
+                    pass
+
                 doc.append(NoEscape("\n"))
                 doc.append(process(item, atbd_id=atbd.id))
+                continue
 
-            doc.append(Command("end", "abstract"))
-            continue
+        if not journal:
+            doc.append(Command("bibliographystyle", arguments="apacite"))
 
-        # Version Description is the only field that doesn't get rendered at all
-        # if it's not found in the database data (as opposed to other field which)
-        # get displayed as "Content Unavailable"
-        if section_name == "version_description" and (
-            not document_data.get("version_description")
-            or not process(document_data.get("version_description"))
-        ):
-            continue
+        doc.append(Command("bibliography", arguments=NoEscape(filepath)))
+    except Exception as e:
+        raise e
 
-        s = Section(
-            info["title"],
-            numbering=False if section_name in ["plain_summary", "keywords"] else True,
-        )
+    else:
 
-        if info.get("subsection"):
-            title = info["title"]
-            if journal:
-                title = NoEscape(f"\\normalfont{{{title}}}")
-            s = Subsection(title)
-
-        if info.get("subsubsection"):
-            title = info["title"]
-            if journal:
-                title = NoEscape(f"\\normalfont{{{title}}}")
-            s = Subsubsection(title)
-
-        doc.append(s)
-
-        if info.get("section_header"):
-            # section header means that no content is needed
-            continue
-
-        # if section_name == "plain_summary":
-        #     doc.append(document_data[section_name])
-        #     continue
-
-        if section_name == "keywords" and atbd_version.keywords:
-            doc.append(Command("begin", arguments="itemize"))
-            for keyword in atbd_version.keywords:
-                doc.append(Command("item", arguments=keyword["label"]))
-            doc.append(Command("end", arguments="itemize"))
-            continue
-
-        if section_name == "contacts":
-            for contact in process_contacts(contacts_data):
-                doc.append(contact)
-            continue
-
-        if not document_data.get(section_name):
-            doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
-            continue
-
-        if section_name in [
-            "algorithm_input_variables",
-            "algorithm_output_variables",
-        ]:
-
-            doc.append(
-                process_algorithm_variables(
-                    data=document_data[section_name],
-                    caption=document_data[f"{section_name}_caption"],
-                )
-            )
-            continue
-
-        if section_name in [
-            "algorithm_implementations",
-            "data_access_input_data",
-            "data_access_output_data",
-            "data_access_related_urls",
-        ]:
-
-            for url in process_data_access_urls(document_data[section_name]):
-                doc.append(url)
-            continue
-
-        for item in document_data[section_name].get("children", [CONTENT_UNAVAILABLE]):
-            doc.append(NoEscape("\n"))
-            doc.append(process(item, atbd_id=atbd.id))
-            continue
-
-    if not journal:
-        doc.append(Command("bibliographystyle", arguments="apacite"))
-
-    doc.append(Command("bibliography", arguments=NoEscape(filepath)))
-
-    return doc
+        return doc
 
 
 def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
@@ -783,7 +848,12 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     # create a folder for the pdf/latex files to be stored in
     pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
 
-    latex_document = generate_latex(atbd, filepath, journal=journal)
+    # temp try
+    try:
+
+        latex_document = generate_latex(atbd, filepath, journal=journal)
+    except Exception as e:
+        raise e
 
     latex_document.generate_pdf(
         filepath=filepath,
