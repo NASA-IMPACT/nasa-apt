@@ -681,197 +681,196 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     section_name: str
     info: Any
 
-    # temp try catch
-    try:
-        for section_name, info in SECTIONS.items():
-            # Journal Acknowledgements and Journal Discussion are only included in
-            # Journal type pdfs
-            if not journal and section_name in [
-                "journal_acknowledgements",
-                "journal_discussion",
-            ]:
-                # append only text
-                doc.append(
-                        (document_data[section_name]['children'][0]['children'][0]['text'])
-                    )  
-                continue
+    # FILL SECTIONS HERE
 
-            if section_name == "abstract":
-                doc.append(Command("begin", "abstract"))
-                # print(document_data, 'DOCUMENT DATA')
-                # for item in document_data.get(section_name, {}).get(
-                #     "children", [CONTENT_UNAVAILABLE]
-                # ):
-                
-                # allow document data sections to be Falsey values, such as empty strings
-                for section_name,item in document_data.items():
-                    if bool(item) is False: #if it is falsey/
-                        continue
-                    
-                    # also allow only string types
-            # process key points as a text attribute
-                    elif section_name in ["key_points","algorithm_input_variables_caption","algorithm_output_variables_caption"]:
-                        
-                        text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
-                        print(f"PROCESSING KEY POINTS with text content {text_content}")
-                        doc.append(
-                                process_text_content(text_content)
-                            )
+    for section_name, info in SECTIONS.items():
+        # Journal Acknowledgements and Journal Discussion are only included in
+        # Journal type pdfs
+        if not journal and section_name in [
+            "journal_acknowledgements",
+            "journal_discussion",
+        ]:
+            # append only text
+            doc.append(
+                    (document_data[section_name]['children'][0]['children'][0]['text'])
+                )  
+            continue
 
-                    # handle lists
-                    elif isinstance(item,list):
-                        for _indx,ele in enumerate(item):
-                            print(f"processing list items for section : {section_name}")
-                            print(ele)
-                            doc.append(process(ele, atbd_id=atbd.id))
-                    else:
-                        print(f"""
-                            section_name: {section_name}
-                            item: {item}
-                        """)
-                        document_data[section_name].get("children", [CONTENT_UNAVAILABLE])
-
-                        doc.append(NoEscape("\n"))
-                        doc.append(process(item, atbd_id=atbd.id))
-
-                doc.append(Command("end", "abstract"))
-                continue
-
-            # Version Description is the only field that doesn't get rendered at all
-            # if it's not found in the database data (as opposed to other field which)
-            # get displayed as "Content Unavailable"
-            if section_name == "version_description" and (
-                not document_data.get("version_description")
-                or not process(document_data.get("version_description"))
-            ):
-                continue
-
-            s = Section(
-                info["title"],
-                numbering=False if section_name in ["plain_summary", "keywords"] else True,
-            )
-            print("begin several get methods...")
-            if info.get("subsection"):
-                title = info["title"]
-                if journal:
-                    title = NoEscape(f"\\normalfont{{{title}}}")
-                s = Subsection(title)
-
-            if info.get("subsubsection"):
-                title = info["title"]
-                if journal:
-                    title = NoEscape(f"\\normalfont{{{title}}}")
-                s = Subsubsection(title)
-
-            doc.append(s)
-
-            if info.get("section_header"):
-                # section header means that no content is needed
-                continue
-
-            if section_name == "plain_summary":
-                # append only text
-                doc.append(
-                        (document_data[section_name]['children'][0]['children'][0]['text'])
-                    )
-                continue
-
-            if section_name == "keywords" and atbd_version.keywords:
-                doc.append(Command("begin", arguments="itemize"))
-                for keyword in atbd_version.keywords:
-                    doc.append(Command("item", arguments=keyword["label"]))
-                doc.append(Command("end", arguments="itemize"))
-                continue
-
-            if section_name == "contacts":
-                for contact in process_contacts(contacts_data):
-                    doc.append(contact)
-                continue
-
-            if section_name == "data_availability":
-                # append only text
-                doc.append(
-                        (document_data[section_name]['children'][0]['children'][0]['text'])
-                    )
+        if section_name == "abstract":
+            doc.append(Command("begin", "abstract"))
+            # print(document_data, 'DOCUMENT DATA')
+            # for item in document_data.get(section_name, {}).get(
+            #     "children", [CONTENT_UNAVAILABLE]
+            # ):
             
-            # temp try
-            try:
-                if not document_data.get(section_name):
-                    doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
-                    continue
-            except Exception as e:
-                raise e
-
-            if section_name in [
-                "algorithm_input_variables",
-                "algorithm_output_variables",
-            ]:
-
-                doc.append(
-                    process_algorithm_variables(
-                        data=document_data[section_name],
-                        caption=document_data[f"{section_name}_caption"],
-                    )
-                )
-                continue
-
-            if section_name in [
-                "algorithm_implementations",
-                "data_access_input_data",
-                "data_access_output_data",
-                "data_access_related_urls",
-            ]:
-
-                for url in process_data_access_urls(document_data[section_name]):
-                    doc.append(url)
-                continue
-
-            # allow document data sections to be empty or None
+            # allow document data sections to be Falsey values, such as empty strings
             for section_name,item in document_data.items():
-
-                # also allow only string types
-                if isinstance(item,str):
-                    print(f"ENTERING ITEM == STR with section name: {section_name}")
-                    # append
-                    doc.append(NoEscape("\n"))
-                    text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
-                    doc.append(process_text_content(text_content))
+                if bool(item) is False: #if it is falsey/
                     continue
-
-                # if item is not None and is not list
-                elif item is not None and isinstance(item,list) == False:
+                
+                # also allow only string types
+        # process key points as a text attribute
+                elif section_name in ["key_points","algorithm_input_variables_caption","algorithm_output_variables_caption"]:
                     
+                    text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
+                    print(f"PROCESSING KEY POINTS with text content {text_content}")
                     doc.append(
-                            document_data[section_name].get("children", [CONTENT_UNAVAILABLE])
+                            process_text_content(text_content)
                         )
 
+                # handle lists
+                elif isinstance(item,list):
+                    for _indx,ele in enumerate(item):
+                        print(f"processing list items for section : {section_name}")
+                        print(ele)
+                        doc.append(process(ele, atbd_id=atbd.id))
                 else:
-                    if isinstance(item,list):
-                        for _indx,ele in enumerate(item):
-                            print(f"processing list items for section : {section_name}")
-                            print(ele)
-                            doc.append(NoEscape("\n"))
-                            doc.append(process(ele, atbd_id=atbd.id))
-                    
-                    elif item is None:
-                        continue
+                    print(f"""
+                        section_name: {section_name}
+                        item: {item}
+                    """)
+                    document_data[section_name].get("children", [CONTENT_UNAVAILABLE])
 
-                    print(f"end processing in section name {section_name } for item: {item}")
+                    doc.append(NoEscape("\n"))
+                    doc.append(process(item, atbd_id=atbd.id))
 
-                    # doc.append(NoEscape("\n"))
-                    # doc.append(process(item, atbd_id=atbd.id))
-                    # continue
+            doc.append(Command("end", "abstract"))
+            continue
 
-        if not journal:
-            doc.append(Command("bibliographystyle", arguments="apacite"))
+        # Version Description is the only field that doesn't get rendered at all
+        # if it's not found in the database data (as opposed to other field which)
+        # get displayed as "Content Unavailable"
+        if section_name == "version_description" and (
+            not document_data.get("version_description")
+            or not process(document_data.get("version_description"))
+        ):
+            continue
 
-        doc.append(Command("bibliography", arguments=NoEscape(filepath)))
-    except Exception as e:
-        raise e
+        s = Section(
+            info["title"],
+            numbering=False if section_name in ["plain_summary", "keywords"] else True,
+        )
+        print("begin several get methods...")
+        if info.get("subsection"):
+            title = info["title"]
+            if journal:
+                title = NoEscape(f"\\normalfont{{{title}}}")
+            s = Subsection(title)
 
-    else:
+        if info.get("subsubsection"):
+            title = info["title"]
+            if journal:
+                title = NoEscape(f"\\normalfont{{{title}}}")
+            s = Subsubsection(title)
 
-        return doc
+        doc.append(s)
+
+        if info.get("section_header"):
+            # section header means that no content is needed
+            continue
+
+        if section_name == "plain_summary":
+            # append only text
+            doc.append(
+                    (document_data[section_name]['children'][0]['children'][0]['text'])
+                )
+            continue
+
+        if section_name == "keywords" and atbd_version.keywords:
+            doc.append(Command("begin", arguments="itemize"))
+            for keyword in atbd_version.keywords:
+                doc.append(Command("item", arguments=keyword["label"]))
+            doc.append(Command("end", arguments="itemize"))
+            continue
+
+        if section_name == "contacts":
+            for contact in process_contacts(contacts_data):
+                doc.append(contact)
+            continue
+
+        if section_name == "data_availability":
+            # append only text
+            doc.append(
+                    (document_data[section_name]['children'][0]['children'][0]['text'])
+                )
+        
+        # temp try
+        try:
+            if not document_data.get(section_name):
+                doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
+                continue
+        except Exception as e:
+            raise e
+
+        if section_name in [
+            "algorithm_input_variables",
+            "algorithm_output_variables",
+        ]:
+
+            doc.append(
+                process_algorithm_variables(
+                    data=document_data[section_name],
+                    caption=document_data[f"{section_name}_caption"],
+                )
+            )
+            continue
+
+        if section_name in [
+            "algorithm_implementations",
+            "data_access_input_data",
+            "data_access_output_data",
+            "data_access_related_urls",
+        ]:
+
+            for url in process_data_access_urls(document_data[section_name]):
+                doc.append(url)
+            continue
+
+        # allow document data sections to be empty or None
+        for section_name,item in document_data.items():
+
+            # also allow only string types
+            if isinstance(item,str):
+                print(f"ENTERING ITEM == STR with section name: {section_name}")
+                # append
+                doc.append(NoEscape("\n"))
+                text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
+                doc.append(process_text_content(text_content))
+                continue
+
+            # if item is not None and is not list
+            elif item is not None and isinstance(item,list) == False:
+                
+                doc.append(
+                        document_data[section_name].get("children", [CONTENT_UNAVAILABLE])
+                    )
+
+            else:
+                if isinstance(item,list):
+                    for _indx,ele in enumerate(item):
+                        print(f"processing list items for section : {section_name}")
+                        print(ele)
+                        doc.append(NoEscape("\n"))
+                        doc.append(process(ele, atbd_id=atbd.id))
+                
+                elif item is None:
+                    continue
+
+                print(f"end processing in section name {section_name } for item: {item}")
+
+                # doc.append(NoEscape("\n"))
+                # doc.append(process(item, atbd_id=atbd.id))
+                # continue
+
+    if not journal:
+        doc.append(Command("bibliographystyle", arguments="apacite"))
+
+    doc.append(Command("bibliography", arguments=NoEscape(filepath)))
+
+
+    
+
+    return doc
 
 
 def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
