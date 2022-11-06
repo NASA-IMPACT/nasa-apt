@@ -4,6 +4,8 @@ PDF generation code for ATBD Documents
 import os
 import pathlib
 from typing import Any, List, Union
+import pydash
+from app.pdf_utils import fill_sections
 
 import pandas as pd
 from pylatex import (
@@ -209,7 +211,7 @@ def process_text_content(
     result = []
     # allow this function to process only text
     if isinstance(data,str):
-        print(f"WITHIN PROCESS TEXT CONTENT with data: {data}")
+        
         result.append(wrap_text(data))
     else:
         for d in data:
@@ -388,7 +390,7 @@ def process(
         # First check if data is string type. If true, process_text_content
         if isinstance(data,str):
             text_element = {"bold": False, "italic": False, "text": f"{data}" }
-            print(f"CALLING PROCESS_TEXT_CCONTENT    FUNCTION.... with data {data}")
+            
             data = process_text_content(text_element)
             return data
         else:
@@ -464,8 +466,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     # parse as Pydantic model and return to dict to enforce data integrity
     document_data = document.Document.parse_obj(atbd_version.document).dict()
-    
-    print(f'THE DOCUMENT DATA: {document_data}')
 
     contacts_data = atbd_version.contacts_link
 
@@ -681,62 +681,27 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     section_name: str
     info: Any
 
-    # FILL SECTIONS HERE
+    # TODO FILL SECTIONS and fill user input text directly from sections
+    
 
     for section_name, info in SECTIONS.items():
-        # Journal Acknowledgements and Journal Discussion are only included in
-        # Journal type pdfs
-        if not journal and section_name in [
-            "journal_acknowledgements",
-            "journal_discussion",
-        ]:
-            # append only text
-            doc.append(
-                    (document_data[section_name]['children'][0]['children'][0]['text'])
-                )  
-            continue
 
+        # SECTION ABSTRACT
         if section_name == "abstract":
             doc.append(Command("begin", "abstract"))
-            # print(document_data, 'DOCUMENT DATA')
-            # for item in document_data.get(section_name, {}).get(
-            #     "children", [CONTENT_UNAVAILABLE]
-            # ):
+            doc.append(
+                fill_sections.get_section_info(document_section=document_data[section_name])
+            )
             
             # allow document data sections to be Falsey values, such as empty strings
             for section_name,item in document_data.items():
                 if bool(item) is False: #if it is falsey/
                     continue
-                
-                # also allow only string types
-        # process key points as a text attribute
-                elif section_name in ["key_points","algorithm_input_variables_caption","algorithm_output_variables_caption"]:
-                    
-                    text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
-                    print(f"PROCESSING KEY POINTS with text content {text_content}")
-                    doc.append(
-                            process_text_content(text_content)
-                        )
-
-                # handle lists
-                elif isinstance(item,list):
-                    for _indx,ele in enumerate(item):
-                        print(f"processing list items for section : {section_name}")
-                        print(ele)
-                        doc.append(process(ele, atbd_id=atbd.id))
-                else:
-                    print(f"""
-                        section_name: {section_name}
-                        item: {item}
-                    """)
-                    document_data[section_name].get("children", [CONTENT_UNAVAILABLE])
-
-                    doc.append(NoEscape("\n"))
-                    doc.append(process(item, atbd_id=atbd.id))
 
             doc.append(Command("end", "abstract"))
             continue
 
+        # SECTION VERSION DESCRIPTION
         # Version Description is the only field that doesn't get rendered at all
         # if it's not found in the database data (as opposed to other field which)
         # get displayed as "Content Unavailable"
@@ -746,11 +711,62 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         ):
             continue
 
+        # SECTION KEY POINTS
+        if section_name in ["key_points"]:
+            
+            text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
+            
+            doc.append(
+                    process_text_content(text_content)
+                )
+
+        # SECTION INTRODUCTION
+        if section_name == "introduction":
+            doc.append(
+                fill_sections.get_section_info(document_section=document_data[section_name])
+            )
+
+
+        # SECTION CONTEXT BACKGROUND
+        ## Note: This title section is handled elsewhere as logic is currently written
+        # if section_name == "context_background":
+        #     doc.append(
+        #         fill_sections.get_section_info(document_section=document_data[section_name])
+        #     )
+
+        # SECTION HISTORICAL PERSPECTIVE
+        if section_name == "historical_perspective":
+            doc.append(
+                fill_sections.get_section_info(document_section=document_data[section_name])
+            )
+
+        # SECTION ADDITIONAL INFORMATION
+        if section_name == "additional_information":
+            doc.append(
+                fill_sections.get_section_info(document_section=document_data[section_name])
+            )
+
+        # SECTION ALGORITHM DESCRIPTION
+        if section_name == "algorithm_description":
+            doc.append(
+                fill_sections.get_section_info(document_section=document_data[section_name])
+            )
+
+        # SECTION ALGORITHM SECTIONS
+        # process key points as a text attribute
+        if section_name in ["algorithm_input_variables_caption","algorithm_output_variables_caption"]:
+            
+            text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
+            
+            doc.append(
+                    process_text_content(text_content)
+                )
+
         s = Section(
             info["title"],
             numbering=False if section_name in ["plain_summary", "keywords"] else True,
         )
-        print("begin several get methods...")
+        
         if info.get("subsection"):
             title = info["title"]
             if journal:
@@ -769,13 +785,15 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             # section header means that no content is needed
             continue
 
+        # SECTION PLAIN SUMMARY
         if section_name == "plain_summary":
             # append only text
             doc.append(
-                    (document_data[section_name]['children'][0]['children'][0]['text'])
-                )
+                fill_sections.get_section_info(document_section=document_data[section_name])
+            )
             continue
 
+        #  SECTION KEYWORDS
         if section_name == "keywords" and atbd_version.keywords:
             doc.append(Command("begin", arguments="itemize"))
             for keyword in atbd_version.keywords:
@@ -783,25 +801,18 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             doc.append(Command("end", arguments="itemize"))
             continue
 
+        # SECTION CONTACT
         if section_name == "contacts":
             for contact in process_contacts(contacts_data):
                 doc.append(contact)
             continue
-
-        if section_name == "data_availability":
-            # append only text
-            doc.append(
-                    (document_data[section_name]['children'][0]['children'][0]['text'])
-                )
         
-        # temp try
-        try:
-            if not document_data.get(section_name):
-                doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
-                continue
-        except Exception as e:
-            raise e
 
+        if not document_data.get(section_name):
+            doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
+            continue
+
+        # SECTION ALGORITHM VARIABLES AND DATA ACCESS
         if section_name in [
             "algorithm_input_variables",
             "algorithm_output_variables",
@@ -826,41 +837,39 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 doc.append(url)
             continue
 
-        # allow document data sections to be empty or None
-        for section_name,item in document_data.items():
+        # SECTION PERFORMANCE ASSESSMENT
+        if section_name in [
+            "performance_assessment_validation_methods",
+            "performance_assessment_validation_uncertainties",
+            "performance_assessment_validation_errors",
+            ]:
+    
+            # append only text
+            doc.append(
+                fill_sections.get_section_info(document_section=document_data[section_name])
+            )
 
-            # also allow only string types
-            if isinstance(item,str):
-                print(f"ENTERING ITEM == STR with section name: {section_name}")
-                # append
-                doc.append(NoEscape("\n"))
-                text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
-                doc.append(process_text_content(text_content))
-                continue
+        # SECTION DATA AVAILABILITY
+        # Journal Acknowledgements and Journal Discussion are only included in
+        # Journal type pdfs
+        if not journal and section_name in [
+            "journal_acknowledgements",
+            "journal_discussion",
+        ]:
+            # append only text
+            # REFERENCE
+            doc.append(
+                fill_sections.get_section_info(document_section=document_data[section_name])
+            )
 
-            # if item is not None and is not list
-            elif item is not None and isinstance(item,list) == False:
-                
-                doc.append(
-                        document_data[section_name].get("children", [CONTENT_UNAVAILABLE])
-                    )
+            continue
 
-            else:
-                if isinstance(item,list):
-                    for _indx,ele in enumerate(item):
-                        print(f"processing list items for section : {section_name}")
-                        print(ele)
-                        doc.append(NoEscape("\n"))
-                        doc.append(process(ele, atbd_id=atbd.id))
-                
-                elif item is None:
-                    continue
-
-                print(f"end processing in section name {section_name } for item: {item}")
-
-                # doc.append(NoEscape("\n"))
-                # doc.append(process(item, atbd_id=atbd.id))
-                # continue
+        # SECTION DATA AVAILABILITY
+        if section_name == "data_availability":
+            # append only text
+            doc.append(
+                fill_sections.get_section_info(document_section=document_data[section_name])
+            )
 
     if not journal:
         doc.append(Command("bibliographystyle", arguments="apacite"))
@@ -886,13 +895,8 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
 
     # create a folder for the pdf/latex files to be stored in
     pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
-
-    # temp try
-    try:
-
-        latex_document = generate_latex(atbd, filepath, journal=journal)
-    except Exception as e:
-        raise e
+    
+    latex_document = generate_latex(atbd, filepath, journal=journal)
 
     latex_document.generate_pdf(
         filepath=filepath,

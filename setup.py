@@ -26,6 +26,7 @@ inst_reqs = [
     "fastapi_permissions==0.2.7",
     "mangum>=0.9.0",
     "awslambdaric==1.2.0",
+    "pydash==5.0.1"
 ]
 extra_reqs = {
     "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort"],
