@@ -27,10 +27,9 @@ inst_reqs = [
     "mangum>=0.9.0",
     "awslambdaric==1.2.0",
     "pydash==5.0.1",
-    "types-requests==2.28.11.2",
 ]
 extra_reqs = {
-    "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort"],
+    "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort", "types-requests"],
     "deploy": [
         "python-dotenv",
         "aws-cdk.core>=1.136.0",
