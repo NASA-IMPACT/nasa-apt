@@ -770,7 +770,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 )
             )
 
-        # SECTION ALGORITHM SECTIONS
+        # SECTION ALGORITHM SECTION
         # process key points as a text attribute
         if section_name in [
             "algorithm_input_variables_caption",
