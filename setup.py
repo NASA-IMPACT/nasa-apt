@@ -14,7 +14,7 @@ inst_reqs = [
     "latex==0.7.0",
     "pandas==1.4.0",
     "pydantic==1.5.1",
-    "requests==2.23.0",
+    "requests==2.28.1",
     "opensearch-py==2.0.0",
     "requests-aws4auth==1.1.2",
     "python-multipart==0.0.5",
