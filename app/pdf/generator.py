@@ -4,10 +4,9 @@ PDF generation code for ATBD Documents
 import os
 import pathlib
 from typing import Any, List, Union
-import pydash
-from app.pdf_utils import fill_sections
 
 import pandas as pd
+import pydash
 from pylatex import (
     Command,
     Document,
@@ -26,6 +25,7 @@ from pylatex import (
 from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
+from app.pdf_utils import fill_sections
 from app.schemas import document
 from app.schemas.versions_contacts import (
     ContactMechanismEnum,
@@ -210,8 +210,8 @@ def process_text_content(
     """
     result = []
     # allow this function to process only text
-    if isinstance(data,str):
-        
+    if isinstance(data, str):
+
         result.append(wrap_text(data))
     else:
         for d in data:
@@ -388,16 +388,22 @@ def process(
     try:
         # This if - then block allows data in a user document to be empty, string, or non-dictionary object
         # First check if data is string type. If true, process_text_content
-        if isinstance(data,str):
-            text_element = {"bold": False, "italic": False, "text": f"{data}" }
-            
-            data = process_text_content(text_element)
-            return data
+        if isinstance(data, str):
+            text_element: Union[document.TextLeaf, Any] = {
+                "bold": False,
+                "italic": False,
+                "text": f"{data}",
+            }
+
+            return_data = process_text_content(text_element)
+            return return_data
         else:
-            
+
             if data.get("type") in ["p", "caption"]:
 
-                return NoEscape(" ".join(d for d in process_text_content(data["children"])))
+                return NoEscape(
+                    " ".join(d for d in process_text_content(data["children"]))
+                )
 
             if data.get("type") in ["ul", "ol"]:
                 latex_list = Itemize() if data["type"] == "ul" else Enumerate()
@@ -415,10 +421,13 @@ def process(
                 # return process(data["children"][0])
 
             if data.get("type") == "sub-section":
-                section_title = " ".join(d for d in process_text_content(data["children"]))
+                section_title = " ".join(
+                    d for d in process_text_content(data["children"])
+                )
 
                 return Subsubsection(
-                    NoEscape(f"\\normalfont{{\\itshape{{{section_title}}}}}"), numbering=False
+                    NoEscape(f"\\normalfont{{\\itshape{{{section_title}}}}}"),
+                    numbering=False,
                 )
 
             if data.get("type") == "equation":
@@ -441,7 +450,9 @@ def process(
                 figure.add_image(f"/tmp/{img['objectKey']}")
 
                 figure.add_caption(
-                    NoEscape(" ".join(d for d in process_text_content(caption["children"])))
+                    NoEscape(
+                        " ".join(d for d in process_text_content(caption["children"]))
+                    )
                 )
                 return figure
 
@@ -455,7 +466,6 @@ def process(
 
     except Exception as e:
         raise e
-    
 
 
 def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
@@ -682,7 +692,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     info: Any
 
     # TODO FILL SECTIONS and fill user input text directly from sections
-    
 
     for section_name, info in SECTIONS.items():
 
@@ -690,12 +699,14 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         if section_name == "abstract":
             doc.append(Command("begin", "abstract"))
             doc.append(
-                fill_sections.get_section_info(document_section=document_data[section_name])
+                fill_sections.get_section_info(
+                    document_section=document_data[section_name]
+                )
             )
-            
+
             # allow document data sections to be Falsey values, such as empty strings
-            for section_name,item in document_data.items():
-                if bool(item) is False: #if it is falsey/
+            for section_name, item in document_data.items():
+                if bool(item) is False:  # if it is falsey/
                     continue
 
             doc.append(Command("end", "abstract"))
@@ -713,22 +724,23 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
         # SECTION KEY POINTS
         if section_name in ["key_points"]:
-            
-            text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
-            
-            doc.append(
-                    process_text_content(text_content)
-                )
+
+            kp_text_content: Union[document.TextLeaf, Any] = [
+                {"bold": False, "italic": False, "text": f"{item}"}
+            ]
+
+            doc.append(process_text_content(kp_text_content))
 
         # SECTION INTRODUCTION
         if section_name == "introduction":
             doc.append(
-                fill_sections.get_section_info(document_section=document_data[section_name])
+                fill_sections.get_section_info(
+                    document_section=document_data[section_name]
+                )
             )
 
-
         # SECTION CONTEXT BACKGROUND
-        ## Note: This title section is handled elsewhere as logic is currently written
+        # Note: This title section is handled elsewhere as logic is currently written
         # if section_name == "context_background":
         #     doc.append(
         #         fill_sections.get_section_info(document_section=document_data[section_name])
@@ -737,36 +749,45 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         # SECTION HISTORICAL PERSPECTIVE
         if section_name == "historical_perspective":
             doc.append(
-                fill_sections.get_section_info(document_section=document_data[section_name])
+                fill_sections.get_section_info(
+                    document_section=document_data[section_name]
+                )
             )
 
         # SECTION ADDITIONAL INFORMATION
         if section_name == "additional_information":
             doc.append(
-                fill_sections.get_section_info(document_section=document_data[section_name])
+                fill_sections.get_section_info(
+                    document_section=document_data[section_name]
+                )
             )
 
         # SECTION ALGORITHM DESCRIPTION
         if section_name == "algorithm_description":
             doc.append(
-                fill_sections.get_section_info(document_section=document_data[section_name])
+                fill_sections.get_section_info(
+                    document_section=document_data[section_name]
+                )
             )
 
         # SECTION ALGORITHM SECTIONS
         # process key points as a text attribute
-        if section_name in ["algorithm_input_variables_caption","algorithm_output_variables_caption"]:
-            
-            text_content = [{"bold": False, "italic": False, "text": f"{item}" }]
-            
-            doc.append(
-                    process_text_content(text_content)
-                )
+        if section_name in [
+            "algorithm_input_variables_caption",
+            "algorithm_output_variables_caption",
+        ]:
+
+            algo_text_content: Union[document.TextLeaf, Any] = [
+                {"bold": False, "italic": False, "text": f"{item}"}
+            ]
+
+            doc.append(process_text_content(algo_text_content))
 
         s = Section(
             info["title"],
             numbering=False if section_name in ["plain_summary", "keywords"] else True,
         )
-        
+
         if info.get("subsection"):
             title = info["title"]
             if journal:
@@ -789,7 +810,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         if section_name == "plain_summary":
             # append only text
             doc.append(
-                fill_sections.get_section_info(document_section=document_data[section_name])
+                fill_sections.get_section_info(
+                    document_section=document_data[section_name]
+                )
             )
             continue
 
@@ -806,7 +829,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             for contact in process_contacts(contacts_data):
                 doc.append(contact)
             continue
-        
 
         if not document_data.get(section_name):
             doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
@@ -842,11 +864,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "performance_assessment_validation_methods",
             "performance_assessment_validation_uncertainties",
             "performance_assessment_validation_errors",
-            ]:
-    
+        ]:
+
             # append only text
             doc.append(
-                fill_sections.get_section_info(document_section=document_data[section_name])
+                fill_sections.get_section_info(
+                    document_section=document_data[section_name]
+                )
             )
 
         # SECTION DATA AVAILABILITY
@@ -859,7 +883,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             # append only text
             # REFERENCE
             doc.append(
-                fill_sections.get_section_info(document_section=document_data[section_name])
+                fill_sections.get_section_info(
+                    document_section=document_data[section_name]
+                )
             )
 
             continue
@@ -868,16 +894,15 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         if section_name == "data_availability":
             # append only text
             doc.append(
-                fill_sections.get_section_info(document_section=document_data[section_name])
+                fill_sections.get_section_info(
+                    document_section=document_data[section_name]
+                )
             )
 
     if not journal:
         doc.append(Command("bibliographystyle", arguments="apacite"))
 
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
-
-
-    
 
     return doc
 
@@ -895,7 +920,7 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
 
     # create a folder for the pdf/latex files to be stored in
     pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
-    
+
     latex_document = generate_latex(atbd, filepath, journal=journal)
 
     latex_document.generate_pdf(
