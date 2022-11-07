@@ -1,3 +1,3 @@
 """
-Utility functions for PDF generation
+Allows import of Utility functions for PDF generation
 """
