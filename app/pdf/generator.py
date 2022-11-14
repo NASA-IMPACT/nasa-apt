@@ -477,6 +477,8 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     # parse as Pydantic model and return to dict to enforce data integrity
     document_data = document.Document.parse_obj(atbd_version.document).dict()
 
+    # print(document_data,'document data')
+
     contacts_data = atbd_version.contacts_link
 
     document_class = "agujournal2019" if journal else "article"
@@ -684,6 +686,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             doc.append(Command("item", arguments=keypoint.strip("-") or " "))
         doc.append(Command("end", arguments="keypoints"))
 
+    print("CALLING GENERATE BIB FILE")
     generate_bib_file(
         document_data["publication_references"],
         filepath=f"{filepath}.bib",
@@ -692,7 +695,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     info: Any
 
     # TODO FILL SECTIONS and fill user input text directly from sections
-
+    print(SECTIONS, "SECTIONS OBJECTS")
     for section_name, info in SECTIONS.items():
 
         # SECTION ABSTRACT
@@ -921,7 +924,12 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     # create a folder for the pdf/latex files to be stored in
     pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
 
-    latex_document = generate_latex(atbd, filepath, journal=journal)
+    try:
+
+        latex_document = generate_latex(atbd, filepath, journal=journal)
+
+    except Exception as e:
+        raise e
 
     latex_document.generate_pdf(
         filepath=filepath,
