@@ -95,11 +95,10 @@ def get_pdf(
                 "Content-Disposition": f"attachment; filename={pdf_key.split('/')[-1]}"
             },
         )
-    print("GENERATING PDF")
+    print("GENERATING PDF:")
     try:
         local_pdf_filepath = generate_pdf(atbd=atbd, filepath=pdf_key, journal=journal)
     except Exception as e:
-
         atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
 
         return HTMLResponse(

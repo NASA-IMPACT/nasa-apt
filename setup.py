@@ -12,9 +12,9 @@ inst_reqs = [
     "fastapi==0.54.1",
     "gunicorn==20.0.4",
     "latex==0.7.0",
-    "pandas==1.2.0",
+    "pandas==1.4.0",
     "pydantic==1.5.1",
-    "requests==2.23.0",
+    "requests==2.28.1",
     "opensearch-py==2.0.0",
     "requests-aws4auth==1.1.2",
     "python-multipart==0.0.5",
@@ -26,9 +26,10 @@ inst_reqs = [
     "fastapi_permissions==0.2.7",
     "mangum>=0.9.0",
     "awslambdaric==1.2.0",
+    "pydash==5.0.1",
 ]
 extra_reqs = {
-    "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort"],
+    "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort", "types-requests"],
     "deploy": [
         "python-dotenv",
         "aws-cdk.core>=1.136.0",

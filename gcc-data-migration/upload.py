@@ -7,7 +7,7 @@ import time
 from typing import Dict, List
 
 import boto3
-import requests
+import requests  # type: ignore
 
 parser = argparse.ArgumentParser()
 

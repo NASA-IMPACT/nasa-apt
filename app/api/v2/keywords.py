@@ -1,7 +1,7 @@
 """Keywords (GCMD KMS API passthrough) endpoint."""
 from enum import Enum
 
-import requests as re
+import requests as re  # type: ignore
 
 from app.config import API_VERSION_STRING
 

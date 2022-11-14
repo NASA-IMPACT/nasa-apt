@@ -2,7 +2,7 @@
 import time
 from typing import Dict, Union
 
-import requests
+import requests  # type: ignore
 from jose import jwk, jwt
 from jose.utils import base64url_decode
 
