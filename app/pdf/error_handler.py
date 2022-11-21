@@ -379,6 +379,7 @@ def generate_html_content_for_error(
     """
     Generates an HTML page with error messages extracted from the LaTeX compiler output
     """
+    raise error
     parsed_errors, full_error = extract_error_content(error)
 
     with open("./app/pdf/error.html", "r") as f:

@@ -25,7 +25,7 @@ from pylatex import (
 from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
-from app.pdf_utils import fill_sections
+from app.pdf_utils import fill_sections, image_handler
 from app.schemas import document
 from app.schemas.versions_contacts import (
     ContactMechanismEnum,
@@ -454,6 +454,7 @@ def process(
                         " ".join(d for d in process_text_content(caption["children"]))
                     )
                 )
+
                 return figure
 
             if data.get("type") == "table-block":
@@ -695,14 +696,94 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     info: Any
 
     # TODO FILL SECTIONS and fill user input text directly from sections
-    print(SECTIONS, "SECTIONS OBJECTS")
+
     for section_name, info in SECTIONS.items():
+
+        # for each matching section name in document_data
+
+        # get the entire List of Dicts from document data as section_content, default to empty dict
+        document_content: List = pydash.get(
+            obj=document_data, path=f"{section_name}.children", default={}
+        )
+        print(document_content, "SECTION CONTENT TO BE USED")
+
+        # check the content type, of each item in document_content List
+        for indx, element in enumerate(document_content):
+
+            content_type: str = pydash.get(obj=document_content, path=f"{indx}.type")
+
+            # apply logic for each content type, append to document in order
+            if content_type == "p":
+
+                text_element = pydash.get(obj=element, path=f"{indx}.children.text")
+
+                doc.append(text_element)
+                # check for references in paragraph
+                # reference = TODO
+
+                # check for equations in paragraph
+                # equation = TODO
+
+            # check for sub-section
+            if content_type == "sub-section":
+
+                sub_section_title = pydash.get(
+                    obj=element, path=f"{indx}.children.text"
+                )
+
+                sub_section = Subsubsection(
+                    NoEscape(f"\\normalfont{{\\itshape{{{sub_section_title}}}}}"),
+                    numbering=False,
+                )
+
+                doc.append(sub_section)
+
+            # process image type content
+            if content_type == "image-block":
+
+                # append image
+                doc.append(
+                    image_handler.process_image(
+                        data=document_content[indx], atbd_id=atbd.id
+                    )
+                )
+
+            if content_type in ["ul", "ol"]:
+                # print(f"""CONTENT_TYPE: ul','ol
+                #     \n
+                #     {section_content}
+                # """)
+                pass
+            if content_type == "li":
+                # print(f"""CONTENT_TYPE: li
+                #     \n
+                #     {section_content}
+                # """)
+                pass
+            if content_type == "sub-section":
+                # print(f"""CONTENT_TYPE:sub-section
+                #     \n
+                #     {section_content}
+                # """)
+                pass
+            if content_type == "equation":
+                # print(f"""CONTENT_TYPE:quation
+                #     \n
+                #     {section_content}
+                # """)
+                pass
+            if content_type == "table-block":
+                # print(f"""CONTENT_TYPE: table-block
+                #     \n
+                #     {section_content}
+                # """)
+                pass
 
         # SECTION ABSTRACT
         if section_name == "abstract":
             doc.append(Command("begin", "abstract"))
             doc.append(
-                fill_sections.get_section_info(
+                fill_sections.get_section_user_text(
                     document_section=document_data[section_name]
                 )
             )
@@ -736,23 +817,18 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
         # SECTION INTRODUCTION
         if section_name == "introduction":
-            doc.append(
-                fill_sections.get_section_info(
-                    document_section=document_data[section_name]
-                )
-            )
-
+            print("old introduction processing")
         # SECTION CONTEXT BACKGROUND
         # Note: This title section is handled elsewhere as logic is currently written
         # if section_name == "context_background":
         #     doc.append(
-        #         fill_sections.get_section_info(document_section=document_data[section_name])
+        #         fill_sections.get_section_user_text(document_section=document_data[section_name])
         #     )
 
         # SECTION HISTORICAL PERSPECTIVE
         if section_name == "historical_perspective":
             doc.append(
-                fill_sections.get_section_info(
+                fill_sections.get_section_user_text(
                     document_section=document_data[section_name]
                 )
             )
@@ -760,7 +836,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         # SECTION ADDITIONAL INFORMATION
         if section_name == "additional_information":
             doc.append(
-                fill_sections.get_section_info(
+                fill_sections.get_section_user_text(
                     document_section=document_data[section_name]
                 )
             )
@@ -768,7 +844,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         # SECTION ALGORITHM DESCRIPTION
         if section_name == "algorithm_description":
             doc.append(
-                fill_sections.get_section_info(
+                fill_sections.get_section_user_text(
                     document_section=document_data[section_name]
                 )
             )
@@ -813,7 +889,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         if section_name == "plain_summary":
             # append only text
             doc.append(
-                fill_sections.get_section_info(
+                fill_sections.get_section_user_text(
                     document_section=document_data[section_name]
                 )
             )
@@ -871,7 +947,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
             # append only text
             doc.append(
-                fill_sections.get_section_info(
+                fill_sections.get_section_user_text(
                     document_section=document_data[section_name]
                 )
             )
@@ -886,7 +962,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             # append only text
             # REFERENCE
             doc.append(
-                fill_sections.get_section_info(
+                fill_sections.get_section_user_text(
                     document_section=document_data[section_name]
                 )
             )
@@ -897,7 +973,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         if section_name == "data_availability":
             # append only text
             doc.append(
-                fill_sections.get_section_info(
+                fill_sections.get_section_user_text(
                     document_section=document_data[section_name]
                 )
             )
@@ -924,6 +1000,7 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     # create a folder for the pdf/latex files to be stored in
     pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
 
+    # try catch to surface errors
     try:
 
         latex_document = generate_latex(atbd, filepath, journal=journal)
@@ -931,22 +1008,25 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     except Exception as e:
         raise e
 
-    latex_document.generate_pdf(
-        filepath=filepath,
-        # XeTeX generates multiple intermediate files (`.aux`, `.log`, etc)
-        # that we want to remove
-        clean=True,
-        # Keep the generated `.tex` file
-        clean_tex=False,
-        # latexmk automatically performs the multiple runs necessary
-        # to include the bibliography, table of contents, etc
-        compiler="latexmk",
-        # the `--pdfxe` flag loads the Xelatex pacakge necessary for
-        # the compiler to manage image positioning within the pdf document
-        # and native unicode character handling
-        compiler_args=["-pdfxe", "-interaction=batchmode", "-e", "$max_repeat=10"],
-        # Hides compiler output, except in case of error
-        silent=True,
-    )
+    try:
+        latex_document.generate_pdf(
+            filepath=filepath,
+            # XeTeX generates multiple intermediate files (`.aux`, `.log`, etc)
+            # that we want to remove
+            clean=True,
+            # Keep the generated `.tex` file
+            clean_tex=False,
+            # latexmk automatically performs the multiple runs necessary
+            # to include the bibliography, table of contents, etc
+            compiler="latexmk",
+            # the `--pdfxe` flag loads the Xelatex pacakge necessary for
+            # the compiler to manage image positioning within the pdf document
+            # and native unicode character handling
+            compiler_args=["-pdfxe", "-interaction=batchmode", "-e", "$max_repeat=10"],
+            # Hides compiler output, except in case of error
+            silent=True,
+        )
+    except Exception as e:
+        raise e
 
     return f"{filepath}.pdf"
