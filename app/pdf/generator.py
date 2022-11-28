@@ -4,7 +4,6 @@ PDF generation code for ATBD Documents
 import os
 import pathlib
 from typing import Any, List, Union
-
 import pandas as pd
 import pydash
 from pylatex import (
@@ -25,7 +24,7 @@ from pylatex import (
 from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
-from app.pdf_utils import fill_sections, image_handler
+from app.pdf_utils import fill_sections, image_handler, process_lists, format_equation, process_table
 from app.schemas import document
 from app.schemas.versions_contacts import (
     ContactMechanismEnum,
@@ -705,7 +704,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         document_content: List = pydash.get(
             obj=document_data, path=f"{section_name}.children", default={}
         )
-        print(document_content, "SECTION CONTENT TO BE USED")
+        # print(document_content, "SECTION CONTENT TO BE USED")
 
         # check the content type, of each item in document_content List
         for indx, element in enumerate(document_content):
@@ -749,35 +748,25 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 )
 
             if content_type in ["ul", "ol"]:
-                # print(f"""CONTENT_TYPE: ul','ol
-                #     \n
-                #     {section_content}
-                # """)
-                pass
-            if content_type == "li":
-                # print(f"""CONTENT_TYPE: li
-                #     \n
-                #     {section_content}
-                # """)
-                pass
-            if content_type == "sub-section":
-                # print(f"""CONTENT_TYPE:sub-section
-                #     \n
-                #     {section_content}
-                # """)
-                pass
+
+                doc.append(
+                    process_lists.ul_ol_lists(element)
+                )
+
             if content_type == "equation":
-                # print(f"""CONTENT_TYPE:quation
-                #     \n
-                #     {section_content}
-                # """)
-                pass
-            if content_type == "table-block":
-                # print(f"""CONTENT_TYPE: table-block
-                #     \n
-                #     {section_content}
-                # """)
-                pass
+
+                doc.append(
+                    format_equation.format(element)
+                )
+            # if content_type == "table-block":
+            #     print(f"""CONTENT_TYPE: table-block
+            #         \n
+            #         {element}
+            #     """)
+            #     doc.append(
+            #         process_table.process_table(element)
+            #     )
+            #     pass
 
         # SECTION ABSTRACT
         if section_name == "abstract":
