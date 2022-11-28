@@ -1,9 +1,10 @@
 """
     Module to handle processing of table elements
 """
-from app.schemas import document
-from pylatex import NoEscape, utils
 import pandas as pd
+from pylatex import NoEscape, utils
+
+from app.schemas import document
 
 TEXT_WRAPPERS = {
     "superscript": lambda e: f"\\textsuperscript{{{e}}}",
@@ -15,6 +16,7 @@ TEXT_WRAPPERS = {
     "italic": lambda e: f"\\textit{{{e}}}",
     "bold": lambda e: f"\\textbf{{{e}}}",
 }
+
 
 def wrap_caption(caption_text):
     """
@@ -31,12 +33,12 @@ def wrap_caption(caption_text):
     }
     # generate and validate textleaf type
     caption_text_leaf = document.TextLeaf(**caption_text_leaf)
-    
 
     # pass to wraptext/caption format util
     processed_caption = NoEscape(wrap_text(caption_text))
 
     return processed_caption
+
 
 def wrap_text(data: document.TextLeaf) -> NoEscape:
     """
@@ -48,21 +50,22 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
 
     """
     # e = utils.escape_latex(data["text"])
-    print(data,"DATA IN WRAP TEXT")
+    print(data, "DATA IN WRAP TEXT")
     e = utils.escape_latex(data)
     # e = data["text"]
-    
+
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option) and e.strip(" ") != "":
             e = command(e)
 
     return NoEscape(e)
 
+
 def build_table(data: document.TableNode, caption: str) -> NoEscape:
     """
     Returns a Latex formatted Table Item, wrapped with a NoEscape Command
     """
-    print(data,"TABLE IN BUILD TABLE")
+    print(data, "TABLE IN BUILD TABLE")
     rows = [
         tuple(
             " ".join(wrap_text(c) for c in table_cell["children"])
@@ -87,16 +90,14 @@ def build_table(data: document.TableNode, caption: str) -> NoEscape:
 
     return NoEscape(latex_table)
 
+
 def process_table(data):
-    
+
     [table] = filter(lambda d: d["type"] == "table", data["children"])
     [caption] = filter(lambda d: d["type"] == "caption", data["children"])
-    print(data,"DATA COMING INTO PROCESS TABLE")
+    print(data, "DATA COMING INTO PROCESS TABLE")
     # caption = NoEscape(
     #     " ".join(d for d in wrap_text(caption["children"]))
     # )
-    caption = NoEscape(
-        wrap_caption( item for item in caption['children'] )
-    )
+    caption = NoEscape(wrap_caption(item for item in caption["children"]))
     return build_table(table, caption=caption)
-    

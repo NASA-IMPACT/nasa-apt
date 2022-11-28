@@ -3,12 +3,14 @@ Function to format equations within PDF document
 """
 from pylatex import NoEscape
 
+
 def format(data):
     """
-        Formats equations with NoEscape
+    Formats equations with NoEscape
     """
     eq = data["children"][0]["text"].replace("\\\\", "\\")
     return NoEscape(f"\\begin{{equation}}{eq}\\end{{equation}}")
+
 
 # Sample of data
 # {

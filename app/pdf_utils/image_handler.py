@@ -87,7 +87,7 @@ def process_image(
     Returns Latex formatted object for each of these, to be appeneded to the
     Latex document.
     """
-    
+
     # data is a list
     for _indx, element in enumerate(data["children"]):  # type: ignore
         # source for type ignore: https://github.com/python/mypy/issues/2220
@@ -96,7 +96,7 @@ def process_image(
 
         # if content type is img
         if element["type"] == "img":
-            
+
             # get the image block info: objectKey
             # maintain camelCase
             objectKey = pydash.get(
@@ -123,7 +123,7 @@ def process_image(
 
                     figure = Figure(position="H")
                     figure.add_image(f"/tmp/{objectKey}")
-                    
+
                     # TODO debug captions
                     # figure.add_caption(
                     #     NoEscape(

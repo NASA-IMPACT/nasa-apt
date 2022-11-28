@@ -4,6 +4,7 @@ PDF generation code for ATBD Documents
 import os
 import pathlib
 from typing import Any, List, Union
+
 import pandas as pd
 import pydash
 from pylatex import (
@@ -24,7 +25,13 @@ from pylatex import (
 from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
-from app.pdf_utils import fill_sections, image_handler, process_lists, format_equation, process_table
+from app.pdf_utils import (
+    fill_sections,
+    format_equation,
+    image_handler,
+    process_lists,
+    process_table,
+)
 from app.schemas import document
 from app.schemas.versions_contacts import (
     ContactMechanismEnum,
@@ -696,6 +703,8 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     # TODO FILL SECTIONS and fill user input text directly from sections
 
+    print(document_data,"this is the document data")
+
     for section_name, info in SECTIONS.items():
 
         # for each matching section name in document_data
@@ -713,8 +722,19 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
             # apply logic for each content type, append to document in order
             if content_type == "p":
+                # print(f"""
+                #     This is the p type element:
+                #     {element}
+                #     of section
+                #     {section_name}
+                # """)
 
-                text_element = pydash.get(obj=element, path=f"{indx}.children.text")
+                text_element = fill_sections.get_paragraph_text(element)
+                # temp comments
+                # print(f"""
+                #     This is the text element:
+                #     {text_element}
+                # """)
 
                 doc.append(text_element)
                 # check for references in paragraph
@@ -725,9 +745,14 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
             # check for sub-section
             if content_type == "sub-section":
-
+                
+                # print(f"""
+                #     sub-section of {section_name}:
+                #     element: {element}
+                #     indx: {indx}
+                # """)
                 sub_section_title = pydash.get(
-                    obj=element, path=f"{indx}.children.text"
+                    obj=element, path=f"children.0.text"
                 )
 
                 sub_section = Subsubsection(
@@ -749,15 +774,11 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
             if content_type in ["ul", "ol"]:
 
-                doc.append(
-                    process_lists.ul_ol_lists(element)
-                )
+                doc.append(process_lists.ul_ol_lists(element))
 
             if content_type == "equation":
 
-                doc.append(
-                    format_equation.format(element)
-                )
+                doc.append(format_equation.format(element))
             # if content_type == "table-block":
             #     print(f"""CONTENT_TYPE: table-block
             #         \n
@@ -771,10 +792,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         # SECTION ABSTRACT
         if section_name == "abstract":
             doc.append(Command("begin", "abstract"))
+            text_element = fill_sections.get_paragraph_text(element)
             doc.append(
-                fill_sections.get_section_user_text(
-                    document_section=document_data[section_name]
-                )
+                text_element
             )
 
             # allow document data sections to be Falsey values, such as empty strings
@@ -811,32 +831,33 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         # Note: This title section is handled elsewhere as logic is currently written
         # if section_name == "context_background":
         #     doc.append(
-        #         fill_sections.get_section_user_text(document_section=document_data[section_name])
+        #         fill_sections.get_section_user_text(document_content=document_data[section_name])
         #     )
 
         # SECTION HISTORICAL PERSPECTIVE
         if section_name == "historical_perspective":
-            doc.append(
-                fill_sections.get_section_user_text(
-                    document_section=document_data[section_name]
-                )
-            )
+            # doc.append(
+            # text_element = fill_sections.get_paragraph_text(element)
+            # )
+            pass
 
         # SECTION ADDITIONAL INFORMATION
         if section_name == "additional_information":
-            doc.append(
-                fill_sections.get_section_user_text(
-                    document_section=document_data[section_name]
-                )
-            )
+            # doc.append(
+            #     fill_sections.get_section_user_text(
+            #         document_content=document_data[section_name]
+            #     )
+            # )
+            pass
 
         # SECTION ALGORITHM DESCRIPTION
         if section_name == "algorithm_description":
-            doc.append(
-                fill_sections.get_section_user_text(
-                    document_section=document_data[section_name]
-                )
-            )
+            # doc.append(
+            #     fill_sections.get_section_user_text(
+            #         document_content=document_data[section_name]
+            #     )
+            # )
+            pass
 
         # SECTION ALGORITHM SECTION
         # process key points as a text attribute
@@ -877,12 +898,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         # SECTION PLAIN SUMMARY
         if section_name == "plain_summary":
             # append only text
-            doc.append(
-                fill_sections.get_section_user_text(
-                    document_section=document_data[section_name]
-                )
-            )
-            continue
+            # doc.append(
+            #     fill_sections.get_section_user_text(
+            #         document_content=document_data[section_name]
+            #     )
+            # )
+            pass
+            # continue
 
         #  SECTION KEYWORDS
         if section_name == "keywords" and atbd_version.keywords:
@@ -935,11 +957,12 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         ]:
 
             # append only text
-            doc.append(
-                fill_sections.get_section_user_text(
-                    document_section=document_data[section_name]
-                )
-            )
+            # doc.append(
+            #     fill_sections.get_section_user_text(
+            #         document_content=document_data[section_name]
+            #     )
+            # )
+            pass
 
         # SECTION DATA AVAILABILITY
         # Journal Acknowledgements and Journal Discussion are only included in
@@ -950,22 +973,24 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         ]:
             # append only text
             # REFERENCE
-            doc.append(
-                fill_sections.get_section_user_text(
-                    document_section=document_data[section_name]
-                )
-            )
+            # doc.append(
+            #     fill_sections.get_section_user_text(
+            #         document_content=document_data[section_name]
+            #     )
+            # )
+            pass
 
             continue
 
         # SECTION DATA AVAILABILITY
         if section_name == "data_availability":
             # append only text
-            doc.append(
-                fill_sections.get_section_user_text(
-                    document_section=document_data[section_name]
-                )
-            )
+            # doc.append(
+            #     fill_sections.get_section_user_text(
+            #         document_content=document_data[section_name]
+            #     )
+            # )
+            pass
 
     if not journal:
         doc.append(Command("bibliographystyle", arguments="apacite"))
