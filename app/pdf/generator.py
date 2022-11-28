@@ -703,11 +703,38 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     # TODO FILL SECTIONS and fill user input text directly from sections
 
-    print(document_data,"this is the document data")
+    print(document_data, "this is the document data")
 
     for section_name, info in SECTIONS.items():
 
         # for each matching section name in document_data
+
+        # Create section titles
+        if 'title' in info.keys():
+            s = Section(
+                info["title"],
+                numbering=False if section_name in ["plain_summary", "keywords"] else True,
+            )
+
+            if info.get("subsection"):
+                title = info["title"]
+                if journal:
+                    title = NoEscape(f"\\normalfont{{{title}}}")
+                s = Subsection(title)
+
+            if info.get("subsubsection"):
+                title = info["title"]
+                if journal:
+                    title = NoEscape(f"\\normalfont{{{title}}}")
+                s = Subsubsection(title)
+
+            doc.append(s)
+
+        # Create section titles
+
+        if info.get("section_header"):
+            # section header means that no content is needed
+            continue
 
         # get the entire List of Dicts from document data as section_content, default to empty dict
         document_content: List = pydash.get(
@@ -745,15 +772,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
             # check for sub-section
             if content_type == "sub-section":
-                
+
                 # print(f"""
                 #     sub-section of {section_name}:
                 #     element: {element}
                 #     indx: {indx}
                 # """)
-                sub_section_title = pydash.get(
-                    obj=element, path=f"children.0.text"
-                )
+                sub_section_title = pydash.get(obj=element, path=f"children.0.text")
 
                 sub_section = Subsubsection(
                     NoEscape(f"\\normalfont{{\\itshape{{{sub_section_title}}}}}"),
@@ -793,9 +818,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         if section_name == "abstract":
             doc.append(Command("begin", "abstract"))
             text_element = fill_sections.get_paragraph_text(element)
-            doc.append(
-                text_element
-            )
+            doc.append(text_element)
 
             # allow document data sections to be Falsey values, such as empty strings
             for section_name, item in document_data.items():
@@ -872,28 +895,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
             doc.append(process_text_content(algo_text_content))
 
-        s = Section(
-            info["title"],
-            numbering=False if section_name in ["plain_summary", "keywords"] else True,
-        )
-
-        if info.get("subsection"):
-            title = info["title"]
-            if journal:
-                title = NoEscape(f"\\normalfont{{{title}}}")
-            s = Subsection(title)
-
-        if info.get("subsubsection"):
-            title = info["title"]
-            if journal:
-                title = NoEscape(f"\\normalfont{{{title}}}")
-            s = Subsubsection(title)
-
-        doc.append(s)
-
-        if info.get("section_header"):
-            # section header means that no content is needed
-            continue
 
         # SECTION PLAIN SUMMARY
         if section_name == "plain_summary":

@@ -8,11 +8,13 @@ def get_section_user_text(document_content):
     """
     # temp error handle
     if document_content is not None:
-        
+
         # for each paragraph of user input in document content
         for indx, item in enumerate(document_content):
             # get user input
-            section_user_text = pydash.get(obj=item, path=f"children.{indx}.children.text")
+            section_user_text = pydash.get(
+                obj=item, path=f"children.{indx}.children.text"
+            )
     else:
         return "document content for this section was None"
 
@@ -25,14 +27,14 @@ def get_paragraph_text(section_element):
     """
     # temp error handle
     if section_element is not None:
-        
-        for _indx,paragraph in enumerate(section_element['children']):
+
+        for _indx, paragraph in enumerate(section_element["children"]):
             # print(f"""
             #     indx: {indx}
             #     paragraph: {paragraph}
             # """)
-            section_p_text = pydash.get(obj=paragraph,path=f'text')
-        
+            section_p_text = pydash.get(obj=paragraph, path=f"text")
+
     else:
         return "paragraph content for this section was None"
 
