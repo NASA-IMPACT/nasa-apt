@@ -33,7 +33,7 @@ def get_paragraph_text(section_element):
             #     indx: {indx}
             #     paragraph: {paragraph}
             # """)
-            section_p_text = pydash.get(obj=paragraph, path=f"text")
+            section_p_text = pydash.get(obj=paragraph, path="text")
 
     else:
         return "paragraph content for this section was None"

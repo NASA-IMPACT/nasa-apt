@@ -1,13 +1,27 @@
+"""
+Module prepares content for each PDF section. See function doc string below
+"""
 from typing import List
 
 import pydash
+from pylatex import Command
 
 from app.pdf_utils import fill_contents
 
 SECTIONS = {
-    "abstract": {},
+    "abstract": {
+        "begin_command": Command("begin", "abstract"),
+        "end_command": Command("end", "abstract"),
+    },
     "plain_summary": {"title": "Plain Language Summary"},
-    "keywords": {"title": "Keywords"},
+    "keywords": {
+        "title": "Keywords",
+        "begin_command": Command("begin", arguments="itemize"),
+        "item_command": Command(
+            "item"
+        ),  # TODO reincorporate arguments=keyword["label"]  ),
+        "end_command": Command("end", arguments="itemize"),
+    },
     "version_description": {"title": "Description"},
     "introduction": {"title": "Introduction"},
     "context_background": {"title": "Context / Background", "section_header": True},
@@ -62,7 +76,11 @@ SECTIONS = {
 
 
 def prepare_sections(document_data, sections, atbd):
-
+    """
+    This module is used to prepare the SECTIONS dictionary with commands, title, and contents for the given section using document_data
+    Expected output allows separation of formatting for each allowed type of content (paragraphs, lists, images, etc)
+    Module's output pre-formats content, separating most formatting from PDf generation logic
+    """
     for section_name, info in sections.items():
 
         # get the entire List of Dicts from document data as section_content, default to empty dict

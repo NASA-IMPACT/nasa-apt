@@ -92,7 +92,9 @@ def build_table(data: document.TableNode, caption: str) -> NoEscape:
 
 
 def process_table(data):
-
+    """
+    Function to handle processing of table elements
+    """
     [table] = filter(lambda d: d["type"] == "table", data["children"])
     [caption] = filter(lambda d: d["type"] == "caption", data["children"])
     print(data, "DATA COMING INTO PROCESS TABLE")

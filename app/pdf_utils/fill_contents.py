@@ -1,3 +1,6 @@
+"""
+    Module fills contents of document for each section of PDF generation
+"""
 from typing import List
 
 import pydash
@@ -13,7 +16,10 @@ from app.pdf_utils import (
 
 
 def fill_contents(document_content: List, atbd):
-
+    """
+    This function returns a list of formatted contents for a section of the PDF document to be generated
+    Contents are then added in order to the PDF during generation
+    """
     # list will be appended with ordered contents
     contents = []
 
@@ -54,7 +60,7 @@ def fill_contents(document_content: List, atbd):
             #     element: {element}
             #     indx: {indx}
             # """)
-            sub_section_title = pydash.get(obj=element, path=f"children.0.text")
+            sub_section_title = pydash.get(obj=element, path="children.0.text")
 
             sub_section = Subsubsection(
                 NoEscape(f"\\normalfont{{\\itshape{{{sub_section_title}}}}}"),
@@ -81,6 +87,7 @@ def fill_contents(document_content: List, atbd):
 
             contents.append(format_equation.format(element))
 
+        # TODO process table blocks
         # if content_type == "table-block":
         #     print(f"""CONTENT_TYPE: table-block
         #         \n

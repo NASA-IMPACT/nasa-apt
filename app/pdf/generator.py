@@ -26,12 +26,11 @@ from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
 from app.pdf import prepare_sections
-from app.pdf_utils import (
+from app.pdf_utils import (  # TODO include process_table,
     fill_sections,
     format_equation,
     image_handler,
     process_lists,
-    process_table,
 )
 from app.schemas import document
 from app.schemas.versions_contacts import (
@@ -41,9 +40,19 @@ from app.schemas.versions_contacts import (
 )
 
 SECTIONS = {
-    "abstract": {},
+    "abstract": {
+        "begin_command": Command("begin", "abstract"),
+        "end_command": Command("end", "abstract"),
+    },
     "plain_summary": {"title": "Plain Language Summary"},
-    "keywords": {"title": "Keywords"},
+    "keywords": {
+        "title": "Keywords",
+        "begin_command": Command("begin", arguments="itemize"),
+        "item_command": Command(
+            "item"
+        ),  # TODO reincorporate arguments=keyword["label"]  ),
+        "end_command": Command("end", arguments="itemize"),
+    },
     "version_description": {"title": "Description"},
     "introduction": {"title": "Introduction"},
     "context_background": {"title": "Context / Background", "section_header": True},
@@ -702,10 +711,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     section_name: str
     info: Any
 
-    # TODO FILL SECTIONS and fill user input text directly from sections
-
     # print(document_data, "this is the document data")
 
+    # TODO REVIEW FILLING SECTIONS and fill user input text directly from sections
     output = prepare_sections.prepare_sections(
         document_data=document_data, sections=SECTIONS, atbd=atbd
     )
@@ -718,10 +726,10 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         \n
     """
     )
-    # the content for each section in output is already formatted 
+    # NOTE: the contents for each section in output are already formatted
 
     # simply append each item in output content to document in order
-    for key,value in output.items():
+    for key, value in output.items():
 
         # Create section titles
         if "title" in value.keys():
@@ -729,8 +737,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 value["title"],
                 numbering=False
                 # these two sections receive no numbering
-                if key in ["plain_summary", "keywords"]
-                else True,
+                if key in ["plain_summary", "keywords"] else True,
             )
 
             if value.get("subsection"):
@@ -754,72 +761,102 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             # section header means that no content is needed
             continue
 
+        # special logic for abstract section
+        if key == "abstract":
+            # append abstract begin command
+            doc.append(value["begin_command"])
+
         # for each item within section's contents
-        for _indx,item in enumerate(value['contents']):
-            
+        for _indx, item in enumerate(value["contents"]):
+
             # append item in order
+            doc.append(item)
+
+        # special logic for abstract section
+        if key == "abstract":
+            # append abstract end command
+            doc.append(value["end_command"])
+
+        # special logic for SECTION KEY POINTS
+        if key in ["key_points"]:
+
+            kp_text_content: Union[document.TextLeaf, Any] = [
+                {"bold": False, "italic": False, "text": f"{item}"}
+            ]
+
+            doc.append(process_text_content(kp_text_content))
+
+        # special logic for SECTION ALGORITHM_*
+        if key in [
+            "algorithm_input_variables_caption",
+            "algorithm_output_variables_caption",
+        ]:
+
+            algo_text_content: Union[document.TextLeaf, Any] = [
+                {"bold": False, "italic": False, "text": f"{item}"}
+            ]
+
+            doc.append(process_text_content(algo_text_content))
+
+        # special logic for KEYWORDS
+        if key == "keywords" and atbd_version.keywords:
+
+            # TODO Refactor to fill from SECTIONS
+            doc.append(Command("begin", arguments="itemize"))
+            for keyword in atbd_version.keywords:
+                doc.append(Command("item", arguments=keyword["label"]))
+            doc.append(Command("end", arguments="itemize"))
+
+        # SECTION CONTACT
+        if key == "contacts":
+            for contact in process_contacts(contacts_data):
+                doc.append(contact)
+            continue
+
+        if not document_data.get(key):
+            doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
+            continue
+
+        # SECTION ALGORITHM VARIABLES AND DATA ACCESS
+        if key in [
+            "algorithm_input_variables",
+            "algorithm_output_variables",
+        ]:
+
             doc.append(
-                item
+                process_algorithm_variables(
+                    data=document_data[key],
+                    caption=document_data[f"{key}_caption"],
+                )
             )
+            continue
 
+        if key in [
+            "algorithm_implementations",
+            "data_access_input_data",
+            "data_access_output_data",
+            "data_access_related_urls",
+        ]:
 
-    for section_name, info in SECTIONS.items():
+            for url in process_data_access_urls(document_data[key]):
+                doc.append(url)
+            continue
 
-        # for each matching section name in document_data
-
-        # # Create section titles
-        # if "title" in info.keys():
-        #     s = Section(
-        #         info["title"],
-        #         numbering=False
-        #         if section_name in ["plain_summary", "keywords"]
-        #         else True,
-        #     )
-
-        #     if info.get("subsection"):
-        #         title = info["title"]
-        #         if journal:
-        #             title = NoEscape(f"\\normalfont{{{title}}}")
-        #         s = Subsection(title)
-
-        #     if info.get("subsubsection"):
-        #         title = info["title"]
-        #         if journal:
-        #             title = NoEscape(f"\\normalfont{{{title}}}")
-        #         s = Subsubsection(title)
-
-        #     doc.append(s)
-
-        # Create section titles
+    for section_name, _info in SECTIONS.items():
 
         # get the entire List of Dicts from document data as section_content, default to empty dict
         document_content: List = pydash.get(
             obj=document_data, path=f"{section_name}.children", default={}
         )
-        # print(document_content, "SECTION CONTENT TO BE USED")
 
         # check the content type, of each item in document_content List
         for indx, element in enumerate(document_content):
 
             content_type: str = pydash.get(obj=document_content, path=f"{indx}.type")
 
-            # apply logic for each content type, append to document in order
             if content_type == "p":
-                # print(f"""
-                #     This is the p type element:
-                #     {element}
-                #     of section
-                #     {section_name}
-                # """)
 
-                text_element = fill_sections.get_paragraph_text(element)
-                # temp comments
-                # print(f"""
-                #     This is the text element:
-                #     {text_element}
-                # """)
-
-                doc.append(text_element)
+                pass
                 # check for references in paragraph
                 # reference = TODO
 
@@ -829,60 +866,27 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             # check for sub-section
             if content_type == "sub-section":
 
-                # print(f"""
-                #     sub-section of {section_name}:
-                #     element: {element}
-                #     indx: {indx}
-                # """)
-                sub_section_title = pydash.get(obj=element, path=f"children.0.text")
-
-                sub_section = Subsubsection(
-                    NoEscape(f"\\normalfont{{\\itshape{{{sub_section_title}}}}}"),
-                    numbering=False,
-                )
-
-                doc.append(sub_section)
+                pass
 
             # process image type content
             if content_type == "image-block":
 
-                # append image
-                doc.append(
-                    image_handler.process_image(
-                        data=document_content[indx], atbd_id=atbd.id
-                    )
-                )
+                pass
 
             if content_type in ["ul", "ol"]:
 
-                doc.append(process_lists.ul_ol_lists(element))
+                pass
 
             if content_type == "equation":
 
-                doc.append(format_equation.format(element))
-            # if content_type == "table-block":
-            #     print(f"""CONTENT_TYPE: table-block
-            #         \n
-            #         {element}
-            #     """)
-            #     doc.append(
-            #         process_table.process_table(element)
-            #     )
-            #     pass
+                pass
 
         # SECTION ABSTRACT
         if section_name == "abstract":
-            doc.append(Command("begin", "abstract"))
-            text_element = fill_sections.get_paragraph_text(element)
-            doc.append(text_element)
 
-            # allow document data sections to be Falsey values, such as empty strings
-            for section_name, item in document_data.items():
-                if bool(item) is False:  # if it is falsey/
-                    continue
+            pass
 
-            doc.append(Command("end", "abstract"))
-            continue
+        # TODO Any changes needed to this logic?
 
         # SECTION VERSION DESCRIPTION
         # Version Description is the only field that doesn't get rendered at all
@@ -897,15 +901,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         # SECTION KEY POINTS
         if section_name in ["key_points"]:
 
-            kp_text_content: Union[document.TextLeaf, Any] = [
-                {"bold": False, "italic": False, "text": f"{item}"}
-            ]
-
-            doc.append(process_text_content(kp_text_content))
+            pass
 
         # SECTION INTRODUCTION
         if section_name == "introduction":
-            print("old introduction processing")
+
+            pass
+
         # SECTION CONTEXT BACKGROUND
         # Note: This title section is handled elsewhere as logic is currently written
         # if section_name == "context_background":
@@ -915,27 +917,17 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
         # SECTION HISTORICAL PERSPECTIVE
         if section_name == "historical_perspective":
-            # doc.append(
-            # text_element = fill_sections.get_paragraph_text(element)
-            # )
+
             pass
 
         # SECTION ADDITIONAL INFORMATION
         if section_name == "additional_information":
-            # doc.append(
-            #     fill_sections.get_section_user_text(
-            #         document_content=document_data[section_name]
-            #     )
-            # )
+
             pass
 
         # SECTION ALGORITHM DESCRIPTION
         if section_name == "algorithm_description":
-            # doc.append(
-            #     fill_sections.get_section_user_text(
-            #         document_content=document_data[section_name]
-            #     )
-            # )
+
             pass
 
         # SECTION ALGORITHM SECTION
@@ -945,36 +937,26 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "algorithm_output_variables_caption",
         ]:
 
-            algo_text_content: Union[document.TextLeaf, Any] = [
-                {"bold": False, "italic": False, "text": f"{item}"}
-            ]
-
-            doc.append(process_text_content(algo_text_content))
+            pass
 
         # SECTION PLAIN SUMMARY
         if section_name == "plain_summary":
-            # append only text
-            # doc.append(
-            #     fill_sections.get_section_user_text(
-            #         document_content=document_data[section_name]
-            #     )
-            # )
+
             pass
-            # continue
 
         #  SECTION KEYWORDS
         if section_name == "keywords" and atbd_version.keywords:
-            doc.append(Command("begin", arguments="itemize"))
-            for keyword in atbd_version.keywords:
-                doc.append(Command("item", arguments=keyword["label"]))
-            doc.append(Command("end", arguments="itemize"))
+            # doc.append(Command("begin", arguments="itemize"))
+            # for keyword in atbd_version.keywords:
+            #     doc.append(Command("item", arguments=keyword["label"]))
+            # doc.append(Command("end", arguments="itemize"))
+
             continue
 
         # SECTION CONTACT
         if section_name == "contacts":
-            for contact in process_contacts(contacts_data):
-                doc.append(contact)
-            continue
+
+            pass
 
         if not document_data.get(section_name):
             doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
@@ -986,13 +968,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "algorithm_output_variables",
         ]:
 
-            doc.append(
-                process_algorithm_variables(
-                    data=document_data[section_name],
-                    caption=document_data[f"{section_name}_caption"],
-                )
-            )
-            continue
+            pass
 
         if section_name in [
             "algorithm_implementations",
@@ -1000,10 +976,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "data_access_output_data",
             "data_access_related_urls",
         ]:
-
-            for url in process_data_access_urls(document_data[section_name]):
-                doc.append(url)
-            continue
+            pass
 
         # SECTION PERFORMANCE ASSESSMENT
         if section_name in [
@@ -1012,12 +985,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "performance_assessment_validation_errors",
         ]:
 
-            # append only text
-            # doc.append(
-            #     fill_sections.get_section_user_text(
-            #         document_content=document_data[section_name]
-            #     )
-            # )
             pass
 
         # SECTION DATA AVAILABILITY
@@ -1027,25 +994,14 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "journal_acknowledgements",
             "journal_discussion",
         ]:
-            # append only text
-            # REFERENCE
-            # doc.append(
-            #     fill_sections.get_section_user_text(
-            #         document_content=document_data[section_name]
-            #     )
-            # )
+
             pass
 
             continue
 
         # SECTION DATA AVAILABILITY
         if section_name == "data_availability":
-            # append only text
-            # doc.append(
-            #     fill_sections.get_section_user_text(
-            #         document_content=document_data[section_name]
-            #     )
-            # )
+
             pass
 
     if not journal:

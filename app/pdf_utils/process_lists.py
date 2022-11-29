@@ -5,7 +5,9 @@ from pylatex import Enumerate, Itemize
 
 
 def list_items(data):
-
+    """
+    Helper function to process unordered and ordered lists
+    """
     if data.get("type") == "li":
         # TODO: confirm whether formatting of list items is allowed
         # if so, a document.TextLeaf type should be used
@@ -15,7 +17,9 @@ def list_items(data):
 
 
 def ul_ol_lists(data):
-
+    """
+    Function to process unordered and ordered lists
+    """
     if data.get("type") in ["ul", "ol"]:
         latex_list = Itemize() if data["type"] == "ul" else Enumerate()
         for child in data["children"]:
