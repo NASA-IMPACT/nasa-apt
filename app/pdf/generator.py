@@ -25,6 +25,7 @@ from pylatex import (
 from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
+from app.pdf import prepare_sections
 from app.pdf_utils import (
     fill_sections,
     format_equation,
@@ -703,38 +704,93 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     # TODO FILL SECTIONS and fill user input text directly from sections
 
-    print(document_data, "this is the document data")
+    # print(document_data, "this is the document data")
+
+    output = prepare_sections.prepare_sections(
+        document_data=document_data, sections=SECTIONS, atbd=atbd
+    )
+    print(
+        f"""
+        \n This is the output of prepare sections
+        \n
+        \n
+        {output}
+        \n
+    """
+    )
+    # the content for each section in output is already formatted 
+
+    # simply append each item in output content to document in order
+    for key,value in output.items():
+
+        # Create section titles
+        if "title" in value.keys():
+            s = Section(
+                value["title"],
+                numbering=False
+                # these two sections receive no numbering
+                if key in ["plain_summary", "keywords"]
+                else True,
+            )
+
+            if value.get("subsection"):
+                title = value["title"]
+                if journal:
+                    # apply journal subsection formatting
+                    title = NoEscape(f"\\normalfont{{{title}}}")
+                s = Subsection(title)
+
+            if value.get("subsubsection"):
+                title = value["title"]
+                if journal:
+                    # apply journal subsubsection formatting
+                    title = NoEscape(f"\\normalfont{{{title}}}")
+                s = Subsubsection(title)
+
+            # append section title to document
+            doc.append(s)
+
+        if value.get("section_header"):
+            # section header means that no content is needed
+            continue
+
+        # for each item within section's contents
+        for _indx,item in enumerate(value['contents']):
+            
+            # append item in order
+            doc.append(
+                item
+            )
+
 
     for section_name, info in SECTIONS.items():
 
         # for each matching section name in document_data
 
+        # # Create section titles
+        # if "title" in info.keys():
+        #     s = Section(
+        #         info["title"],
+        #         numbering=False
+        #         if section_name in ["plain_summary", "keywords"]
+        #         else True,
+        #     )
+
+        #     if info.get("subsection"):
+        #         title = info["title"]
+        #         if journal:
+        #             title = NoEscape(f"\\normalfont{{{title}}}")
+        #         s = Subsection(title)
+
+        #     if info.get("subsubsection"):
+        #         title = info["title"]
+        #         if journal:
+        #             title = NoEscape(f"\\normalfont{{{title}}}")
+        #         s = Subsubsection(title)
+
+        #     doc.append(s)
+
         # Create section titles
-        if 'title' in info.keys():
-            s = Section(
-                info["title"],
-                numbering=False if section_name in ["plain_summary", "keywords"] else True,
-            )
-
-            if info.get("subsection"):
-                title = info["title"]
-                if journal:
-                    title = NoEscape(f"\\normalfont{{{title}}}")
-                s = Subsection(title)
-
-            if info.get("subsubsection"):
-                title = info["title"]
-                if journal:
-                    title = NoEscape(f"\\normalfont{{{title}}}")
-                s = Subsubsection(title)
-
-            doc.append(s)
-
-        # Create section titles
-
-        if info.get("section_header"):
-            # section header means that no content is needed
-            continue
 
         # get the entire List of Dicts from document data as section_content, default to empty dict
         document_content: List = pydash.get(
@@ -894,7 +950,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             ]
 
             doc.append(process_text_content(algo_text_content))
-
 
         # SECTION PLAIN SUMMARY
         if section_name == "plain_summary":
