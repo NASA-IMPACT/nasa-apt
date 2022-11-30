@@ -1,7 +1,7 @@
 """
     This module handles the processing of images and captions in generated PDFs
 """
-from typing import List, Union
+from typing import Dict, List, Union
 
 import pydash
 from pylatex import Figure, NoEscape, escape_latex
@@ -23,61 +23,50 @@ TEXT_WRAPPERS = {
 }
 
 
-def wrap_text(data: document.TextLeaf) -> NoEscape:
+def wrap_caption_text(data: Dict) -> NoEscape:
     """
     Wraps text item with Latex commands corresponding to the sibbling elements
     of the text item. Allows for wrapping multiple formatting options.
     ----
     eg: if data looks like: {"bold": true, "italic": true, "text": "text to format" }
-    then `wrap_text(data)` will return: `\\bold{\\italic{text to format}}`
+    then `wrap_caption_text(data)` will return: `\\bold{\\italic{text to format}}`
 
     """
-    e = escape_latex(data["text"])
-    # e = data["text"]
+    # pull caption text
+    caption_text = data["text"]
 
+    # escape caption text
+    caption_text = escape_latex(caption_text)
+
+    # process command for each option if found in caption textleaf (data)
     for option, command in TEXT_WRAPPERS.items():
-        if data.get(option) and e.strip(" ") != "":
-            e = command(e)
 
-    return NoEscape(e)
+        # TODO ensure this logic is applying correctly
+        if (data[option] is True) and (caption_text.strip(" ") != ""):
+
+            # run the command for the data attributes that are true
+            caption_text = command(caption_text)
+
+    return NoEscape(caption_text)
 
 
 PLACEHOLDER_OBJECT_KEY = "PLACEHOLDER_OBJECT_KEY"
-PLACEHOLDER_CAPTION = "PLACEHOLDER_CAPTION"
+PLACEHOLDER_CAPTION = "No Caption Provided"
 
 
-def process_image_caption(
-    caption_text: Union[
-        document.TextLeaf,
-        document.ReferenceNode,
-        document.LinkNode,
-        document.EquationInlineNode,
-    ]
-) -> List[NoEscape]:
+def process_image_caption(caption_text_leaf: Dict) -> List[NoEscape]:
     """
-    Uses a standard text processing logic to process image captions
+    Uses a modified text processing logic to process image captions
     """
-
-    # TODO revisit typing and text formatting
-    caption_text_leaf = {
-        "text": caption_text,
-        "underline": False,
-        "italic": False,
-        "bold": False,
-        "subscript": False,
-        "superscript": False,
-    }
-    # generate and validate textleaf type
-    caption_text_leaf = document.TextLeaf(**caption_text_leaf)
 
     # pass to wraptext/caption format util
-    processed_caption = NoEscape(wrap_text(caption_text_leaf))
+    processed_caption = NoEscape(wrap_caption_text(caption_text_leaf))
 
     return processed_caption
 
 
 def process_image(
-    data: List,
+    data: Dict,
     atbd_id: int = None,
 ):
     """
@@ -88,9 +77,10 @@ def process_image(
     Latex document.
     """
 
-    # data is a list
+    # data is a Dict
     for _indx, element in enumerate(data["children"]):  # type: ignore
         # source for type ignore: https://github.com/python/mypy/issues/2220
+        # data['children']: List
         # _indx: int
         # element: Dict
 
@@ -100,20 +90,22 @@ def process_image(
             # get the image block info: objectKey
             # maintain camelCase
             objectKey = pydash.get(
-                obj=element, path="objectKey", default=f"{PLACEHOLDER_OBJECT_KEY}"
+                obj=element, path="objectKey", default=PLACEHOLDER_OBJECT_KEY
             )
 
-            # TODO, debug captions
-            # get the image block info: caption
-            # caption_text = pydash.get(
-            #     obj=element, path="children.0.text", default=f"{PLACEHOLDER_CAPTION}"
-            # )
+        # get the image block info: caption
+        if element["type"] == "caption":
+
+            # get the caption text leaf
+            caption_text_leaf: Dict = pydash.get(
+                obj=element, path="children.0", default=PLACEHOLDER_CAPTION
+            )
 
             # handle errors and try to provide useful feedback during image load failure
             try:
                 # lambda execution environment only allows for files to
                 # written to `/tmp` directory
-                print(f"DOWNLOADING objectKey{objectKey} FROM S3....")
+                # print(f"DOWNLOADING objectKey{objectKey} FROM S3....")
                 try:
                     s3_client().download_file(
                         Bucket=S3_BUCKET,
@@ -125,10 +117,9 @@ def process_image(
                     figure.add_image(f"/tmp/{objectKey}")
 
                     # TODO debug captions
-                    # figure.add_caption(
-                    #     NoEscape(
-                    #         process_image_caption(caption_text))
-                    #     )
+                    figure.add_caption(
+                        NoEscape(process_image_caption(caption_text_leaf))
+                    )
                 except Exception as e:
                     raise e
 

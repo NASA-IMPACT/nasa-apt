@@ -2,6 +2,8 @@
     This function helps handle references within generated PDFs
 """
 
+# TODO WORK IN PROGRESS
+
 
 def build_references(reference_dict):
     """
@@ -9,7 +11,7 @@ def build_references(reference_dict):
     """
     # temp try
     try:
-        print(reference_dict, "reference_dict used to generate bib reference")
+        # print(reference_dict, "reference_dict used to generate bib reference")
 
         reference = ""
 

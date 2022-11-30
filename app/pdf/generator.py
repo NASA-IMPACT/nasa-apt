@@ -26,12 +26,8 @@ from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
 from app.pdf import prepare_sections
-from app.pdf_utils import (  # TODO include process_table,
-    fill_sections,
-    format_equation,
-    image_handler,
-    process_lists,
-)
+
+# from app.pdf_utils import # TODO include process_table
 from app.schemas import document
 from app.schemas.versions_contacts import (
     ContactMechanismEnum,
@@ -717,15 +713,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     output = prepare_sections.prepare_sections(
         document_data=document_data, sections=SECTIONS, atbd=atbd
     )
-    print(
-        f"""
-        \n This is the output of prepare sections
-        \n
-        \n
-        {output}
-        \n
-    """
-    )
     # NOTE: the contents for each section in output are already formatted
 
     # simply append each item in output content to document in order
@@ -842,44 +829,8 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 doc.append(url)
             continue
 
+    # TODO, after testing this logic can be removed and consolidated
     for section_name, _info in SECTIONS.items():
-
-        # get the entire List of Dicts from document data as section_content, default to empty dict
-        document_content: List = pydash.get(
-            obj=document_data, path=f"{section_name}.children", default={}
-        )
-
-        # check the content type, of each item in document_content List
-        for indx, element in enumerate(document_content):
-
-            content_type: str = pydash.get(obj=document_content, path=f"{indx}.type")
-
-            if content_type == "p":
-
-                pass
-                # check for references in paragraph
-                # reference = TODO
-
-                # check for equations in paragraph
-                # equation = TODO
-
-            # check for sub-section
-            if content_type == "sub-section":
-
-                pass
-
-            # process image type content
-            if content_type == "image-block":
-
-                pass
-
-            if content_type in ["ul", "ol"]:
-
-                pass
-
-            if content_type == "equation":
-
-                pass
 
         # SECTION ABSTRACT
         if section_name == "abstract":

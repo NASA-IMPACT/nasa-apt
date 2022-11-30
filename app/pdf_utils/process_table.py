@@ -65,7 +65,7 @@ def build_table(data: document.TableNode, caption: str) -> NoEscape:
     """
     Returns a Latex formatted Table Item, wrapped with a NoEscape Command
     """
-    print(data, "TABLE IN BUILD TABLE")
+    # print(data, "TABLE IN BUILD TABLE")
     rows = [
         tuple(
             " ".join(wrap_text(c) for c in table_cell["children"])
@@ -97,7 +97,7 @@ def process_table(data):
     """
     [table] = filter(lambda d: d["type"] == "table", data["children"])
     [caption] = filter(lambda d: d["type"] == "caption", data["children"])
-    print(data, "DATA COMING INTO PROCESS TABLE")
+    # print(data, "DATA COMING INTO PROCESS TABLE")
     # caption = NoEscape(
     #     " ".join(d for d in wrap_text(caption["children"]))
     # )

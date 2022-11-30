@@ -4,7 +4,7 @@
 from typing import List
 
 import pydash
-from pylatex import Command, Document, NoEscape, Subsection, Subsubsection
+from pylatex import NoEscape, Subsubsection
 
 from app.pdf_utils import (
     fill_sections,
@@ -31,19 +31,8 @@ def fill_contents(document_content: List, atbd):
 
         # apply logic for each content type, append to document in order
         if content_type == "p":
-            # print(f"""
-            #     This is the p type element:
-            #     {element}
-            #     of section
-            #     {section_name}
-            # """)
 
             text_element = fill_sections.get_paragraph_text(element)
-            # temp comments
-            # print(f"""
-            #     This is the text element:
-            #     {text_element}
-            # """)
 
             contents.append(text_element)
             # check for references in paragraph
@@ -55,11 +44,6 @@ def fill_contents(document_content: List, atbd):
         # check for sub-section
         if content_type == "sub-section":
 
-            # print(f"""
-            #     sub-section of {section_name}:
-            #     element: {element}
-            #     indx: {indx}
-            # """)
             sub_section_title = pydash.get(obj=element, path="children.0.text")
 
             sub_section = Subsubsection(
@@ -73,11 +57,7 @@ def fill_contents(document_content: List, atbd):
         if content_type == "image-block":
 
             # append image
-            contents.append(
-                image_handler.process_image(
-                    data=document_content[indx], atbd_id=atbd.id
-                )
-            )
+            contents.append(image_handler.process_image(data=element, atbd_id=atbd.id))
 
         if content_type in ["ul", "ol"]:
 
