@@ -97,7 +97,6 @@ services:
     command: >
       sh -c "
         python3 -m pip install types-requests &&
-        mypy --install-types &&
         python wait_for_localstack_ready.py &&
         uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
       "
