@@ -6,7 +6,7 @@ from typing import List
 import pydash
 from pylatex import NoEscape, Subsubsection
 
-from app.pdf_utils import (
+from app.pdf_utils import (  # process_reference,
     fill_sections,
     format_equation,
     image_handler,
@@ -32,14 +32,17 @@ def fill_contents(document_content: List, atbd):
         # apply logic for each content type, append to document in order
         if content_type == "p":
 
+            # TODO This logic may benefit from becoming a generator
             text_element = fill_sections.get_paragraph_text(element)
 
             contents.append(text_element)
-            # check for references in paragraph
-            # reference = TODO
 
-            # check for equations in paragraph
-            # equation = TODO
+            # if d.get("type") == "a":
+            #     result.append(hyperlink(d["url"], d["children"][0]["text"]))
+            # elif d.get("type") == "ref":
+            #     result.append(reference(d["refId"]))
+            # elif d.get("type") == "equation-inline":
+            #     result.append(NoEscape(f'${d["children"][0]["text"]}$'))
 
         # check for sub-section
         if content_type == "sub-section":

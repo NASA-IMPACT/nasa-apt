@@ -15,6 +15,7 @@ def prepare_sections(document_data, sections, atbd):
     Expected output allows separation of formatting for each allowed type of content (paragraphs, lists, images, etc)
     Module's output pre-formats content, separating most formatting from PDf generation logic
     """
+    # print(document_data,"THE DOCUMENT DATA")
     for section_name, info in sections.items():
 
         # get the entire List of Dicts from document data as section_content, default to empty dict

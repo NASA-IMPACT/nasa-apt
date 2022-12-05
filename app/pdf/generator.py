@@ -861,10 +861,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
         # SECTION CONTEXT BACKGROUND
         # Note: This title section is handled elsewhere as logic is currently written
-        # if section_name == "context_background":
-        #     doc.append(
-        #         fill_sections.get_section_user_text(document_content=document_data[section_name])
-        #     )
 
         # SECTION HISTORICAL PERSPECTIVE
         if section_name == "historical_perspective":
