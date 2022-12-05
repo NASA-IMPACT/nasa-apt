@@ -3,6 +3,7 @@
 """
 from typing import Dict, List, Union
 
+import botocore
 import pydash
 from pylatex import Figure, NoEscape, escape_latex
 
@@ -50,7 +51,7 @@ def wrap_caption_text(data: Dict) -> NoEscape:
     return NoEscape(caption_text)
 
 
-PLACEHOLDER_OBJECT_KEY = "PLACEHOLDER_OBJECT_KEY"
+PLACEHOLDER_OBJECT_KEY = "No Image Found"
 PLACEHOLDER_CAPTION = "No Caption Provided"
 
 
@@ -120,6 +121,12 @@ def process_image(
                     figure.add_caption(
                         NoEscape(process_image_caption(caption_text_leaf))
                     )
+
+                # if image is not found, return a placeholder text
+                except botocore.exceptions.ClientError:
+                    return PLACEHOLDER_OBJECT_KEY
+
+                # handle other unknown exceptions
                 except Exception as e:
                     raise e
 
