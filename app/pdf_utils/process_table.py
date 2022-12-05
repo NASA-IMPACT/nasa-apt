@@ -18,24 +18,17 @@ TEXT_WRAPPERS = {
 }
 
 
-def wrap_caption(caption_text):
+def wrap_caption(caption_text_leaf):
     """
     Uses a standard text processing logic to process table captions
     """
     # TODO revisit typing and text formatting
-    caption_text_leaf = {
-        "text": caption_text,
-        "underline": False,
-        "italic": False,
-        "bold": False,
-        "subscript": False,
-        "superscript": False,
-    }
+
     # generate and validate textleaf type
-    caption_text_leaf = document.TextLeaf(**caption_text_leaf)
+    # caption_text_leaf = document.TextLeaf(caption_text_leaf)
 
     # pass to wraptext/caption format util
-    processed_caption = NoEscape(wrap_text(caption_text))
+    processed_caption = NoEscape(wrap_text(caption_text_leaf))
 
     return processed_caption
 
@@ -97,9 +90,17 @@ def process_table(data):
     """
     [table] = filter(lambda d: d["type"] == "table", data["children"])
     [caption] = filter(lambda d: d["type"] == "caption", data["children"])
-    # print(data, "DATA COMING INTO PROCESS TABLE")
+
+    # simple re-evaluation of table captions
+    caption = caption["children"][0]["text"]
+
+    # print(caption, "in PROCESS TABLE \n")
     # caption = NoEscape(
-    #     " ".join(d for d in wrap_text(caption["children"]))
+    #     " ".join(d['children'] for d in wrap_text(caption["children"]))
     # )
-    caption = NoEscape(wrap_caption(item for item in caption["children"]))
+    # print(caption,"caption causing errors \n")
+    # for item in caption['children']:
+    #     print(item)
+    # caption = NoEscape(wrap_caption(item) for item in caption["children"])
+
     return build_table(table, caption=caption)

@@ -71,15 +71,15 @@ def fill_contents(document_content: List, atbd):
             contents.append(format_equation.format(element))
 
         # TODO process table blocks
-        # if content_type == "table-block":
-        #     print(f"""CONTENT_TYPE: table-block
-        #         \n
-        #         {element}
-        #     """)
-        #     doc.append(
-        #         process_table.process_table(element)
-        #     )
-        #     pass
+        if content_type == "table-block":
+            print(
+                f"""CONTENT_TYPE: table-block
+                \n
+                {element}
+            """
+            )
+            contents.append(process_table.process_table(element))
+            # pass
 
         # append to list
 
