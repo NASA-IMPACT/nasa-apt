@@ -1,14 +1,20 @@
 """
 Function to format equations within PDF document
 """
+import pydash
 from pylatex import NoEscape
+
+# create a placeholder for pydash to handle errors
+EQ_PLACEHOLDER = "Error Formatting Equation"
 
 
 def format(data):
     """
     Formats equations with NoEscape
     """
-    eq = data["children"][0]["text"].replace("\\\\", "\\")
+
+    eq = pydash.get(obj=data, path="children.0.text", default=EQ_PLACEHOLDER)
+    eq = eq.replace("\\\\", "\\")
     return NoEscape(f"\\begin{{equation}}{eq}\\end{{equation}}")
 
 
