@@ -2,6 +2,7 @@
     Module to handle processing of table elements
 """
 import pandas as pd
+import pydash
 from pylatex import NoEscape, utils
 
 from app.schemas import document
@@ -43,14 +44,19 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
 
     """
     # e = utils.escape_latex(data["text"])
-    print(data, "DATA IN WRAP TEXT")
-    e = utils.escape_latex(data)
+    # extract the text from data
+    text = pydash.get(obj=data, path="children.0.text")
+
+    # escape the text only
+    e = utils.escape_latex(text)
     # e = data["text"]
 
+    # use functions in TEXT_WRAPPERS to format text
     for option, command in TEXT_WRAPPERS.items():
         if data.get(option) and e.strip(" ") != "":
             e = command(e)
 
+    # return the text as e
     return NoEscape(e)
 
 
@@ -58,7 +64,6 @@ def build_table(data: document.TableNode, caption: str) -> NoEscape:
     """
     Returns a Latex formatted Table Item, wrapped with a NoEscape Command
     """
-    # print(data, "TABLE IN BUILD TABLE")
     rows = [
         tuple(
             " ".join(wrap_text(c) for c in table_cell["children"])
@@ -92,15 +97,6 @@ def process_table(data):
     [caption] = filter(lambda d: d["type"] == "caption", data["children"])
 
     # simple re-evaluation of table captions
-    caption = caption["children"][0]["text"]
-
-    # print(caption, "in PROCESS TABLE \n")
-    # caption = NoEscape(
-    #     " ".join(d['children'] for d in wrap_text(caption["children"]))
-    # )
-    # print(caption,"caption causing errors \n")
-    # for item in caption['children']:
-    #     print(item)
-    # caption = NoEscape(wrap_caption(item) for item in caption["children"])
+    caption = pydash.get(obj=caption, path="children.0.text")
 
     return build_table(table, caption=caption)

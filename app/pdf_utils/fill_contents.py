@@ -72,12 +72,12 @@ def fill_contents(document_content: List, atbd):
 
         # TODO process table blocks
         if content_type == "table-block":
-            print(
-                f"""CONTENT_TYPE: table-block
-                \n
-                {element}
-            """
-            )
+            # print(
+            #     f"""CONTENT_TYPE: table-block
+            #     \n
+            #     {element}
+            # """
+            # )
             contents.append(process_table.process_table(element))
             # pass
 
