@@ -1,6 +1,7 @@
 """
     Module to process ul, ol, and li items
 """
+import pydash
 from pylatex import Enumerate, Itemize
 
 
@@ -12,8 +13,10 @@ def list_items(data):
         # TODO: confirm whether formatting of list items is allowed
         # if so, a document.TextLeaf type should be used
         # this list is be enumerated so that if multiple paragraph lines, lines can be appended to a single list item
+        # items = pydash.get(obj=data,path='children.0.children')
+
+        # return [d["text"] for _indx, d in enumerate(items)]
         return [d["text"] for _indx, d in enumerate(data["children"][0]["children"])]
-        # return process(data["children"][0])
 
 
 def ul_ol_lists(data):

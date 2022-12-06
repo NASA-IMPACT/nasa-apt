@@ -102,43 +102,37 @@ def process_image(
                 obj=element, path="children.0", default=PLACEHOLDER_CAPTION
             )
 
-            # handle errors and try to provide useful feedback during image load failure
-            try:
-                # lambda execution environment only allows for files to
-                # written to `/tmp` directory
-                # print(f"DOWNLOADING objectKey{objectKey} FROM S3....")
-                try:
-                    s3_client().download_file(
-                        Bucket=S3_BUCKET,
-                        Key=f"{atbd_id}/images/{objectKey}",
-                        Filename=f"/tmp/{objectKey}",
-                    )
+        # handle errors and try to provide useful feedback during image load failure
+        try:
+            # lambda execution environment only allows for files to
+            # written to `/tmp` directory
+            # print(f"DOWNLOADING objectKey{objectKey} FROM S3....")
 
-                    figure = Figure(position="H")
-                    figure.add_image(f"/tmp/{objectKey}")
+            s3_client().download_file(
+                Bucket=S3_BUCKET,
+                Key=f"{atbd_id}/images/{objectKey}",
+                Filename=f"/tmp/{objectKey}",
+            )
 
-                    # TODO debug captions
-                    figure.add_caption(
-                        NoEscape(process_image_caption(caption_text_leaf))
-                    )
+            figure = Figure(position="H")
+            figure.add_image(f"/tmp/{objectKey}")
 
-                # if image is not found, return a placeholder text
-                except botocore.exceptions.ClientError:
-                    return PLACEHOLDER_OBJECT_KEY
+            # TODO debug captions
+            figure.add_caption(NoEscape(process_image_caption(caption_text_leaf)))
 
-                # handle other unknown exceptions
-                except Exception as e:
-                    raise e
+        # if image is not found, return a placeholder text
+        except botocore.exceptions.ClientError:
+            return PLACEHOLDER_OBJECT_KEY
 
-                return figure
-
-            except Exception as e:
-                # TODO, DRY out and reference these correct values
-                error_handler.generate_html_content_for_error(
-                    error=e,
-                    return_link="",
-                    atbd_id="",
-                    atbd_title="",
-                    atbd_version="",
-                    pdf_type="",
-                )
+        except Exception as e:
+            # TODO, DRY out and reference these correct values
+            error_handler.generate_html_content_for_error(
+                error=e,
+                return_link="",
+                atbd_id="",
+                atbd_title="",
+                atbd_version="",
+                pdf_type="",
+            )
+        else:
+            return figure
