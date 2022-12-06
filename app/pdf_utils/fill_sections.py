@@ -2,17 +2,16 @@
 import pydash
 from pylatex import NoEscape
 
-# def get_section_user_text(document_content):
-#     """
-#     Utility function used in generator.py to get text input by user
-#     """
-
-#     # for each paragraph of user input in document content
-#     for indx, item in enumerate(document_content):
-#         # get user input
-#         section_user_text = pydash.get(obj=item, path=f"children.{indx}.children.text")
-
-#     return section_user_text
+TEXT_WRAPPERS = {
+    "superscript": lambda e: f"\\textsuperscript{{{e}}}",
+    "subscript": lambda e: f"\\textsubscript{{{e}}}",
+    # use the `\ul` command instead of the `\underline` as
+    # `\underline` "wraps" the argument in a horizontal box
+    # which doesn't allow for linebreaks
+    "underline": lambda e: f"\\ul{{{e}}}",
+    "italic": lambda e: f"\\textit{{{e}}}",
+    "bold": lambda e: f"\\textbf{{{e}}}",
+}
 
 
 def bib_reference_name(reference_id: str) -> str:
@@ -35,7 +34,7 @@ def reference(reference_id: str) -> NoEscape:
 
 def yield_text(paragraph):
     """
-    WIP: Generator type that may be used to handle paragraph text logic
+    Work in Progress: Generator type that may be used to handle paragraph text logic
     """
     section_p_text = pydash.get(obj=paragraph, path="text")
     yield section_p_text
@@ -45,12 +44,10 @@ def get_paragraph_text(section_element):
     """
     Utility function used in generator.py to get text input by user
     """
-    for indx, paragraph in enumerate(section_element["children"]):
-        # TODO DRY this logic
+    for _indx, paragraph in enumerate(section_element["children"]):
 
         # check if the paragraph has the path text
         # if so get text
-
         section_p_text = pydash.get(obj=paragraph, path="text")
 
         # TODO get line breaks i.e. type='p', children.0.text = ''
@@ -65,5 +62,18 @@ def get_paragraph_text(section_element):
 
             # we will return the reference content if encountered
             return reference(refId)
+
+        # # TODO allow inline text formatting
+        # # isolate full text leaf element
+        # text_leaf = paragraph
+        # # use functions in TEXT_WRAPPERS to format text
+        # for option, command in TEXT_WRAPPERS.items():
+
+        #     if option in text_leaf.keys():
+        #         # if text_leaf.get(option) and e.strip(" ") != "":
+        #         section_p_text = section_p_text.strip(" ") if section_p_text.strip(" ") != "" else section_p_text
+
+        #         # run functions in text_wrappers
+        #         section_p_text = command(section_p_text)
 
     return section_p_text
