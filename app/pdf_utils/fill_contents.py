@@ -4,7 +4,7 @@
 from typing import List
 
 import pydash
-from pylatex import NoEscape, Subsubsection
+from pylatex import NoEscape, Subsubsection, basic
 
 from app.pdf_utils import (  # process_reference,
     fill_sections,

@@ -1,6 +1,6 @@
 """ Utility function that gets sections user input info """
 import pydash
-from pylatex import NoEscape
+from pylatex import NoEscape, basic, utils
 
 TEXT_WRAPPERS = {
     "superscript": lambda e: f"\\textsuperscript{{{e}}}",
@@ -63,7 +63,7 @@ def get_paragraph_text(section_element):
             # we will return the reference content if encountered
             return reference(refId)
 
-        # # TODO allow inline text formatting
+        # TODO allow inline text formatting
         # # isolate full text leaf element
         # text_leaf = paragraph
         # # use functions in TEXT_WRAPPERS to format text
@@ -72,6 +72,9 @@ def get_paragraph_text(section_element):
         #     if option in text_leaf.keys():
         #         # if text_leaf.get(option) and e.strip(" ") != "":
         #         section_p_text = section_p_text.strip(" ") if section_p_text.strip(" ") != "" else section_p_text
+
+        #         # escape latex
+        #         section_p_text = utils.escape_latex(section_p_text)
 
         #         # run functions in text_wrappers
         #         section_p_text = command(section_p_text)
