@@ -25,7 +25,9 @@ from pylatex import (
 from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
-from app.pdf_utils import fill_sections
+from app.pdf import prepare_sections
+
+# from app.pdf_utils import # TODO include process_table
 from app.schemas import document
 from app.schemas.versions_contacts import (
     ContactMechanismEnum,
@@ -34,9 +36,19 @@ from app.schemas.versions_contacts import (
 )
 
 SECTIONS = {
-    "abstract": {},
+    "abstract": {
+        "begin_command": Command("begin", "abstract"),
+        "end_command": Command("end", "abstract"),
+    },
     "plain_summary": {"title": "Plain Language Summary"},
-    "keywords": {"title": "Keywords"},
+    "keywords": {
+        "title": "Keywords",
+        "begin_command": Command("begin", arguments="itemize"),
+        "item_command": Command(
+            "item"
+        ),  # TODO reincorporate arguments=keyword["label"]  ),
+        "end_command": Command("end", arguments="itemize"),
+    },
     "version_description": {"title": "Description"},
     "introduction": {"title": "Introduction"},
     "context_background": {"title": "Context / Background", "section_header": True},
@@ -454,6 +466,7 @@ def process(
                         " ".join(d for d in process_text_content(caption["children"]))
                     )
                 )
+
                 return figure
 
             if data.get("type") == "table-block":
@@ -476,6 +489,8 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
     # parse as Pydantic model and return to dict to enforce data integrity
     document_data = document.Document.parse_obj(atbd_version.document).dict()
+
+    # print(document_data,'document data')
 
     contacts_data = atbd_version.contacts_link
 
@@ -684,6 +699,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             doc.append(Command("item", arguments=keypoint.strip("-") or " "))
         doc.append(Command("end", arguments="keypoints"))
 
+    print("CALLING GENERATE BIB FILE")
     generate_bib_file(
         document_data["publication_references"],
         filepath=f"{filepath}.bib",
@@ -691,26 +707,137 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     section_name: str
     info: Any
 
-    # TODO FILL SECTIONS and fill user input text directly from sections
+    # print(document_data, "this is the document data")
 
-    for section_name, info in SECTIONS.items():
+    # TODO REVIEW FILLING SECTIONS and fill user input text directly from sections
+    output = prepare_sections.prepare_sections(
+        document_data=document_data, sections=SECTIONS, atbd=atbd
+    )
+    # NOTE: the contents for each section in output are already formatted
+
+    # simply append each item in output content to document in order
+    for key, value in output.items():
+
+        # Create section titles
+        if "title" in value.keys():
+            s = Section(
+                value["title"],
+                numbering=False
+                # these two sections receive no numbering
+                if key in ["plain_summary", "keywords"] else True,
+            )
+
+            if value.get("subsection"):
+                title = value["title"]
+                if journal:
+                    # apply journal subsection formatting
+                    title = NoEscape(f"\\normalfont{{{title}}}")
+                s = Subsection(title)
+
+            if value.get("subsubsection"):
+                title = value["title"]
+                if journal:
+                    # apply journal subsubsection formatting
+                    title = NoEscape(f"\\normalfont{{{title}}}")
+                s = Subsubsection(title)
+
+            # append section title to document
+            doc.append(s)
+
+        if value.get("section_header"):
+            # section header means that no content is needed
+            continue
+
+        # special logic for abstract section
+        if key == "abstract":
+            # append abstract begin command
+            doc.append(value["begin_command"])
+
+        # for each item within section's contents
+        for _indx, item in enumerate(value["contents"]):
+
+            # append item in order
+            doc.append(item)
+
+        # special logic for abstract section
+        if key == "abstract":
+            # append abstract end command
+            doc.append(value["end_command"])
+
+        # special logic for SECTION KEY POINTS
+        if key in ["key_points"]:
+
+            kp_text_content: Union[document.TextLeaf, Any] = [
+                {"bold": False, "italic": False, "text": f"{item}"}
+            ]
+
+            doc.append(process_text_content(kp_text_content))
+
+        # special logic for SECTION ALGORITHM_*
+        if key in [
+            "algorithm_input_variables_caption",
+            "algorithm_output_variables_caption",
+        ]:
+
+            algo_text_content: Union[document.TextLeaf, Any] = [
+                {"bold": False, "italic": False, "text": f"{item}"}
+            ]
+
+            doc.append(process_text_content(algo_text_content))
+
+        # special logic for KEYWORDS
+        if key == "keywords" and atbd_version.keywords:
+
+            # TODO Refactor to fill from SECTIONS
+            doc.append(Command("begin", arguments="itemize"))
+            for keyword in atbd_version.keywords:
+                doc.append(Command("item", arguments=keyword["label"]))
+            doc.append(Command("end", arguments="itemize"))
+
+        # SECTION CONTACT
+        if key == "contacts":
+            for contact in process_contacts(contacts_data):
+                doc.append(contact)
+            continue
+
+        if not document_data.get(key):
+            doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
+            continue
+
+        # SECTION ALGORITHM VARIABLES AND DATA ACCESS
+        if key in [
+            "algorithm_input_variables",
+            "algorithm_output_variables",
+        ]:
+
+            doc.append(
+                process_algorithm_variables(
+                    data=document_data[key],
+                    caption=document_data[f"{key}_caption"],
+                )
+            )
+            continue
+
+        if key in [
+            "algorithm_implementations",
+            "data_access_input_data",
+            "data_access_output_data",
+            "data_access_related_urls",
+        ]:
+
+            for url in process_data_access_urls(document_data[key]):
+                doc.append(url)
+            continue
+
+    # TODO, after testing this logic can be removed and consolidated
+    for section_name, _info in SECTIONS.items():
 
         # SECTION ABSTRACT
         if section_name == "abstract":
-            doc.append(Command("begin", "abstract"))
-            doc.append(
-                fill_sections.get_section_info(
-                    document_section=document_data[section_name]
-                )
-            )
 
-            # allow document data sections to be Falsey values, such as empty strings
-            for section_name, item in document_data.items():
-                if bool(item) is False:  # if it is falsey/
-                    continue
+            pass
 
-            doc.append(Command("end", "abstract"))
-            continue
+        # TODO Any changes needed to this logic?
 
         # SECTION VERSION DESCRIPTION
         # Version Description is the only field that doesn't get rendered at all
@@ -725,50 +852,30 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         # SECTION KEY POINTS
         if section_name in ["key_points"]:
 
-            kp_text_content: Union[document.TextLeaf, Any] = [
-                {"bold": False, "italic": False, "text": f"{item}"}
-            ]
-
-            doc.append(process_text_content(kp_text_content))
+            pass
 
         # SECTION INTRODUCTION
         if section_name == "introduction":
-            doc.append(
-                fill_sections.get_section_info(
-                    document_section=document_data[section_name]
-                )
-            )
+
+            pass
 
         # SECTION CONTEXT BACKGROUND
         # Note: This title section is handled elsewhere as logic is currently written
-        # if section_name == "context_background":
-        #     doc.append(
-        #         fill_sections.get_section_info(document_section=document_data[section_name])
-        #     )
 
         # SECTION HISTORICAL PERSPECTIVE
         if section_name == "historical_perspective":
-            doc.append(
-                fill_sections.get_section_info(
-                    document_section=document_data[section_name]
-                )
-            )
+
+            pass
 
         # SECTION ADDITIONAL INFORMATION
         if section_name == "additional_information":
-            doc.append(
-                fill_sections.get_section_info(
-                    document_section=document_data[section_name]
-                )
-            )
+
+            pass
 
         # SECTION ALGORITHM DESCRIPTION
         if section_name == "algorithm_description":
-            doc.append(
-                fill_sections.get_section_info(
-                    document_section=document_data[section_name]
-                )
-            )
+
+            pass
 
         # SECTION ALGORITHM SECTION
         # process key points as a text attribute
@@ -777,58 +884,26 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "algorithm_output_variables_caption",
         ]:
 
-            algo_text_content: Union[document.TextLeaf, Any] = [
-                {"bold": False, "italic": False, "text": f"{item}"}
-            ]
-
-            doc.append(process_text_content(algo_text_content))
-
-        s = Section(
-            info["title"],
-            numbering=False if section_name in ["plain_summary", "keywords"] else True,
-        )
-
-        if info.get("subsection"):
-            title = info["title"]
-            if journal:
-                title = NoEscape(f"\\normalfont{{{title}}}")
-            s = Subsection(title)
-
-        if info.get("subsubsection"):
-            title = info["title"]
-            if journal:
-                title = NoEscape(f"\\normalfont{{{title}}}")
-            s = Subsubsection(title)
-
-        doc.append(s)
-
-        if info.get("section_header"):
-            # section header means that no content is needed
-            continue
+            pass
 
         # SECTION PLAIN SUMMARY
         if section_name == "plain_summary":
-            # append only text
-            doc.append(
-                fill_sections.get_section_info(
-                    document_section=document_data[section_name]
-                )
-            )
-            continue
+
+            pass
 
         #  SECTION KEYWORDS
         if section_name == "keywords" and atbd_version.keywords:
-            doc.append(Command("begin", arguments="itemize"))
-            for keyword in atbd_version.keywords:
-                doc.append(Command("item", arguments=keyword["label"]))
-            doc.append(Command("end", arguments="itemize"))
+            # doc.append(Command("begin", arguments="itemize"))
+            # for keyword in atbd_version.keywords:
+            #     doc.append(Command("item", arguments=keyword["label"]))
+            # doc.append(Command("end", arguments="itemize"))
+
             continue
 
         # SECTION CONTACT
         if section_name == "contacts":
-            for contact in process_contacts(contacts_data):
-                doc.append(contact)
-            continue
+
+            pass
 
         if not document_data.get(section_name):
             doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
@@ -840,13 +915,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "algorithm_output_variables",
         ]:
 
-            doc.append(
-                process_algorithm_variables(
-                    data=document_data[section_name],
-                    caption=document_data[f"{section_name}_caption"],
-                )
-            )
-            continue
+            pass
 
         if section_name in [
             "algorithm_implementations",
@@ -854,10 +923,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "data_access_output_data",
             "data_access_related_urls",
         ]:
-
-            for url in process_data_access_urls(document_data[section_name]):
-                doc.append(url)
-            continue
+            pass
 
         # SECTION PERFORMANCE ASSESSMENT
         if section_name in [
@@ -866,12 +932,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "performance_assessment_validation_errors",
         ]:
 
-            # append only text
-            doc.append(
-                fill_sections.get_section_info(
-                    document_section=document_data[section_name]
-                )
-            )
+            pass
 
         # SECTION DATA AVAILABILITY
         # Journal Acknowledgements and Journal Discussion are only included in
@@ -880,24 +941,15 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             "journal_acknowledgements",
             "journal_discussion",
         ]:
-            # append only text
-            # REFERENCE
-            doc.append(
-                fill_sections.get_section_info(
-                    document_section=document_data[section_name]
-                )
-            )
+
+            pass
 
             continue
 
         # SECTION DATA AVAILABILITY
         if section_name == "data_availability":
-            # append only text
-            doc.append(
-                fill_sections.get_section_info(
-                    document_section=document_data[section_name]
-                )
-            )
+
+            pass
 
     if not journal:
         doc.append(Command("bibliographystyle", arguments="apacite"))
@@ -921,24 +973,33 @@ def generate_pdf(atbd: Atbds, filepath: str, journal: bool = False):
     # create a folder for the pdf/latex files to be stored in
     pathlib.Path(filepath).mkdir(parents=True, exist_ok=True)
 
-    latex_document = generate_latex(atbd, filepath, journal=journal)
+    # try catch to surface errors
+    try:
 
-    latex_document.generate_pdf(
-        filepath=filepath,
-        # XeTeX generates multiple intermediate files (`.aux`, `.log`, etc)
-        # that we want to remove
-        clean=True,
-        # Keep the generated `.tex` file
-        clean_tex=False,
-        # latexmk automatically performs the multiple runs necessary
-        # to include the bibliography, table of contents, etc
-        compiler="latexmk",
-        # the `--pdfxe` flag loads the Xelatex pacakge necessary for
-        # the compiler to manage image positioning within the pdf document
-        # and native unicode character handling
-        compiler_args=["-pdfxe", "-interaction=batchmode", "-e", "$max_repeat=10"],
-        # Hides compiler output, except in case of error
-        silent=True,
-    )
+        latex_document = generate_latex(atbd, filepath, journal=journal)
+
+    except Exception as e:
+        raise e
+
+    try:
+        latex_document.generate_pdf(
+            filepath=filepath,
+            # XeTeX generates multiple intermediate files (`.aux`, `.log`, etc)
+            # that we want to remove
+            clean=True,
+            # Keep the generated `.tex` file
+            clean_tex=False,
+            # latexmk automatically performs the multiple runs necessary
+            # to include the bibliography, table of contents, etc
+            compiler="latexmk",
+            # the `--pdfxe` flag loads the Xelatex pacakge necessary for
+            # the compiler to manage image positioning within the pdf document
+            # and native unicode character handling
+            compiler_args=["-pdfxe", "-interaction=batchmode", "-e", "$max_repeat=10"],
+            # Hides compiler output, except in case of error
+            silent=True,
+        )
+    except Exception as e:
+        raise e
 
     return f"{filepath}.pdf"
