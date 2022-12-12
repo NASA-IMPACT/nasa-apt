@@ -955,7 +955,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         doc.append(Command("bibliographystyle", arguments="apacite"))
 
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
-
     return doc
 
 

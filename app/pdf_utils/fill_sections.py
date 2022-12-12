@@ -3,14 +3,22 @@ import pydash
 from pylatex import NoEscape, basic, utils
 
 TEXT_WRAPPERS = {
+    # "superscript": lambda e: f"\\textsuperscript{{{e}}}",
+    # "subscript": lambda e: f"\\textsubscript{{{e}}}",
+    # # use the `\ul` command instead of the `\underline` as
+    # # `\underline` "wraps" the argument in a horizontal box
+    # # which doesn't allow for linebreaks
+    # "underline": lambda e: f"\\ul{{{e}}}",
+    # "italic": lambda e: f"\\textit{{{e}}}",
+    # "bold": lambda e: f"\\textbf{{{e}}}",
     "superscript": lambda e: f"\\textsuperscript{{{e}}}",
     "subscript": lambda e: f"\\textsubscript{{{e}}}",
     # use the `\ul` command instead of the `\underline` as
     # `\underline` "wraps" the argument in a horizontal box
     # which doesn't allow for linebreaks
     "underline": lambda e: f"\\ul{{{e}}}",
-    "italic": lambda e: f"\\textit{{{e}}}",
-    "bold": lambda e: f"\\textbf{{{e}}}",
+    "italic": lambda e: utils.italic(e, escape=False),
+    "bold": lambda e: utils.bold(e, escape=False),
 }
 
 
@@ -64,19 +72,21 @@ def get_paragraph_text(section_element):
             return reference(refId)
 
         # TODO allow inline text formatting
-        # # isolate full text leaf element
-        # text_leaf = paragraph
-        # # use functions in TEXT_WRAPPERS to format text
-        # for option, command in TEXT_WRAPPERS.items():
+        # isolate full text leaf element
+        text_leaf = paragraph
+        # use functions in TEXT_WRAPPERS to format text
+        for option, command in TEXT_WRAPPERS.items():
 
-        #     if option in text_leaf.keys():
-        #         # if text_leaf.get(option) and e.strip(" ") != "":
-        #         section_p_text = section_p_text.strip(" ") if section_p_text.strip(" ") != "" else section_p_text
+            # if the option in text_leaf is true
+            if text_leaf[option]:
+                # if text_leaf.get(option) and e.strip(" ") != "":
+                # section_p_text = section_p_text.strip(" ") if section_p_text.strip(" ") != "" else section_p_text
 
-        #         # escape latex
-        #         section_p_text = utils.escape_latex(section_p_text)
+                # run functions in text_wrappers
+                section_p_text = command(section_p_text)
 
-        #         # run functions in text_wrappers
-        #         section_p_text = command(section_p_text)
+                # # escape latex
+                # section_p_text = utils.escape_latex(section_p_text)
+                section_p_text = NoEscape(section_p_text)
 
     return section_p_text

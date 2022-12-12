@@ -4,7 +4,7 @@
 from typing import List
 
 import pydash
-from pylatex import NoEscape, Subsubsection, basic
+from pylatex import LineBreak, NoEscape, Subsubsection, basic, utils
 
 from app.pdf_utils import (  # process_reference,
     fill_sections,
@@ -35,7 +35,20 @@ def fill_contents(document_content: List, atbd):
             # TODO This logic may benefit from becoming a generator
             text_element = fill_sections.get_paragraph_text(element)
 
-            contents.append(text_element)
+            # next, include empty strings with an escape
+
+            # do not include None or empty string elements
+            if text_element != "":
+
+                contents.append(
+                    # utils.escape_latex(text_element)
+                    text_element
+                    # NoEscape(text_element)
+                )
+                # then add line break
+                contents.append(LineBreak())
+            else:
+                continue
 
             # if d.get("type") == "a":
             #     result.append(hyperlink(d["url"], d["children"][0]["text"]))
@@ -70,19 +83,10 @@ def fill_contents(document_content: List, atbd):
 
             contents.append(format_equation.format(element))
 
-        # TODO process table blocks
+        # process table blocks
         if content_type == "table-block":
-            # print(
-            #     f"""CONTENT_TYPE: table-block
-            #     \n
-            #     {element}
-            # """
-            # )
+
             contents.append(process_table.process_table(element))
-            # pass
 
-        # append to list
-
-        # return the contents for that section
-
+    # return the contents for that section
     return contents
