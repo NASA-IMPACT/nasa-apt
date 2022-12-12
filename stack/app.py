@@ -68,7 +68,7 @@ class nasaAPTLambdaStack(core.Stack):
                     ),
                     ec2.SubnetConfiguration(
                         name="private-subnet",
-                        subnet_type=ec2.SubnetType.PRIVATE,
+                        subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT,
                         cidr_mask=28,
                     ),
                 ],
