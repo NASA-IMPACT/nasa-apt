@@ -81,7 +81,9 @@ jobs:
       - name: Install CDK
         run: npm install -g aws-cdk@1.170.0 
       - name: Bootstrap CDK  
-        run: cdk bootstrap
+        run: | 
+          cdk acknowledge 19836
+          cdk bootstrap
       - name: Deploy stack
         run: |
          cdk acknowledge 19836
