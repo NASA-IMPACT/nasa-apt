@@ -517,6 +517,8 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         "fontspec",
         "fancyhdr",
         "xcolor",
+        # testing new packages
+        # 'newtxtext','newtxmath'
     ]:
         doc.packages.append(Package(p))
 
@@ -713,7 +715,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     output = prepare_sections.prepare_sections(
         document_data=document_data, sections=SECTIONS, atbd=atbd
     )
-    print(f'\n {output}, the output')
+    # print(f'\n {output}, the output')
     # NOTE: the contents for each section in output are already formatted
 
     # simply append each item in output content to document in order
@@ -758,9 +760,21 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         for _indx, item in enumerate(value["contents"]):
 
             # append item in order
-            doc.append(
-                    item
+            print(f""" 
+                {item}," the item being apppended \n
+                {type(item)}, the type
+            """)
+            # if the item is just text, it needs to be NoEscaped
+            if type(item) == NoEscape:
+                print(item,'is NoEscape \n')
+                doc.extend(
+                    [item]
                 )
+            
+            else:
+                doc.append(
+                        item
+                    )
 
         # special logic for abstract section
         if key == "abstract":

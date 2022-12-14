@@ -18,8 +18,8 @@ TEXT_WRAPPERS = {
     # `\underline` "wraps" the argument in a horizontal box
     # which doesn't allow for linebreaks
     "underline": lambda e: f"\\ul{{{e}}}",
-    "italic": lambda e: utils.italic(e, escape=True),
-    "bold": lambda e: utils.bold(e, escape=True),
+    "italic": lambda e: utils.italic(e, escape=False),
+    "bold": lambda e: utils.bold(e, escape=False),
 }
 
 
@@ -65,35 +65,34 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
             e = command(e)
 
     return NoEscape(e)
+    
 
 
 def get_paragraph_text(section_element):
     """
     Utility function used in generator.py to get text input by user
     """
-    for _indx, paragraph in enumerate(section_element["children"]):
+    for _indx, text_leaf in enumerate(section_element["children"]):
 
 
-        # check if the paragraph has the path text
+        # check if the text_leaf has the path text
         # if so get text
-        section_p_text = pydash.get(obj=paragraph, path="text")
+        section_p_text = pydash.get(obj=text_leaf, path="text")
 
         # TODO get line breaks i.e. type='p', children.0.text = ''
 
-        # check if the paragraph has type 'ref'
-        paragraph_type = pydash.get(obj=paragraph, path="type")
+        # check if the text_leaf has type 'ref'
+        text_leaf_type = pydash.get(obj=text_leaf, path="type")
 
         # if we have type 'ref', get the reference id and process reference
-        if paragraph_type == "ref":
+        if text_leaf_type == "ref":
 
-            refId = pydash.get(obj=paragraph, path="refId")
+            refId = pydash.get(obj=text_leaf, path="refId")
 
             # we will return the reference content if encountered
             return reference(refId)
 
         # TODO allow inline text formatting
-        # isolate full text leaf element
-        text_leaf = paragraph
         # use functions in TEXT_WRAPPERS to format text
         for option, command in TEXT_WRAPPERS.items():
 
@@ -108,6 +107,7 @@ def get_paragraph_text(section_element):
                 # # escape latex
                 # section_p_text = utils.escape_latex(section_p_text)
                 # section_p_text = NoEscape(section_p_text)
+                print(text_leaf,'text leaf being wrapped')
                 section_p_text = wrap_text(text_leaf)
 
         return section_p_text

@@ -4,7 +4,7 @@
 from typing import List
 
 import pydash
-from pylatex import LineBreak, NoEscape, Subsubsection, basic, utils
+from pylatex import NewLine, LineBreak, NoEscape, Subsubsection, basic, utils
 
 from app.pdf_utils import (  # process_reference,
     fill_sections,
@@ -44,13 +44,13 @@ def fill_contents(document_content: List, atbd):
 
                 contents.append(
                     # utils.escape_latex(text_element)
-                    # text_element
                     text_element
+                    # NoEscape(text_element)
                     )
                     
                 
                 # then add line break
-                contents.append(LineBreak())
+                contents.append(NewLine())
             else:
                 continue
 
