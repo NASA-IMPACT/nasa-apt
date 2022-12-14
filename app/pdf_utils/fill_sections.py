@@ -1,6 +1,7 @@
 """ Utility function that gets sections user input info """
 import pydash
 from pylatex import NoEscape, basic, utils
+from app.schemas import document
 
 TEXT_WRAPPERS = {
     # "superscript": lambda e: f"\\textsuperscript{{{e}}}",
@@ -17,8 +18,8 @@ TEXT_WRAPPERS = {
     # `\underline` "wraps" the argument in a horizontal box
     # which doesn't allow for linebreaks
     "underline": lambda e: f"\\ul{{{e}}}",
-    "italic": lambda e: utils.italic(e, escape=False),
-    "bold": lambda e: utils.bold(e, escape=False),
+    "italic": lambda e: utils.italic(e, escape=True),
+    "bold": lambda e: utils.bold(e, escape=True),
 }
 
 
@@ -47,12 +48,31 @@ def yield_text(paragraph):
     section_p_text = pydash.get(obj=paragraph, path="text")
     yield section_p_text
 
+def wrap_text(data: document.TextLeaf) -> NoEscape:
+    """
+    Wraps text item with Latex commands corresponding to the sibbling elements
+    of the text item. Allows for wrapping multiple formatting options.
+    ----
+    eg: if data looks like: {"bold": true, "italic": true, "text": "text to format" }
+    then `wrap_text(data)` will return: `\\bold{\\italic{text to format}}`
+
+    """
+    e = utils.escape_latex(data["text"])
+    # e = data["text"]
+
+    for option, command in TEXT_WRAPPERS.items():
+        if data.get(option) and e.strip(" ") != "":
+            e = command(e)
+
+    return NoEscape(e)
+
 
 def get_paragraph_text(section_element):
     """
     Utility function used in generator.py to get text input by user
     """
     for _indx, paragraph in enumerate(section_element["children"]):
+
 
         # check if the paragraph has the path text
         # if so get text
@@ -87,6 +107,7 @@ def get_paragraph_text(section_element):
 
                 # # escape latex
                 # section_p_text = utils.escape_latex(section_p_text)
-                section_p_text = NoEscape(section_p_text)
+                # section_p_text = NoEscape(section_p_text)
+                section_p_text = wrap_text(text_leaf)
 
-    return section_p_text
+        return section_p_text

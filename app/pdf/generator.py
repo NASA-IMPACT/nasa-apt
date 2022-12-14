@@ -713,6 +713,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     output = prepare_sections.prepare_sections(
         document_data=document_data, sections=SECTIONS, atbd=atbd
     )
+    print(f'\n {output}, the output')
     # NOTE: the contents for each section in output are already formatted
 
     # simply append each item in output content to document in order
@@ -757,7 +758,9 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         for _indx, item in enumerate(value["contents"]):
 
             # append item in order
-            doc.append(item)
+            doc.append(
+                    item
+                )
 
         # special logic for abstract section
         if key == "abstract":
@@ -832,13 +835,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     # TODO, after testing this logic can be removed and consolidated
     for section_name, _info in SECTIONS.items():
 
-        # SECTION ABSTRACT
-        if section_name == "abstract":
-
-            pass
-
-        # TODO Any changes needed to this logic?
-
         # SECTION VERSION DESCRIPTION
         # Version Description is the only field that doesn't get rendered at all
         # if it's not found in the database data (as opposed to other field which)
@@ -849,107 +845,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         ):
             continue
 
-        # SECTION KEY POINTS
-        if section_name in ["key_points"]:
-
-            pass
-
-        # SECTION INTRODUCTION
-        if section_name == "introduction":
-
-            pass
-
-        # SECTION CONTEXT BACKGROUND
-        # Note: This title section is handled elsewhere as logic is currently written
-
-        # SECTION HISTORICAL PERSPECTIVE
-        if section_name == "historical_perspective":
-
-            pass
-
-        # SECTION ADDITIONAL INFORMATION
-        if section_name == "additional_information":
-
-            pass
-
-        # SECTION ALGORITHM DESCRIPTION
-        if section_name == "algorithm_description":
-
-            pass
-
-        # SECTION ALGORITHM SECTION
-        # process key points as a text attribute
-        if section_name in [
-            "algorithm_input_variables_caption",
-            "algorithm_output_variables_caption",
-        ]:
-
-            pass
-
-        # SECTION PLAIN SUMMARY
-        if section_name == "plain_summary":
-
-            pass
-
-        #  SECTION KEYWORDS
-        if section_name == "keywords" and atbd_version.keywords:
-            # doc.append(Command("begin", arguments="itemize"))
-            # for keyword in atbd_version.keywords:
-            #     doc.append(Command("item", arguments=keyword["label"]))
-            # doc.append(Command("end", arguments="itemize"))
-
-            continue
-
-        # SECTION CONTACT
-        if section_name == "contacts":
-
-            pass
-
-        if not document_data.get(section_name):
-            doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
-            continue
-
-        # SECTION ALGORITHM VARIABLES AND DATA ACCESS
-        if section_name in [
-            "algorithm_input_variables",
-            "algorithm_output_variables",
-        ]:
-
-            pass
-
-        if section_name in [
-            "algorithm_implementations",
-            "data_access_input_data",
-            "data_access_output_data",
-            "data_access_related_urls",
-        ]:
-            pass
-
-        # SECTION PERFORMANCE ASSESSMENT
-        if section_name in [
-            "performance_assessment_validation_methods",
-            "performance_assessment_validation_uncertainties",
-            "performance_assessment_validation_errors",
-        ]:
-
-            pass
-
-        # SECTION DATA AVAILABILITY
-        # Journal Acknowledgements and Journal Discussion are only included in
-        # Journal type pdfs
-        if not journal and section_name in [
-            "journal_acknowledgements",
-            "journal_discussion",
-        ]:
-
-            pass
-
-            continue
-
-        # SECTION DATA AVAILABILITY
-        if section_name == "data_availability":
-
-            pass
 
     if not journal:
         doc.append(Command("bibliographystyle", arguments="apacite"))

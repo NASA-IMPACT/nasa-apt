@@ -35,16 +35,20 @@ def fill_contents(document_content: List, atbd):
             # TODO This logic may benefit from becoming a generator
             text_element = fill_sections.get_paragraph_text(element)
 
-            # next, include empty strings with an escape
-
             # do not include None or empty string elements
             if text_element != "":
 
+                # return NoEscape(
+                #     " ".join(d for d in process_text_content(data["children"]))
+                # )
+
                 contents.append(
                     # utils.escape_latex(text_element)
+                    # text_element
                     text_element
-                    # NoEscape(text_element)
-                )
+                    )
+                    
+                
                 # then add line break
                 contents.append(LineBreak())
             else:
