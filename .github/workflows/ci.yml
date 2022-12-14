@@ -80,8 +80,11 @@ jobs:
           pip install -e .[deploy] --no-binary xmlsec
       - name: Install CDK
         run: npm install -g aws-cdk@1.170.0 
+      # CDK warning 19836 regarding cdk version blocks CDK bootstrap
       - name: Bootstrap CDK  
-        run: cdk bootstrap
+        run: | 
+          cdk acknowledge 19836
+          cdk bootstrap
       - name: Deploy stack
         run: |
          cdk acknowledge 19836
