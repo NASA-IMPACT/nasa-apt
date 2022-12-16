@@ -26,6 +26,7 @@ from app.api.utils import s3_client
 from app.config import S3_BUCKET
 from app.db.models import Atbds
 from app.pdf import prepare_sections
+from app.pdf_utils import build_references
 
 # from app.pdf_utils import # TODO include process_table
 from app.schemas import document
@@ -99,6 +100,7 @@ SECTIONS = {
     "journal_acknowledgements": {"title": "Acknowledgements"},
     "data_availability": {"title": "Open Research"},
     # "contacts": {"title": "Contacts"},
+    "publication_references": {"title": "References","subsection":False}
 }
 
 
@@ -760,13 +762,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         for _indx, item in enumerate(value["contents"]):
 
             # append item in order
-            print(f""" 
-                {item}," the item being apppended \n
-                {type(item)}, the type
-            """)
+            # print(f""" 
+            #     {item}," the item being apppended \n
+            #     {type(item)}, the type
+            # """)
             # if the item is just text, it needs to be NoEscaped
             if type(item) == NoEscape:
-                print(item,'is NoEscape \n')
+                # print(item,'is NoEscape \n')
                 doc.extend(
                     [item]
                 )
@@ -845,6 +847,10 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             for url in process_data_access_urls(document_data[key]):
                 doc.append(url)
             continue
+
+        if key == "publication_references":
+            
+            doc.append("\n".join(build_references.build_references(r) for r in document_data[key]))
 
     # TODO, after testing this logic can be removed and consolidated
     for section_name, _info in SECTIONS.items():

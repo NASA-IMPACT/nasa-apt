@@ -107,7 +107,7 @@ def get_paragraph_text(section_element):
                 # # escape latex
                 # section_p_text = utils.escape_latex(section_p_text)
                 # section_p_text = NoEscape(section_p_text)
-                print(text_leaf,'text leaf being wrapped')
+                # print(text_leaf,'text leaf being wrapped')
                 section_p_text = wrap_text(text_leaf)
 
         return section_p_text

@@ -50,7 +50,7 @@ def fill_contents(document_content: List, atbd):
                     
                 
                 # then add line break
-                contents.append(NewLine())
+                # contents.append(NewLine())
             else:
                 continue
 
