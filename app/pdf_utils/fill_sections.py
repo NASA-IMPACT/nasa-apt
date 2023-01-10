@@ -42,14 +42,6 @@ def reference(reference_id: str) -> NoEscape:
     return NoEscape(f"\\cite{{{bib_reference_name(reference_id)}}}")
 
 
-def yield_text(paragraph):
-    """
-    Work in Progress: Generator type that may be used to handle paragraph text logic
-    """
-    section_p_text = pydash.get(obj=paragraph, path="text")
-    yield section_p_text
-
-
 def wrap_text(data: document.TextLeaf) -> NoEscape:
     """
     Wraps text item with Latex commands corresponding to the sibbling elements
