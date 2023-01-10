@@ -384,6 +384,8 @@ def generate_html_content_for_error(
     with open("./app/pdf/error.html", "r") as f:
         error_html = f.read()
 
+    raise error  # tmp
+
     return (
         error_html.replace("{{atbd_id}}", str(atbd_id))
         .replace("{{atbd_title}}", atbd_title)

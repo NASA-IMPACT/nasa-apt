@@ -1,6 +1,7 @@
 """ Utility function that gets sections user input info """
 import pydash
 from pylatex import NoEscape, basic, utils
+
 from app.schemas import document
 
 TEXT_WRAPPERS = {
@@ -48,6 +49,7 @@ def yield_text(paragraph):
     section_p_text = pydash.get(obj=paragraph, path="text")
     yield section_p_text
 
+
 def wrap_text(data: document.TextLeaf) -> NoEscape:
     """
     Wraps text item with Latex commands corresponding to the sibbling elements
@@ -65,7 +67,6 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
             e = command(e)
 
     return NoEscape(e)
-    
 
 
 def get_paragraph_text(section_element):
@@ -74,40 +75,34 @@ def get_paragraph_text(section_element):
     """
     for _indx, text_leaf in enumerate(section_element["children"]):
 
-
         # check if the text_leaf has the path text
-        # if so get text
         section_p_text = pydash.get(obj=text_leaf, path="text")
 
-        # TODO get line breaks i.e. type='p', children.0.text = ''
+        if len(section_element["children"]) > 1:
 
-        # check if the text_leaf has type 'ref'
-        text_leaf_type = pydash.get(obj=text_leaf, path="type")
+            # use child as a "counter"
+            for child in section_element["children"]:
 
-        # if we have type 'ref', get the reference id and process reference
-        if text_leaf_type == "ref":
+                # if we have type 'ref', get the reference id and process reference
+                child_type = pydash.get(obj=child, path="type")
 
-            refId = pydash.get(obj=text_leaf, path="refId")
+                # get reference text from text_leaf
+                ref_text = pydash.get(obj=text_leaf, path="text")
 
-            # we will return the reference content if encountered
-            return reference(refId)
+                # if we have type 'ref', get the reference id and process reference
+                if child_type == "ref":
 
-        # TODO allow inline text formatting
+                    refId = pydash.get(obj=child, path="refId")
+
+                    # we will return the reference content if encountered
+                    return NoEscape(f"{ref_text} {reference(refId)}")
+
         # use functions in TEXT_WRAPPERS to format text
         for option, command in TEXT_WRAPPERS.items():
 
             # if the option in text_leaf is true
             if text_leaf[option]:
-                # if text_leaf.get(option) and e.strip(" ") != "":
-                # section_p_text = section_p_text.strip(" ") if section_p_text.strip(" ") != "" else section_p_text
-
                 # run functions in text_wrappers
-                section_p_text = command(section_p_text)
-
-                # # escape latex
-                # section_p_text = utils.escape_latex(section_p_text)
-                # section_p_text = NoEscape(section_p_text)
-                # print(text_leaf,'text leaf being wrapped')
                 section_p_text = wrap_text(text_leaf)
 
         return section_p_text

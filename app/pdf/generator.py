@@ -100,7 +100,7 @@ SECTIONS = {
     "journal_acknowledgements": {"title": "Acknowledgements"},
     "data_availability": {"title": "Open Research"},
     # "contacts": {"title": "Contacts"},
-    "publication_references": {"title": "References","subsection":False}
+    "publication_references": {"title": "References", "subsection": False},
 }
 
 
@@ -492,8 +492,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     # parse as Pydantic model and return to dict to enforce data integrity
     document_data = document.Document.parse_obj(atbd_version.document).dict()
 
-    # print(document_data,'document data')
-
     contacts_data = atbd_version.contacts_link
 
     document_class = "agujournal2019" if journal else "article"
@@ -703,7 +701,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             doc.append(Command("item", arguments=keypoint.strip("-") or " "))
         doc.append(Command("end", arguments="keypoints"))
 
-    print("CALLING GENERATE BIB FILE")
+    print(f"CALLING GENERATE BIB FILE at {filepath}.bib")
     generate_bib_file(
         document_data["publication_references"],
         filepath=f"{filepath}.bib",
@@ -711,13 +709,10 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
     section_name: str
     info: Any
 
-    # print(document_data, "this is the document data")
-
     # TODO REVIEW FILLING SECTIONS and fill user input text directly from sections
     output = prepare_sections.prepare_sections(
         document_data=document_data, sections=SECTIONS, atbd=atbd
     )
-    # print(f'\n {output}, the output')
     # NOTE: the contents for each section in output are already formatted
 
     # simply append each item in output content to document in order
@@ -762,21 +757,12 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         for _indx, item in enumerate(value["contents"]):
 
             # append item in order
-            # print(f""" 
-            #     {item}," the item being apppended \n
-            #     {type(item)}, the type
-            # """)
-            # if the item is just text, it needs to be NoEscaped
             if type(item) == NoEscape:
                 # print(item,'is NoEscape \n')
-                doc.extend(
-                    [item]
-                )
-            
+                doc.extend([item])
+
             else:
-                doc.append(
-                        item
-                    )
+                doc.append(item)
 
         # special logic for abstract section
         if key == "abstract":
@@ -848,10 +834,6 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
                 doc.append(url)
             continue
 
-        if key == "publication_references":
-            
-            doc.append("\n".join(build_references.build_references(r) for r in document_data[key]))
-
     # TODO, after testing this logic can be removed and consolidated
     for section_name, _info in SECTIONS.items():
 
@@ -865,10 +847,10 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
         ):
             continue
 
-
     if not journal:
         doc.append(Command("bibliographystyle", arguments="apacite"))
 
+    # ADD REFERENCES SECTION
     doc.append(Command("bibliography", arguments=NoEscape(filepath)))
     return doc
 

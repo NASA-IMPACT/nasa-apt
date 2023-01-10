@@ -15,7 +15,7 @@ def list_items(data):
         # this list is be enumerated so that if multiple paragraph lines, lines can be appended to a single list item
         items = pydash.get(obj=data, path="children.0.children")
 
-        return [d["text"] for _indx, d in enumerate(items)]
+        return [d.get("text", "") for _indx, d in enumerate(items)]
 
 
 def ul_ol_lists(data):

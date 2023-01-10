@@ -97,16 +97,17 @@ def process_image(
         # get the image block info: caption
         if element["type"] == "caption":
 
-            # get the caption text leaf
-            caption_text_leaf: Dict = pydash.get(
-                obj=element, path="children.0", default=PLACEHOLDER_CAPTION
-            )
+            pass
+            # TODO debug captions
+            # # get the caption text leaf
+            # caption_text_leaf: Dict = pydash.get(
+            #     obj=element, path="children.0", default=PLACEHOLDER_CAPTION
+            # )
 
         # handle errors and try to provide useful feedback during image load failure
         try:
             # lambda execution environment only allows for files to
             # written to `/tmp` directory
-            # print(f"DOWNLOADING objectKey{objectKey} FROM S3....")
 
             s3_client().download_file(
                 Bucket=S3_BUCKET,
@@ -118,7 +119,7 @@ def process_image(
             figure.add_image(f"/tmp/{objectKey}")
 
             # TODO debug captions
-            figure.add_caption(NoEscape(process_image_caption(caption_text_leaf)))
+            # figure.add_caption(NoEscape(process_image_caption(caption_text_leaf)))
 
         # if image is not found, return a placeholder text
         except botocore.exceptions.ClientError:
