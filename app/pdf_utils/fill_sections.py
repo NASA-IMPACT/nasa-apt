@@ -61,6 +61,22 @@ def wrap_text(data: document.TextLeaf) -> NoEscape:
     return NoEscape(e)
 
 
+def get_reference_ids(text_element: list):
+    """
+    Checks for the "type" key with a value of "ref",
+    Appends the corresponding "refId" value to a new list or variable.
+    Formats the reference items with helper functions
+    """
+
+    ref_ids = [item["refId"] for item in text_element if item.get("type") == "ref"]
+
+    x = []
+    for item in ref_ids:
+        x.append(reference(item))
+
+    return x
+
+
 def get_paragraph_text(section_element):
     """
     Utility function used in generator.py to get text input by user
@@ -81,19 +97,22 @@ def get_paragraph_text(section_element):
                 # get reference text from text_leaf
                 ref_text = pydash.get(obj=text_leaf, path="text")
 
-                # if we have type 'ref', get the reference id and process reference
+                # if we have type 'ref', get the reference id and process reference(s), checking for multiple references
                 if child_type == "ref":
 
-                    refId = pydash.get(obj=child, path="refId")
+                    ref_ids: list = get_reference_ids(section_element["children"])
 
-                    # we will return the reference content if encountered
-                    return NoEscape(f"{ref_text} {reference(refId)}")
+                    # join the formatted references as a single string
+                    ids_ = " ".join(str(i) for i in ref_ids)
+
+                    # return reference text and bibliography refs
+                    return NoEscape(f"{ref_text} {ids_}")
 
         # use functions in TEXT_WRAPPERS to format text
-        for option, command in TEXT_WRAPPERS.items():
+        for option, _command in TEXT_WRAPPERS.items():
 
             # if the option in text_leaf is true
-            if text_leaf[option]:
+            if text_leaf.get(option):
                 # run functions in text_wrappers
                 section_p_text = wrap_text(text_leaf)
 

@@ -29,7 +29,6 @@ def build_references(reference_dict: document.PublicationReference):
     Processes a reference/citation item. Returns a text string
     """
 
-    # print(reference_dict, "reference_dict used to generate bib reference")
     reference_id = bib_reference_name(reference_dict["id"])
     reference_id = reference_dict["id"]
     print(reference_id)  # TODO remove this. Only to resolve precommit errors

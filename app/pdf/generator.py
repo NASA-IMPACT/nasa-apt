@@ -758,7 +758,7 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
 
             # append item in order
             if type(item) == NoEscape:
-                # print(item,'is NoEscape \n')
+
                 doc.extend([item])
 
             else:

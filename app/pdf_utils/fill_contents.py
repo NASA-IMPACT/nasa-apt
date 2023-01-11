@@ -1,6 +1,7 @@
 """
     Module fills contents of document for each section of PDF generation
 """
+import types
 from typing import List
 
 import pydash
@@ -32,35 +33,19 @@ def fill_contents(document_content: List, atbd):
         # apply logic for each content type, append to document in order
         if content_type == "p":
 
-            # TODO This logic may benefit from becoming a generator
             text_element = fill_sections.get_paragraph_text(element)
 
-            # do not include None or empty string elements
             if text_element != "":
 
-                # return NoEscape(
-                #     " ".join(d for d in process_text_content(data["children"]))
-                # )
+                contents.append(text_element)
 
-                contents.append(
-                    # utils.escape_latex(text_element)
-                    text_element
-                    # NoEscape(text_element)
-                )
-
-                # then add line break
-                # contents.append(NewLine())
             else:
                 continue
 
             # if d.get("type") == "a":
             #     result.append(hyperlink(d["url"], d["children"][0]["text"]))
-            # elif d.get("type") == "ref":
-            #     result.append(reference(d["refId"]))
-            # elif d.get("type") == "equation-inline":
-            #     result.append(NoEscape(f'${d["children"][0]["text"]}$'))
 
-        # check for sub-section
+        # Sub Sections
         if content_type == "sub-section":
 
             sub_section_title = pydash.get(obj=element, path="children.0.text")
@@ -72,24 +57,25 @@ def fill_contents(document_content: List, atbd):
 
             contents.append(sub_section)
 
-        # process image type content
+        # Image Blocks
         if content_type == "image-block":
 
-            # append image
             contents.append(image_handler.process_image(data=element, atbd_id=atbd.id))
 
+        # Lists
         if content_type in ["ul", "ol"]:
 
             contents.append(process_lists.ul_ol_lists(element))
 
+        # Equations
         if content_type == "equation":
 
             contents.append(format_equation.format(element))
 
-        # process table blocks
+        # Table Blocks
         if content_type == "table-block":
 
             contents.append(process_table.process_table(element))
 
-    # return the contents for that section
+    # returns the contents for the section
     return contents
