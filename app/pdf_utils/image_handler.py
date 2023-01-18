@@ -53,6 +53,14 @@ def wrap_caption_text(data: Dict) -> NoEscape:
 
 PLACEHOLDER_OBJECT_KEY = "No Image Found"
 PLACEHOLDER_CAPTION = "No Caption Provided"
+PLACEHOLDER_CAPTION_TEXT_LEAF = {
+    "text": PLACEHOLDER_CAPTION,
+    "superscript": False,
+    "subscript": False,
+    "underline": False,
+    "italic": False,
+    "bold": False,
+}
 
 
 def process_image_caption(caption_text_leaf: Dict) -> List[NoEscape]:
@@ -97,43 +105,45 @@ def process_image(
         # get the image block info: caption
         if element["type"] == "caption":
 
-            pass
-            # TODO debug captions
-            # # get the caption text leaf
-            # caption_text_leaf: Dict = pydash.get(
-            #     obj=element, path="children.0", default=PLACEHOLDER_CAPTION
-            # )
+            # get the caption text leaf
+            caption_text_leaf: Dict = pydash.get(obj=element, path="children.0")
 
-        # handle errors and try to provide useful feedback during image load failure
-        try:
-            # lambda execution environment only allows for files to
-            # written to `/tmp` directory
+            # check caption text
+            caption_text: str = pydash.get(obj=caption_text_leaf, path="text")
 
-            s3_client().download_file(
-                Bucket=S3_BUCKET,
-                Key=f"{atbd_id}/images/{objectKey}",
-                Filename=f"/tmp/{objectKey}",
-            )
+            # if caption is empty string, force placeholder
+            if caption_text == "":
+                caption_text_leaf = PLACEHOLDER_CAPTION_TEXT_LEAF
 
-            figure = Figure(position="H")
-            figure.add_image(f"/tmp/{objectKey}")
+    # handle errors and try to provide useful feedback during image load failure
+    try:
+        # lambda execution environment only allows for files to
+        # written to `/tmp` directory
 
-            # TODO debug captions
-            # figure.add_caption(NoEscape(process_image_caption(caption_text_leaf)))
+        s3_client().download_file(
+            Bucket=S3_BUCKET,
+            Key=f"{atbd_id}/images/{objectKey}",
+            Filename=f"/tmp/{objectKey}",
+        )
 
-        # if image is not found, return a placeholder text
-        except botocore.exceptions.ClientError:
-            return PLACEHOLDER_OBJECT_KEY
+        # position, add image, add caption
+        figure = Figure(position="H")
+        figure.add_image(f"/tmp/{objectKey}")
+        figure.add_caption(NoEscape(process_image_caption(caption_text_leaf)))
 
-        except Exception as e:
-            # TODO, DRY out and reference these correct values
-            error_handler.generate_html_content_for_error(
-                error=e,
-                return_link="",
-                atbd_id="",
-                atbd_title="",
-                atbd_version="",
-                pdf_type="",
-            )
-        else:
-            return figure
+    # if image is not found, return a placeholder text
+    except botocore.exceptions.ClientError:
+        return PLACEHOLDER_OBJECT_KEY
+
+    except Exception as e:
+        # TODO, DRY out and reference these correct values
+        error_handler.generate_html_content_for_error(
+            error=e,
+            return_link="",
+            atbd_id="",
+            atbd_title="",
+            atbd_version="",
+            pdf_type="",
+        )
+    else:
+        return figure
