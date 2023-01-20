@@ -52,7 +52,7 @@ def fill_contents(document_content: List, atbd):
 
             sub_section = Subsubsection(
                 NoEscape(f"\\normalfont{{\\itshape{{{sub_section_title}}}}}"),
-                numbering=False,
+                numbering=True,
             )
 
             contents.append(sub_section)
