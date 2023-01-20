@@ -50,7 +50,7 @@ SECTIONS = {
         ),  # TODO reincorporate arguments=keyword["label"]  ),
         "end_command": Command("end", arguments="itemize"),
     },
-    "version_description": {"title": "Description"},
+    "version_description": {"title": "Version Description"},
     "introduction": {"title": "Introduction"},
     "context_background": {"title": "Context / Background", "section_header": True},
     "historical_perspective": {"title": "Historical Perspective", "subsection": True},
@@ -806,8 +806,13 @@ def generate_latex(atbd: Atbds, filepath: str, journal=False):  # noqa: C901
             continue
 
         if not document_data.get(key):
-            doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
-            continue
+
+            # prevent extra placeholder from being added when "keywords" section has already been processed
+            if key == "keywords":
+                pass
+            else:
+                doc.append(process(CONTENT_UNAVAILABLE))  # type: ignore
+                continue
 
         # SECTION ALGORITHM VARIABLES AND DATA ACCESS
         if key in [
