@@ -20,6 +20,9 @@ aws --endpoint-url http://localstack:4566 s3 cp "fixture_data/figures/test-atbd-
 aws --endpoint-url http://localstack:4566 s3 cp "fixture_data/figures/test-atbd-1-v1-0.pdf" "s3://${S3_BUCKET}/1/pdf/test-atbd-1-v1-0-journal.pdf"
 aws --endpoint-url http://localstack:4566 s3 cp "fixture_data/figures/test-atbd-1-v1-0.pdf" "s3://${S3_BUCKET}/1/pdf/test-atbd-1-v1-1-journal.pdf"
 
+wait_for_service "sqs"
+aws --endpoint-url http://localstack:4566 sqs create-queue --queue-name ${TASK_QUEUE_NAME}
+
 wait_for_service "cognito-idp"
 wait_for_service "cognito-identity"
 

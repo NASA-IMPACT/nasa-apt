@@ -9,6 +9,7 @@ with open("README.md") as f:
 inst_reqs = [
     "boto3>=1.24",
     "botocore>=1.27.51",
+    "uvicorn[standard]==0.20.0",
     "fastapi==0.54.1",
     "gunicorn==20.0.4",
     "latex==0.7.0",
@@ -25,8 +26,9 @@ inst_reqs = [
     "pylatex==1.4.1",
     "fastapi_permissions==0.2.7",
     "mangum>=0.9.0",
-    "awslambdaric==1.2.0",
+    "awslambdaric==2.0.4",
     "pydash==5.0.1",
+    "playwright==1.30.0",
 ]
 extra_reqs = {
     "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort", "types-requests"],

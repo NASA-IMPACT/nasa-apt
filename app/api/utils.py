@@ -39,6 +39,15 @@ def s3_client() -> client:
     return client("s3")
 
 
+def sqs_client() -> client:
+    """
+    Returns a boto3 sqs client - configured to point at a specfic endpoint url if provided
+    """
+    if AWS_RESOURCES_ENDPOINT:
+        return client("sqs", endpoint_url=AWS_RESOURCES_ENDPOINT)
+    return client("sqs")
+
+
 def get_major_from_version_string(version: str) -> Tuple[int, Union[int, None]]:
     """
     Operations on versions can be performed using just the major version number:

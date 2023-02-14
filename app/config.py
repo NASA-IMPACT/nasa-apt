@@ -8,6 +8,9 @@ import os
 
 import boto3
 
+
+APT_DEBUG = os.environ.get("APT_DEBUG", "false").lower() == "true"
+
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 API_VERSION_STRING = os.environ.get("API_VERSION_STRING") or exit(
     "API_VERSION_STRING env var required"
@@ -42,6 +45,7 @@ AWS_RESOURCES_ENDPOINT = os.environ.get("AWS_RESOURCES_ENDPOINT")
 
 cognito = boto3.client("cognito-idp")
 secrets_manager = boto3.client("secretsmanager")
+sqs = boto3.resource("sqs")
 
 
 # Allows us to point the APP to the AWS secretsmanager and cognito instances
@@ -52,6 +56,7 @@ if AWS_RESOURCES_ENDPOINT:
         "secretsmanager", endpoint_url=AWS_RESOURCES_ENDPOINT
     )
     cognito = boto3.client("cognito-idp", endpoint_url=AWS_RESOURCES_ENDPOINT)
+    sqs = boto3.resource("sqs", endpoint_url=AWS_RESOURCES_ENDPOINT)
 
 
 pg_credentials = json.loads(
@@ -77,14 +82,14 @@ APP_CLIENT_NAME = os.environ.get("APP_CLIENT_NAME") or exit(
 # call AWS cognito-idp api to list user pools, if user pool name is found, grab user_pool id for the name
 [USER_POOL_ID] = [
     user_pool["Id"]
-    for user_pool in cognito.list_user_pools(MaxResults=60)["UserPools"]
+    for user_pool in cognito.list_user_pools(MaxResults=1)["UserPools"]
     if user_pool["Name"] == USER_POOL_NAME
 ]
 
 [APP_CLIENT_ID] = [
     user_pool_clients["ClientId"]
     for user_pool_clients in cognito.list_user_pool_clients(
-        MaxResults=60, UserPoolId=USER_POOL_ID
+        MaxResults=1, UserPoolId=USER_POOL_ID
     )["UserPoolClients"]
     if user_pool_clients["ClientName"] == APP_CLIENT_NAME
 ]
@@ -97,4 +102,11 @@ if AWS_RESOURCES_ENDPOINT:
 
 NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
     "NOTIFICATIONS_FROM env var required"
+)
+
+TASK_QUEUE_NAME = os.environ.get("TASK_QUEUE_NAME") or exit(
+    "TASK_QUEUE_NAME env var required"
+)
+PDF_PREVIEW_HOST = os.environ.get("PDF_PREVIEW_HOST") or exit(
+    "PDF_PREVIEW_HOST env var required"
 )

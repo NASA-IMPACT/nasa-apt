@@ -34,6 +34,7 @@ services:
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
       USER_POOL_NAME: dev-users
       APP_CLIENT_NAME: dev-client
+      TASK_QUEUE_NAME: dev-tasks
     depends_on:
       - db-ready
       - localstack-ready
@@ -80,7 +81,7 @@ services:
     image: localstack/localstack:0.12.13
     environment:
       LOCALSTACK_API_KEY: ${LOCALSTACK_API_KEY}
-      SERVICES: s3,secretsmanager,cognito,ses, opensearch
+      SERVICES: s3,secretsmanager,cognito,ses,sqs,opensearch
       DEBUG: 1 # Uncomment to increase localstack logging output
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
@@ -98,7 +99,7 @@ services:
       sh -c "
         python3 -m pip install types-requests &&
         python wait_for_localstack_ready.py &&
-        uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
+        python3 -m uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
       "
     ports:
       - "8000:80"
@@ -106,6 +107,7 @@ services:
       - ./app:/app/app
       - ./fixture_data/wait_for_localstack_ready.py:/app/wait_for_localstack_ready.py
     environment:
+      APT_DEBUG: "true"
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
@@ -122,9 +124,55 @@ services:
       APT_FRONTEND_URL: $APT_FRONTEND_URL
       USER_POOL_NAME: dev-users
       APP_CLIENT_NAME: dev-client
+      TASK_QUEUE_NAME: dev-tasks
       NOTIFICATIONS_FROM: no-reply@ds.io
+      PDF_PREVIEW_HOST: http://ui:9000
     depends_on:
       - bootstrapper
+
+  worker:
+    build:
+      context: ./
+      dockerfile: app/Dockerfile
+    image: nasa-apt/dev/app
+    command: >
+      sh -c "
+        python3 -m pip install watchdog &&
+        python wait_for_localstack_ready.py &&
+        watchmedo auto-restart -d /app -p '*.py' -R -- python3 -m app.worker
+      "
+    volumes:
+      - ./app:/app/app
+      - ./fixture_data/wait_for_localstack_ready.py:/app/wait_for_localstack_ready.py
+    environment:
+      APT_DEBUG: "true"
+      # the boto3 library needs these AWS_* env vars, even though we are using localstack.
+      AWS_ACCESS_KEY_ID: stub
+      AWS_SECRET_ACCESS_KEY: stub
+      AWS_DEFAULT_REGION: us-east-1
+      PROJECT_NAME: nasa-apt-api-local
+      API_VERSION_STRING: /v2
+      AWS_RESOURCES_ENDPOINT: http://localstack:4566
+      S3_BUCKET: nasa-apt-dev-files
+      POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
+      # This URL omits the "http://" in order to remain consistent
+      # with the value of the URL returned by the opensearch Domain
+      # CDK component
+      OPENSEARCH_URL: $OPENSEARCH_URL
+      APT_FRONTEND_URL: $APT_FRONTEND_URL
+      USER_POOL_NAME: dev-users
+      APP_CLIENT_NAME: dev-client
+      TASK_QUEUE_NAME: dev-tasks
+      NOTIFICATIONS_FROM: no-reply@ds.io
+      PDF_PREVIEW_HOST: http://ui:9000
+    depends_on:
+      - api
+
+# interanl ui for pdf generation
+  ui:
+    image: apt-frontend
+    volumes:
+      - ./ui-config.js:/apt-frontend/app/assets/scripts/config/local.js
 
   db-ready:
     image: dadarek/wait-for-dependencies
