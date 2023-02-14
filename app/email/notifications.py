@@ -37,31 +37,28 @@ def notify_atbd_version_contributors(
     app_users, _ = cognito.list_cognito_users()
 
     user_notifications = []
-    curators = (
-        user for (_, user) in app_users.items() if "curator" in user.cognito_groups
-    )
 
-    # combine reviewers, authors lists into one list
-    notify = [] + atbd_version.authors
-
-    # reviewers is dict, extract and append subs of users to notify
-    for id_dict in atbd_version.reviewers[:-1]:
-
-        notify.append(id_dict["sub"])
-
-    data.update({"notify": notify})
-
-    if len(data["notify"]) > 0:
+    mentioned_users = data.get("notify") or []
+    # If users are mentioned
+    if len(mentioned_users) > 0:
         user_notifications = [
             UserNotification(
-                **app_users[user_sub].dict(), notification=notification, data=data
+                **app_users[user_sub].dict(),
+                notification=notification,
+                data=data,
             )
-            for user_sub in data["notify"]
+            for user_sub in mentioned_users
+            # Skip curators
             if user_sub != "curators"
         ]
 
-        notify_curators = "curators" in data["notify"]
-        if notify_curators:
+        # If curator exists
+        if "curators" in mentioned_users:
+            curators = (
+                user
+                for (_, user) in app_users.items()
+                if "curator" in user.cognito_groups
+            )
             user_notifications.extend(
                 [
                     UserNotification(
@@ -84,7 +81,9 @@ def notify_atbd_version_contributors(
         user_notifications.extend(
             [
                 UserNotification(
-                    **app_users[author].dict(), notification=notification, data=data
+                    **app_users[author].dict(),
+                    notification=notification,
+                    data=data,
                 )
                 for author in atbd_version.authors
             ]
