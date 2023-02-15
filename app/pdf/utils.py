@@ -1,5 +1,7 @@
-import pathlib
+""" Utility functions for generating PDFs through Playwright"""
+
 import json
+import pathlib
 import tempfile
 
 from playwright.sync_api import sync_playwright
@@ -20,7 +22,7 @@ def save_pdf_to_s3(local_pdf_path: str, remote_pdf_path: str):
             Filename=local_pdf_path, Bucket=config.S3_BUCKET, Key=remote_pdf_path
         )
     except Exception:
-        logger.exception(f"PDF upload failed.")
+        logger.exception("PDF upload failed.")
 
 
 def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict):
@@ -62,7 +64,7 @@ def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict
             page.pdf(path=local_path, format="A4")
             browser.close()
         logger.info(f"PDF generated at path: {local_path}")
-        save_pdf_to_s3(local_path, filepath)
+        save_pdf_to_s3(str(local_path), filepath)
 
 
 def build_storage_state(

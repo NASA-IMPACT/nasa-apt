@@ -1,8 +1,17 @@
-import pickle
-import base64
+"""Worker for the background task queue
 
-from app.logs import logger
+In development mode, the worker runs as a Python script in a separate container.
+In production mode, the worker runs as a Lambda function attached to an SQS queue.
+
+Currently, the only task is to generate PDFs. But in the future, we can add
+other types of tasks as background tasks as required.
+"""
+
+import base64
+import pickle
+
 from app import config
+from app.logs import logger
 from app.pdf.utils import make_pdf
 
 
@@ -33,7 +42,9 @@ def worker():
     while True:
         # get the next task
         task_queue = config.sqs.get_queue_by_name(QueueName=config.TASK_QUEUE_NAME)
-        messages = task_queue.receive_messages(MaxNumberOfMessages=1, WaitTimeSeconds=20)
+        messages = task_queue.receive_messages(
+            MaxNumberOfMessages=1, WaitTimeSeconds=20
+        )
         if not messages:
             continue
 
@@ -46,6 +57,7 @@ def worker():
             logger.exception(f"Error handling task: {task}")
         finally:
             message.delete()
+
 
 if __name__ == "__main__":
     logger.info("Starting the worker")

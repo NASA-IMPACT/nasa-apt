@@ -30,9 +30,7 @@ def aws_resources_ready():
         return False
 
     sqs = boto3.resource("sqs", endpoint_url=os.environ["AWS_RESOURCES_ENDPOINT"])
-    if not (
-        {q.url.split("/")[-1] for q in sqs.queues.all()} == {"dev-tasks"}
-    ):
+    if not ({q.url.split("/")[-1] for q in sqs.queues.all()} == {"dev-tasks"}):
         return False
 
     cognito = boto3.client(

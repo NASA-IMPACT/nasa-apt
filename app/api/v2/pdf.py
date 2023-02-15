@@ -1,28 +1,28 @@
 """PDF Endpoint."""
-import os
 import base64
+import os
 import pickle
 from typing import List
 
 from app import config
-from app.logs import logger
 from app.api.utils import get_major_from_version_string, s3_client
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import Atbds, AtbdVersions
+from app.logs import logger
 from app.pdf.error_handler import generate_html_content_for_error
 from app.pdf.generator import generate_pdf
-from app.users.cognito import get_active_user_principals
 from app.permissions import filter_atbd_versions
-from app.users.auth import get_user
 from app.schemas import users
+from app.users.auth import get_user
+from app.users.cognito import get_active_user_principals
 
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import (
     FileResponse,
     HTMLResponse,
-    StreamingResponse,
     JSONResponse,
+    StreamingResponse,
 )
 
 router = APIRouter()
@@ -140,7 +140,9 @@ def get_pdf(
             # Queue the PDF generation task into SQS
             # We only use this to generate "Document" PDFs, not "Journal" PDFs for now
             auth_data = {
-                "id_token": request.headers.get("authorization", "").replace("Bearer ", ""),
+                "id_token": request.headers.get("authorization", "").replace(
+                    "Bearer ", ""
+                ),
                 "access_token": request.headers.get("x-access-token"),
                 "user_email": user.email,
             }

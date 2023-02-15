@@ -8,7 +8,6 @@ import os
 
 import boto3
 
-
 APT_DEBUG = os.environ.get("APT_DEBUG", "false").lower() == "true"
 
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
