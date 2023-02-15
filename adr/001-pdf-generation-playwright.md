@@ -1,5 +1,5 @@
 # 1. Re-architect PDF generation to use Playwright
-- Author: Tarashish (@sunu)
+- Author: Tarashish ([@sunu](http://github.com/sunu))
 - Date: 2023-02-15
 
 ## Context and Problem Statement
@@ -15,6 +15,12 @@ So we need a better way to generate PDFs that lets us:
 - Easily make styling changes
 - Iterate quickly on bug fixes
 - Minimize the amount of code we need to change to make styling changes
+
+The PDF generation approach needed to support the following features:
+- Support for page numbering and page breaks
+- Support for table of contents with page numbers
+- Rendered text should be selectable (for copy-pasting)
+- Support for rendering math equations, images and tables
 
 ## Considered Options
 
