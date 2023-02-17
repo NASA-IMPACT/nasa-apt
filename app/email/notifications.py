@@ -36,70 +36,41 @@ def notify_atbd_version_contributors(
     """
     app_users, _ = cognito.list_cognito_users()
 
-    user_notifications = []
-
     mentioned_users = data.get("notify") or []
+    recipient_user_ids = []
     # If users are mentioned
     if len(mentioned_users) > 0:
-        user_notifications = [
-            UserNotification(
-                **app_users[user_sub].dict(),
-                notification=notification,
-                data=data,
-            )
-            for user_sub in mentioned_users
-            # Skip curators
-            if user_sub != "curators"
-        ]
+        recipient_user_ids.extend(
+            [
+                user_sub
+                for user_sub in mentioned_users
+                # Skip curators
+                if user_sub != "curators"
+            ]
+        )
 
         # If curator exists
         if "curators" in mentioned_users:
-            curators = (
-                user
-                for (_, user) in app_users.items()
-                if "curator" in user.cognito_groups
-            )
-            user_notifications.extend(
+            recipient_user_ids.extend(
                 [
-                    UserNotification(
-                        **curator.dict(),
-                        notification=notification,
-                        data=data,
-                    )
-                    for curator in curators
+                    user_id
+                    for (user_id, user) in app_users.items()
+                    if "curator" in user.cognito_groups
                 ]
             )
     else:
-        user_notifications = [
+        recipient_user_ids.append(atbd_version.owner)
+        recipient_user_ids.extend(atbd_version.authors)
+        recipient_user_ids.extend(atbd_version.reviewers)
+    return notify_users(
+        user_notifications=[
             UserNotification(
-                **app_users[atbd_version.owner].dict(),
+                **app_users[user_id].dict(),
                 notification=notification,
                 data=data,
             )
-        ]
-
-        user_notifications.extend(
-            [
-                UserNotification(
-                    **app_users[author].dict(),
-                    notification=notification,
-                    data=data,
-                )
-                for author in atbd_version.authors
-            ]
-        )
-        user_notifications.extend(
-            [
-                UserNotification(
-                    **app_users[reviewer["sub"]].dict(),
-                    notification=notification,
-                    data=data,
-                )
-                for reviewer in atbd_version.reviewers
-            ]
-        )
-    return notify_users(
-        user_notifications=user_notifications,
+            for user_id in set(recipient_user_ids)
+        ],
         atbd_title=atbd_title,
         atbd_id=atbd_id,
         atbd_version=f"v{atbd_version.major}.{atbd_version.minor}",

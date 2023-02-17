@@ -184,15 +184,26 @@ def create_thread(
         thread=thread,
     )
 
-    background_tasks.add_task(
-        notify_atbd_version_contributors,
+    notification_meta = dict(
         atbd_version=atbd_version,
-        notification="new_thread_created",
         atbd_title=atbd.title,
         atbd_id=atbd.id,
         user=user,
-        data={"section": thread.section, "notify": thread.notify},
     )
+    background_tasks.add_task(
+        notify_atbd_version_contributors,
+        **notification_meta,
+        notification="new_thread_created",
+        data={"section": thread.section},
+    )
+    # For mention only
+    if thread.notify:
+        background_tasks.add_task(
+            notify_atbd_version_contributors,
+            **notification_meta,
+            notification="comment_mention",
+            data={"section": thread.section, "notify": thread.notify},
+        )
 
     return thread
 
@@ -288,16 +299,35 @@ def create_comment(
         principals=principals, atbd_version=atbd_version, data_model=comment
     )
 
-    background_tasks.add_task(
-        notify_atbd_version_contributors,
+    notification_meta = dict(
         atbd_version=atbd_version,
-        notification="new_comment_created",
         atbd_title=atbd.title,
         atbd_id=atbd.id,
         user=user,
-        data={"section": thread.section, "notify": comment_input.notify},
     )
-
+    background_tasks.add_task(
+        notify_atbd_version_contributors,
+        **notification_meta,
+        notification="new_comment_created",
+        data={
+            "section": thread.section,
+            "notify": [
+                atbd_version.owner,
+                thread.created_by,
+            ],
+        },
+    )
+    # For mention only
+    if comment_input.notify:
+        background_tasks.add_task(
+            notify_atbd_version_contributors,
+            **notification_meta,
+            notification="comment_mention",
+            data={
+                "section": thread.section,
+                "notify": comment_input.notify,
+            },
+        )
     return comment
 
 
