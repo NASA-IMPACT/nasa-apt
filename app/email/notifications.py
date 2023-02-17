@@ -62,6 +62,11 @@ def notify_atbd_version_contributors(
         recipient_user_ids.append(atbd_version.owner)
         recipient_user_ids.extend(atbd_version.authors)
         recipient_user_ids.extend(atbd_version.reviewers)
+    recipient_user_ids_set = set(recipient_user_ids)
+    del recipient_user_ids
+    # Remove current user from the list
+    if user.sub in recipient_user_ids_set:
+        recipient_user_ids_set.remove(user.sub)
     return notify_users(
         user_notifications=[
             UserNotification(
@@ -69,7 +74,7 @@ def notify_atbd_version_contributors(
                 notification=notification,
                 data=data,
             )
-            for user_id in set(recipient_user_ids)
+            for user_id in recipient_user_ids_set
         ],
         atbd_title=atbd_title,
         atbd_id=atbd_id,
