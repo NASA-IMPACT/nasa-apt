@@ -13,6 +13,7 @@ import pickle
 from app import config
 from app.logs import logger
 from app.pdf.utils import make_pdf
+from app.utils import get_task_queue
 
 
 def get_task_handlers():
@@ -41,7 +42,7 @@ def worker():
     """Listens to an SQS queue for PDF generation requests"""
     while True:
         # get the next task
-        task_queue = config.sqs.get_queue_by_name(QueueName=config.TASK_QUEUE_NAME)
+        task_queue = get_task_queue()
         messages = task_queue.receive_messages(
             MaxNumberOfMessages=1, WaitTimeSeconds=20
         )

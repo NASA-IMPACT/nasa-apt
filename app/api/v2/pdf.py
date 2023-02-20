@@ -16,6 +16,7 @@ from app.permissions import filter_atbd_versions
 from app.schemas import users
 from app.users.auth import get_user
 from app.users.cognito import get_active_user_principals
+from app.utils import get_task_queue
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import (
@@ -146,7 +147,7 @@ def get_pdf(
                 "access_token": request.headers.get("x-access-token"),
                 "user_email": user.email,
             }
-            task_queue = config.sqs.get_queue_by_name(QueueName=config.TASK_QUEUE_NAME)
+            task_queue = get_task_queue()
             task_queue.send_message(
                 MessageBody=base64.b64encode(
                     pickle.dumps(

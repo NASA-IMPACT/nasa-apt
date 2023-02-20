@@ -102,10 +102,14 @@ if AWS_RESOURCES_ENDPOINT:
 NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
     "NOTIFICATIONS_FROM env var required"
 )
-
-TASK_QUEUE_NAME = os.environ.get("TASK_QUEUE_NAME") or exit(
-    "TASK_QUEUE_NAME env var required"
-)
+if APT_DEBUG:
+    TASK_QUEUE_NAME = os.environ.get("TASK_QUEUE_NAME") or exit(
+        "TASK_QUEUE_NAME env var required"
+    )
+else:
+    TASK_QUEUE_URL = os.environ.get("TASK_QUEUE_URL") or exit(
+        "TASK_QUEUE_URL env var required"
+    )
 PDF_PREVIEW_HOST = os.environ.get("PDF_PREVIEW_HOST") or exit(
     "PDF_PREVIEW_HOST env var required"
 )
