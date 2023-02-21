@@ -23,6 +23,10 @@
         "subject": "A new comment has been added",
         "content": "<p>Hi $preferred_username,</p> <p>$app_user has added a new commented to a thread in document: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>, section: $section.</p><p>Sincerely,</p><p>The APT Team</p>"
     },
+    "comment_mention": {
+        "subject": "You have been mentioned in a comment on ATBD $atbd_title in APT",
+        "content": "<p>You have been mentioned in a comment on ATBD <a href=\"$atbd_version_link\">$atbd_title</a> in APT.</p><p>Sincerely,</p><p>The APT Team</p>"
+    },
     "request_closed_review": {
         "subject": "Closed review requested",
         "content": "<p>Hi $preferred_username,</p> <p>$app_user has marked the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a> as ready for closed review.</p><p>Sincerely,</p><p>The APT Team</p>"

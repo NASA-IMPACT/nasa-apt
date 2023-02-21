@@ -106,6 +106,7 @@ services:
       - ./app:/app/app
       - ./fixture_data/wait_for_localstack_ready.py:/app/wait_for_localstack_ready.py
     environment:
+      PYTHONUNBUFFERED: 1
       # the boto3 library needs these AWS_* env vars, even though we are using localstack.
       AWS_ACCESS_KEY_ID: stub
       AWS_SECRET_ACCESS_KEY: stub
