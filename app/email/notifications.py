@@ -101,9 +101,10 @@ def notify_users(
 
         message = EMAIL_TEMPLATES[user_to_notify["notification"]]
 
-        t = Template(message["content"])
+        subject_t = Template(message["subject"])
+        body_t = Template(message["content"])
 
-        message_content = t.substitute(
+        template_kwargs = dict(
             # User performing the action:
             app_user=user.preferred_username,
             role=" ".join(user.cognito_groups),
@@ -114,12 +115,14 @@ def notify_users(
             atbd_version_link=f"{config.FRONTEND_URL}/documents/{atbd_id}/{atbd_version}",
             **user_to_notify.get("data", {}),
         )
+        subject_content = subject_t.substitute(**template_kwargs)
+        body_content = body_t.substitute(**template_kwargs)
 
         ses_client().send_email(
             Source=config.NOTIFICATIONS_FROM,
             Destination={"ToAddresses": [user_to_notify["email"]]},
             Message={
-                "Subject": {"Data": message["subject"]},
-                "Body": {"Html": {"Data": message_content}},
+                "Subject": {"Data": subject_content},
+                "Body": {"Html": {"Data": body_content}},
             },
         )
