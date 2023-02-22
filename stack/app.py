@@ -287,7 +287,7 @@ class nasaAPTLambdaStack(core.Stack):
         )
 
         sqs_handler_lambda = _lambda.Function(
-            self, f"{id}-lambda", **sqs_handler_lambda_props
+            self, f"{id}-sqs-handler-lambda", **sqs_handler_lambda_props
         )
         bucket.grant_read_write(sqs_handler_lambda)
         # attach the task handling lambda to the queue
