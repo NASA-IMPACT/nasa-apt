@@ -221,7 +221,7 @@ class nasaAPTLambdaStack(core.Stack):
             code=_lambda.Code.from_asset_image(
                 directory=code_dir,
                 file="app/Dockerfile",
-                entrypoint=["/usr/local/bin/python", "-m", "awslambdaric"],
+                entrypoint=["/usr/bin/python3", "-m", "awslambdaric"],
                 cmd=["handler.handler"],
             ),
             handler=_lambda.Handler.FROM_IMAGE,
@@ -274,7 +274,7 @@ class nasaAPTLambdaStack(core.Stack):
             code=_lambda.Code.from_asset_image(
                 directory=code_dir,
                 file="app/Dockerfile",
-                entrypoint=["/usr/local/bin/python", "-m", "awslambdaric"],
+                entrypoint=["/usr/bin/python3", "-m", "awslambdaric"],
                 cmd=["handler.tasks_handler"],
             ),
             handler=_lambda.Handler.FROM_IMAGE,
