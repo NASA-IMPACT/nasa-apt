@@ -81,14 +81,14 @@ APP_CLIENT_NAME = os.environ.get("APP_CLIENT_NAME") or exit(
 # call AWS cognito-idp api to list user pools, if user pool name is found, grab user_pool id for the name
 [USER_POOL_ID] = [
     user_pool["Id"]
-    for user_pool in cognito.list_user_pools(MaxResults=1)["UserPools"]
+    for user_pool in cognito.list_user_pools(MaxResults=60)["UserPools"]
     if user_pool["Name"] == USER_POOL_NAME
 ]
 
 [APP_CLIENT_ID] = [
     user_pool_clients["ClientId"]
     for user_pool_clients in cognito.list_user_pool_clients(
-        MaxResults=1, UserPoolId=USER_POOL_ID
+        MaxResults=60, UserPoolId=USER_POOL_ID
     )["UserPoolClients"]
     if user_pool_clients["ClientName"] == APP_CLIENT_NAME
 ]
