@@ -61,6 +61,8 @@ def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict
             page = context.new_page()
             page.goto(atbd_link)
             page.wait_for_selector(".pagedjs_page")
+            page.locator("#content").is_hidden()
+            page.locator("#preview").is_visible()
             page.pdf(path=local_path, format="A4")
             browser.close()
         logger.info(f"PDF generated at path: {local_path}")
