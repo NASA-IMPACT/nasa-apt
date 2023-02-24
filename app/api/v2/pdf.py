@@ -164,7 +164,7 @@ def get_pdf(
                     )
                 ).decode()
             )
-            return {"message": "PDF generation in progress"}
+            return JSONResponse(status_code=201, content={"message": "PDF generation in progress"})
     except Exception as e:
         atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
 
