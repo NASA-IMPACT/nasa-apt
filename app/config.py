@@ -8,6 +8,8 @@ import os
 
 import boto3
 
+APT_DEBUG = os.environ.get("APT_DEBUG", "false").lower() == "true"
+
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 API_VERSION_STRING = os.environ.get("API_VERSION_STRING") or exit(
     "API_VERSION_STRING env var required"
@@ -42,6 +44,7 @@ AWS_RESOURCES_ENDPOINT = os.environ.get("AWS_RESOURCES_ENDPOINT")
 
 cognito = boto3.client("cognito-idp")
 secrets_manager = boto3.client("secretsmanager")
+sqs = boto3.resource("sqs")
 
 
 # Allows us to point the APP to the AWS secretsmanager and cognito instances
@@ -52,6 +55,7 @@ if AWS_RESOURCES_ENDPOINT:
         "secretsmanager", endpoint_url=AWS_RESOURCES_ENDPOINT
     )
     cognito = boto3.client("cognito-idp", endpoint_url=AWS_RESOURCES_ENDPOINT)
+    sqs = boto3.resource("sqs", endpoint_url=AWS_RESOURCES_ENDPOINT)
 
 
 pg_credentials = json.loads(
@@ -98,3 +102,15 @@ if AWS_RESOURCES_ENDPOINT:
 NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
     "NOTIFICATIONS_FROM env var required"
 )
+if APT_DEBUG:
+    TASK_QUEUE_NAME = os.environ.get("TASK_QUEUE_NAME") or exit(
+        "TASK_QUEUE_NAME env var required"
+    )
+    PDF_PREVIEW_HOST = os.environ.get("PDF_PREVIEW_HOST") or exit(
+        "PDF_PREVIEW_HOST env var required"
+    )
+else:
+    TASK_QUEUE_URL = os.environ.get("TASK_QUEUE_URL") or exit(
+        "TASK_QUEUE_URL env var required"
+    )
+    PDF_PREVIEW_HOST = FRONTEND_URL

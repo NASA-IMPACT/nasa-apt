@@ -11,9 +11,11 @@ from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
+from aws_cdk import aws_lambda_event_sources as lambda_event_source
 from aws_cdk import aws_opensearchservice as opensearch
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_sqs as sqs
 from aws_cdk import core
 from permissions_boundary import PermissionBoundaryAspect
 
@@ -156,6 +158,18 @@ class nasaAPTLambdaStack(core.Stack):
             bucket_params["bucket_name"] = config.S3_BUCKET
         bucket = s3.Bucket(**bucket_params)
 
+        visibility_timeout = timeout * 2
+        sqs_queue = sqs.Queue(
+            self,
+            f"{id}-queue",
+            # how long to wait before a retry
+            visibility_timeout=core.Duration.seconds(visibility_timeout),
+            # how long to keep messages in the queue
+            retention_period=core.Duration.seconds(
+                visibility_timeout * config.MAX_RETRIES
+            ),
+        )
+
         osdomain = opensearch.Domain(
             self,
             f"{id}-opensearch-domain",
@@ -185,6 +199,7 @@ class nasaAPTLambdaStack(core.Stack):
         )
 
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
+        sqs_access = iam.PolicyStatement(actions=["sqs:SendMessage"], resources=["*"])
 
         frontend_url = config.FRONTEND_URL
         lambda_env = dict(
@@ -194,18 +209,19 @@ class nasaAPTLambdaStack(core.Stack):
             BACKEND_CORS_ORIGINS=config.BACKEND_CORS_ORIGINS,
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             OPENSEARCH_URL=osdomain.domain_endpoint,
+            TASK_QUEUE_URL=sqs_queue.queue_url,
             S3_BUCKET=bucket.bucket_name,
             NOTIFICATIONS_FROM=config.NOTIFICATIONS_FROM,
             MODULE_NAME="nasa_apt.main",
             VARIABLE_NAME="app",
         )
 
-        lambda_function_props = dict(
+        api_handler_lambda_props = dict(
             runtime=_lambda.Runtime.FROM_IMAGE,
             code=_lambda.Code.from_asset_image(
                 directory=code_dir,
                 file="app/Dockerfile",
-                entrypoint=["/usr/local/bin/python", "-m", "awslambdaric"],
+                entrypoint=["/usr/bin/python3", "-m", "awslambdaric"],
                 cmd=["handler.handler"],
             ),
             handler=_lambda.Handler.FROM_IMAGE,
@@ -218,31 +234,32 @@ class nasaAPTLambdaStack(core.Stack):
         )
 
         if concurrent:
-            lambda_function_props["reserved_concurrent_executions"] = concurrent
+            api_handler_lambda_props["reserved_concurrent_executions"] = concurrent
 
-        lambda_function = _lambda.Function(
-            self, f"{id}-lambda", **lambda_function_props
+        api_handler_lambda = _lambda.Function(
+            self, f"{id}-lambda", **api_handler_lambda_props
         )
-        lambda_function.add_to_role_policy(ses_access)
-        database.secret.grant_read(lambda_function)
+        api_handler_lambda.add_to_role_policy(ses_access)
+        api_handler_lambda.add_to_role_policy(sqs_access)
+        database.secret.grant_read(api_handler_lambda)
         """account or service principal rights to read/write the opensearch domain note that this will vary depending on deployment destination"""
         os_access_policy = iam.PolicyStatement(sid="osAccessPolicy")
-        os_access_policy.add_arn_principal(f"{lambda_function.function_arn}")
+        os_access_policy.add_arn_principal(f"{api_handler_lambda.function_arn}")
         os_access_policy.add_actions("es:ESHttp*")
         os_access_policy.add_resources(f"{osdomain.domain_arn}/*")
         # # add policy to domain
         # osdomain.add_access_policies(os_access_policy)
 
         # grant lambda read/write
-        osdomain.grant_read_write(lambda_function)
-        bucket.grant_read_write(lambda_function)
+        osdomain.grant_read_write(api_handler_lambda)
+        bucket.grant_read_write(api_handler_lambda)
 
         # defines an API Gateway Http API resource backed by our custom lambda function.
         api_gateway = apigw.HttpApi(
             self,
             f"{id}-endpoint",
             default_integration=apigw_integrations.HttpLambdaIntegration(
-                f"{id}-apigw-lambda-integration", handler=lambda_function
+                f"{id}-apigw-lambda-integration", handler=api_handler_lambda
             ),
         )
         core.CfnOutput(
@@ -251,6 +268,33 @@ class nasaAPTLambdaStack(core.Stack):
             value=api_gateway.api_endpoint,
             description="API Gateway endpoint for the APT API",
         )
+
+        sqs_handler_lambda_props = dict(
+            runtime=_lambda.Runtime.FROM_IMAGE,
+            code=_lambda.Code.from_asset_image(
+                directory=code_dir,
+                file="app/Dockerfile",
+                entrypoint=["/usr/bin/python3", "-m", "awslambdaric"],
+                cmd=["handler.tasks_handler"],
+            ),
+            handler=_lambda.Handler.FROM_IMAGE,
+            memory_size=memory,
+            timeout=core.Duration.seconds(timeout),
+            environment=lambda_env,
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
+            security_groups=[lambda_security_group],
+        )
+
+        sqs_handler_lambda = _lambda.Function(
+            self, f"{id}-sqs-handler-lambda", **sqs_handler_lambda_props
+        )
+        bucket.grant_read_write(sqs_handler_lambda)
+        database.secret.grant_read(sqs_handler_lambda)
+
+        # attach the task handling lambda to the queue
+        sqs_event_source = lambda_event_source.SqsEventSource(sqs_queue)
+        sqs_handler_lambda.add_event_source(sqs_event_source)
 
         user_pool = cognito.UserPool(
             self,
@@ -283,22 +327,23 @@ class nasaAPTLambdaStack(core.Stack):
             else core.RemovalPolicy.DESTROY,
         )
 
-        lambda_function.add_to_role_policy(
-            iam.PolicyStatement(
-                actions=["cognito-idp:AdminGetUser"],
-                resources=[user_pool.user_pool_arn],
+        for lambda_function in [api_handler_lambda, sqs_handler_lambda]:
+            lambda_function.add_to_role_policy(
+                iam.PolicyStatement(
+                    actions=["cognito-idp:AdminGetUser"],
+                    resources=[user_pool.user_pool_arn],
+                )
             )
-        )
-        lambda_function.add_to_role_policy(
-            iam.PolicyStatement(
-                actions=[
-                    "cognito-idp:ListUserPools",
-                    "cognito-idp:ListUserPoolClients",
-                    "cognito-idp:ListUsersInGroup",
-                ],
-                resources=["*"],
+            lambda_function.add_to_role_policy(
+                iam.PolicyStatement(
+                    actions=[
+                        "cognito-idp:ListUserPools",
+                        "cognito-idp:ListUserPoolClients",
+                        "cognito-idp:ListUsersInGroup",
+                    ],
+                    resources=["*"],
+                )
             )
-        )
 
         core.CfnOutput(
             self,
@@ -348,13 +393,14 @@ class nasaAPTLambdaStack(core.Stack):
             description="User pool domain",
         )
 
-        lambda_function.add_environment(
-            key="USER_POOL_NAME",
-            value=user_pool.node.id,
-        )
-        lambda_function.add_environment(
-            key="APP_CLIENT_NAME", value=app_client.user_pool_client_name
-        )
+        for lambda_function in [api_handler_lambda, sqs_handler_lambda]:
+            lambda_function.add_environment(
+                key="USER_POOL_NAME",
+                value=user_pool.node.id,
+            )
+            lambda_function.add_environment(
+                key="APP_CLIENT_NAME", value=app_client.user_pool_client_name
+            )
 
 
 app = core.App()

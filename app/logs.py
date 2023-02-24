@@ -5,9 +5,14 @@ Provides logging functionality for the APT API
 """
 import logging
 
+from app.config import APT_DEBUG
+
 logging.basicConfig()
 logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
 
 logger = logging.getLogger(__name__)
 
-logger.setLevel(logging.WARN)
+if APT_DEBUG:
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)

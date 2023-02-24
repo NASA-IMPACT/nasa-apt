@@ -1,16 +1,30 @@
 """PDF Endpoint."""
+import base64
 import os
+import pickle
+from typing import List
 
 from app import config
 from app.api.utils import get_major_from_version_string, s3_client
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import Atbds, AtbdVersions
+from app.logs import logger
 from app.pdf.error_handler import generate_html_content_for_error
 from app.pdf.generator import generate_pdf
+from app.permissions import filter_atbd_versions
+from app.schemas import users
+from app.users.auth import get_user
+from app.users.cognito import get_active_user_principals
+from app.utils import get_task_queue
 
-from fastapi import APIRouter, BackgroundTasks, Depends
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import (
+    FileResponse,
+    HTMLResponse,
+    JSONResponse,
+    StreamingResponse,
+)
 
 router = APIRouter()
 
@@ -58,21 +72,39 @@ def get_pdf(
     atbd_id: str,
     version: str,
     journal: bool = False,
-    background_tasks: BackgroundTasks = None,
+    retry: bool = False,
     db: DbSession = Depends(get_db_session),
+    principals: List[str] = Depends(get_active_user_principals),
+    user: users.CognitoUser = Depends(get_user),
+    request: Request = None,
 ):
     """
     Returns a PDF to the user - either as a stream of Bytes from S3 or as a
     FileResponse object, from a PDF generated and stored locally in the
     Lambda's runtime memory.
 
+    Returns a JSON response with code 404 if the ATBD is not found or if the user
+    does not have permission to view the ATBD.
+
+    Returns a JSON response with code 404 if the PDF is not found in S3.
+
+    Return a JSON response with code 200 if PDF generation is successfully requested.
+    When requesting PDF generation, the request must contain the following headers:
+    - `authorization`: the user's Cognito ID token as a Bearer token
+    - `x-access-token`: the user's Cognito access token
+
+
     The PDF will be served from S3 if either the user specifies a minor version
-    number or if the lastest version has status `Published`
+    number or if the lastest version has status `Published` or if it was already
+    generated and stored in S3 (eg: when retry=True).
     """
 
     major, minor = get_major_from_version_string(version)
 
     atbd: Atbds = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
+    atbd = filter_atbd_versions(principals, atbd)
+    if atbd is None:
+        return JSONResponse(status_code=404, content={"message": "ATBD not found"})
 
     # Unpacking the versions list into an array of a single element
     # enforces the assumption that the ATBD will only contain a single
@@ -83,21 +115,60 @@ def get_pdf(
 
     pdf_key = generate_pdf_key(atbd, minor=minor, journal=journal)
 
-    if minor or atbd_version.status == "Published":
-        print("FETCHING FROM S3: ", pdf_key)
+    if (minor or atbd_version.status == "Published") or retry:
+        logger.info(f"FETCHING FROM S3: {pdf_key}")
+        try:
+            client = s3_client()
+            f = client.get_object(Bucket=config.S3_BUCKET, Key=pdf_key)["Body"]
+            return StreamingResponse(
+                f.iter_chunks(),
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f"attachment; filename={pdf_key.split('/')[-1]}"
+                },
+            )
+        except client.exceptions.NoSuchKey:
+            logger.info(f"PDF not found in S3: {pdf_key}")
+            return JSONResponse(status_code=404, content={"message": "PDF not found"})
 
-        # TODO: add some error handling in case the PDF isn't found
-        f = s3_client().get_object(Bucket=config.S3_BUCKET, Key=pdf_key)["Body"]
-        return StreamingResponse(
-            f.iter_chunks(),
-            media_type="application/pdf",
-            headers={
-                "Content-Disposition": f"attachment; filename={pdf_key.split('/')[-1]}"
-            },
-        )
-    print("GENERATING PDF:")
+    logger.info(f"GENERATING PDF: {pdf_key}")
     try:
-        local_pdf_filepath = generate_pdf(atbd=atbd, filepath=pdf_key, journal=journal)
+        if journal:
+            local_pdf_filepath = generate_pdf(
+                atbd=atbd, filepath=pdf_key, journal=journal
+            )
+        else:
+            # clean up any existing PDFs for this ATBD version
+            s3_client().delete_object(Bucket=config.S3_BUCKET, Key=pdf_key)
+            # Queue the PDF generation task into SQS
+            # We only use this to generate "Document" PDFs, not "Journal" PDFs for now
+            auth_data = {
+                "id_token": request.headers.get("authorization", "").replace(
+                    "Bearer ", ""
+                ),
+                "access_token": request.headers.get("x-access-token"),
+                "user_email": user.email,
+            }
+            task_queue = get_task_queue()
+            task_queue.send_message(
+                MessageBody=base64.b64encode(
+                    pickle.dumps(
+                        {
+                            "task_type": "make_pdf",
+                            "payload": {
+                                "atbd": atbd,
+                                "filepath": pdf_key,
+                                "major": major,
+                                "minor": minor,
+                                "auth_data": auth_data,
+                            },
+                        }
+                    )
+                ).decode()
+            )
+            return JSONResponse(
+                status_code=201, content={"message": "PDF generation in progress"}
+            )
     except Exception as e:
         atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
 

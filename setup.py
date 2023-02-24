@@ -9,6 +9,7 @@ with open("README.md") as f:
 inst_reqs = [
     "boto3>=1.24",
     "botocore>=1.27.51",
+    "uvicorn[standard]==0.20.0",
     "fastapi==0.54.1",
     "gunicorn==20.0.4",
     "latex==0.7.0",
@@ -25,8 +26,9 @@ inst_reqs = [
     "pylatex==1.4.1",
     "fastapi_permissions==0.2.7",
     "mangum>=0.9.0",
-    "awslambdaric==1.2.0",
+    "awslambdaric==2.0.4",
     "pydash==5.0.1",
+    "playwright==1.30.0",
 ]
 extra_reqs = {
     "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort", "types-requests"],
@@ -43,6 +45,7 @@ extra_reqs = {
         "aws-cdk.aws_ecs>=1.136.0",
         "aws-cdk.aws_opensearchservice",
         "aws-cdk.aws_cognito>=1.136.0",
+        "aws-cdk.aws_lambda_event_sources>=1.181.1",
     ],
     "test": [
         "moto==2.0.8",

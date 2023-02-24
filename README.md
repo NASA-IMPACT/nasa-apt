@@ -135,6 +135,8 @@ pool_id=$(AWS_REGION=us-east-1 aws --endpoint-url http://localhost:4566 cognito-
 AWS_REGION=us-east-1 aws --endpoint-url http://localhost:4566 cognito-idp list-user-pool-clients --user-pool-id $pool_id  --no-sign-request --max-results 10 | jq -rc '.UserPoolClients[0] | {ClientId: .ClientId, UserPoolId: .UserPoolId}'
 ```
 
+Populate the `UserPoolId` and `ClientId` values into `ui-config.js`. Restart the `ui` service: `docker-compose restart ui`
+
 Upon spinning up, all necessary database migrations (see below) will be run, and the database will be pre-populated with a test ATBD, which has 2 versions, one with status `Published` and one with status `Draft`. The opensearch instance will not be populated with data until an ATBD gets published or the published ATBD gets its minor version bumped. 
 
 After running for the first time you can drop the `--build` flag (this flag forces the docker image to be re-built).
