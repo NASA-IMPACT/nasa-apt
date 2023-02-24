@@ -45,6 +45,7 @@ extra_reqs = {
         "aws-cdk.aws_ecs>=1.136.0",
         "aws-cdk.aws_opensearchservice",
         "aws-cdk.aws_cognito>=1.136.0",
+        "aws-cdk.aws_lambda_event_sources>=1.181.1",
     ],
     "test": [
         "moto==2.0.8",
