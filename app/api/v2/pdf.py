@@ -138,6 +138,8 @@ def get_pdf(
                 atbd=atbd, filepath=pdf_key, journal=journal
             )
         else:
+            # clean up any existing PDFs for this ATBD version
+            s3_client().delete_object(Bucket=config.S3_BUCKET, Key=pdf_key)
             # Queue the PDF generation task into SQS
             # We only use this to generate "Document" PDFs, not "Journal" PDFs for now
             auth_data = {

@@ -60,14 +60,8 @@ def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict
             context = browser.new_context(storage_state=storage_state)
             page = context.new_page()
             page.goto(atbd_link)
-
-            # hack: wait for pagedjs to finish rendering
-            # todo: fix this by adding frontend code to insert a dummy element
-            # that we can wait for
-            page.wait_for_selector(".pagedjs_page")
-            page.wait_for_selector("#content", state="hidden")
-            page.evaluate("document.querySelector('#content').remove();")
-
+            # wait for a specific marker element to be rendered before generating the PDF
+            page.wait_for_selector("#pdf-preview-ready", state="attached")
             page.pdf(path=local_path, format="A4")
             browser.close()
         logger.info(f"PDF generated at path: {local_path}")
