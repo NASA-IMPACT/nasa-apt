@@ -36,71 +36,46 @@ def notify_atbd_version_contributors(
     """
     app_users, _ = cognito.list_cognito_users()
 
-    user_notifications = []
-    curators = (
-        user for (_, user) in app_users.items() if "curator" in user.cognito_groups
-    )
+    mentioned_users = data.get("notify") or []
+    recipient_user_ids = []
+    # If users are mentioned
+    if len(mentioned_users) > 0:
+        recipient_user_ids.extend(
+            [
+                user_sub
+                for user_sub in mentioned_users
+                # Skip curators
+                if user_sub != "curators"
+            ]
+        )
 
-    # combine reviewers, authors lists into one list
-    notify = [] + atbd_version.authors
-
-    # reviewers is dict, extract and append subs of users to notify
-    for id_dict in atbd_version.reviewers[:-1]:
-
-        notify.append(id_dict["sub"])
-
-    data.update({"notify": notify})
-
-    if len(data["notify"]) > 0:
-        user_notifications = [
-            UserNotification(
-                **app_users[user_sub].dict(), notification=notification, data=data
-            )
-            for user_sub in data["notify"]
-            if user_sub != "curators"
-        ]
-
-        notify_curators = "curators" in data["notify"]
-        if notify_curators:
-            user_notifications.extend(
+        # If curator exists
+        if "curators" in mentioned_users:
+            recipient_user_ids.extend(
                 [
-                    UserNotification(
-                        **curator.dict(),
-                        notification=notification,
-                        data=data,
-                    )
-                    for curator in curators
+                    user_id
+                    for (user_id, user) in app_users.items()
+                    if "curator" in user.cognito_groups
                 ]
             )
     else:
-        user_notifications = [
+        recipient_user_ids.append(atbd_version.owner)
+        recipient_user_ids.extend(atbd_version.authors)
+        recipient_user_ids.extend(atbd_version.reviewers)
+    recipient_user_ids_set = set(recipient_user_ids)
+    del recipient_user_ids
+    # Remove current user from the list
+    if user.sub in recipient_user_ids_set:
+        recipient_user_ids_set.remove(user.sub)
+    return notify_users(
+        user_notifications=[
             UserNotification(
-                **app_users[atbd_version.owner].dict(),
+                **app_users[user_id].dict(),
                 notification=notification,
                 data=data,
             )
-        ]
-
-        user_notifications.extend(
-            [
-                UserNotification(
-                    **app_users[author].dict(), notification=notification, data=data
-                )
-                for author in atbd_version.authors
-            ]
-        )
-        user_notifications.extend(
-            [
-                UserNotification(
-                    **app_users[reviewer["sub"]].dict(),
-                    notification=notification,
-                    data=data,
-                )
-                for reviewer in atbd_version.reviewers
-            ]
-        )
-    return notify_users(
-        user_notifications=user_notifications,
+            for user_id in recipient_user_ids_set
+        ],
         atbd_title=atbd_title,
         atbd_id=atbd_id,
         atbd_version=f"v{atbd_version.major}.{atbd_version.minor}",
@@ -126,9 +101,10 @@ def notify_users(
 
         message = EMAIL_TEMPLATES[user_to_notify["notification"]]
 
-        t = Template(message["content"])
+        subject_t = Template(message["subject"])
+        body_t = Template(message["content"])
 
-        message_content = t.substitute(
+        template_kwargs = dict(
             # User performing the action:
             app_user=user.preferred_username,
             role=" ".join(user.cognito_groups),
@@ -139,12 +115,14 @@ def notify_users(
             atbd_version_link=f"{config.FRONTEND_URL}/documents/{atbd_id}/{atbd_version}",
             **user_to_notify.get("data", {}),
         )
+        subject_content = subject_t.substitute(**template_kwargs)
+        body_content = body_t.substitute(**template_kwargs)
 
         ses_client().send_email(
             Source=config.NOTIFICATIONS_FROM,
             Destination={"ToAddresses": [user_to_notify["email"]]},
             Message={
-                "Subject": {"Data": message["subject"]},
-                "Body": {"Html": {"Data": message_content}},
+                "Subject": {"Data": subject_content},
+                "Body": {"Html": {"Data": body_content}},
             },
         )
