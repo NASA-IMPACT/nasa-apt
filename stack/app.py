@@ -290,6 +290,8 @@ class nasaAPTLambdaStack(core.Stack):
             self, f"{id}-sqs-handler-lambda", **sqs_handler_lambda_props
         )
         bucket.grant_read_write(sqs_handler_lambda)
+        database.secret.grant_read(sqs_handler_lambda)
+
         # attach the task handling lambda to the queue
         sqs_event_source = lambda_event_source.SqsEventSource(sqs_queue)
         sqs_handler_lambda.add_event_source(sqs_event_source)
