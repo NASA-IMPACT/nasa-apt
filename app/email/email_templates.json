@@ -69,10 +69,10 @@
   },
   "thread_closed": {
     "subject": "Thread closed",
-    "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has closed a thread in the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>, section: $section. </p><p>Sincerely,</p><p>The APT Team</p>"
+    "content": "<p>A comment has been resolved on ATBD <a href=\"$atbd_version_link\">$atbd_title</a> in APT by $app_user ($role).</p><p>Sincerely,</p><p>The APT Team</p>"
   },
   "thread_reopened": {
     "subject": "Thread reopened",
-    "content": "<p>Hi $preferred_username,</p> <p>$app_user ($role) has reopened a thread in the following ATBD version: <a href=\"$atbd_version_link\">$atbd_title, $atbd_version</a>, section: $section. </p><p>Sincerely,</p><p>The APT Team</p>"
+    "content": "<p>A comment has been reopened on ATBD <a href=\"$atbd_version_link\">$atbd_title</a> in APT by $app_user ($role).</p><p>Sincerely,</p><p>The APT Team</p>"
   }
 }
