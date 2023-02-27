@@ -241,16 +241,29 @@ def update_thread(
     [atbd_version] = atbd.versions
     check_atbd_permissions(principals=principals, action="comment", atbd=atbd)
 
-    if atbd_version.status == "OPEN" and update_thread_input.status == "CLOSED":
-        background_tasks.add_task(
-            notify_atbd_version_contributors,
-            atbd_version=atbd_version,
-            notification="thread_closed",
-            atbd_title=atbd.title,
-            atbd_id=atbd.id,
-            user=user,
-            data={"section": thread.section},
-        )
+    if thread.status != update_thread_input.status:
+        notification_type = None
+        if update_thread_input.status == "CLOSED":
+            notification_type = "thread_closed"
+        if update_thread_input.status == "OPEN":
+            notification_type = "thread_reopened"
+        if notification_type:
+            background_tasks.add_task(
+                notify_atbd_version_contributors,
+                atbd_version=atbd_version,
+                notification=notification_type,
+                atbd_title=atbd.title,
+                atbd_id=atbd.id,
+                user=user,
+                data={
+                    "section": thread.section,
+                    "notify": [
+                        thread.created_by,
+                        # Comments authors
+                        *[comment.created_by for comment in thread.comments],
+                    ],
+                },
+            )
 
     thread = crud_threads.update(
         db=db,
