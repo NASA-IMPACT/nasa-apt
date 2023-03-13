@@ -1,5 +1,7 @@
 """PDF Endpoint."""
 import base64
+import hashlib
+import json
 import os
 import pickle
 from typing import List
@@ -62,7 +64,17 @@ def generate_pdf_key(atbd: Atbds, minor: int = None, journal: bool = False):
     if journal:
         filename = f"{filename}-journal"
 
-    filename = f"{filename}.pdf"
+    # Generate a hash of the title, version and content of the ATBD to make
+    # sure that the filename is unique for each version of the ATBD.
+    version_data = {
+        "atbd_id": atbd.id,
+        "title": atbd.title,
+        "version": version_string,
+        "document": version.document,
+    }
+    version_hash = hashlib.md5(json.dumps(version_data).encode("utf-8")).hexdigest()
+
+    filename = f"{filename}-{version_hash}.pdf"
 
     return os.path.join(str(atbd.id), "pdf", filename)
 
@@ -115,72 +127,86 @@ def get_pdf(
 
     pdf_key = generate_pdf_key(atbd, minor=minor, journal=journal)
 
-    if (minor or atbd_version.status == "Published") or retry:
-        logger.info(f"FETCHING FROM S3: {pdf_key}")
-        try:
-            client = s3_client()
-            f = client.get_object(Bucket=config.S3_BUCKET, Key=pdf_key)["Body"]
-            return StreamingResponse(
-                f.iter_chunks(),
-                media_type="application/pdf",
-                headers={
-                    "Content-Disposition": f"attachment; filename={pdf_key.split('/')[-1]}"
-                },
-            )
-        except client.exceptions.NoSuchKey:
+    logger.info(f"FETCHING FROM S3: {pdf_key}")
+    try:
+        # Check if PDF already exists in S3
+        client = s3_client()
+        f = client.get_object(Bucket=config.S3_BUCKET, Key=pdf_key)["Body"]
+        return StreamingResponse(
+            f.iter_chunks(),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={pdf_key.split('/')[-1]}"
+            },
+        )
+    except client.exceptions.NoSuchKey:
+        if retry:
+            # retry is used by the frontend to request a recently generated PDF
+            # If the PDF is not found in S3, that means the PDF generation task
+            # has not yet completed. In this case, we return a 404 response to
+            # the frontend, which will then poll the API until the PDF is found
             logger.info(f"PDF not found in S3: {pdf_key}")
             return JSONResponse(status_code=404, content={"message": "PDF not found"})
-
-    logger.info(f"GENERATING PDF: {pdf_key}")
-    try:
-        if journal:
-            local_pdf_filepath = generate_pdf(
-                atbd=atbd, filepath=pdf_key, journal=journal
-            )
         else:
-            # clean up any existing PDFs for this ATBD version
-            s3_client().delete_object(Bucket=config.S3_BUCKET, Key=pdf_key)
-            # Queue the PDF generation task into SQS
-            # We only use this to generate "Document" PDFs, not "Journal" PDFs for now
-            auth_data = {
-                "id_token": request.headers.get("authorization", "").replace(
-                    "Bearer ", ""
-                ),
-                "access_token": request.headers.get("x-access-token"),
-                "user_email": user.email,
-            }
-            task_queue = get_task_queue()
-            task_queue.send_message(
-                MessageBody=base64.b64encode(
-                    pickle.dumps(
-                        {
-                            "task_type": "make_pdf",
-                            "payload": {
-                                "atbd": atbd,
-                                "filepath": pdf_key,
-                                "major": major,
-                                "minor": minor,
-                                "auth_data": auth_data,
-                            },
-                        }
+            # Generate the PDF locally and upload it to S3
+            logger.info(f"GENERATING PDF: {pdf_key}")
+            try:
+                if journal:
+                    local_pdf_filepath = generate_pdf(
+                        atbd=atbd, filepath=pdf_key, journal=journal
                     )
-                ).decode()
-            )
-            return JSONResponse(
-                status_code=201, content={"message": "PDF generation in progress"}
-            )
-    except Exception as e:
-        atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
+                    return FileResponse(
+                        path=local_pdf_filepath, filename=pdf_key.split("/")[-1]
+                    )
 
-        return HTMLResponse(
-            content=generate_html_content_for_error(
-                error=e,
-                return_link=atbd_link,
-                atbd_id=atbd.id,
-                atbd_title=atbd.title,
-                atbd_version=f"v{atbd_version.major}.{atbd_version.minor}",
-                pdf_type="Journal" if journal else "Regular",
-            )
+                else:
+                    # clean up any existing PDFs for this ATBD version
+                    s3_client().delete_object(Bucket=config.S3_BUCKET, Key=pdf_key)
+                    # Queue the PDF generation task into SQS
+                    # We only use this to generate "Document" PDFs, not "Journal" PDFs for now
+                    auth_data = {
+                        "id_token": request.headers.get("authorization", "").replace(
+                            "Bearer ", ""
+                        ),
+                        "access_token": request.headers.get("x-access-token"),
+                        "user_email": user.email,
+                    }
+                    task_queue = get_task_queue()
+                    task_queue.send_message(
+                        MessageBody=base64.b64encode(
+                            pickle.dumps(
+                                {
+                                    "task_type": "make_pdf",
+                                    "payload": {
+                                        "atbd": atbd,
+                                        "filepath": pdf_key,
+                                        "major": major,
+                                        "minor": minor,
+                                        "auth_data": auth_data,
+                                    },
+                                }
+                            )
+                        ).decode()
+                    )
+                    return JSONResponse(
+                        status_code=201,
+                        content={"message": "PDF generation in progress"},
+                    )
+            except Exception as e:
+                atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
+
+                return HTMLResponse(
+                    content=generate_html_content_for_error(
+                        error=e,
+                        return_link=atbd_link,
+                        atbd_id=atbd.id,
+                        atbd_title=atbd.title,
+                        atbd_version=f"v{atbd_version.major}.{atbd_version.minor}",
+                        pdf_type="Journal" if journal else "Regular",
+                    )
+                )
+    except Exception:
+        logger.exception("Could not generate PDF")
+        return JSONResponse(
+            status_code=500, content={"message": "Could not generate PDF"}
         )
-
-    return FileResponse(path=local_pdf_filepath, filename=pdf_key.split("/")[-1])
