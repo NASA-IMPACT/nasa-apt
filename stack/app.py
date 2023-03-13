@@ -417,7 +417,9 @@ for key, value in {
         core.Tags.of(app).add(key, value)
 
 
-lambda_stackname = f"{config.PROJECT_NAME}-{config.STAGE}"
+lambda_stackname = (
+    f"{config.PROJECT_NAME}-{config.STAGE}-{config.CDK_STACK_VERSION_STRING}"
+)
 lambda_stackdescription = f"Deploys resources for backend APT {config.PROJECT_NAME}-{config.STAGE} to DevSeed AWS cloud account"
 nasaAPTLambdaStack(
     app,

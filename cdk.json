@@ -1,3 +1,4 @@
 {
-    "app": "python3 stack/app.py"
+    "app": "python3 stack/app.py",
+    "region": "us-west-2"
 }

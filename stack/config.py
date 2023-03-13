@@ -15,11 +15,13 @@ load_dotenv()
 PROJECT_NAME = os.environ.get("PROJECT_NAME", "nasa-apt-api")
 
 # API_VERSION_STRING must start with `/`
-API_VERSION_STRING = os.environ.get("API_VERSION_STRING", "/v2")
-
+API_VERSION_STRING = os.environ.get("API_VERSION_STRING", "v2")
 STAGE = os.environ.get("STAGE", "dev")
 OWNER = os.environ.get("OWNER", "Development Seed - Byblos")
 CLIENT = os.environ.get("CLIENT", "NASA Impact")
+CDK_STACK_VERSION_STRING = os.environ.get("CDK_STACK_VERSION_STRING", "v2")
+CDK_DEFAULT_ACCOUNT = os.environ.get("CDK_DEFAULT_ACCOUNT")
+CDK_DEFAULT_REGION = os.environ.get("CDK_DEFAULT_REGION")
 
 # Additional environement variable to set in the task/lambda
 TASK_ENV: dict = dict()

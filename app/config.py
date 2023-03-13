@@ -10,11 +10,13 @@ import boto3
 
 APT_DEBUG = os.environ.get("APT_DEBUG", "false").lower() == "true"
 
-AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+AWS_REGION = os.environ.get("AWS_REGION", "us-west-2")
 API_VERSION_STRING = os.environ.get("API_VERSION_STRING") or exit(
     "API_VERSION_STRING env var required"
 )
 PROJECT_NAME = os.environ.get("PROJECT_NAME") or exit("PROJECT_NAME env var required")
+STAGE = os.environ.get("STAGE")
+
 FRONTEND_URL = os.environ.get("APT_FRONTEND_URL") or exit(
     "APT_FRONTEND_URL env var required"
 )
