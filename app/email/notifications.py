@@ -75,6 +75,7 @@ def notify_atbd_version_contributors(
                 data=data,
             )
             for user_id in recipient_user_ids_set
+            if user_id in app_users
         ],
         atbd_title=atbd_title,
         atbd_id=atbd_id,
