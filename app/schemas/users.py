@@ -28,6 +28,9 @@ class AnonymousUser(BaseModel):
     """Obfuscated user contributing to an ATBD Version"""
 
     preferred_username: str
+    # Anonymous User Specific attributes with default values
+    is_anonymous: bool = True
+    cognito_groups: List[str] = Field(default=[], alias="cognito:groups")
 
 
 class CognitoUser(AnonymousUser):
@@ -36,6 +39,8 @@ class CognitoUser(AnonymousUser):
     sub: str
     email: str
     cognito_groups: List[str] = Field([], alias="cognito:groups")
+    is_dangling: bool = False
+    is_anonymous: bool = False
 
     @root_validator(pre=True)
     def _unpack_attributes(cls, values):

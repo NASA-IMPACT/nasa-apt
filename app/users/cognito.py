@@ -9,12 +9,13 @@ from app import config
 from app.api.utils import cognito_client
 from app.db.models import Atbds, AtbdVersions, Comments, Threads
 from app.email import notifications
+from app.logs import logger
 from app.permissions import check_permissions
 from app.schemas import users, versions
 from app.users.auth import get_user
 
 import fastapi_permissions as permissions
-from fastapi import BackgroundTasks, Depends
+from fastapi import BackgroundTasks, Depends, HTTPException
 
 
 def get_active_user_principals(user: users.User = Depends(get_user)) -> List[str]:
@@ -156,7 +157,6 @@ def update_version_contributor_info(principals: List[str], version: AtbdVersions
         raise_exception=False,
     ):
         version.owner = app_users[version.owner].dict(by_alias=True)
-
     else:
         version.owner = users.AnonymousUser(preferred_username="Owner").dict(
             by_alias=True
@@ -168,7 +168,6 @@ def update_version_contributor_info(principals: List[str], version: AtbdVersions
         acl=version_acl,
         raise_exception=False,
     ):
-
         version.authors = [
             app_users[author].dict(by_alias=True) for author in version.authors
         ]
@@ -245,8 +244,22 @@ def list_cognito_users(groups="curator,contributor"):
     # The `list_users` operation does not return the groups the user belongs
     # to, so instead we are listing the users in each group and adding
     # the group manually to returned data. It's not pretty. I know.
-    app_users = {}
 
+    class AppUsers(dict):
+        def __missing__(self, key):
+            # NOTE: This is for showing dangling users which aren't available in cognito
+            logger.warning(f"Dangling user found: sub={key}")
+            return users.CognitoUser(
+                **{
+                    "sub": key,
+                    "preferred_username": "Dangling User",
+                    "email": "dangling-user@apt.com",
+                    "cognito:groups": [],
+                    "is_dangling": True,
+                },
+            )
+
+    app_users = {}
     client = cognito_client()
     for group in groups.split(","):
 
@@ -263,7 +276,7 @@ def list_cognito_users(groups="curator,contributor"):
                 }
             )
 
-    return (app_users, str(uuid4()))
+    return (AppUsers(app_users), str(uuid4()))
 
 
 def get_cognito_user(sub: str):
@@ -303,6 +316,9 @@ def process_users_input(
         )
 
         for reviewer in version_input.reviewers:
+
+            if reviewer not in app_users:
+                continue
 
             cognito_reviewer = app_users[reviewer]
 
@@ -349,6 +365,9 @@ def process_users_input(
 
         for author in version_input.authors:
 
+            if author not in app_users:
+                continue
+
             cognito_author = app_users[author]
             check_permissions(
                 principals=get_active_user_principals(cognito_author),
@@ -375,6 +394,12 @@ def process_users_input(
             acl=atbd_version.__acl__(),
         )
 
+        if version_input.owner not in app_users:
+            raise HTTPException(
+                status_code=403,
+                detail="Assigned new owner doesn't exists in the database",
+            )
+
         cognito_owner = app_users[version_input.owner]
 
         check_permissions(
@@ -397,15 +422,16 @@ def process_users_input(
         # Set old owner as author
         version_input.authors.append(atbd_version.owner)
 
-        cognito_old_owner = app_users[atbd_version.owner]
-        user_notifications.append(
-            {
-                "email": cognito_old_owner.email,
-                "preferred_username": cognito_old_owner.preferred_username,
-                "notification": "ownership_revoked",
-                "data": {"transferred_to": cognito_owner.preferred_username},
-            }
-        )
+        if atbd_version.owner in app_users:
+            cognito_old_owner = app_users[atbd_version.owner]
+            user_notifications.append(
+                {
+                    "email": cognito_old_owner.email,
+                    "preferred_username": cognito_old_owner.preferred_username,
+                    "notification": "ownership_revoked",
+                    "data": {"transferred_to": cognito_owner.preferred_username},
+                }
+            )
 
     background_tasks.add_task(
         notifications.notify_users,
