@@ -172,7 +172,7 @@ services:
 
 # interanl ui for pdf generation
   ui:
-    image: apt-frontend
+    image: ghcr.io/nasa-impact/nasa-apt-frontend:develop
     volumes:
       - ./ui-config.js:/apt-frontend/app/assets/scripts/config/local.js
 
