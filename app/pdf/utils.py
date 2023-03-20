@@ -37,12 +37,6 @@ def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict
     # create a temp directory to store the PDF and related files
     with tempfile.TemporaryDirectory() as tmp_dir:
         local_path = pathlib.Path(tmp_dir, filepath)
-        storage_state = build_storage_state(
-            tmp_dir,
-            auth_data["user_email"],
-            auth_data["access_token"],
-            auth_data["id_token"],
-        )
         with sync_playwright() as p:
             # launch a headless browser
             browser = p.chromium.launch(
@@ -57,7 +51,16 @@ def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict
                 devtools=False,
             )
             # set up the browser context with the localStorage state
-            context = browser.new_context(storage_state=storage_state)
+            if auth_data:
+                storage_state = build_storage_state(
+                    tmp_dir,
+                    auth_data["user_email"],
+                    auth_data["access_token"],
+                    auth_data["id_token"],
+                )
+                context = browser.new_context(storage_state=storage_state)
+            else:
+                context = browser.new_context()
             page = context.new_page()
             page.goto(atbd_link)
             # wait for a specific marker element to be rendered before generating the PDF

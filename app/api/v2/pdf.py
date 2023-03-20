@@ -164,13 +164,16 @@ def get_pdf(
                     s3_client().delete_object(Bucket=config.S3_BUCKET, Key=pdf_key)
                     # Queue the PDF generation task into SQS
                     # We only use this to generate "Document" PDFs, not "Journal" PDFs for now
-                    auth_data = {
-                        "id_token": request.headers.get("authorization", "").replace(
-                            "Bearer ", ""
-                        ),
-                        "access_token": request.headers.get("x-access-token"),
-                        "user_email": user.email,
-                    }
+                    if user:
+                        auth_data = {
+                            "id_token": request.headers.get("authorization", "").replace(
+                                "Bearer ", ""
+                            ),
+                            "access_token": request.headers.get("x-access-token"),
+                            "user_email": user.email,
+                        }
+                    else:
+                        auth_data = {}
                     task_queue = get_task_queue()
                     task_queue.send_message(
                         MessageBody=base64.b64encode(
@@ -193,8 +196,8 @@ def get_pdf(
                         content={"message": "PDF generation in progress"},
                     )
             except Exception as e:
+                logger.exception("Error occurred while generating PDF")
                 atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
-
                 return HTMLResponse(
                     content=generate_html_content_for_error(
                         error=e,
