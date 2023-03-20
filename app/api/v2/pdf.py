@@ -166,9 +166,9 @@ def get_pdf(
                     # We only use this to generate "Document" PDFs, not "Journal" PDFs for now
                     if user:
                         auth_data = {
-                            "id_token": request.headers.get("authorization", "").replace(
-                                "Bearer ", ""
-                            ),
+                            "id_token": request.headers.get(
+                                "authorization", ""
+                            ).replace("Bearer ", ""),
                             "access_token": request.headers.get("x-access-token"),
                             "user_email": user.email,
                         }
