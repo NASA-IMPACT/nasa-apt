@@ -15,9 +15,9 @@ from app.logs import logger
 from app.pdf.error_handler import generate_html_content_for_error
 from app.pdf.generator import generate_pdf
 from app.permissions import filter_atbd_versions
-from app.schemas import users
+from app.schemas import users, versions
 from app.users.auth import get_user
-from app.users.cognito import get_active_user_principals
+from app.users.cognito import get_active_user_principals, update_atbd_contributor_info
 from app.utils import get_task_queue
 
 from fastapi import APIRouter, Depends, Request
@@ -66,11 +66,11 @@ def generate_pdf_key(atbd: Atbds, minor: int = None, journal: bool = False):
 
     # Generate a hash of the title, version and content of the ATBD to make
     # sure that the filename is unique for each version of the ATBD.
+    version_json = versions.FullOutput.from_orm(version).json()
     version_data = {
         "atbd_id": atbd.id,
         "title": atbd.title,
-        "version": version_string,
-        "document": version.document,
+        "version": version_json,
     }
     version_hash = hashlib.md5(json.dumps(version_data).encode("utf-8")).hexdigest()
 
@@ -117,6 +117,7 @@ def get_pdf(
     atbd = filter_atbd_versions(principals, atbd)
     if atbd is None:
         return JSONResponse(status_code=404, content={"message": "ATBD not found"})
+    atbd = update_atbd_contributor_info(principals, atbd)
 
     # Unpacking the versions list into an array of a single element
     # enforces the assumption that the ATBD will only contain a single
