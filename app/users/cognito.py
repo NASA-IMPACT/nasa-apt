@@ -252,8 +252,8 @@ def list_cognito_users(groups="curator,contributor"):
             return users.CognitoUser(
                 **{
                     "sub": key,
-                    "preferred_username": "Dangling User",
-                    "email": "dangling-user@apt.com",
+                    "preferred_username": "User Not Found",
+                    "email": "unknown-user@apt.com",
                     "cognito:groups": [],
                     "is_dangling": True,
                 },
