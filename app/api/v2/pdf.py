@@ -165,11 +165,22 @@ def get_pdf(
                     # Queue the PDF generation task into SQS
                     # We only use this to generate "Document" PDFs, not "Journal" PDFs for now
                     if user:
+                        id_token = request.headers.get("authorization", "").replace(
+                            "Bearer ", ""
+                        )
+                        access_token = request.headers.get("x-access-token", "")
+                        if not id_token or not access_token:
+                            return JSONResponse(
+                                satus_code=400,
+                                content={
+                                    "message": "Missing authorization headers. "
+                                    "Please include the 'authorization' and 'x-access-token' headers in your request."
+                                },
+                            )
+
                         auth_data = {
-                            "id_token": request.headers.get(
-                                "authorization", ""
-                            ).replace("Bearer ", ""),
-                            "access_token": request.headers.get("x-access-token"),
+                            "id_token": id_token,
+                            "access_token": access_token,
                             "user_email": user.email,
                         }
                     else:
