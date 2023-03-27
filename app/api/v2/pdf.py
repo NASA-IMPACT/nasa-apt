@@ -171,7 +171,7 @@ def get_pdf(
                         access_token = request.headers.get("x-access-token", "")
                         if not id_token or not access_token:
                             return JSONResponse(
-                                satus_code=400,
+                                status_code=400,
                                 content={
                                     "message": "Missing authorization headers. "
                                     "Please include the 'authorization' and 'x-access-token' headers in your request."
