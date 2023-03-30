@@ -3,6 +3,7 @@
 import json
 import pathlib
 import tempfile
+import time
 
 from playwright.sync_api import sync_playwright
 
@@ -33,9 +34,12 @@ def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict
 
     # ATBD PDF preview link to be used by Playwright.
     atbd_link = f"{config.PDF_PREVIEW_HOST}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}/pdf-preview"
+    logger.info(f"Atbd link: {atbd_link}")
 
     # create a temp directory to store the PDF and related files
     with tempfile.TemporaryDirectory() as tmp_dir:
+        screenshot_filepath = filepath.replace(".pdf", ".png")
+        local_screenshot_path = pathlib.Path(tmp_dir, screenshot_filepath)
         local_path = pathlib.Path(tmp_dir, filepath)
         storage_state = build_storage_state(
             tmp_dir,
@@ -60,11 +64,21 @@ def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict
             context = browser.new_context(storage_state=storage_state)
             page = context.new_page()
             page.goto(atbd_link)
+
+            # wait for the page to load before logging the HTML
+            time.sleep(5)
+            logger.info(f"Page HTML: {page.inner_html('html')}")
+            page.screenshot(path=local_screenshot_path)
+            save_pdf_to_s3(str(local_screenshot_path), screenshot_filepath)
+            logger.info(
+                f"Screenshot generated at path: {local_screenshot_path} and saved "
+                f"to S3 at path: {screenshot_filepath}"
+            )
             # wait for a specific marker element to be rendered before generating the PDF
             page.wait_for_selector("#pdf-preview-ready", state="attached")
             page.pdf(path=local_path, format="A4")
             browser.close()
-        logger.info(f"PDF generated at path: {local_path}")
+        logger.info(f"PDF generated at path: {local_path} and saved to S3 at path: {filepath}")
         save_pdf_to_s3(str(local_path), filepath)
 
 
@@ -101,6 +115,7 @@ def build_storage_state(
             }
         ]
     }
+    logger.info(f"localStorage state: {state}")
     with open(temp_file, "w") as f:
         json.dump(state, f)
     return temp_file
