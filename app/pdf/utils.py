@@ -78,7 +78,9 @@ def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict
             page.wait_for_selector("#pdf-preview-ready", state="attached")
             page.pdf(path=local_path, format="A4")
             browser.close()
-        logger.info(f"PDF generated at path: {local_path} and saved to S3 at path: {filepath}")
+        logger.info(
+            f"PDF generated at path: {local_path} and saved to S3 at path: {filepath}"
+        )
         save_pdf_to_s3(str(local_path), filepath)
 
 
