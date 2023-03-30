@@ -38,7 +38,7 @@ MEMORY: int = 1536
 
 # stack skips setting concurrency if this value is 0
 # the stack will instead use unreserved lambda concurrency
-MAX_CONCURRENT: int = 500 if STAGE == "prod" else 0
+MAX_CONCURRENT: int = 100 if STAGE == "prod" else 0
 
 # Number of times to retry a failed task
 MAX_RETRIES: int = 1

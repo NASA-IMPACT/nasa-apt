@@ -278,6 +278,7 @@ class nasaAPTLambdaStack(core.Stack):
                 cmd=["handler.tasks_handler"],
             ),
             handler=_lambda.Handler.FROM_IMAGE,
+            reserved_concurrent_executions=50,
             memory_size=memory,
             timeout=core.Duration.seconds(timeout),
             environment=lambda_env,
