@@ -200,7 +200,7 @@ CONTACT_ACLS: List[Tuple] = [
 
 COMMENT_ACLS: Dict[str, List[Dict[str, str]]] = {
     "owner": [{"action": "update"}, {"action": "delete"}],
-    "role:curator": [{"action": "update"}, {"action": "delete"}],
+    "role:curator": [{"action": "delete"}],
 }
 
 THREAD_ACLS: Dict[str, List[Dict[str, str]]] = {
