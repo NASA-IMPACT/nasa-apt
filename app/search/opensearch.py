@@ -12,12 +12,23 @@ from app.config import OPENSEARCH_PORT, OPENSEARCH_URL
 from app.db.models import Atbds, AtbdVersions
 from app.logs import logger
 from app.schemas.opensearch import OpensearchAtbd
+from app.utils import run_once
 
 from fastapi import HTTPException
 
 logger.info("OPENSEARCH_URL %s", OPENSEARCH_URL)
 
 REGION = os.getenv("AWS_REGION", "us-west-2")
+
+
+@run_once
+def create_search_indices(opensearch_client):
+    """
+    Create atbd index if it doesn't exists
+    """
+    if not opensearch_client.indices.exists("atbd"):
+        logger.info("Creating index: atbd")
+        opensearch_client.indices.create("atbd")
 
 
 def aws_auth():
@@ -43,6 +54,7 @@ def aws_auth():
         connection_class=RequestsHttpConnection,
     )
     logger.info("AWS Auth: %s", awsauth)
+    create_search_indices(opensearch_client)
     return opensearch_client
 
 
