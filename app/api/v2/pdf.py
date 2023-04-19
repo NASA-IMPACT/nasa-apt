@@ -193,11 +193,12 @@ def get_pdf(
                                 {
                                     "task_type": "make_pdf",
                                     "payload": {
-                                        "atbd": atbd,
+                                        "atbd_id": atbd.id,
                                         "filepath": pdf_key,
                                         "major": major,
                                         "minor": minor,
                                         "auth_data": auth_data,
+                                        "atbd_alias": atbd.alias,
                                     },
                                 }
                             )
