@@ -3,6 +3,7 @@
 import json
 import pathlib
 import tempfile
+import time
 
 from playwright.sync_api import sync_playwright
 
@@ -25,14 +26,21 @@ def save_pdf_to_s3(local_pdf_path: str, remote_pdf_path: str):
         logger.exception("PDF upload failed.")
 
 
-def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict):
+def make_pdf(
+    atbd_id: int,
+    major: str,
+    minor: str,
+    filepath: str,
+    auth_data: dict,
+    atbd_alias: str = None,
+):
     """
     Generates a PDF for a given ATBD using Playwright
     """
     logger.info("Generating PDF")
 
     # ATBD PDF preview link to be used by Playwright.
-    atbd_link = f"{config.PDF_PREVIEW_HOST}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}/pdf-preview"
+    atbd_link = f"{config.PDF_PREVIEW_HOST}/documents/{atbd_alias if atbd_alias else atbd_id}/v{major}.{minor}/pdf-preview"
 
     # create a temp directory to store the PDF and related files
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -64,6 +72,7 @@ def make_pdf(atbd: Atbds, major: str, minor: str, filepath: str, auth_data: dict
             page = context.new_page()
             page.goto(atbd_link)
             # wait for a specific marker element to be rendered before generating the PDF
+            time.sleep(5)
             page.wait_for_selector("#pdf-preview-ready", state="attached")
             page.pdf(path=local_path, format="A4")
             browser.close()
