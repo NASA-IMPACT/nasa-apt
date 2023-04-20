@@ -91,6 +91,19 @@ class nasaAPTLambdaStack(core.Stack):
             description=f"Security group for {id}-lambda",
         )
 
+        os_vpc_security_group = ec2.SecurityGroup(
+            self,
+            id=f"{id}-opensearch-security-group",
+            vpc=vpc,
+            description=f"Security group for {id}-opensearch in a VPC",
+        )
+
+        os_vpc_security_group.add_ingress_rule(
+            peer=lambda_security_group,
+            connection=ec2.Port.tcp(9200),
+            description='Allow traffic from the Lambda Security Group on port 9200'
+        )
+
         rds_security_group.add_ingress_rule(
             peer=lambda_security_group,
             connection=ec2.Port.tcp(5432),
@@ -191,11 +204,32 @@ class nasaAPTLambdaStack(core.Stack):
             removal_policy=core.RemovalPolicy.RETAIN
             if config.STAGE.lower() == "prod"
             else core.RemovalPolicy.DESTROY,
-            # logging
-            # logging=opensearch.LoggingOptions(
-            #     app_log_enabled=True,
-            #     # audit_log_enabled=True
-            # )
+        )
+    
+        # This domain is launched within a VPC
+        private_os_domain = opensearch.Domain(
+            self,
+            f"{id}-opensearch-domain",
+            version=opensearch.EngineVersion.OPENSEARCH_1_0,
+            capacity=opensearch.CapacityConfig(
+                data_node_instance_type="t2.small.search",
+                data_nodes=1,
+            ),
+            # slice last 28 chars since OPEN Domains can't have a name longer than 28 chars in
+            # AWS (and can't start with a `-` character)
+            domain_name=f"{id}-opensearch"[-28:].strip("-"),
+            ebs=opensearch.EbsOptions(
+                enabled=True,
+                iops=0,
+                volume_size=10,
+                volume_type=ec2.EbsDeviceVolumeType.GP2,
+            ),
+            automated_snapshot_start_hour=0,
+            removal_policy=core.RemovalPolicy.RETAIN
+            if config.STAGE.lower() == "prod"
+            else core.RemovalPolicy.DESTROY,
+            vpc=config.VPC_ID,
+            security_groups=[os_vpc_security_group]
         )
 
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
