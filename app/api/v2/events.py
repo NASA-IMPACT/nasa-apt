@@ -145,6 +145,12 @@ def accept_closed_review_request_handler(
 
     background_tasks.add_task(
         notify_atbd_version_contributors,
+        data=dict(
+            notify=[
+                version.owner,
+                *version.authors,
+            ],
+        ),
         atbd_version=deepcopy(version),
         notification="accept_closed_review_request",
         atbd_title=atbd.title,
@@ -222,6 +228,13 @@ def bump_minor_version_handler(
 
     background_tasks.add_task(
         notify_atbd_version_contributors,
+        data=dict(
+            notify=[
+                version.owner,
+                *version.authors,
+                "curators",
+            ],
+        ),
         atbd_version=deepcopy(version),
         notification="bump_minor_version",
         atbd_title=atbd.title,
@@ -285,7 +298,8 @@ def update_review_status_handler(
         users_to_notify, _ = list_cognito_users(groups="curator")
         user_notifications = [
             UserNotification(
-                **user.dict(by_alias=True), notification="all_reviews_done"
+                **user.dict(by_alias=True),
+                notification="all_reviews_done",
             )
             for user in users_to_notify.values()
         ]
@@ -327,6 +341,14 @@ ACTIONS: Dict[str, Dict[str, Any]] = {
     "cancel_publication_request": {
         "next_status": "OPEN_REVIEW",
         "notify": ["curators"],
+    },
+    "deny_publication_request": {  # TODO: Add this event in the frontend as well
+        "next_status": "OPEN_REVIEW",
+        "notify": ["owner", "authors"],
+    },
+    "accept_publication_request": {  # TODO: Add this event in the frontend as well
+        "next_status": "PUBLISHED",
+        "notify": ["owner", "authors"],
     },
     "publish": {"custom_handler": publish_handler},
     "bump_minor_version": {"custom_handler": bump_minor_version_handler},

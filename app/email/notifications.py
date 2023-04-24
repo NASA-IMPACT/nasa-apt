@@ -106,6 +106,8 @@ def notify_users(
         body_t = Template(message["content"])
 
         template_kwargs = dict(
+            # System configs
+            frontend_url=config.FRONTEND_URL,
             # User performing the action:
             app_user=user.preferred_username,
             role=" ".join(user.cognito_groups),

@@ -258,6 +258,7 @@ def update_thread(
                 data={
                     "section": thread.section,
                     "notify": [
+                        atbd_version.owner,
                         thread.created_by,
                         # Comments authors
                         *[comment.created_by for comment in thread.comments],
