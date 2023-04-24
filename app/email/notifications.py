@@ -61,7 +61,7 @@ def notify_atbd_version_contributors(
     else:
         recipient_user_ids.append(atbd_version.owner)
         recipient_user_ids.extend(atbd_version.authors)
-        recipient_user_ids.extend(atbd_version.reviewers)
+        recipient_user_ids.extend([r["sub"] for r in atbd_version.reviewers])
     recipient_user_ids_set = set(recipient_user_ids)
     del recipient_user_ids
     # Remove current user from the list
