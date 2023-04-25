@@ -21,12 +21,7 @@ from app.users.cognito import get_active_user_principals, update_atbd_contributo
 from app.utils import get_task_queue
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import (
-    FileResponse,
-    HTMLResponse,
-    JSONResponse,
-    RedirectResponse,
-)
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 
 router = APIRouter()
 
@@ -84,13 +79,13 @@ def generate_presigned_url(key: str, file_name: str, content_type: str):
     Generates a presigned URL for the PDF in S3
     """
     logger.debug(f"Generating presigned URL for key: {key}, filename: {file_name}")
-    url =  s3_client().generate_presigned_url(
+    url = s3_client().generate_presigned_url(
         ClientMethod="get_object",
         Params={
             "Bucket": config.S3_BUCKET,
             "Key": key,
             "ResponseContentDisposition": f"attachment; filename={file_name}",
-            "ResponseContentType": content_type
+            "ResponseContentType": content_type,
         },
         ExpiresIn=3600,
     )
