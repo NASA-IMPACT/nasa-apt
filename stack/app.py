@@ -101,7 +101,7 @@ class nasaAPTLambdaStack(core.Stack):
         os_vpc_security_group.add_ingress_rule(
             peer=lambda_security_group,
             connection=ec2.Port.tcp(9200),
-            description='Allow traffic from the Lambda Security Group on port 9200'
+            description="Allow traffic from the Lambda Security Group on port 9200",
         )
 
         rds_security_group.add_ingress_rule(
@@ -205,7 +205,7 @@ class nasaAPTLambdaStack(core.Stack):
             if config.STAGE.lower() == "prod"
             else core.RemovalPolicy.DESTROY,
         )
-    
+
         # This domain is launched within a VPC
         private_os_domain = opensearch.Domain(
             self,
@@ -229,7 +229,7 @@ class nasaAPTLambdaStack(core.Stack):
             if config.STAGE.lower() == "prod"
             else core.RemovalPolicy.DESTROY,
             vpc=config.VPC_ID,
-            security_groups=[os_vpc_security_group]
+            security_groups=[os_vpc_security_group],
         )
 
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
