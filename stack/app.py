@@ -310,14 +310,28 @@ class nasaAPTLambdaStack(core.Stack):
             user_pool_name=f"{id}-users",
             user_verification=cognito.UserVerificationConfig(
                 # TODO: this email body can contain HTML tags for a better user experience
+                email_subject="Your Algorithm Publication Tool (APT) account",
                 email_body=(
-                    "Thank you for signing up to the Algorithm Publication Tool.<br>"
+                    "Your Algorithm Publication Tool (APT) account has been created. "
                     "Please verify you account by clicking on {##Verify Email##}.<br><br>"
-                    "Your account only needs to be verified once. If your account "
-                    "is already verified, you can return to the "
-                    f"<a href='{frontend_url.strip('/')}/signin'>Algorithm Publication Tool</a> to sign in."
-                    "<br><br>"
-                    "Sincerely,<br>The NASA APT team"
+                    "Your account only needs to be verified once.<br>"
+                    f"Please review the user agreement statement below, then access your APT account by clicking <a href='{frontend_url.strip('/')}/signin'>here</a>.<br>"
+                    "NASA ALGORITHM PUBLICATION TOOL (APT) POLICY / USER AGREEMENT STATEMENT  NASA IT Consent Banner | NASA-SPEC-2669 Version 1.0<br>"
+                    "By accessing and using this information system, you acknowledge and consent to the following: You are accessing a U.S. Government information system, which includes:<br>"
+                    '(1) this computer";"<br>'
+                    '(2) this computer network";"<br>'
+                    '(3) all computers connected to this network including end user systems";"<br>'
+                    '(4) all devices and storage media attached to this network or to any computer on this network";" and<br>'
+                    "(5) cloud and remote information services.<br>"
+                    "This information system is provided for U.S. Government-authorized use only.<br>"
+                    "You have no reasonable expectation of privacy regarding any communication transmitted through or data stored on this information system.<br>"
+                    "At any time, and for any lawful purpose, the U.S. Government may monitor, intercept, search, and seize any communication or data transiting, stored on, or traveling to or from this information system.<br>"
+                    "You are NOT authorized to process classified information on this information system.<br>"
+                    "Unauthorized or improper use of this system may result in suspension or loss of access privileges, disciplinary action, and civil and/or criminal penalties.<br>"
+                    "By accepting APT account access, you acknowledge that you have read, understand, and agree to abide by the NASA APT POLICY / USER AGREEMENT STATEMENT as written above.<br>"
+                    "By accepting APT account access, you acknowledge that you have read, understand, and agree to abide by the APT Access Control Policy Statement as written in this document: <a href='https://docs.google.com/document/d/1zSNTAmC1LIFZh__Y5vIgP6VaxnZ4r9OO-jWBt0Lv08I/edit?usp=sharing'>https://docs.google.com/document/d/1zSNTAmC1LIFZh__Y5vIgP6VaxnZ4r9OO-jWBt0Lv08I/edit?usp=sharing</a><br>"
+                    "<br>"
+                    "Sincerely, <br>The NASA APT Team"
                 ),
                 email_style=cognito.VerificationEmailStyle.LINK,
             ),
