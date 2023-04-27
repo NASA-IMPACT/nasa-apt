@@ -21,7 +21,7 @@ from app.users.cognito import get_active_user_principals, update_atbd_contributo
 from app.utils import get_task_queue
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 
 router = APIRouter()
 
@@ -156,13 +156,12 @@ def get_pdf(
         # Check if PDF already exists in S3
         client = s3_client()
         client.get_object(Bucket=config.S3_BUCKET, Key=pdf_key)
-        return RedirectResponse(
-            generate_presigned_url(
-                key=pdf_key,
-                file_name=pdf_key.split("/")[-1],
-                content_type="application/pdf",
-            )
+        pdf_url = generate_presigned_url(
+            key=pdf_key,
+            file_name=pdf_key.split("/")[-1],
+            content_type="application/pdf",
         )
+        return JSONResponse(status_code=200, content={"pdf_url": pdf_url})
     except client.exceptions.NoSuchKey:
         if retry:
             # retry is used by the frontend to request a recently generated PDF
