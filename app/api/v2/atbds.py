@@ -1,16 +1,26 @@
 """ATBDs endpoint."""
 import datetime
+from copy import deepcopy
 from typing import List
 
 from sqlalchemy import exc
 
 from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
+from app.email.notifications import (
+    UserNotification,
+    notify_atbd_version_contributors,
+    notify_users,
+)
 from app.permissions import check_atbd_permissions, filter_atbd_versions
 from app.schemas import atbds, users
 from app.search.opensearch import remove_atbd_from_index
 from app.users.auth import get_user, require_user
-from app.users.cognito import get_active_user_principals, update_atbd_contributor_info
+from app.users.cognito import (
+    get_active_user_principals,
+    list_cognito_users,
+    update_atbd_contributor_info,
+)
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
@@ -101,6 +111,7 @@ def get_atbd(
 )
 def create_atbd(
     atbd_input: atbds.Create,
+    background_tasks: BackgroundTasks,
     db: DbSession = Depends(get_db_session),
     user: users.CognitoUser = Depends(require_user),
     principals: List[str] = Depends(get_active_user_principals),
@@ -111,6 +122,32 @@ def create_atbd(
     check_atbd_permissions(principals=principals, action="create_atbd", atbd=None)
     atbd = crud_atbds.create(db, atbd_input, user.sub)
     atbd = update_atbd_contributor_info(principals, atbd)
+    [version] = atbd.versions
+    app_users, _ = list_cognito_users()
+    user_notifications = [
+        # For the owner
+        UserNotification(
+            **app_users[atbd.created_by].dict(),
+            notification="new_atbd",
+        ),
+        # For all the curators
+        *[
+            UserNotification(
+                **user.dict(),
+                notification="new_atbd_for_curators",
+            )
+            for user in app_users.values()
+            if "curator" in user.cognito_groups
+        ],
+    ]
+    background_tasks.add_task(
+        notify_users,
+        user_notifications=user_notifications,
+        atbd_version=f"v{version.major}.{version.minor}",
+        atbd_title=atbd.title,
+        atbd_id=atbd.id,
+        user=user,
+    )
     return atbd
 
 
@@ -176,6 +213,22 @@ def delete_atbd(
     check_atbd_permissions(principals=principals, action="delete", atbd=atbd)
 
     atbd = crud_atbds.remove(db=db, atbd_id=atbd_id)
+
+    [version] = atbd.versions
+    background_tasks.add_task(
+        notify_atbd_version_contributors,
+        notification="delete_atbd",
+        data=dict(
+            notify=[
+                version.owner,
+                "curators",
+            ],
+        ),
+        atbd_version=deepcopy(version),
+        atbd_title=atbd.title,
+        atbd_id=atbd.id,
+        user=user,
+    )
 
     background_tasks.add_task(remove_atbd_from_index, atbd=atbd)
     # TODO: this should also remove all associated PDFs in S3.

@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 
 import boto3
 from opensearchpy import OpenSearch, RequestsHttpConnection
+from opensearchpy.exceptions import NotFoundError
 from requests_aws4auth import AWS4Auth
 
 from app.config import OPENSEARCH_PORT, OPENSEARCH_URL
@@ -94,19 +95,15 @@ def remove_atbd_from_index(atbd: Atbds = None, version: AtbdVersions = None):
     opensearch_client = aws_auth()
 
     if version:
-
         try:
             # directly delete the document
             # TODO Verify how to get correct atbd id
             response = opensearch_client.delete(
                 index="atbd", id=f"{version.atbd_id}_v{version.major}"
             )
-
-        except Exception as e:
-            raise e
-
-        else:
             return dict(response)
+        except NotFoundError:
+            return dict()
 
     if not atbd:
         raise HTTPException(
@@ -121,12 +118,9 @@ def remove_atbd_from_index(atbd: Atbds = None, version: AtbdVersions = None):
             response = opensearch_client.delete(
                 index="atbd", id=f"{atbd.id}_v{version.major}"
             )
-    except Exception as e:
-        raise e
-
-    else:
-        # return value of 'object' is expected
-        return dict(response)
+    except NotFoundError:
+        pass
+    return dict()
 
 
 def add_atbd_to_index(atbd: Atbds):

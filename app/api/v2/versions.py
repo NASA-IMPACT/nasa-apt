@@ -1,5 +1,6 @@
 """ATBD Versions endpoint."""
 import datetime
+from copy import deepcopy
 from typing import List
 
 from app.api.utils import get_major_from_version_string
@@ -8,6 +9,7 @@ from app.crud.contacts import crud_contacts_associations
 from app.crud.versions import crud_versions
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import AtbdVersions
+from app.email.notifications import notify_atbd_version_contributors
 from app.permissions import check_permissions
 from app.schemas import atbds, versions, versions_contacts
 from app.schemas.users import CognitoUser
@@ -380,6 +382,19 @@ def delete_atbd_version(
     crud_versions.delete(db=db, atbd=atbd, version=atbd_version)
 
     background_tasks.add_task(remove_atbd_from_index, version=atbd_version)
-
     # TODO: this should also remove the associated PDFs in S3
+
+    # Send email to users
+    background_tasks.add_task(
+        notify_atbd_version_contributors,
+        data=dict(
+            notify=[atbd_version.owner, "curators"],
+        ),
+        notification="delete_atbd",
+        atbd_version=deepcopy(atbd_version),
+        atbd_title=atbd.title,
+        atbd_id=atbd.id,
+        user=user,
+    )
+
     return {}

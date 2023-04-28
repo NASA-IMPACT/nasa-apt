@@ -411,7 +411,7 @@ def process_users_input(
             {
                 "email": cognito_owner.email,
                 "preferred_username": cognito_owner.preferred_username,
-                "notification": "added_as_owner",
+                "notification": "added_as_lead_author",
             }
         )
 
