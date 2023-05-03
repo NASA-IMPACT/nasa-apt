@@ -1,5 +1,7 @@
 """ATBDs endpoint."""
+import base64
 import datetime
+import pickle
 from copy import deepcopy
 from typing import List
 
@@ -21,6 +23,7 @@ from app.users.cognito import (
     list_cognito_users,
     update_atbd_contributor_info,
 )
+from app.utils import get_task_queue
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
@@ -149,6 +152,28 @@ def create_atbd(
         user=user,
     )
     return atbd
+
+
+@router.post("/atbds/rebuild-index")
+def rebuild_atbd_index(
+    principals: List[str] = Depends(get_active_user_principals),
+):
+    """Rebuild ATBD index from scratch"""
+    check_atbd_permissions(
+        principals=principals, action="rebuild_atbd_index", atbd=None
+    )
+    task_queue = get_task_queue()
+    task_queue.send_message(
+        MessageBody=base64.b64encode(
+            pickle.dumps(
+                {
+                    "task_type": "rebuild_atbd_index",
+                    "payload": {},
+                }
+            )
+        ).decode()
+    )
+    return dict()
 
 
 @router.post(

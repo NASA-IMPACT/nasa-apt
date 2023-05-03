@@ -9,7 +9,7 @@ from requests_aws4auth import AWS4Auth
 from app.config import OPENSEARCH_PORT, OPENSEARCH_URL
 from app.logs import logger
 from app.schemas.users import User
-from app.search.opensearch import aws_auth
+from app.search.opensearch import get_opensearch_client
 from app.users.auth import get_user
 
 from fastapi import APIRouter, Depends
@@ -28,7 +28,7 @@ def search_opensearch(query: dict, user: User = Depends(get_user)):
 
     document = query
 
-    opensearch_client = aws_auth()
+    opensearch_client = get_opensearch_client()
     try:
         response = opensearch_client.search(body=document, index="atbd")
         # logger.info("status:%s opensearch_client:%s", opensearch_client.status_code, opensearch_client.text)

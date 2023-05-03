@@ -13,6 +13,7 @@ import pickle
 from app import config
 from app.logs import logger
 from app.pdf.utils import make_pdf
+from app.search.opensearch import rebuild_atbd_index
 from app.utils import get_task_queue
 
 
@@ -20,6 +21,7 @@ def get_task_handlers():
     """Returns a dictionary of task handlers"""
     return {
         "make_pdf": make_pdf,
+        "rebuild_atbd_index": rebuild_atbd_index,
     }
 
 

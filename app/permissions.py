@@ -63,6 +63,19 @@ def check_atbd_permissions(
             )
         return True
 
+    if action == "rebuild_atbd_index":
+        if not check_permissions(
+            principals=principals,
+            action=action,
+            acl=[(fastapi_permissions.Allow, "role:curator", "rebuild_atbd_index")],
+            raise_exception=False,
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail="User is not allowed to trigger ATBDs re-index sync",
+            )
+        return True
+
     permissions = [
         check_permissions(
             principals=principals,
@@ -85,7 +98,10 @@ def check_atbd_permissions(
 
 
 def check_permissions(
-    principals: List[str], action: str, acl: List[Tuple], raise_exception=True
+    principals: List[str],
+    action: str,
+    acl: List[Tuple],
+    raise_exception=True,
 ) -> bool:
     """Applies permission check for the requested action. Can be configured to either
     raise an exception or return a boolean"""
