@@ -12,6 +12,7 @@ from app.email.notifications import (
     notify_atbd_version_contributors,
     notify_users,
 )
+from app.logs import logger
 from app.permissions import check_atbd_permissions, filter_atbd_versions
 from app.schemas import atbds, users
 from app.search.opensearch import remove_atbd_from_index
@@ -127,19 +128,33 @@ def create_atbd(
     user_notifications = [
         # For the owner
         UserNotification(
-            **app_users[atbd.created_by].dict(),
+            **app_users[atbd.created_by].dict(by_alias=True),
             notification="new_atbd",
         ),
         # For all the curators
         *[
             UserNotification(
-                **user.dict(),
+                **user.dict(by_alias=True),
                 notification="new_atbd_for_curators",
             )
             for user in app_users.values()
             if "curator" in user.cognito_groups
         ],
     ]
+    # For Debuging in the staging server. TODO: Remove later
+    logger.info(["Notifications to send:", user_notifications])
+    logger.info(
+        [
+            "Notifications list_cognito_users preferred_username and groups:",
+            [
+                {
+                    "preferred_username": user.preferred_username,
+                    "groups": user.cognito_groups,
+                }
+                for user in app_users.values()
+            ],
+        ]
+    )
     background_tasks.add_task(
         notify_users,
         user_notifications=user_notifications,
