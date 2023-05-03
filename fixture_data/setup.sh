@@ -1,3 +1,8 @@
+#!/bin/bash
+
+# To make sure bootstrap setup is run once
+set -e
+
 wait_for_service() {
   echo "Waiting for $1 at address http://localstack:4566/health, attempting every 2s"
   until $(curl --silent --fail http://localstack:4566/health | grep "\"$1\": \"running\"" > /dev/null); do
@@ -25,7 +30,6 @@ aws --endpoint-url http://localstack:4566 sqs create-queue --queue-name ${TASK_Q
 
 wait_for_service "cognito-idp"
 wait_for_service "cognito-identity"
-
 
 # Cognito setup
 pool_id=$(aws --endpoint-url http://localstack:4566 cognito-idp create-user-pool --pool-name ${USER_POOL_NAME} --username-attributes "email" --policies '{

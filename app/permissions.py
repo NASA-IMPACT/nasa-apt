@@ -72,7 +72,7 @@ def check_atbd_permissions(
         ):
             raise HTTPException(
                 status_code=403,
-                detail="User is not allowed to trigger ATBDs re-index sync",
+                detail="User is not allowed to trigger ATBDs re-build search index",
             )
         return True
 
