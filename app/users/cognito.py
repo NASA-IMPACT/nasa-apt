@@ -267,14 +267,14 @@ def list_cognito_users(groups="curator,contributor"):
         response = paginator.paginate(UserPoolId=config.USER_POOL_ID, GroupName=group)
 
         for page in response:
-            app_users.update(
-                {
-                    user["Username"]: users.CognitoUser(
+            for user in page.get("Users", []):
+                if user["Username"] in app_users:
+                    # Only update group info
+                    app_users[user["Username"]].cognito_groups.append(group)
+                else:
+                    app_users[user["Username"]] = users.CognitoUser(
                         **{**user, "cognito:groups": [group]}
                     )
-                    for user in page.get("Users", [])
-                }
-            )
 
     return (AppUsers(app_users), str(uuid4()))
 

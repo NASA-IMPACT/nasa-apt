@@ -137,24 +137,10 @@ def create_atbd(
                 **user.dict(by_alias=True),
                 notification="new_atbd_for_curators",
             )
-            for user in app_users.values()
-            if "curator" in user.cognito_groups
+            for (user_sub, user) in app_users.items()
+            if user_sub != atbd.created_by and "curator" in user.cognito_groups
         ],
     ]
-    # For Debuging in the staging server. TODO: Remove later
-    logger.info(["Notifications to send:", user_notifications])
-    logger.info(
-        [
-            "Notifications list_cognito_users preferred_username and groups:",
-            [
-                {
-                    "preferred_username": user.preferred_username,
-                    "groups": user.cognito_groups,
-                }
-                for user in app_users.values()
-            ],
-        ]
-    )
     background_tasks.add_task(
         notify_users,
         user_notifications=user_notifications,
