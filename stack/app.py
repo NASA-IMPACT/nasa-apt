@@ -243,6 +243,7 @@ class nasaAPTLambdaStack(core.Stack):
             BACKEND_CORS_ORIGINS=config.BACKEND_CORS_ORIGINS,
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
             OPENSEARCH_URL=osdomain.domain_endpoint,
+            PRIVATE_OPENSEARCH_URL=private_os_domain.domain_endpoint,
             TASK_QUEUE_URL=sqs_queue.queue_url,
             S3_BUCKET=bucket.bucket_name,
             NOTIFICATIONS_FROM=config.NOTIFICATIONS_FROM,
@@ -281,8 +282,12 @@ class nasaAPTLambdaStack(core.Stack):
         os_access_policy.add_arn_principal(f"{api_handler_lambda.function_arn}")
         os_access_policy.add_actions("es:ESHttp*")
         os_access_policy.add_resources(f"{osdomain.domain_arn}/*")
-        # # add policy to domain
-        # osdomain.add_access_policies(os_access_policy)
+
+        # assign opensearch access policy to the private open search domain
+        os_access_policy.add_resources(f"{private_os_domain.domain_arn}/*")
+
+        # grant lambda read/write for private opensearch domain
+        private_os_domain.grant_read_write(api_handler_lambda)
 
         # grant lambda read/write
         osdomain.grant_read_write(api_handler_lambda)
