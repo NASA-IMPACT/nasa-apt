@@ -8,8 +8,10 @@ import boto3
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from opensearchpy.exceptions import NotFoundError
 from requests_aws4auth import AWS4Auth
+from sqlalchemy import orm
 
 from app.config import OPENSEARCH_PORT, OPENSEARCH_URL
+from app.db.db_session import DbSession
 from app.db.models import Atbds, AtbdVersions
 from app.logs import logger
 from app.schemas.opensearch import OpensearchAtbd
@@ -32,7 +34,7 @@ def create_search_indices(opensearch_client):
         opensearch_client.indices.create("atbd")
 
 
-def aws_auth():
+def get_opensearch_client():
     """
     Outputs an Opensearch service client. Low level client authorizes against the boto3 session and associated AWS credentials
     host is hardcoded as to reference the container within the same network
@@ -75,7 +77,7 @@ def send_to_opensearch(data: List[Dict]):
 
     try:
         # init client
-        opensearch_client = aws_auth()
+        opensearch_client = get_opensearch_client()
         # bulk index
         response = opensearch_client.bulk(body=data_string, index="atbd")
 
@@ -92,7 +94,7 @@ def remove_atbd_from_index(atbd: Atbds = None, version: AtbdVersions = None):
     either a single version or all versions belonging to an ATBD"""
 
     # init client
-    opensearch_client = aws_auth()
+    opensearch_client = get_opensearch_client()
 
     if version:
         try:
@@ -123,10 +125,10 @@ def remove_atbd_from_index(atbd: Atbds = None, version: AtbdVersions = None):
     return dict()
 
 
-def add_atbd_to_index(atbd: Atbds):
-    """Indexes an ATBD in opensearch. If the ATBD metadata (title, alias) is
+def generate_add_atbd_to_index_es_commands(atbd: Atbds):
+    """Generate Indexes command for an ATBD in opensearch. If the ATBD metadata (title, alias) is
     to be updated, then the `atbd` input param will contain all associated versions,
-    wich will all be updated in the opensearch. If the ATBD version data (document,
+    which will all be updated in the opensearch. If the ATBD version data (document,
     citation, etc) has been updated, then the `atbd` input param
     will only contain a single version, and only that version will be updated."""
     es_commands = []
@@ -147,4 +149,44 @@ def add_atbd_to_index(atbd: Atbds):
             OpensearchAtbd.from_orm(atbd).dict(by_alias=True, exclude_none=True)
         )
 
-    return send_to_opensearch(es_commands)
+    return es_commands
+
+
+def add_atbd_to_index(atbd: Atbds):
+    """Indexes single ATBD to opensearch."""
+    return send_to_opensearch(generate_add_atbd_to_index_es_commands(atbd))
+
+
+def add_atbds_to_index(atbds: List[Atbds]):
+    """Indexes multiple ATBDs to opensearch."""
+    es_commands = []
+    for atbd in atbds:
+        es_commands.extend(generate_add_atbd_to_index_es_commands(atbd))
+    if es_commands:
+        return send_to_opensearch(es_commands)
+
+
+def rebuild_atbd_index():
+    """Rebuild atbd index from scratch using published ATBDs"""
+    db = DbSession()
+    # Clean up everything
+    opensearch_client = get_opensearch_client()
+    opensearch_client.indices.delete("atbd")
+    opensearch_client.indices.create("atbd")
+    del opensearch_client
+    # Index all published atbds in chunks
+    limit = 100
+    atbds_query = (
+        db.query(Atbds)
+        .filter(Atbds.versions.any(AtbdVersions.published_at != None))  # noqa:E711
+        .join(AtbdVersions, Atbds.id == AtbdVersions.atbd_id)
+        .options(orm.contains_eager(Atbds.versions))
+        .limit(limit)
+    )
+    offset = 0
+    while True:
+        atbds = atbds_query.offset(offset).all()
+        if not atbds:
+            break
+        add_atbds_to_index(atbds)
+        offset += limit
