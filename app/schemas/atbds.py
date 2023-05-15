@@ -89,3 +89,10 @@ class Lookup(BaseModel):
 
     id: Optional[int]
     alias: Optional[str]
+
+
+class PDFUpload(BaseModel):
+    """Model for ATBD PDF Upload"""
+
+    upload_url: str
+    upload_id: int
