@@ -11,8 +11,10 @@ from sqlalchemy import (
     Integer,
     String,
     types,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
 
@@ -375,3 +377,34 @@ class Comments(Base):
             )
 
         return acl
+
+
+class Upload(Base):
+    """Upload model"""
+
+    __abstract__ = True
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    file_path = Column(String(), nullable=False)
+    storage = Column(String(), default="s3")
+    created_by = Column(String(), nullable=False)
+    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+
+    @declared_attr
+    def atbd_id(cls):
+        return Column(Integer(), ForeignKey("atbds.id"), nullable=False)
+    
+
+class PDFUpload(Upload):
+    """Model to represent an uploaded PDF"""
+
+    __tablename__ = "pdf_uploads"
+
+
+    def __repr__(self):
+        """String representation"""
+        return (
+            f"<PDFUpload(id={self.id}, atbd_id={self.atbd_id}, file_path={self.file_path},"
+            f" storage={self.storage}, created_by={self.created_by},"
+            f" created_at={self.created_at},"
+        )
+
