@@ -10,8 +10,8 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     Integer,
     String,
-    types,
     UniqueConstraint,
+    types,
 )
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declared_attr
@@ -98,6 +98,12 @@ class AtbdVersions(Base):
     journal_status = Column(String())
     keywords = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
     locked_by = Column(String(), nullable=True)
+
+    pdf = relationship(
+        "PDFUpload",
+        backref=backref("atbd_version", cascade="all, delete-orphan"),
+        lazy="select",
+    )
 
     def __repr__(self):
         """String representation"""
@@ -397,14 +403,28 @@ class Upload(Base):
 
     @declared_attr
     def atbd_id(cls):
+        """ATBD relation"""
         return Column(Integer(), ForeignKey("atbds.id"), nullable=False)
-    
+
+    def __acl__(self):
+        """Access Control List for Uploads"""
+        acl = []
+        for grantee, actions in acls.UPLOADED_PDF_ACLS.items():
+
+            if grantee == "owner":
+                grantee = f"user:{self.created_by}"
+
+            acl.extend(
+                [(fastapi_permissions.Allow, grantee, a["action"]) for a in actions]
+            )
+
+        return acl
+
 
 class PDFUpload(Upload):
     """Model to represent an uploaded PDF"""
 
     __tablename__ = "pdf_uploads"
-
 
     def __repr__(self):
         """String representation"""
@@ -413,4 +433,3 @@ class PDFUpload(Upload):
             f" storage={self.storage}, created_by={self.created_by},"
             f" created_at={self.created_at},"
         )
-

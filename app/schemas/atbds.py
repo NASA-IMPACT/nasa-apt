@@ -11,6 +11,8 @@ from fastapi import HTTPException
 
 
 class AtbdDocumentTypeEnum(str, enum.Enum):
+    """ATBD Document Type supported"""
+
     HTML = "HTML"
     PDF = "PDF"
 
@@ -35,7 +37,7 @@ class Create(BaseModel):
 
     title: str
     alias: Optional[str]
-    document_type: AtbdDocumentTypeEnum
+    document_type: AtbdDocumentTypeEnum = AtbdDocumentTypeEnum.HTML
 
     @validator("alias")
     def _restrict_to_32_chars(cls, v):
@@ -97,10 +99,3 @@ class Lookup(BaseModel):
 
     id: Optional[int]
     alias: Optional[str]
-
-
-class PDFUpload(BaseModel):
-    """Model for ATBD PDF Upload"""
-
-    upload_url: str
-    upload_id: int

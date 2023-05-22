@@ -3,8 +3,8 @@ import base64
 import datetime
 import pickle
 from copy import deepcopy
-from typing import List
 from pathlib import Path
+from typing import List
 
 from sqlalchemy import exc
 
@@ -20,7 +20,7 @@ from app.email.notifications import (
 )
 from app.logs import logger  # noqa
 from app.permissions import check_atbd_permissions, filter_atbd_versions
-from app.schemas import atbds, users
+from app.schemas import atbds, uploads, users
 from app.search.opensearch import remove_atbd_from_index
 from app.users.auth import get_user, require_user
 from app.users.cognito import (
@@ -266,7 +266,7 @@ def delete_atbd(
     return {}
 
 
-@router.post("/atbds/{atbd_id}/upload", response_model=atbds.PDFUpload)
+@router.post("/atbds/{atbd_id}/upload", response_model=uploads.Create)
 def get_upload_url(
     atbd_id: str,
     db: DbSession = Depends(get_db_session),
@@ -282,7 +282,9 @@ def get_upload_url(
     upload_path = Path(atbd_id) / "uploads"
     file_name = f"atbd_{atbd_id}_{int(datetime.datetime.now().timestamp())}.pdf"
     file_path = upload_path / file_name
-    pdf_upload = PDFUpload(atbd_id=atbd_id, file_path=str(file_path), created_by=user.sub)
+    pdf_upload = PDFUpload(
+        atbd_id=atbd_id, file_path=str(file_path), created_by=user.sub
+    )
     db.add(pdf_upload)
     db.commit()
     db.refresh(pdf_upload)
@@ -299,4 +301,3 @@ def get_upload_url(
     )
     logger.info(f"Generated presigned URL: {presigned_url}")
     return {"upload_url": presigned_url, "upload_id": pdf_upload.id}
-    
