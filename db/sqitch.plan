@@ -25,3 +25,6 @@ version_lock [tables] 2022-06-01T06:57:35Z Oliver Roick <oroick@192-168-1-106.tp
 @v2.4.0-beta 2022-06-29T16:19:41Z Leo Thomas <leo@MacBook-Pro-2> # Tag v2.4.0-beta release 2022_06_25
 
 threads_notify [threads] 2022-07-27T07:06:50Z Oliver Roick <oroick@192-168-1-106.tpgi.com.au> # Add notify field to threads
+
+add_pdf_uploads_table [tables] 2023-05-22T05:40:55Z navin <navin@nav-machine> # Add PDF upload Table
+add_pdf_in_atbd [add_pdf_uploads_table] 2023-05-22T06:06:10Z navin <navin@nav-machine> # Add PDF upload support to ATBD

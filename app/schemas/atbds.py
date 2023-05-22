@@ -1,4 +1,5 @@
 """Schemas for ATBDS models"""
+import enum
 from datetime import datetime
 from typing import List, Optional
 
@@ -7,6 +8,11 @@ from pydantic import BaseModel, validator
 from app.schemas import versions
 
 from fastapi import HTTPException
+
+
+class AtbdDocumentTypeEnum(str, enum.Enum):
+    HTML = "HTML"
+    PDF = "PDF"
 
 
 class Update(BaseModel):
@@ -29,6 +35,7 @@ class Create(BaseModel):
 
     title: str
     alias: Optional[str]
+    document_type: AtbdDocumentTypeEnum
 
     @validator("alias")
     def _restrict_to_32_chars(cls, v):
@@ -55,6 +62,7 @@ class OutputBase(BaseModel):
     last_updated_at: datetime
     title: str
     alias: Optional[str]
+    document_type: AtbdDocumentTypeEnum
 
     class Config:
         """Config."""

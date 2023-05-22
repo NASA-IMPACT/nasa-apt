@@ -31,6 +31,7 @@ class Atbds(Base):
 
     __tablename__ = "atbds"
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    document_type = Column(String())  # AtbdDocumentTypeEnum
     title = Column(String(), nullable=False)
     alias = Column(String(), CheckConstraint("alias ~ '^[a-z0-9-]+$'"), unique=True)
     created_by = Column(String(), nullable=False)
@@ -72,6 +73,11 @@ class AtbdVersions(Base):
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="DRAFT", nullable=False)
     document = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
+    pdf_id = Column(
+        Integer(),
+        ForeignKey("pdf_uploads.id"),
+        index=True,
+    )
     publication_checklist = Column(
         MutableDict.as_mutable(postgresql.JSON), server_default="{}"
     )
