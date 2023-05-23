@@ -6,7 +6,7 @@ from typing import List
 from app.api.utils import get_major_from_version_string
 from app.crud.atbds import crud_atbds
 from app.crud.contacts import crud_contacts_associations
-from app.crud.uploads import crud_pdf_uploads
+from app.crud.uploads import crud_uploads
 from app.crud.versions import crud_versions
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import AtbdVersions
@@ -242,7 +242,13 @@ def update_atbd_version(  # noqa : C901
             version_input.document = None
 
         if version_input.pdf_id and version_input.pdf_id != atbd_version.pdf_id:
-            pdf_upload = crud_pdf_uploads.get(db=db, pdf_id=version_input.pdf_id)
+            pdf_upload = crud_uploads.get(
+                db=db,
+                pdf_id=version_input.pdf_id,
+                filters=dict(
+                    atbd_id=atbd_id,
+                ),
+            )
             check_permissions(
                 principals=principals, action="add_to_atbds", acl=pdf_upload.__acl__()
             )

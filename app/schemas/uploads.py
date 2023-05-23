@@ -9,10 +9,15 @@ from app import config
 from app.api.utils import s3_client
 from app.schemas import versions
 
-from fastapi import HTTPException
-
 
 class Create(BaseModel):
+    """Model for ATBD PDF Upload"""
+
+    atbd_id: int
+    created_by: str
+
+
+class CreateReponse(BaseModel):
     """Model for ATBD PDF Upload"""
 
     upload_url: str
@@ -21,8 +26,6 @@ class Create(BaseModel):
 
 class Update(BaseModel):
     """Model for ATBD PDF Upload"""
-
-    pass
 
 
 class FullOutput(BaseModel):

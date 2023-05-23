@@ -19,8 +19,6 @@ from app.schemas.users import (
     ReviewerUser,
 )
 
-from fastapi import HTTPException
-
 
 class JournalStatusEnum(str, enum.Enum):
     """Status for Journal ATBD, values provided by NASA impact"""

@@ -11,6 +11,7 @@ from sqlalchemy import exc
 from app import config
 from app.api.utils import s3_client
 from app.crud.atbds import crud_atbds
+from app.crud.uploads import crud_uploads
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import PDFUpload
 from app.email.notifications import (
@@ -266,9 +267,9 @@ def delete_atbd(
     return {}
 
 
-@router.post("/atbds/{atbd_id}/upload", response_model=uploads.Create)
+@router.post("/atbds/{atbd_id}/upload", response_model=uploads.CreateReponse)
 def get_upload_url(
-    atbd_id: str,
+    atbd_id: int,
     db: DbSession = Depends(get_db_session),
     user: users.CognitoUser = Depends(get_user),
     principals: List[str] = Depends(get_active_user_principals),
@@ -279,22 +280,19 @@ def get_upload_url(
     check_atbd_permissions(
         principals=principals, action="update", atbd=atbd, all_versions=False
     )
-    upload_path = Path(atbd_id) / "uploads"
-    file_name = f"atbd_{atbd_id}_{int(datetime.datetime.now().timestamp())}.pdf"
-    file_path = upload_path / file_name
-    pdf_upload = PDFUpload(
-        atbd_id=atbd_id, file_path=str(file_path), created_by=user.sub
+    pdf_upload = crud_uploads.create(
+        db=db,
+        obj_in=uploads.Create(
+            atbd_id=atbd_id,
+            created_by=user.sub,
+        ),
     )
-    db.add(pdf_upload)
-    db.commit()
-    db.refresh(pdf_upload)
-    logger.info(f"Creating PDF upload: {pdf_upload}")
     client = s3_client()
     presigned_url = client.generate_presigned_url(
         "put_object",
         Params=dict(
             Bucket=config.S3_BUCKET,
-            Key=str(file_path),
+            Key=str(pdf_upload.file_path),
             ContentType="application/pdf",
         ),
         ExpiresIn=3600,
