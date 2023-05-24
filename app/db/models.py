@@ -10,9 +10,11 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     Integer,
     String,
+    UniqueConstraint,
     types,
 )
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import backref, relationship
 
@@ -29,6 +31,7 @@ class Atbds(Base):
 
     __tablename__ = "atbds"
     id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    document_type = Column(String())  # AtbdDocumentTypeEnum
     title = Column(String(), nullable=False)
     alias = Column(String(), CheckConstraint("alias ~ '^[a-z0-9-]+$'"), unique=True)
     created_by = Column(String(), nullable=False)
@@ -70,6 +73,11 @@ class AtbdVersions(Base):
     minor = Column(Integer(), server_default="0")
     status = Column(String(), server_default="DRAFT", nullable=False)
     document = Column(MutableDict.as_mutable(postgresql.JSON), server_default="{}")
+    pdf_id = Column(
+        Integer(),
+        ForeignKey("pdf_uploads.id"),
+        index=True,
+    )
     publication_checklist = Column(
         MutableDict.as_mutable(postgresql.JSON), server_default="{}"
     )
@@ -90,6 +98,12 @@ class AtbdVersions(Base):
     journal_status = Column(String())
     keywords = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
     locked_by = Column(String(), nullable=True)
+
+    pdf = relationship(
+        "PDFUpload",
+        backref=backref("atbd_version", cascade="all, delete-orphan"),
+        lazy="select",
+    )
 
     def __repr__(self):
         """String representation"""
@@ -375,3 +389,47 @@ class Comments(Base):
             )
 
         return acl
+
+
+class Upload(Base):
+    """Upload model"""
+
+    __abstract__ = True
+    id = Column(Integer(), primary_key=True, index=True, autoincrement=True)
+    file_path = Column(String(), nullable=False)
+    storage = Column(String(), default="s3")
+    created_by = Column(String(), nullable=False)
+    created_at = Column(types.DateTime, server_default=utcnow(), nullable=False)
+
+    @declared_attr
+    def atbd_id(cls):
+        """ATBD relation"""
+        return Column(Integer(), ForeignKey("atbds.id"), nullable=False)
+
+    def __acl__(self):
+        """Access Control List for Uploads"""
+        acl = []
+        for grantee, actions in acls.UPLOADED_PDF_ACLS.items():
+
+            if grantee == "owner":
+                grantee = f"user:{self.created_by}"
+
+            acl.extend(
+                [(fastapi_permissions.Allow, grantee, a["action"]) for a in actions]
+            )
+
+        return acl
+
+
+class PDFUpload(Upload):
+    """Model to represent an uploaded PDF"""
+
+    __tablename__ = "pdf_uploads"
+
+    def __repr__(self):
+        """String representation"""
+        return (
+            f"<PDFUpload(id={self.id}, atbd_id={self.atbd_id}, file_path={self.file_path},"
+            f" storage={self.storage}, created_by={self.created_by},"
+            f" created_at={self.created_at},"
+        )

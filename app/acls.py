@@ -207,3 +207,9 @@ THREAD_ACLS: Dict[str, List[Dict[str, str]]] = {
     "owner": [{"action": "update"}, {"action": "delete"}],
     "role:curator": [{"action": "update"}, {"action": "delete"}],
 }
+
+
+UPLOADED_PDF_ACLS: Dict[str, List[Dict[str, str]]] = {
+    "owner": [{"action": "add_to_atbds"}],
+    "role:curator": [{"action": "add_to_atbds"}],
+}

@@ -11,7 +11,7 @@ from pydantic import BaseModel, validator
 # import document as _document to avoid namespace collision with the
 # `document` field of the AtbdVersion's SummaryOutput and FullOutput classes
 from app.schemas import document as _document
-from app.schemas import versions_contacts
+from app.schemas import uploads, versions_contacts
 from app.schemas.users import (
     AnonymousReviewerUser,
     AnonymousUser,
@@ -154,6 +154,7 @@ class FullOutput(AtbdVersionSummaryOutput):
     doi: Optional[str]
     contacts_link: Optional[List[versions_contacts.ContactsLinkOutput]]
     publication_units: Optional[PublicationUnits]
+    pdf: Optional[uploads.FullOutput]
 
     @validator("publication_units", always=True)
     def _generate_publication_units(cls, v, values: Dict[str, Any]) -> PublicationUnits:
@@ -246,7 +247,8 @@ class Create(BaseModel):
     major: int
     minor: int
     status: StatusEnum
-    document: _document.Document
+    document: Optional[_document.Document]
+    pdf_id: Optional[int]
     publication_checklist: PublicationChecklist
     created_by: str
     last_updated_by: str
@@ -312,6 +314,7 @@ class Update(BaseModel):
     the same time."""
 
     document: Optional[_document.Document]
+    pdf_id: Optional[int]
     publication_checklist: Optional[PublicationChecklist]
     keywords: Optional[List[Keyword]]
     sections_completed: Optional[dict]

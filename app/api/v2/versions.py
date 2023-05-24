@@ -6,12 +6,14 @@ from typing import List
 from app.api.utils import get_major_from_version_string
 from app.crud.atbds import crud_atbds
 from app.crud.contacts import crud_contacts_associations
+from app.crud.uploads import crud_uploads
 from app.crud.versions import crud_versions
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import AtbdVersions
 from app.email.notifications import notify_atbd_version_contributors
 from app.permissions import check_permissions
 from app.schemas import atbds, versions, versions_contacts
+from app.schemas.atbds import AtbdDocumentTypeEnum
 from app.schemas.users import CognitoUser
 from app.search.opensearch import remove_atbd_from_index
 from app.users.auth import get_user, require_user
@@ -109,18 +111,19 @@ def create_new_version(
         last_updated_by=user.sub,
         owner=user.sub,
     )
+
     new_version = crud_versions.create(db_session=db, obj_in=new_version_input)
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=new_version.major)
     atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
 
-@router.post(  # noqa : C901
+@router.post(
     "/atbds/{atbd_id}/versions/{version}",
     response_model=atbds.FullOutput,
     response_model_exclude_none=True,
 )
-def update_atbd_version(
+def update_atbd_version(  # noqa : C901
     atbd_id: str,
     version: str,
     version_input: versions.Update,
@@ -218,19 +221,37 @@ def update_atbd_version(
 
         check_permissions(principals=principals, action=action, acl=version_acl)
 
-    if version_input.document and not overwrite:
+    if atbd.document_type == AtbdDocumentTypeEnum.HTML:
+        if version_input.pdf_id:
+            version_input.pdf_id = None
 
-        version_input.document = {  # type: ignore
-            **atbd_version.document,
-            **version_input.document.dict(exclude_unset=True),
-        }
+        if version_input.document and not overwrite:
+            version_input.document = {  # type: ignore
+                **atbd_version.document,
+                **version_input.document.dict(exclude_unset=True),
+            }
 
-    if version_input.sections_completed and not overwrite:
+        if version_input.sections_completed and not overwrite:
+            version_input.sections_completed = {
+                **atbd_version.sections_completed,
+                **version_input.sections_completed,
+            }
 
-        version_input.sections_completed = {
-            **atbd_version.sections_completed,
-            **version_input.sections_completed,
-        }
+    elif atbd.document_type == AtbdDocumentTypeEnum.PDF:
+        if version_input.document:
+            version_input.document = None
+
+        if version_input.pdf_id and version_input.pdf_id != atbd_version.pdf_id:
+            pdf_upload = crud_uploads.get(
+                db=db,
+                pdf_id=version_input.pdf_id,
+                filters=dict(
+                    atbd_id=atbd_id,
+                ),
+            )
+            check_permissions(
+                principals=principals, action="add_to_atbds", acl=pdf_upload.__acl__()
+            )
 
     # # This should act on the update input object, and not the db object
     # atbd_version.last_updated_by = user.sub

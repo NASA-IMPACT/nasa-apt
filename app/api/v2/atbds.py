@@ -3,20 +3,25 @@ import base64
 import datetime
 import pickle
 from copy import deepcopy
+from pathlib import Path
 from typing import List
 
 from sqlalchemy import exc
 
+from app import config
+from app.api.utils import s3_client
 from app.crud.atbds import crud_atbds
+from app.crud.uploads import crud_uploads
 from app.db.db_session import DbSession, get_db_session
+from app.db.models import PDFUpload
 from app.email.notifications import (
     UserNotification,
     notify_atbd_version_contributors,
     notify_users,
 )
-from app.logs import logger
+from app.logs import logger  # noqa
 from app.permissions import check_atbd_permissions, filter_atbd_versions
-from app.schemas import atbds, users
+from app.schemas import atbds, uploads, users
 from app.search.opensearch import remove_atbd_from_index
 from app.users.auth import get_user, require_user
 from app.users.cognito import (
@@ -260,3 +265,37 @@ def delete_atbd(
     # TODO: this should also remove all associated PDFs in S3.
 
     return {}
+
+
+@router.post("/atbds/{atbd_id}/upload", response_model=uploads.CreateReponse)
+def get_upload_url(
+    atbd_id: int,
+    db: DbSession = Depends(get_db_session),
+    user: users.CognitoUser = Depends(get_user),
+    principals: List[str] = Depends(get_active_user_principals),
+):
+    """Get a signed URL for uploading a PDF to S3 directory for a specific
+    ATBD"""
+    atbd = crud_atbds.get(db=db, atbd_id=atbd_id)
+    check_atbd_permissions(
+        principals=principals, action="update", atbd=atbd, all_versions=False
+    )
+    pdf_upload = crud_uploads.create(
+        db=db,
+        obj_in=uploads.Create(
+            atbd_id=atbd_id,
+            created_by=user.sub,
+        ),
+    )
+    client = s3_client()
+    presigned_url = client.generate_presigned_url(
+        "put_object",
+        Params=dict(
+            Bucket=config.S3_BUCKET,
+            Key=str(pdf_upload.file_path),
+            ContentType="application/pdf",
+        ),
+        ExpiresIn=3600,
+    )
+    logger.info(f"Generated presigned URL: {presigned_url}")
+    return {"upload_url": presigned_url, "upload_id": pdf_upload.id}
