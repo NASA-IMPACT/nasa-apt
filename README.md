@@ -12,7 +12,7 @@ Code and issues relevant to the NASA APT project
 - [opensearch](https://www.opensearch.co/opensearch/): Document indexing to provide full-text searching of ATBD documents
 
 ### Diagram
-![Backend Architecture Diagram](./v2.4.0-beta_architecture_diagram.png)
+![Backend Architecture Diagram](adr/APT-infrastructure.jpg)
 
 ### AWS Deployment: 
 The API is deployed to AWS using [AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html). To get started with CDK you will need to have `npm` installed. Follow the steps in the link above to get started. 
