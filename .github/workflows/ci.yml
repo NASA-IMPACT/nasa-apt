@@ -1,6 +1,8 @@
 
 name: Deploy APT API
-on: [push]
+on:
+  workflow_dispatch: # allows for manual invocation
+  push:
 jobs: 
   lint:
     runs-on: ubuntu-latest
