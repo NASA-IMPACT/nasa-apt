@@ -21,6 +21,7 @@ class CreateReponse(BaseModel):
     """Model for ATBD PDF Upload"""
 
     upload_url: str
+    upload_fields: dict
     upload_id: int
 
 
