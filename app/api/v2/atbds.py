@@ -288,14 +288,15 @@ def get_upload_url(
         ),
     )
     client = s3_client()
-    presigned_url = client.generate_presigned_url(
-        "put_object",
-        Params=dict(
-            Bucket=config.S3_BUCKET,
-            Key=str(pdf_upload.file_path),
-            ContentType="application/pdf",
-        ),
+    response = client.generate_presigned_post(
+        Bucket=config.S3_BUCKET,
+        Key=str(pdf_upload.file_path),
         ExpiresIn=3600,
     )
+    presigned_url = response["url"]
     logger.info(f"Generated presigned URL: {presigned_url}")
-    return {"upload_url": presigned_url, "upload_id": pdf_upload.id}
+    return {
+        "upload_url": presigned_url,
+        "fields": response["fields"],
+        "upload_id": pdf_upload.id,
+    }
