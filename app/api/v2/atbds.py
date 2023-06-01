@@ -295,4 +295,8 @@ def get_upload_url(
     )
     presigned_url = response["url"]
     logger.info(f"Generated presigned URL: {presigned_url}")
-    return {"upload_url": presigned_url, "fields": response["fields"], "upload_id": pdf_upload.id}
+    return {
+        "upload_url": presigned_url,
+        "fields": response["fields"],
+        "upload_id": pdf_upload.id,
+    }
