@@ -238,9 +238,7 @@ def update_atbd_version(  # noqa : C901
             }
 
     elif atbd.document_type == AtbdDocumentTypeEnum.PDF:
-        if version_input.document:
-            version_input.document = None
-
+        # NOTE: version_input.document has other fields used for PDF types as well
         if version_input.pdf_id and version_input.pdf_id != atbd_version.pdf_id:
             pdf_upload = crud_uploads.get(
                 db=db,
