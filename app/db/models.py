@@ -10,7 +10,6 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     Integer,
     String,
-    UniqueConstraint,
     types,
 )
 from sqlalchemy.dialects import postgresql

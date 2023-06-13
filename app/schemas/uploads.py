@@ -1,13 +1,9 @@
 """Schemas for ATBDS models"""
-import enum
-from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel, validator
 
 from app import config
 from app.api.utils import s3_client
-from app.schemas import versions
 
 
 class Create(BaseModel):
@@ -45,7 +41,7 @@ class FullOutput(BaseModel):
     def sign_file_path(cls, file_path):
         """Generated signed s3 url which client needs to access the files"""
         client = s3_client()
-        return client.generate_presigned_url(
+        url = client.generate_presigned_url(
             "get_object",
             Params=dict(
                 Bucket=config.S3_BUCKET,
@@ -54,3 +50,7 @@ class FullOutput(BaseModel):
             ),
             ExpiresIn=3600,
         )
+        if config.APT_DEBUG:
+            # localstack is available on localhost when running in dev mode
+            url = url.replace("localstack", "localhost")
+        return url
