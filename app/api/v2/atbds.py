@@ -294,6 +294,9 @@ def get_upload_url(
         ExpiresIn=3600,
     )
     presigned_url = response["url"]
+    if config.APT_DEBUG:
+        # localstack is available on localhost when running in dev mode
+        presigned_url = presigned_url.replace("localstack", "localhost")
     logger.info(f"Generated presigned URL: {presigned_url}")
     return {
         "upload_url": presigned_url,

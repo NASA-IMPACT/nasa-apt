@@ -16,6 +16,7 @@ from app.pdf.error_handler import generate_html_content_for_error
 from app.pdf.generator import generate_pdf
 from app.permissions import filter_atbd_versions
 from app.schemas import users, versions
+from app.schemas.atbds import AtbdDocumentTypeEnum
 from app.users.auth import get_user
 from app.users.cognito import get_active_user_principals, update_atbd_contributor_info
 from app.utils import get_task_queue
@@ -149,7 +150,10 @@ def get_pdf(
     atbd_version: AtbdVersions
     [atbd_version] = atbd.versions
 
-    pdf_key = generate_pdf_key(atbd, minor=minor, journal=journal)
+    if atbd.document_type == AtbdDocumentTypeEnum.PDF:
+        pdf_key = atbd_version.pdf.file_path
+    else:
+        pdf_key = generate_pdf_key(atbd, minor=minor, journal=journal)
 
     logger.info(f"FETCHING FROM S3: {pdf_key}")
     try:
