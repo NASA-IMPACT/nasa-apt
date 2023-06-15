@@ -169,7 +169,7 @@ def update_atbd_version(  # noqa : C901
         except AttributeError:
             continue
 
-    if version_input.contacts and len(version_input.contacts):
+    if version_input.contacts is not None:
 
         # Overwrite any existing `ContactAssociation` items
         # in the database - this makes updating roles on an existing
