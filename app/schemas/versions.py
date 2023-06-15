@@ -133,6 +133,7 @@ class AtbdVersionSummaryOutput(BaseModel):
     authors: Union[List[CognitoUser], List[AnonymousUser]]
     reviewers: Union[List[ReviewerUser], List[AnonymousReviewerUser]]
     journal_status: Optional[JournalStatusEnum]
+    pdf: Optional[uploads.FullOutput]
 
     @validator("version", always=True)
     def _generate_semver(cls, v, values) -> str:
@@ -154,7 +155,6 @@ class FullOutput(AtbdVersionSummaryOutput):
     doi: Optional[str]
     contacts_link: Optional[List[versions_contacts.ContactsLinkOutput]]
     publication_units: Optional[PublicationUnits]
-    pdf: Optional[uploads.FullOutput]
 
     @validator("publication_units", always=True)
     def _generate_publication_units(cls, v, values: Dict[str, Any]) -> PublicationUnits:
