@@ -221,24 +221,8 @@ def update_atbd_version(  # noqa : C901
 
         check_permissions(principals=principals, action=action, acl=version_acl)
 
-    if atbd.document_type == AtbdDocumentTypeEnum.HTML:
-        if version_input.pdf_id:
-            version_input.pdf_id = None
-
-        if version_input.document and not overwrite:
-            version_input.document = {  # type: ignore
-                **atbd_version.document,
-                **version_input.document.dict(exclude_unset=True),
-            }
-
-        if version_input.sections_completed and not overwrite:
-            version_input.sections_completed = {
-                **atbd_version.sections_completed,
-                **version_input.sections_completed,
-            }
-
-    elif atbd.document_type == AtbdDocumentTypeEnum.PDF:
-        # NOTE: version_input.document has other fields used for PDF types as well
+    if atbd.document_type == AtbdDocumentTypeEnum.PDF:
+        # Check if user have enough permission to attach new pdf to the atbd
         if version_input.pdf_id and version_input.pdf_id != atbd_version.pdf_id:
             pdf_upload = crud_uploads.get(
                 db=db,
@@ -250,7 +234,22 @@ def update_atbd_version(  # noqa : C901
             check_permissions(
                 principals=principals, action="add_to_atbds", acl=pdf_upload.__acl__()
             )
+    else:
+        # Let's unset pdf for HTML
+        if version_input.pdf_id:
+            version_input.pdf_id = None
 
+    if version_input.document and not overwrite:
+        version_input.document = {  # type: ignore
+            **atbd_version.document,
+            **version_input.document.dict(exclude_unset=True),
+        }
+
+    if version_input.sections_completed and not overwrite:
+        version_input.sections_completed = {
+            **atbd_version.sections_completed,
+            **version_input.sections_completed,
+        }
     # # This should act on the update input object, and not the db object
     # atbd_version.last_updated_by = user.sub
     # atbd_version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
