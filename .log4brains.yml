@@ -1,0 +1,5 @@
+project:
+  name: nasa-apt
+  tz: America/New_York
+  adrFolder: ./adr
+  packages: []
