@@ -126,7 +126,7 @@ class nasaAPTLambdaStack(core.Stack):
             publicly_accessible=True,
             database_name="nasadb",
             backup_retention=core.Duration.days(7),
-            deletion_protection=config.STAGE.lower() == "prod",
+            deletion_protection="prod" in config.STAGE.lower(),
             removal_policy=core.RemovalPolicy.SNAPSHOT,
         )
 
@@ -151,7 +151,7 @@ class nasaAPTLambdaStack(core.Stack):
             scope=self,
             id=f"{id}",
             removal_policy=core.RemovalPolicy.RETAIN
-            if config.STAGE.lower() == "prod"
+            if "prod" in config.STAGE.lower()
             else core.RemovalPolicy.DESTROY,
         )
         if config.S3_BUCKET:
@@ -189,7 +189,7 @@ class nasaAPTLambdaStack(core.Stack):
             ),
             automated_snapshot_start_hour=0,
             removal_policy=core.RemovalPolicy.RETAIN
-            if config.STAGE.lower() == "prod"
+            if "prod" in config.STAGE.lower()
             else core.RemovalPolicy.DESTROY,
             # logging
             # logging=opensearch.LoggingOptions(
@@ -286,6 +286,10 @@ class nasaAPTLambdaStack(core.Stack):
             security_groups=[lambda_security_group],
         )
 
+        if concurrent:
+            sqs_handler_lambda_props["reserved_concurrent_executions"] = concurrent
+
+
         sqs_handler_lambda = _lambda.Function(
             self, f"{id}-sqs-handler-lambda", **sqs_handler_lambda_props
         )
@@ -336,7 +340,7 @@ class nasaAPTLambdaStack(core.Stack):
             ),
             sign_in_case_sensitive=False,
             removal_policy=core.RemovalPolicy.RETAIN
-            if config.STAGE.lower() == "prod"
+            if "prod" in config.STAGE.lower()
             else core.RemovalPolicy.DESTROY,
         )
 
