@@ -289,7 +289,6 @@ class nasaAPTLambdaStack(core.Stack):
         if concurrent:
             sqs_handler_lambda_props["reserved_concurrent_executions"] = concurrent
 
-
         sqs_handler_lambda = _lambda.Function(
             self, f"{id}-sqs-handler-lambda", **sqs_handler_lambda_props
         )
