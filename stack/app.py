@@ -306,7 +306,6 @@ class nasaAPTLambdaStack(core.Stack):
         )
         bucket.grant_read_write(sqs_handler_lambda)
         database.secret.grant_read(sqs_handler_lambda)
-        osdomain.grant_read_write(sqs_handler_lambda)
 
         os_access_policy.add_arn_principal(f"{sqs_handler_lambda.function_arn}")
         private_os_domain.grant_read_write(sqs_handler_lambda)
