@@ -307,7 +307,6 @@ class nasaAPTLambdaStack(core.Stack):
         os_access_policy.add_arn_principal(f"{sqs_handler_lambda.function_arn}")
         private_os_domain.grant_read_write(sqs_handler_lambda)
 
-
         # attach the task handling lambda to the queue
         sqs_event_source = lambda_event_source.SqsEventSource(sqs_queue)
         sqs_handler_lambda.add_event_source(sqs_event_source)
