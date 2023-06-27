@@ -186,7 +186,7 @@ class nasaAPTLambdaStack(core.Stack):
         # This domain is launched within a VPC
         private_os_domain = opensearch.Domain(
             self,
-            f"{id}-opensearch-domain",
+            f"{id}-opensearch-private-domain",
             version=opensearch.EngineVersion.OPENSEARCH_1_0,
             capacity=opensearch.CapacityConfig(
                 data_node_instance_type="t2.small.search",
