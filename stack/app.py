@@ -91,6 +91,19 @@ class nasaAPTLambdaStack(core.Stack):
             description=f"Security group for {id}-lambda",
         )
 
+        os_vpc_security_group = ec2.SecurityGroup(
+            self,
+            id=f"{id}-opensearch-security-group",
+            vpc=vpc,
+            description=f"Security group for {id}-opensearch in a VPC",
+        )
+
+        os_vpc_security_group.add_ingress_rule(
+            peer=lambda_security_group,
+            connection=ec2.Port.tcp(9200),
+            description="Allow traffic from the Lambda Security Group on port 9200",
+        )
+
         rds_security_group.add_ingress_rule(
             peer=lambda_security_group,
             connection=ec2.Port.tcp(5432),
@@ -170,7 +183,8 @@ class nasaAPTLambdaStack(core.Stack):
             ),
         )
 
-        osdomain = opensearch.Domain(
+        # This domain is launched within a VPC
+        private_os_domain = opensearch.Domain(
             self,
             f"{id}-opensearch-domain",
             version=opensearch.EngineVersion.OPENSEARCH_1_0,
@@ -191,11 +205,8 @@ class nasaAPTLambdaStack(core.Stack):
             removal_policy=core.RemovalPolicy.RETAIN
             if "prod" in config.STAGE.lower()
             else core.RemovalPolicy.DESTROY,
-            # logging
-            # logging=opensearch.LoggingOptions(
-            #     app_log_enabled=True,
-            #     # audit_log_enabled=True
-            # )
+            vpc=config.VPC_ID,
+            security_groups=[os_vpc_security_group],
         )
 
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
@@ -208,7 +219,7 @@ class nasaAPTLambdaStack(core.Stack):
             APT_FRONTEND_URL=frontend_url,
             BACKEND_CORS_ORIGINS=config.BACKEND_CORS_ORIGINS,
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
-            OPENSEARCH_URL=osdomain.domain_endpoint,
+            OPENSEARCH_URL=private_os_domain.domain_endpoint,
             TASK_QUEUE_URL=sqs_queue.queue_url,
             S3_BUCKET=bucket.bucket_name,
             NOTIFICATIONS_FROM=config.NOTIFICATIONS_FROM,
@@ -246,12 +257,13 @@ class nasaAPTLambdaStack(core.Stack):
         os_access_policy = iam.PolicyStatement(sid="osAccessPolicy")
         os_access_policy.add_arn_principal(f"{api_handler_lambda.function_arn}")
         os_access_policy.add_actions("es:ESHttp*")
-        os_access_policy.add_resources(f"{osdomain.domain_arn}/*")
-        # # add policy to domain
-        # osdomain.add_access_policies(os_access_policy)
 
-        # grant lambda read/write
-        osdomain.grant_read_write(api_handler_lambda)
+        # assign opensearch access policy to the private open search domain
+        os_access_policy.add_resources(f"{private_os_domain.domain_arn}/*")
+
+        # grant lambda read/write for private opensearch domain
+        private_os_domain.grant_read_write(api_handler_lambda)
+
         bucket.grant_read_write(api_handler_lambda)
 
         # defines an API Gateway Http API resource backed by our custom lambda function.
@@ -295,6 +307,9 @@ class nasaAPTLambdaStack(core.Stack):
         bucket.grant_read_write(sqs_handler_lambda)
         database.secret.grant_read(sqs_handler_lambda)
         osdomain.grant_read_write(sqs_handler_lambda)
+
+        os_access_policy.add_arn_principal(f"{sqs_handler_lambda.function_arn}")
+        private_os_domain.grant_read_write(sqs_handler_lambda)
 
         # attach the task handling lambda to the queue
         sqs_event_source = lambda_event_source.SqsEventSource(sqs_queue)
