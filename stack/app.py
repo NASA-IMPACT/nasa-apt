@@ -186,7 +186,7 @@ class nasaAPTLambdaStack(core.Stack):
         # This domain is launched within a VPC
         private_os_domain = opensearch.Domain(
             self,
-            f"{id}-opensearch-private-domain",
+            f"{id}-osdomain",
             version=opensearch.EngineVersion.OPENSEARCH_1_0,
             capacity=opensearch.CapacityConfig(
                 data_node_instance_type="t2.small.search",
@@ -194,7 +194,7 @@ class nasaAPTLambdaStack(core.Stack):
             ),
             # slice last 28 chars since OPEN Domains can't have a name longer than 28 chars in
             # AWS (and can't start with a `-` character)
-            domain_name=f"{id}-opensearch"[-28:].strip("-"),
+            domain_name=f"{id}-osdomain"[-28:].strip("-"),
             ebs=opensearch.EbsOptions(
                 enabled=True,
                 iops=0,
