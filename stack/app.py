@@ -183,29 +183,6 @@ class nasaAPTLambdaStack(core.Stack):
             ),
         )
 
-        osdomain = opensearch.Domain(
-            self,
-            f"{id}-opensearch-domain",
-            version=opensearch.EngineVersion.OPENSEARCH_1_0,
-            capacity=opensearch.CapacityConfig(
-                data_node_instance_type="t2.small.search",
-                data_nodes=1,
-            ),
-            # slice last 28 chars since OPEN Domains can't have a name longer than 28 chars in
-            # AWS (and can't start with a `-` character)
-            domain_name=f"{id}-opensearch"[-28:].strip("-"),
-            ebs=opensearch.EbsOptions(
-                enabled=True,
-                iops=0,
-                volume_size=10,
-                volume_type=ec2.EbsDeviceVolumeType.GP2,
-            ),
-            automated_snapshot_start_hour=0,
-            removal_policy=core.RemovalPolicy.RETAIN
-            if config.STAGE.lower() == "prod"
-            else core.RemovalPolicy.DESTROY,
-        )
-
         # This domain is launched within a VPC
         private_os_domain = opensearch.Domain(
             self,
@@ -226,7 +203,7 @@ class nasaAPTLambdaStack(core.Stack):
             ),
             automated_snapshot_start_hour=0,
             removal_policy=core.RemovalPolicy.RETAIN
-            if config.STAGE.lower() == "prod"
+            if "prod" in config.STAGE.lower()
             else core.RemovalPolicy.DESTROY,
             vpc=config.VPC_ID,
             security_groups=[os_vpc_security_group],
@@ -242,8 +219,7 @@ class nasaAPTLambdaStack(core.Stack):
             APT_FRONTEND_URL=frontend_url,
             BACKEND_CORS_ORIGINS=config.BACKEND_CORS_ORIGINS,
             POSTGRES_ADMIN_CREDENTIALS_ARN=database.secret.secret_arn,
-            OPENSEARCH_URL=osdomain.domain_endpoint,
-            PRIVATE_OPENSEARCH_URL=private_os_domain.domain_endpoint,
+            OPENSEARCH_URL=private_os_domain.domain_endpoint,
             TASK_QUEUE_URL=sqs_queue.queue_url,
             S3_BUCKET=bucket.bucket_name,
             NOTIFICATIONS_FROM=config.NOTIFICATIONS_FROM,
@@ -281,7 +257,6 @@ class nasaAPTLambdaStack(core.Stack):
         os_access_policy = iam.PolicyStatement(sid="osAccessPolicy")
         os_access_policy.add_arn_principal(f"{api_handler_lambda.function_arn}")
         os_access_policy.add_actions("es:ESHttp*")
-        os_access_policy.add_resources(f"{osdomain.domain_arn}/*")
 
         # assign opensearch access policy to the private open search domain
         os_access_policy.add_resources(f"{private_os_domain.domain_arn}/*")
@@ -289,8 +264,6 @@ class nasaAPTLambdaStack(core.Stack):
         # grant lambda read/write for private opensearch domain
         private_os_domain.grant_read_write(api_handler_lambda)
 
-        # grant lambda read/write
-        osdomain.grant_read_write(api_handler_lambda)
         bucket.grant_read_write(api_handler_lambda)
 
         # defines an API Gateway Http API resource backed by our custom lambda function.
@@ -330,6 +303,10 @@ class nasaAPTLambdaStack(core.Stack):
         )
         bucket.grant_read_write(sqs_handler_lambda)
         database.secret.grant_read(sqs_handler_lambda)
+
+        os_access_policy.add_arn_principal(f"{sqs_handler_lambda.function_arn}")
+        private_os_domain.grant_read_write(sqs_handler_lambda)
+
 
         # attach the task handling lambda to the queue
         sqs_event_source = lambda_event_source.SqsEventSource(sqs_queue)
