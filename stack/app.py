@@ -206,6 +206,9 @@ class nasaAPTLambdaStack(core.Stack):
             if "prod" in config.STAGE.lower()
             else core.RemovalPolicy.DESTROY,
             vpc=config.VPC_ID,
+            vpc_subnets=[
+                ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)
+            ],
             security_groups=[os_vpc_security_group],
         )
 
