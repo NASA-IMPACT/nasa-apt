@@ -195,9 +195,9 @@ class nasaAPTLambdaStack(core.Stack):
                 data_nodes=1,
             ),
             vpc=vpc,
-            # vpc_subnets=[
-            #     ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)
-            # ],
+            vpc_subnets=[
+                ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)
+            ],
             security_groups=[os_vpc_security_group],
             # slice last 28 chars since OPEN Domains can't have a name longer than 28 chars in
             # AWS (and can't start with a `-` character)
