@@ -92,7 +92,7 @@ jobs:
         run: |
          cdk acknowledge 19836
          cdk synth nasa-apt-api-staging
-        #  cdk deploy nasa-apt-api-staging --require-approval never
+         cdk deploy nasa-apt-api-staging --require-approval never
          
   # deploy-prod: 
   #   needs: [test]

@@ -188,15 +188,20 @@ class nasaAPTLambdaStack(core.Stack):
         # This domain is launched within a VPC
         private_os_domain = opensearch.Domain(
             self,
-            f"{id}-opensearch",
+            f"{id}-osdomain",
             version=opensearch.EngineVersion.OPENSEARCH_1_0,
             capacity=opensearch.CapacityConfig(
                 data_node_instance_type="t3.small.search",
                 data_nodes=1,
             ),
+            vpc=vpc,
+            # vpc_subnets=[
+            #     ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)
+            # ],
+            security_groups=[os_vpc_security_group],
             # slice last 28 chars since OPEN Domains can't have a name longer than 28 chars in
             # AWS (and can't start with a `-` character)
-            domain_name=f"{id}-opensearch"[-28:].strip("-"),
+            domain_name=f"{id}-osdomain"[-28:].strip("-"),
             ebs=opensearch.EbsOptions(
                 enabled=True,
                 iops=0,
@@ -207,11 +212,6 @@ class nasaAPTLambdaStack(core.Stack):
             removal_policy=core.RemovalPolicy.RETAIN
             if "prod" in config.STAGE.lower()
             else core.RemovalPolicy.DESTROY,
-            vpc=vpc,
-            # vpc_subnets=[
-            #     ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)
-            # ],
-            security_groups=[os_vpc_security_group],
         )
 
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
