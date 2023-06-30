@@ -45,7 +45,7 @@ jobs:
   #     run: pytest tests --cov app --cov-report term-missing --ignore=venev
   deploy-staging: 
     needs: [lint]
-    if: (github.event.ref == 'refs/heads/develop') || (github.event.ref == 'refs/heads/fix/opensearch-private-subnet')
+    if: (github.event.ref == 'refs/heads/develop')
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
