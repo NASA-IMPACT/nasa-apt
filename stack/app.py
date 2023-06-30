@@ -75,6 +75,8 @@ class nasaAPTLambdaStack(core.Stack):
                     ),
                 ],
             )
+        print(f"VPC ID: {vpc.vpc_id}")
+        print(f"Private Subnets: {vpc.private_subnets}")
 
         rds_security_group = ec2.SecurityGroup(
             self,
