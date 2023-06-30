@@ -197,8 +197,9 @@ class nasaAPTLambdaStack(core.Stack):
             vpc=vpc,
             vpc_subnets=[
                 ec2.SubnetSelection(
-                    subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT, one_per_az=True,
-                    availability_zones=sorted(vpc.availability_zones)[:1]
+                    subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT,
+                    one_per_az=True,
+                    availability_zones=sorted(vpc.availability_zones)[:1],
                 )
             ],
             security_groups=[os_vpc_security_group],
