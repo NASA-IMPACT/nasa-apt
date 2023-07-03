@@ -44,8 +44,8 @@ jobs:
   #   - name: Run tests
   #     run: pytest tests --cov app --cov-report term-missing --ignore=venev
   deploy-staging: 
-    # needs: [test]
-    if: github.event.ref == 'refs/heads/develop' 
+    needs: [lint]
+    if: (github.event.ref == 'refs/heads/develop')
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
@@ -91,6 +91,7 @@ jobs:
       - name: Deploy stack
         run: |
          cdk acknowledge 19836
+         cdk synth nasa-apt-api-staging
          cdk deploy nasa-apt-api-staging --require-approval never
          
   # deploy-prod: 
