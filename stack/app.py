@@ -100,8 +100,8 @@ class nasaAPTLambdaStack(core.Stack):
 
         os_vpc_security_group.add_ingress_rule(
             peer=lambda_security_group,
-            connection=ec2.Port.tcp(9200),
-            description="Allow traffic from the Lambda Security Group on port 9200",
+            connection=ec2.Port.tcp(80),
+            description="Allow traffic from the Lambda Security Group on port 80",
         )
 
         rds_security_group.add_ingress_rule(
