@@ -6,10 +6,11 @@ import sys
 from typing import Any
 
 import config
+from aws_cdk import App, RemovalPolicy, Stack
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_kms as kms
 from aws_cdk import aws_s3 as s3
-from aws_cdk import core
+from constructs import Construct
 
 sys.path.append("../")
 """
@@ -19,7 +20,7 @@ class contains resources deployed to aid in migrating APT's opensearch instance 
 migration_stackname = f"{config.PROJECT_NAME}-{config.STAGE}"
 
 
-class OpensearchMigrationStack(core.Stack):
+class OpensearchMigrationStack(Stack):
     """
     This stack is passed on stack/app.py stack.
     Resources included here:
@@ -36,7 +37,7 @@ class OpensearchMigrationStack(core.Stack):
 
     def __init__(
         self,
-        scope: core.Construct,
+        scope: Construct,
         id: str,
         **kwargs: Any,
     ) -> None:
@@ -53,9 +54,9 @@ class OpensearchMigrationStack(core.Stack):
             encryption=s3.BucketEncryption.KMS,
             encryption_key=migration_kms_key,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
-            removal_policy=core.RemovalPolicy.RETAIN
+            removal_policy=RemovalPolicy.RETAIN
             if config.STAGE.lower() == "prod"
-            else core.RemovalPolicy.DESTROY,
+            else RemovalPolicy.DESTROY,
         )
         if config.S3_BUCKET:
             bucket_params["bucket_name"] = config.MIGRATION_S3_BUCKET
@@ -129,7 +130,7 @@ class OpensearchMigrationStack(core.Stack):
             )
 
 
-app = core.App()
+app = App()
 # create migration stack
 
 OpensearchMigrationStack(
