@@ -309,6 +309,13 @@ class SectionsCompleted(BaseModel):
     acknowledgements: CompletednessEnum
 
 
+class ReviewerInfo(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[str]
+    affiliations: Optional[List[str]] = []
+
+
 class Update(BaseModel):
     """Update ATBD Version. Cannot increment minor version number AND update document content at
     the same time."""
@@ -326,6 +333,7 @@ class Update(BaseModel):
     authors: Optional[List[str]]
     reviewers: Optional[List[str]]
     journal_status: Optional[JournalStatusEnum]
+    reviewer_info: Optional[ReviewerInfo]
 
 
 class AdminUpdate(Update):
