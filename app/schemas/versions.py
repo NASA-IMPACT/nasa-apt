@@ -103,6 +103,17 @@ class PublicationUnits(BaseModel):
         )
 
 
+class ReviewerInfo(BaseModel):
+    """
+    Information about reviewer provided by Authors which is used by curator to get contact with respective reviewers
+    """
+
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[str]
+    affiliations: Optional[List[str]] = []
+
+
 class Keyword(BaseModel):
     """GCMD KMS keyword API output to store in DB"""
 
@@ -155,6 +166,7 @@ class FullOutput(AtbdVersionSummaryOutput):
     doi: Optional[str]
     contacts_link: Optional[List[versions_contacts.ContactsLinkOutput]]
     publication_units: Optional[PublicationUnits]
+    reviewer_info: Optional[ReviewerInfo]
 
     @validator("publication_units", always=True)
     def _generate_publication_units(cls, v, values: Dict[str, Any]) -> PublicationUnits:
@@ -307,13 +319,6 @@ class SectionsCompleted(BaseModel):
     abstract: CompletednessEnum
     discussion: CompletednessEnum
     acknowledgements: CompletednessEnum
-
-
-class ReviewerInfo(BaseModel):
-    first_name: Optional[str]
-    last_name: Optional[str]
-    email: Optional[str]
-    affiliations: Optional[List[str]] = []
 
 
 class Update(BaseModel):
