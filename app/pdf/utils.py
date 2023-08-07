@@ -6,11 +6,10 @@ import tempfile
 import time
 from io import BytesIO
 
+import pdfplumber
 from playwright.sync_api import sync_playwright
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
-import pdfplumber
-
 
 from app import config
 from app.api.utils import s3_client

@@ -20,24 +20,9 @@ from app.users.cognito import get_active_user_principals, update_atbd_contributo
 from app.utils import get_task_queue
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
-
-
-def save_pdf_to_s3(atbd: Atbds, journal: bool = False):
-    """
-    Uploads a generated PDF from local execution environment to S3
-    """
-    try:
-        key = generate_pdf_key(atbd=atbd, journal=journal)
-        local_pdf_key = generate_pdf(atbd=atbd, filepath=key, journal=journal)
-        s3_client().upload_file(
-            Filename=local_pdf_key, Bucket=config.S3_BUCKET, Key=key
-        )
-    except Exception as e:
-        print(f"PDF generation ({'journal' if journal else 'regular'}) failed with: ")
-        print(e)
 
 
 # TODO: will this break if the ATBD is created without an alias and then
