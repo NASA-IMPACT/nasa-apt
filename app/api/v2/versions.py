@@ -71,6 +71,14 @@ def get_version(
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     [atbd_version] = atbd.versions
     check_permissions(principals=principals, action="view", acl=atbd_version.__acl__())
+    # Hide reviewer_info from atbd_version for other users
+    if not check_permissions(
+        principals=principals,
+        action="view_update_reviewer_info",
+        acl=atbd_version.__acl__(),
+        raise_exception=False,
+    ):
+        del atbd_version.reviewer_info
     atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
@@ -253,6 +261,14 @@ def update_atbd_version(  # noqa : C901
     # # This should act on the update input object, and not the db object
     # atbd_version.last_updated_by = user.sub
     # atbd_version.last_updated_at = datetime.datetime.now(datetime.timezone.utc)
+
+    # Hide reviewer_info from atbd_version for other users
+    if version_input.reviewer_info:
+        check_permissions(
+            principals=principals,
+            action="view_update_reviewer_info",
+            acl=atbd_version.__acl__(),
+        )
 
     crud_versions.update(
         db=db,
