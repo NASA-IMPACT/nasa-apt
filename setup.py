@@ -29,6 +29,9 @@ inst_reqs = [
     "awslambdaric==2.0.4",
     "pydash==5.0.1",
     "playwright==1.30.0",
+    "reportlab==4.0.4",
+    "PyPDF2==3.0.1",
+    "pdfplumber==0.10.2",
 ]
 extra_reqs = {
     "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort", "types-requests"],

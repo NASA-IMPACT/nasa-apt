@@ -4,8 +4,13 @@ import json
 import pathlib
 import tempfile
 import time
+from io import BytesIO
 
 from playwright.sync_api import sync_playwright
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
+import pdfplumber
+
 
 from app import config
 from app.api.utils import s3_client
@@ -33,6 +38,7 @@ def make_pdf(
     filepath: str,
     auth_data: dict,
     atbd_alias: str = None,
+    journal: bool = False,
 ):
     """
     Generates a PDF for a given ATBD using Playwright
@@ -77,7 +83,12 @@ def make_pdf(
             page.pdf(path=local_path, format="A4")
             browser.close()
         logger.info(f"PDF generated at path: {local_path}")
-        save_pdf_to_s3(str(local_path), filepath)
+        if journal:
+            output_pdf_path = str(local_path).replace(".pdf", "_numbered.pdf")
+            add_line_numbers(str(local_path), output_pdf_path)
+            save_pdf_to_s3(output_pdf_path, filepath)
+        else:
+            save_pdf_to_s3(str(local_path), filepath)
 
 
 def build_storage_state(
@@ -116,3 +127,64 @@ def build_storage_state(
     with open(temp_file, "w") as f:
         json.dump(state, f)
     return temp_file
+
+
+def add_line_numbers(input_pdf_path: str, output_pdf_path: str):
+    """Add line numbers to Journal PDF"""
+    logger.info("Adding line numbers to PDF")
+
+    # Load the PDF into PyPDF2 and pdfplumber
+    input_pdf = PdfReader(open(input_pdf_path, "rb"))
+    plumber_pdf = pdfplumber.open(input_pdf_path)
+    # Output PDF
+    output = PdfWriter()
+    line_number = 1
+    line_spacing_threshold = 0.1
+
+    for page_index, page in enumerate(input_pdf.pages):
+        print(f"Processing page {page_index + 1}")
+        plumber_page = plumber_pdf.pages[page_index]
+        lines = plumber_page.extract_text_lines()
+        page_height = plumber_page.height
+        packet = BytesIO()
+        # Create a new PDF with Reportlab
+        can = canvas.Canvas(
+            packet, pagesize=(page.mediabox.width, page.mediabox.height)
+        )
+
+        # reset previous line bottom on new page
+        prev_line_bottom = 0
+
+        for i, line in enumerate(lines):
+            # Coordinates where to write, you can adjust as per your needs
+            x = 30
+            y = page_height - line["bottom"]
+            # If the line is too close to the previous line, skip it
+            # This is mostly useful for equations, which are often rendered
+            # as multiple lines and pdfplumber gets confused by them and
+            # returns multiple lines for a single equation
+            line_spacing = line["top"] - prev_line_bottom
+            if line_spacing > line_spacing_threshold:
+                can.setFont("Helvetica", 7)
+                can.drawRightString(x, y, f"{line_number}")
+                line_number += 1
+            else:
+                logger.info(
+                    f"Skipping line {i+1} on page {page_index + 1}"
+                    f" because it is too close to the previous line"
+                    f" (line spacing: {line_spacing})"
+                )
+            prev_line_bottom = line["bottom"]
+        can.save()
+
+        # Move to the beginning of the BytesIO buffer
+        packet.seek(0)
+        new_pdf = PdfReader(packet)
+        if new_pdf.pages:  # Sometimes the last page is blank; skip it
+            page.merge_page(new_pdf.pages[0])
+            output.add_page(page)
+
+    # Finally, write "output" to a real file
+    output_stream = open(output_pdf_path, "wb")
+    output.write(output_stream)
+    output_stream.close()
