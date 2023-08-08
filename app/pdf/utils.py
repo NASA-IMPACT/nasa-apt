@@ -139,6 +139,8 @@ def add_line_numbers(input_pdf_path: str, output_pdf_path: str):
     output = PdfWriter()
     line_number = 1
     line_spacing_threshold = 0.1
+    # shift the line number up by a few pixels to adjust alignment
+    offset = 2
 
     for page_index, page in enumerate(input_pdf.pages):
         print(f"Processing page {page_index + 1}")
@@ -157,7 +159,7 @@ def add_line_numbers(input_pdf_path: str, output_pdf_path: str):
         for i, line in enumerate(lines):
             # Coordinates where to write, you can adjust as per your needs
             x = 30
-            y = page_height - line["bottom"]
+            y = page_height - line["bottom"] + offset
             # If the line is too close to the previous line, skip it
             # This is mostly useful for equations, which are often rendered
             # as multiple lines and pdfplumber gets confused by them and
