@@ -12,8 +12,6 @@ from app.crud.atbds import crud_atbds
 from app.db.db_session import DbSession, get_db_session
 from app.db.models import Atbds, AtbdVersions
 from app.logs import logger
-from app.pdf.error_handler import generate_html_content_for_error
-from app.pdf.generator import generate_pdf
 from app.permissions import filter_atbd_versions
 from app.schemas import users, versions
 from app.schemas.atbds import AtbdDocumentTypeEnum
@@ -22,24 +20,9 @@ from app.users.cognito import get_active_user_principals, update_atbd_contributo
 from app.utils import get_task_queue
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
-
-
-def save_pdf_to_s3(atbd: Atbds, journal: bool = False):
-    """
-    Uploads a generated PDF from local execution environment to S3
-    """
-    try:
-        key = generate_pdf_key(atbd=atbd, journal=journal)
-        local_pdf_key = generate_pdf(atbd=atbd, filepath=key, journal=journal)
-        s3_client().upload_file(
-            Filename=local_pdf_key, Bucket=config.S3_BUCKET, Key=key
-        )
-    except Exception as e:
-        print(f"PDF generation ({'journal' if journal else 'regular'}) failed with: ")
-        print(e)
 
 
 # TODO: will this break if the ATBD is created without an alias and then
@@ -178,74 +161,60 @@ def get_pdf(
             # Generate the PDF locally and upload it to S3
             logger.info(f"GENERATING PDF: {pdf_key}")
             try:
-                if journal:
-                    local_pdf_filepath = generate_pdf(
-                        atbd=atbd, filepath=pdf_key, journal=journal
+                # clean up any existing PDFs for this ATBD version
+                s3_client().delete_object(Bucket=config.S3_BUCKET, Key=pdf_key)
+                # Queue the PDF generation task into SQS
+                # We only use this to generate "Document" PDFs, not "Journal" PDFs for now
+                if user:
+                    id_token = request.headers.get("authorization", "").replace(
+                        "Bearer ", ""
                     )
-                    return FileResponse(
-                        path=local_pdf_filepath, filename=pdf_key.split("/")[-1]
-                    )
-
-                else:
-                    # clean up any existing PDFs for this ATBD version
-                    s3_client().delete_object(Bucket=config.S3_BUCKET, Key=pdf_key)
-                    # Queue the PDF generation task into SQS
-                    # We only use this to generate "Document" PDFs, not "Journal" PDFs for now
-                    if user:
-                        id_token = request.headers.get("authorization", "").replace(
-                            "Bearer ", ""
+                    access_token = request.headers.get("x-access-token", "")
+                    if not id_token or not access_token:
+                        return JSONResponse(
+                            status_code=400,
+                            content={
+                                "message": "Missing authorization headers. "
+                                "Please include the 'authorization' and 'x-access-token' headers in your request."
+                            },
                         )
-                        access_token = request.headers.get("x-access-token", "")
-                        if not id_token or not access_token:
-                            return JSONResponse(
-                                status_code=400,
-                                content={
-                                    "message": "Missing authorization headers. "
-                                    "Please include the 'authorization' and 'x-access-token' headers in your request."
-                                },
-                            )
 
-                        auth_data = {
-                            "id_token": id_token,
-                            "access_token": access_token,
-                            "user_email": user.email,
-                        }
-                    else:
-                        auth_data = {}
-                    task_queue = get_task_queue()
-                    task_queue.send_message(
-                        MessageBody=base64.b64encode(
-                            pickle.dumps(
-                                {
-                                    "task_type": "make_pdf",
-                                    "payload": {
-                                        "atbd_id": atbd.id,
-                                        "filepath": pdf_key,
-                                        "major": major,
-                                        "minor": minor,
-                                        "auth_data": auth_data,
-                                        "atbd_alias": atbd.alias,
-                                    },
-                                }
-                            )
-                        ).decode()
-                    )
-                    return JSONResponse(
-                        status_code=201,
-                        content={"message": "PDF generation in progress"},
-                    )
+                    auth_data = {
+                        "id_token": id_token,
+                        "access_token": access_token,
+                        "user_email": user.email,
+                    }
+                else:
+                    auth_data = {}
+
+                task_queue = get_task_queue()
+                task_queue.send_message(
+                    MessageBody=base64.b64encode(
+                        pickle.dumps(
+                            {
+                                "task_type": "make_pdf",
+                                "payload": {
+                                    "atbd_id": atbd.id,
+                                    "filepath": pdf_key,
+                                    "major": major,
+                                    "minor": minor,
+                                    "auth_data": auth_data,
+                                    "atbd_alias": atbd.alias,
+                                    "journal": journal,
+                                },
+                            }
+                        )
+                    ).decode()
+                )
+                return JSONResponse(
+                    status_code=201,
+                    content={"message": "PDF generation in progress"},
+                )
             except Exception as e:
                 logger.exception("Error occurred while generating PDF")
-                atbd_link = f"{config.FRONTEND_URL.strip('/')}/documents/{atbd.alias if atbd.alias else atbd.id}/v{major}.{minor}"
-                return HTMLResponse(
-                    content=generate_html_content_for_error(
-                        error=e,
-                        return_link=atbd_link,
-                        atbd_id=atbd.id,
-                        atbd_title=atbd.title,
-                        atbd_version=f"v{atbd_version.major}.{atbd_version.minor}",
-                        pdf_type="Journal" if journal else "Regular",
-                    )
+                return JSONResponse(
+                    status_code=500,
+                    content={"message": f"Error occurred while generating PDF: {e}"},
                 )
     except Exception:
         logger.exception("Could not generate PDF")

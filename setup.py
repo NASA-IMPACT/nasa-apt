@@ -12,7 +12,6 @@ inst_reqs = [
     "uvicorn[standard]==0.20.0",
     "fastapi==0.54.1",
     "gunicorn==20.0.4",
-    "latex==0.7.0",
     "pandas==1.4.0",
     "pydantic==1.5.1",
     "requests==2.28.1",
@@ -23,12 +22,14 @@ inst_reqs = [
     "SQLAlchemy==1.3.23",
     "psycopg2-binary==2.8.6",
     "aiofiles==0.6.0",
-    "pylatex==1.4.1",
     "fastapi_permissions==0.2.7",
     "mangum>=0.9.0",
     "awslambdaric==2.0.4",
     "pydash==5.0.1",
     "playwright==1.30.0",
+    "reportlab==4.0.4",
+    "PyPDF2==3.0.1",
+    "pdfplumber==0.10.2",
 ]
 extra_reqs = {
     "dev": ["pre-commit", "flake8", "black==22.3.0", "mypy", "isort", "types-requests"],

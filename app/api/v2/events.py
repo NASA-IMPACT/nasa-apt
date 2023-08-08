@@ -4,7 +4,6 @@ from copy import deepcopy
 from typing import Any, Dict, List
 
 from app.api.utils import get_major_from_version_string
-from app.api.v2.pdf import save_pdf_to_s3
 from app.api.v2.versions import process_users_input
 from app.crud.atbds import crud_atbds
 from app.crud.comments import crud_comments
@@ -199,8 +198,9 @@ def publish_handler(
         update_version_contributor_info(principals=principals, version=version)
     ]
 
-    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
-    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
+    # TODO: is this required? if yes, find a way to export pdf without user's auth token
+    # background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
+    # background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
     background_tasks.add_task(add_atbd_to_index, atbd)
     return atbd
 
@@ -246,8 +246,9 @@ def bump_minor_version_handler(
         update_version_contributor_info(principals=principals, version=version)
     ]
 
-    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
-    background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
+    # TODO: is this required? if yes, find a way to export pdf without user's auth token
+    # background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=True)
+    # background_tasks.add_task(save_pdf_to_s3, atbd=atbd, journal=False)
     background_tasks.add_task(add_atbd_to_index, atbd)
 
     # TODO: notify owner
