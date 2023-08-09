@@ -28,7 +28,7 @@ inst_reqs = [
     "pydash==5.0.1",
     "playwright==1.30.0",
     "reportlab==4.0.4",
-    "PyPDF2==3.0.1",
+    "pypdf==3.15.0",
     "pdfplumber==0.10.2",
 ]
 extra_reqs = {
