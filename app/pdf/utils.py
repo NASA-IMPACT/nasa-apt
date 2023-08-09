@@ -8,7 +8,7 @@ from io import BytesIO
 
 import pdfplumber
 from playwright.sync_api import sync_playwright
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 
 from app import config
@@ -135,8 +135,6 @@ def add_line_numbers(input_pdf_path: str, output_pdf_path: str):
     # Load the PDF into PyPDF2 and pdfplumber
     input_pdf = PdfReader(open(input_pdf_path, "rb"))
     plumber_pdf = pdfplumber.open(input_pdf_path)
-    # Output PDF
-    output = PdfWriter()
     line_number = 1
     line_spacing_threshold = 0.1
     # shift the line number up by a few pixels to adjust alignment
@@ -183,9 +181,13 @@ def add_line_numbers(input_pdf_path: str, output_pdf_path: str):
         new_pdf = PdfReader(packet)
         if new_pdf.pages:  # Sometimes the last page is blank; skip it
             page.merge_page(new_pdf.pages[0])
-            output.add_page(page)
 
-    # Finally, write "output" to a real file
+    # Finally, save the resulting PDF to disk
+    output = PdfWriter()
+    output.append(input_pdf)
+    for page in output.pages:
+        # cpu intensive; but reduces file size quite a bit
+        page.compress_content_streams()
     output_stream = open(output_pdf_path, "wb")
     output.write(output_stream)
     output_stream.close()
