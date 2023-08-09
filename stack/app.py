@@ -4,9 +4,10 @@ CDK Stack definition code for NASA APT API
 import os
 from typing import Any
 
+import aws_cdk.aws_apigatewayv2_alpha as apigw
+import aws_cdk.aws_apigatewayv2_integrations_alpha as apigw_integrations
 import config
-from aws_cdk import aws_apigatewayv2 as apigw
-from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
+from aws_cdk import App, Aspects, CfnOutput, Duration, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
@@ -16,13 +17,13 @@ from aws_cdk import aws_opensearchservice as opensearch
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_sqs as sqs
-from aws_cdk import core
+from constructs import Construct
 from permissions_boundary import PermissionBoundaryAspect
 
 
-class nasaAPTLambdaStack(core.Stack):
+class nasaAPTLambdaStack(Stack):
     """
-    Covid API Lambda Stack
+    NASA APT Lambda Stack
     This code is freely adapted from:
     - https://github.com/leothomas/titiler/blob/10df64fbbdd342a0762444eceebaac18d8867365/stack/app.py author: @leothomas
     - https://github.com/ciaranevans/titiler/blob/3a4e04cec2bd9b90e6f80decc49dc3229b6ef569/stack/app.py author: @ciaranevans
@@ -30,7 +31,7 @@ class nasaAPTLambdaStack(core.Stack):
 
     def __init__(
         self,
-        scope: core.Construct,
+        scope: Construct,
         id: str,
         memory: int = 1024,
         timeout: int = 60 * 2,
@@ -46,7 +47,7 @@ class nasaAPTLambdaStack(core.Stack):
             permission_boundary = iam.ManagedPolicy.from_managed_policy_name(
                 self, "PermissionsBoundary", "mcp-tenantOperator-APIG"
             )
-            core.Aspects.of(self).add(PermissionBoundaryAspect(permission_boundary))
+            Aspects.of(self).add(PermissionBoundaryAspect(permission_boundary))
 
         if config.GCC_MODE and not config.VPC_ID:
             raise Exception(
@@ -70,7 +71,7 @@ class nasaAPTLambdaStack(core.Stack):
                     ),
                     ec2.SubnetConfiguration(
                         name="private-subnet",
-                        subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT,
+                        subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS,
                         cidr_mask=28,
                     ),
                 ],
@@ -138,20 +139,20 @@ class nasaAPTLambdaStack(core.Stack):
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             publicly_accessible=True,
             database_name="nasadb",
-            backup_retention=core.Duration.days(7),
+            backup_retention=Duration.days(7),
             deletion_protection="prod" in config.STAGE.lower(),
-            removal_policy=core.RemovalPolicy.SNAPSHOT,
+            removal_policy=RemovalPolicy.SNAPSHOT,
         )
 
         if config.GCC_MODE:
             rds_params["vpc_subnets"] = ec2.SubnetSelection(
-                subnet_type=ec2.SubnetType.PRIVATE
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
             )
             rds_params["publicly_accessible"] = False
 
         database = rds.DatabaseInstance(self, f"{id}-postgres-db", **rds_params)
 
-        core.CfnOutput(
+        CfnOutput(
             self,
             f"{id}-database-secret-arn",
             value=database.secret.secret_arn,
@@ -163,9 +164,9 @@ class nasaAPTLambdaStack(core.Stack):
         bucket_params = dict(
             scope=self,
             id=f"{id}",
-            removal_policy=core.RemovalPolicy.RETAIN
+            removal_policy=RemovalPolicy.RETAIN
             if "prod" in config.STAGE.lower()
-            else core.RemovalPolicy.DESTROY,
+            else RemovalPolicy.DESTROY,
         )
         if config.S3_BUCKET:
             bucket_params["bucket_name"] = config.S3_BUCKET
@@ -176,11 +177,9 @@ class nasaAPTLambdaStack(core.Stack):
             self,
             f"{id}-queue",
             # how long to wait before a retry
-            visibility_timeout=core.Duration.seconds(visibility_timeout),
+            visibility_timeout=Duration.seconds(visibility_timeout),
             # how long to keep messages in the queue
-            retention_period=core.Duration.seconds(
-                visibility_timeout * config.MAX_RETRIES
-            ),
+            retention_period=Duration.seconds(visibility_timeout * config.MAX_RETRIES),
         )
 
         # This domain is launched within a VPC
@@ -195,7 +194,7 @@ class nasaAPTLambdaStack(core.Stack):
             vpc=vpc,
             vpc_subnets=[
                 ec2.SubnetSelection(
-                    subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT,
+                    subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS,
                     one_per_az=True,
                     availability_zones=sorted(vpc.availability_zones)[:1],
                 )
@@ -211,9 +210,9 @@ class nasaAPTLambdaStack(core.Stack):
                 volume_type=ec2.EbsDeviceVolumeType.GP2,
             ),
             automated_snapshot_start_hour=0,
-            removal_policy=core.RemovalPolicy.RETAIN
+            removal_policy=RemovalPolicy.RETAIN
             if "prod" in config.STAGE.lower()
-            else core.RemovalPolicy.DESTROY,
+            else RemovalPolicy.DESTROY,
         )
 
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
@@ -244,10 +243,12 @@ class nasaAPTLambdaStack(core.Stack):
             ),
             handler=_lambda.Handler.FROM_IMAGE,
             memory_size=memory,
-            timeout=core.Duration.seconds(timeout),
+            timeout=Duration.seconds(timeout),
             environment=lambda_env,
             vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+            ),
             security_groups=[lambda_security_group],
         )
 
@@ -281,7 +282,7 @@ class nasaAPTLambdaStack(core.Stack):
                 f"{id}-apigw-lambda-integration", handler=api_handler_lambda
             ),
         )
-        core.CfnOutput(
+        CfnOutput(
             self,
             f"{id}-endpoint-url",
             value=api_gateway.api_endpoint,
@@ -298,10 +299,12 @@ class nasaAPTLambdaStack(core.Stack):
             ),
             handler=_lambda.Handler.FROM_IMAGE,
             memory_size=memory,
-            timeout=core.Duration.seconds(timeout),
+            timeout=Duration.seconds(timeout),
             environment=lambda_env,
             vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+            ),
             security_groups=[lambda_security_group],
         )
 
@@ -359,9 +362,9 @@ class nasaAPTLambdaStack(core.Stack):
                 email_style=cognito.VerificationEmailStyle.LINK,
             ),
             sign_in_case_sensitive=False,
-            removal_policy=core.RemovalPolicy.RETAIN
+            removal_policy=RemovalPolicy.RETAIN
             if "prod" in config.STAGE.lower()
-            else core.RemovalPolicy.DESTROY,
+            else RemovalPolicy.DESTROY,
         )
 
         for lambda_function in [api_handler_lambda, sqs_handler_lambda]:
@@ -382,7 +385,7 @@ class nasaAPTLambdaStack(core.Stack):
                 )
             )
 
-        core.CfnOutput(
+        CfnOutput(
             self,
             f"{id}-userpool-id",
             value=user_pool.user_pool_id,
@@ -411,7 +414,7 @@ class nasaAPTLambdaStack(core.Stack):
             user_pool_client_name=f"{id}-apt-app-client",
         )
 
-        core.CfnOutput(
+        CfnOutput(
             self,
             f"{id}-app-client-id",
             value=app_client.user_pool_client_id,
@@ -423,7 +426,7 @@ class nasaAPTLambdaStack(core.Stack):
             cognito_domain=cognito.CognitoDomainOptions(domain_prefix=f"{id}"),
         )
 
-        core.CfnOutput(
+        CfnOutput(
             self,
             f"{id}-domain",
             value=domain.domain_name,
@@ -440,7 +443,7 @@ class nasaAPTLambdaStack(core.Stack):
             )
 
 
-app = core.App()
+app = App()
 
 
 # Tag infrastructure
@@ -451,7 +454,7 @@ for key, value in {
     "Client": config.CLIENT,
 }.items():
     if value:
-        core.Tags.of(app).add(key, value)
+        Tags.of(app).add(key, value)
 
 
 lambda_stackname = f"{config.PROJECT_NAME}-{config.STAGE}"

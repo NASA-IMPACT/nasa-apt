@@ -56,7 +56,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v1
         with: 
-          node-version: 14 
+          node-version: 18 
       - name: Configure awscli
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -82,7 +82,7 @@ jobs:
           pip install -e .[deploy] --no-binary xmlsec
       - name: Install CDK
         # upgrade cdk version to latest
-        run: npm install -g aws-cdk@2.54.0 
+        run: npm install -g aws-cdk@2.87.0 
       # CDK warning 19836 regarding cdk version blocks CDK bootstrap
       - name: Bootstrap CDK  
         run: | 
