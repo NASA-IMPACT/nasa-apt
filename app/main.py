@@ -3,6 +3,7 @@
 
 from app import config
 from app.api.v2.api import api_router
+from app.schemas.bootstrap import BootstrapResponse
 
 from fastapi import FastAPI
 
@@ -37,3 +38,20 @@ app.include_router(api_router, prefix=config.API_VERSION_STRING)
 def ping():
     """Health check."""
     return {"ping": "pong!"}
+
+
+@app.get(
+    "/bootstrap",
+    responses={
+        200: dict(description="Return feature flags and metadata for the frontend")
+    },
+    response_model=BootstrapResponse,
+)
+def bootstrap():
+    """Return feature flags and metadata for the frontend"""
+    return {
+        "metadata": {
+            "version": config.API_VERSION_STRING,
+        },
+        "feature_flags": config.FEATURE_FLAGS,
+    }

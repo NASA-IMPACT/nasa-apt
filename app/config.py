@@ -114,3 +114,12 @@ else:
         "TASK_QUEUE_URL env var required"
     )
     PDF_PREVIEW_HOST = FRONTEND_URL
+
+# Feature flags
+FEATURE_FLAGS = {
+    "2FA_ENABLED": os.environ.get("APT_FEATURE_2FA_ENABLED", "true").lower() != "false",
+    "JOURNAL_PDF_EXPORT_ENABLED": os.environ.get(
+        "APT_FEATURE_JOURNAL_PDF_EXPORT_ENABLED", "false"
+    ).lower()
+    != "false",
+}
