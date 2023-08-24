@@ -229,6 +229,8 @@ class nasaAPTLambdaStack(Stack):
             TASK_QUEUE_URL=sqs_queue.queue_url,
             S3_BUCKET=bucket.bucket_name,
             NOTIFICATIONS_FROM=config.NOTIFICATIONS_FROM,
+            APT_FEATURE_MFA_ENABLED=config.APT_FEATURE_MFA_ENABLED,
+            APT_FEATURE_JOURNAL_PDF_EXPORT_ENABLED=config.APT_FEATURE_JOURNAL_PDF_EXPORT_ENABLED,
             MODULE_NAME="nasa_apt.main",
             VARIABLE_NAME="app",
         )

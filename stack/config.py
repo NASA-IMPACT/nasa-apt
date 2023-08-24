@@ -70,3 +70,9 @@ NOTIFICATIONS_FROM = os.environ.get("NOTIFICATIONS_FROM") or exit(
 )
 
 GCC_MODE = bool(os.environ.get("GCC_MODE"))
+
+# Feature flags
+APT_FEATURE_MFA_ENABLED = os.environ.get("APT_FEATURE_MFA_ENABLED", "true")
+APT_FEATURE_JOURNAL_PDF_EXPORT_ENABLED = os.environ.get(
+    "APT_FEATURE_JOURNAL_PDF_EXPORT_ENABLED", "false"
+)
