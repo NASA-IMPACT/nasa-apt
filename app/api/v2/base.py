@@ -1,9 +1,12 @@
+"""Base API endpoints"""
+
+from app import config
+from app.schemas.bootstrap import BootstrapResponse
+
 from fastapi import APIRouter
 
-from app.schemas.bootstrap import BootstrapResponse
-from app import config
-
 router = APIRouter()
+
 
 @router.get(
     "/bootstrap",
