@@ -2,6 +2,7 @@
 
 from app.api.v2 import (
     atbds,
+    base,
     contacts,
     events,
     images,
@@ -16,6 +17,7 @@ from app.api.v2 import (
 from fastapi import APIRouter
 
 api_router = APIRouter()
+api_router.include_router(base.router, tags=["base"])
 api_router.include_router(atbds.router, tags=["atbds"])
 api_router.include_router(versions.router, tags=["versions"])
 api_router.include_router(images.router, tags=["images"])

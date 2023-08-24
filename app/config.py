@@ -117,8 +117,7 @@ else:
 
 # Feature flags
 FEATURE_FLAGS = {
-    "TWOFA_ENABLED": os.environ.get("APT_FEATURE_2FA_ENABLED", "true").lower()
-    != "false",
+    "MFA_ENABLED": os.environ.get("APT_FEATURE_MFA_ENABLED", "true").lower() != "false",
     "JOURNAL_PDF_EXPORT_ENABLED": os.environ.get(
         "APT_FEATURE_JOURNAL_PDF_EXPORT_ENABLED", "false"
     ).lower()

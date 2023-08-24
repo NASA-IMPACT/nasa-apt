@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class FeatureFlags(BaseModel):
     """Feature Flags."""
 
-    TWOFA_ENABLED: bool
+    MFA_ENABLED: bool
     JOURNAL_PDF_EXPORT_ENABLED: bool
 
 
