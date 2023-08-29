@@ -101,6 +101,17 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         which needs to be saved as a field of the AtbdVersion, gets generated when
         serializing the Atbd to the database."""
 
+        # Unique validation
+        if (
+            atbd_input.alias is not None
+            and db.query(
+                db.query(Atbds).filter(Atbds.alias == atbd_input.alias).exists()
+            ).scalar()
+        ):
+            raise HTTPException(
+                status_code=400, detail="Provided alias is not available"
+            )
+
         atbd = Atbds(
             **atbd_input.dict(),
             created_by=user_sub,
