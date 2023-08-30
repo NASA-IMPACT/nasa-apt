@@ -45,7 +45,11 @@ def make_pdf(
     logger.info("Generating PDF")
 
     # ATBD PDF preview link to be used by Playwright.
-    atbd_link = f"{config.PDF_PREVIEW_HOST}/documents/{atbd_alias if atbd_alias else atbd_id}/v{major}.{minor}/pdf-preview"
+    base_url = f"{config.PDF_PREVIEW_HOST}/documents/{atbd_alias if atbd_alias else atbd_id}/v{major}.{minor}"
+    if journal:
+        atbd_link = f"{base_url}/journal-pdf-preview"
+    else:
+        atbd_link = f"{base_url}/pdf-preview"
 
     # create a temp directory to store the PDF and related files
     with tempfile.TemporaryDirectory() as tmp_dir:

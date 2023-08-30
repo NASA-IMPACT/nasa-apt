@@ -128,6 +128,8 @@ services:
       TASK_QUEUE_NAME: dev-tasks
       NOTIFICATIONS_FROM: no-reply@ds.io
       PDF_PREVIEW_HOST: http://ui:9000
+      APT_FEATURE_JOURNAL_PDF_EXPORT_ENABLED: "true"
+      APT_FEATURE_MFA_ENABLED: "false"
     depends_on:
       - bootstrapper
 
