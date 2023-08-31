@@ -122,5 +122,6 @@ FEATURE_FLAGS = {
         "APT_FEATURE_JOURNAL_PDF_EXPORT_ENABLED", "false"
     ).lower()
     != "false",
-    "PDF_EXPORT_DEBUG": os.environ.get("APT_FEATURE_PDF_EXPORT_DEBUG", "false").lower() != "false",
+    "PDF_EXPORT_DEBUG": os.environ.get("APT_FEATURE_PDF_EXPORT_DEBUG", "false").lower()
+    != "false",
 }
