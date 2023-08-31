@@ -85,6 +85,7 @@ def make_pdf(
 
             # if debugging is enabled, save a screenshot of the page to S3
             if config.FEATURE_FLAGS.get("PDF_EXPORT_DEBUG"):
+                logger.info(f"Page URL: {atbd_link}")
                 logger.info(f"Page HTML: {page.inner_html('html')}")
                 screenshot_filepath = filepath.replace(".pdf", ".png")
                 local_screenshot_path = pathlib.Path(tmp_dir, screenshot_filepath)
