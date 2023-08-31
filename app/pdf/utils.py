@@ -82,6 +82,19 @@ def make_pdf(
             page.goto(atbd_link)
             # wait for a specific marker element to be rendered before generating the PDF
             time.sleep(5)
+
+            # if debugging is enabled, save a screenshot of the page to S3
+            if config.FEATURE_FLAGS.get("PDF_EXPORT_DEBUG"):
+                logger.info(f"Page HTML: {page.inner_html('html')}")
+                screenshot_filepath = filepath.replace(".pdf", ".png")
+                local_screenshot_path = pathlib.Path(tmp_dir, screenshot_filepath)
+                page.screenshot(path=local_screenshot_path)
+                save_pdf_to_s3(str(local_screenshot_path), screenshot_filepath)
+                logger.info(
+                    f"Screenshot generated at path: {local_screenshot_path} and saved "
+                    f"to S3 at path: {screenshot_filepath}"
+                )
+
             page.wait_for_selector("#pdf-preview-ready", state="attached")
             page.pdf(path=local_path, format="A4")
             browser.close()
