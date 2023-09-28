@@ -109,7 +109,9 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
             ).scalar()
         ):
             raise HTTPException(
-                status_code=400, detail="Provided alias is not available"
+                status_code=400,
+                detail="The ATBD title is available. However, the provided alias "
+                "is not available. Please provide a different alias."
             )
 
         atbd = Atbds(
