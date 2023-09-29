@@ -73,6 +73,8 @@ jobs:
           NOTIFICATIONS_FROM="no-reply@ds.io"
           APT_FEATURE_JOURNAL_PDF_EXPORT_ENABLED="true"
           IMPORT_EXISTING_DATABASE="true"
+          EXISTING_DATABASE_ENDPOINT="nasa-apt-api-staging-db.cb4xylogqcpx.us-east-1.rds.amazonaws.com"
+          EXISTING_DATABASE_SECRET_ARN="arn:aws:secretsmanager:us-east-1:552819999234:secret:nasa-apt-api-staging-database-secrets-VSuGfT"
           EOF
       - name: Install APT dependencies
         run: |
