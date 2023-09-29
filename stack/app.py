@@ -17,6 +17,7 @@ from aws_cdk import aws_opensearchservice as opensearch
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_sqs as sqs
+from aws_cdk import aws_secretsmanager as secretsmanager
 from constructs import Construct
 from permissions_boundary import PermissionBoundaryAspect
 
@@ -150,13 +151,7 @@ class nasaAPTLambdaStack(Stack):
             )
             rds_params["publicly_accessible"] = False
 
-        if config.IMPORT_EXISTING_DATABASE:
-            database = rds.DatabaseInstance.from_database_instance_attributes(
-                self, f"{id}-postgres-db", **rds_params
-            )
-        else:
-            database = rds.DatabaseInstance(self, f"{id}-postgres-db", **rds_params)
-
+        database = rds.DatabaseInstance(self, f"{id}-postgres-db", **rds_params)
         CfnOutput(
             self,
             f"{id}-database-secret-arn",
@@ -165,6 +160,21 @@ class nasaAPTLambdaStack(Stack):
                 "Arn of the SecretsManager instance holding the connection info for Postgres DB"
             ),
         )
+
+        if config.IMPORT_EXISTING_DATABASE:
+            database = rds.DatabaseInstance.from_database_instance_attributes(
+                self, f"{id}-postgres-db-encrypted",
+                instance_identifier=f"{id}-db",
+                instance_endpoint_address=config.EXISTING_DATABASE_ENDPOINT,
+                port=5432,
+                security_groups=[rds_security_group],
+                engine=rds.DatabaseInstanceEngine.POSTGRES,
+            )
+            database.secret = secretsmanager.Secret.from_secret_complete_arn(
+                self,
+                f"{id}-database-secrets",
+                secret_complete_arn=config.EXISTING_DATABASE_SECRET_ARN,
+            )
 
         bucket_params = dict(
             scope=self,

@@ -26,6 +26,8 @@ TASK_ENV: dict = dict()
 VPC_ID = os.environ.get("VPC_ID")
 
 IMPORT_EXISTING_DATABASE = os.environ.get("IMPORT_EXISTING_DATABASE")
+EXISTING_DATABASE_ENDPOINT = os.environ.get("EXISTING_DATABASE_ENDPOINT")
+EXISTING_DATABASE_SECRET_ARN = os.environ.get("EXISTING_DATABASE_SECRET_ARN")
 
 
 ################################################################################
