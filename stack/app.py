@@ -167,7 +167,9 @@ class nasaAPTLambdaStack(Stack):
                 )
                 rds_params["publicly_accessible"] = False
 
-            database = rds.DatabaseInstance(self, f"{id}-postgres-database", **rds_params)
+            database = rds.DatabaseInstance(
+                self, f"{id}-postgres-database", **rds_params
+            )
         CfnOutput(
             self,
             f"{id}-database-secret-arn",
