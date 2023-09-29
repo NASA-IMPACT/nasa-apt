@@ -25,6 +25,8 @@ CLIENT = os.environ.get("CLIENT", "NASA Impact")
 TASK_ENV: dict = dict()
 VPC_ID = os.environ.get("VPC_ID")
 
+IMPORT_EXISTING_DATABASE = os.environ.get("IMPORT_EXISTING_DATABASE")
+
 
 ################################################################################
 #                                                                              #
