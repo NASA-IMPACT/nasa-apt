@@ -16,8 +16,8 @@ from aws_cdk import aws_lambda_event_sources as lambda_event_source
 from aws_cdk import aws_opensearchservice as opensearch
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
-from aws_cdk import aws_sqs as sqs
 from aws_cdk import aws_secretsmanager as secretsmanager
+from aws_cdk import aws_sqs as sqs
 from constructs import Construct
 from permissions_boundary import PermissionBoundaryAspect
 
@@ -163,7 +163,8 @@ class nasaAPTLambdaStack(Stack):
 
         if config.IMPORT_EXISTING_DATABASE:
             database = rds.DatabaseInstance.from_database_instance_attributes(
-                self, f"{id}-postgres-db-encrypted",
+                self,
+                f"{id}-postgres-db-encrypted",
                 instance_identifier=f"{id}-db",
                 instance_endpoint_address=config.EXISTING_DATABASE_ENDPOINT,
                 port=5432,
