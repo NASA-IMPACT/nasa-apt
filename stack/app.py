@@ -151,7 +151,9 @@ class nasaAPTLambdaStack(Stack):
             rds_params["publicly_accessible"] = False
 
         if config.IMPORT_EXISTING_DATABASE:
-            database = rds.DatabaseInstance.from_database_instance_attributes(self, f"{id}-postgres-db", **rds_params)
+            database = rds.DatabaseInstance.from_database_instance_attributes(
+                self, f"{id}-postgres-db", **rds_params
+            )
         else:
             database = rds.DatabaseInstance(self, f"{id}-postgres-db", **rds_params)
 
