@@ -135,7 +135,7 @@ class nasaAPTLambdaStack(Stack):
             instance_type=ec2.InstanceType.of(
                 ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL
             ),
-            instance_identifier=f"{id}-database",
+            instance_identifier=f"{id}-db",
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             publicly_accessible=True,
             database_name="nasadb",
