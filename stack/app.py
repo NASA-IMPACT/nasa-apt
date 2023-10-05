@@ -136,7 +136,7 @@ class nasaAPTLambdaStack(Stack):
             instance_type=ec2.InstanceType.of(
                 ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL
             ),
-            instance_identifier=f"{id}-db-encrypted",
+            instance_identifier=f"{id}-db-encrypt",
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             publicly_accessible=True,
             database_name="nasadb",
@@ -154,15 +154,16 @@ class nasaAPTLambdaStack(Stack):
         if config.DATABASE_FROM_SNAPSHOT_ID:
             rds_params["snapshot_identifier"] = config.DATABASE_FROM_SNAPSHOT_ID
             rds_params.pop("storage_encrypted")
+            rds_params.pop("database_name")
             rds_params["credentials"] = rds.SnapshotCredentials.from_generated_secret(
                 username="masteruser"
             )
             database = rds.DatabaseInstanceFromSnapshot(
-                self, f"{id}-postgres-database-encrypted", **rds_params
+                self, f"{id}-postgres-database-encrypt", **rds_params
             )
         else:
             database = rds.DatabaseInstance(
-                self, f"{id}-postgres-database-encrypted", **rds_params
+                self, f"{id}-postgres-database-encrypt", **rds_params
             )
         CfnOutput(
             self,
