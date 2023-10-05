@@ -154,8 +154,12 @@ class nasaAPTLambdaStack(Stack):
         if config.DATABASE_FROM_SNAPSHOT_ID:
             rds_params["snapshot_identifier"] = config.DATABASE_FROM_SNAPSHOT_ID
             rds_params.pop("storage_encrypted")
-            rds_params["credentials"] = rds.SnapshotCredentials.from_generated_secret(username="masteruser")
-            database = rds.DatabaseInstanceFromSnapshot(self, f"{id}-postgres-database-encrypted", **rds_params)
+            rds_params["credentials"] = rds.SnapshotCredentials.from_generated_secret(
+                username="masteruser"
+            )
+            database = rds.DatabaseInstanceFromSnapshot(
+                self, f"{id}-postgres-database-encrypted", **rds_params
+            )
         else:
             database = rds.DatabaseInstance(
                 self, f"{id}-postgres-database-encrypted", **rds_params
