@@ -123,52 +123,42 @@ class nasaAPTLambdaStack(Stack):
 
         # TODO: add bootstrapping lambda as a custom resource to be run by cloudformation
 
-        if config.IMPORT_EXISTING_DATABASE:
-            database = rds.DatabaseInstance.from_database_instance_attributes(
-                self,
-                f"{id}-postgres-database",
-                instance_identifier=f"{id}-db",
-                instance_endpoint_address=config.EXISTING_DATABASE_ENDPOINT,
-                port=5432,
-                security_groups=[rds_security_group],
-                engine=rds.DatabaseInstanceEngine.POSTGRES,
+        rds_params = dict(
+            credentials=rds.Credentials.from_generated_secret(
+                username="masteruser", secret_name=f"{id}-db-secrets"
+            ),
+            allocated_storage=10,
+            vpc=vpc,
+            security_groups=[rds_security_group],
+            engine=rds.DatabaseInstanceEngine.POSTGRES,
+            # Upgraded to t3 small RDS instance since t2 small no longer
+            # supports postgres 13+
+            instance_type=ec2.InstanceType.of(
+                ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL
+            ),
+            instance_identifier=f"{id}-db-encrypted",
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            publicly_accessible=True,
+            database_name="nasadb",
+            backup_retention=Duration.days(7),
+            deletion_protection="prod" in config.STAGE.lower(),
+            removal_policy=RemovalPolicy.SNAPSHOT,
+            storage_encrypted=True,
+        )
+        if config.GCC_MODE:
+            rds_params["vpc_subnets"] = ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
             )
-            database.secret = secretsmanager.Secret.from_secret_complete_arn(
-                self,
-                f"{id}-database-secrets",
-                secret_complete_arn=config.EXISTING_DATABASE_SECRET_ARN,
-            )
-        else:
-            rds_params = dict(
-                credentials=rds.Credentials.from_generated_secret(
-                    username="masteruser", secret_name=f"{id}-database-secrets"
-                ),
-                allocated_storage=10,
-                vpc=vpc,
-                security_groups=[rds_security_group],
-                engine=rds.DatabaseInstanceEngine.POSTGRES,
-                # Upgraded to t3 small RDS instance since t2 small no longer
-                # supports postgres 13+
-                instance_type=ec2.InstanceType.of(
-                    ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL
-                ),
-                instance_identifier=f"{id}-db",
-                vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-                publicly_accessible=True,
-                database_name="nasadb",
-                backup_retention=Duration.days(7),
-                deletion_protection="prod" in config.STAGE.lower(),
-                removal_policy=RemovalPolicy.SNAPSHOT,
-                storage_encrypted=True,
-            )
-            if config.GCC_MODE:
-                rds_params["vpc_subnets"] = ec2.SubnetSelection(
-                    subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
-                )
-                rds_params["publicly_accessible"] = False
+            rds_params["publicly_accessible"] = False
 
+        if config.DATABASE_FROM_SNAPSHOT_ID:
+            rds_params["snapshot_identifier"] = config.DATABASE_FROM_SNAPSHOT_ID
+            rds_params.pop("storage_encrypted")
+            rds_params["credentials"] = rds.SnapshotCredentials.from_generated_secret(username="masteruser")
+            database = rds.DatabaseInstanceFromSnapshot(self, f"{id}-postgres-database-encrypted", **rds_params)
+        else:
             database = rds.DatabaseInstance(
-                self, f"{id}-postgres-database", **rds_params
+                self, f"{id}-postgres-database-encrypted", **rds_params
             )
         CfnOutput(
             self,
