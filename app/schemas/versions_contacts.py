@@ -44,6 +44,7 @@ class RolesEnum(str, Enum):
     INVESTIGATION = "Investigation"
     FUNDING_ACQUISITION = "Funding acquisition"
     CORRESPONDING_AUTHOR = "Corresponding Author"
+    DOCUMENT_REVIEWER = "Document Reviewer"
 
 
 class AtbdLinkOutput(BaseModel):
