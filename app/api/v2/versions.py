@@ -15,6 +15,7 @@ from app.permissions import check_permissions
 from app.schemas import atbds, versions, versions_contacts
 from app.schemas.atbds import AtbdDocumentTypeEnum
 from app.schemas.users import CognitoUser
+from app.schemas.versions_contacts import RolesEnum
 from app.search.opensearch import remove_atbd_from_index
 from app.users.auth import get_user, require_user
 from app.users.cognito import (
@@ -71,6 +72,18 @@ def get_version(
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     [atbd_version] = atbd.versions
     check_permissions(principals=principals, action="view", acl=atbd_version.__acl__())
+    # Hide reviewer info from atbd_version for other users
+    if not check_permissions(
+        principals=principals,
+        action="view_update_reviewer_info",
+        acl=atbd_version.__acl__(),
+        raise_exception=False,
+    ):
+        atbd_version.contacts_link = [
+            contact_link
+            for contact_link in atbd_version.contacts_link or []
+            if RolesEnum.DOCUMENT_REVIEWER.value not in contact_link.roles or []
+        ]
     atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 
@@ -171,10 +184,14 @@ def update_atbd_version(  # noqa : C901
 
     if version_input.contacts is not None:
 
+        contact_has_reviewer_info = False
         # Overwrite any existing `ContactAssociation` items
         # in the database - this makes updating roles on an existing
         # contacts_link item possible.
         for contact in version_input.contacts:
+            if RolesEnum.DOCUMENT_REVIEWER.value in (contact.roles or []):
+                contact_has_reviewer_info = True
+
             crud_contacts_associations.upsert(
                 db_session=db,
                 obj_in=versions_contacts.ContactsAssociation(
@@ -184,6 +201,14 @@ def update_atbd_version(  # noqa : C901
                     roles=contact.roles,
                     affiliations=contact.affiliations,
                 ),
+            )
+
+        # Check if user have permission to do this
+        if contact_has_reviewer_info:
+            check_permissions(
+                principals=principals,
+                action="view_update_reviewer_info",
+                acl=atbd_version.__acl__(),
             )
 
         # Remove contacts not in the input data contacts
