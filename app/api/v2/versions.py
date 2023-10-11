@@ -72,18 +72,6 @@ def get_version(
     atbd = crud_atbds.get(db=db, atbd_id=atbd_id, version=major)
     [atbd_version] = atbd.versions
     check_permissions(principals=principals, action="view", acl=atbd_version.__acl__())
-    # Hide reviewer info from atbd_version for other users
-    if not check_permissions(
-        principals=principals,
-        action="view_reviewer_info",
-        acl=atbd_version.__acl__(),
-        raise_exception=False,
-    ):
-        atbd_version.contacts_link = [
-            contact_link
-            for contact_link in atbd_version.contacts_link or []
-            if RolesEnum.DOCUMENT_REVIEWER.value not in contact_link.roles or []
-        ]
     atbd = update_atbd_contributor_info(principals, atbd)
     return atbd
 

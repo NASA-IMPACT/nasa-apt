@@ -30,7 +30,6 @@ ATBD_VERSION_ACLS: Dict = {
     ],
     "owner": [
         {"action": "view"},
-        {"action": "view_reviewer_info"},
         {"action": "delete", "conditions": {"status": ["DRAFT"]}},
         {"action": "request_closed_review", "conditions": {"status": ["DRAFT"]}},
         {
@@ -87,7 +86,6 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "comment"},
     ],
     "authors": [
-        {"action": "view_reviewer_info"},
         {"action": "join_reviewers", "deny": True},
         {"action": "view"},
         {"action": "comment"},
@@ -147,7 +145,6 @@ ATBD_VERSION_ACLS: Dict = {
         {"action": "join_reviewers"},
     ],
     "role:curator": [
-        {"action": "view_reviewer_info"},
         {"action": "receive_ownership", "deny": True},
         {"action": "join_authors", "deny": True},
         {"action": "join_reviewers", "deny": True},
