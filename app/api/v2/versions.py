@@ -75,7 +75,7 @@ def get_version(
     # Hide reviewer info from atbd_version for other users
     if not check_permissions(
         principals=principals,
-        action="view_update_reviewer_info",
+        action="view_reviewer_info",
         acl=atbd_version.__acl__(),
         raise_exception=False,
     ):
@@ -184,14 +184,10 @@ def update_atbd_version(  # noqa : C901
 
     if version_input.contacts is not None:
 
-        contact_has_reviewer_info = False
         # Overwrite any existing `ContactAssociation` items
         # in the database - this makes updating roles on an existing
         # contacts_link item possible.
         for contact in version_input.contacts:
-            if RolesEnum.DOCUMENT_REVIEWER.value in (contact.roles or []):
-                contact_has_reviewer_info = True
-
             crud_contacts_associations.upsert(
                 db_session=db,
                 obj_in=versions_contacts.ContactsAssociation(
@@ -201,14 +197,6 @@ def update_atbd_version(  # noqa : C901
                     roles=contact.roles,
                     affiliations=contact.affiliations,
                 ),
-            )
-
-        # Check if user have permission to do this
-        if contact_has_reviewer_info:
-            check_permissions(
-                principals=principals,
-                action="view_update_reviewer_info",
-                acl=atbd_version.__acl__(),
             )
 
         # Remove contacts not in the input data contacts
