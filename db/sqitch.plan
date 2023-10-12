@@ -29,3 +29,4 @@ threads_notify [threads] 2022-07-27T07:06:50Z Oliver Roick <oroick@192-168-1-106
 add_pdf_uploads_table [tables] 2023-05-22T05:40:55Z navin <navin@nav-machine> # Add PDF upload Table
 add_pdf_in_atbd [add_pdf_uploads_table] 2023-05-22T06:06:10Z navin <navin@nav-machine> # Add PDF upload support to ATBD
 add_reviewer_info_in_atbd_version 2023-08-03T07:07:52Z navin <navin@nav-machine> # Add Reviewer info column ATBD Version
+remove_reviewer_info_in_atbd_version 2023-10-11T08:05:21Z navin <navin@nav-machine> # Remove Reviewer info column ATBD Version

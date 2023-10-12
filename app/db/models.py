@@ -97,7 +97,6 @@ class AtbdVersions(Base):
     journal_status = Column(String())
     keywords = Column(postgresql.ARRAY(postgresql.JSONB), server_default="{{}}")
     locked_by = Column(String(), nullable=True)
-    reviewer_info = Column(postgresql.JSONB, server_default="{{}}")
 
     pdf = relationship(
         "PDFUpload",
