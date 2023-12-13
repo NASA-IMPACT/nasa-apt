@@ -95,8 +95,20 @@ def make_pdf(
                     f"to S3 at path: {screenshot_filepath}"
                 )
 
+            header_template = """
+                <span style="font-size: 8px; color: #D2D4D1; margin: auto; text-align: center;">
+                    This ATBD was downloaded from the NASA Algorithm Publication Tool (APT) Manuscript submitted to Earth and Space Science.
+                </span>
+            """
+
             page.wait_for_selector("#pdf-preview-ready", state="attached")
-            page.pdf(path=local_path, format="A4")
+            page.pdf(
+                path=local_path,
+                format="A4",
+                header_template=header_template,
+                footer_template="<span />",
+                display_header_footer=True,
+            )
             browser.close()
         logger.info(f"PDF generated at path: {local_path}")
         if journal:
