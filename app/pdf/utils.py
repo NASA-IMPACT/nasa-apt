@@ -51,6 +51,13 @@ def make_pdf(
     else:
         atbd_link = f"{base_url}/pdf-preview"
 
+    header_text = "This ATBD was downloaded from the NASA Algorithm Publication Tool (APT) Manuscript submitted to Earth and Space Science."
+    header_template = f"""
+        <span style="font-size: 8px; color: #D2D4D1; margin: auto; text-align: center;">
+            {header_text}
+        </span>
+    """
+
     # create a temp directory to store the PDF and related files
     with tempfile.TemporaryDirectory() as tmp_dir:
         local_path = pathlib.Path(tmp_dir, filepath)
@@ -96,12 +103,27 @@ def make_pdf(
                 )
 
             page.wait_for_selector("#pdf-preview-ready", state="attached")
-            page.pdf(path=local_path, format="A4")
+            if journal:
+                page.pdf(
+                    path=local_path,
+                    format="A4",
+                    header_template=header_template,
+                    footer_template="<span />",
+                    prefer_css_page_size=True,
+                    display_header_footer=True,
+                )
+            else:
+                page.pdf(path=local_path, format="A4")
             browser.close()
+
         logger.info(f"PDF generated at path: {local_path}")
         if journal:
             output_pdf_path = str(local_path).replace(".pdf", "_numbered.pdf")
-            add_line_numbers(str(local_path), output_pdf_path)
+            add_line_numbers(
+                str(local_path),
+                output_pdf_path,
+                ignore_line_texts=set([header_text]),
+            )
             save_pdf_to_s3(output_pdf_path, filepath)
         else:
             save_pdf_to_s3(str(local_path), filepath)
@@ -145,7 +167,7 @@ def build_storage_state(
     return temp_file
 
 
-def add_line_numbers(input_pdf_path: str, output_pdf_path: str):
+def add_line_numbers(input_pdf_path: str, output_pdf_path: str, ignore_line_texts=None):
     """Add line numbers to Journal PDF"""
     logger.info("Adding line numbers to PDF")
 
@@ -172,6 +194,8 @@ def add_line_numbers(input_pdf_path: str, output_pdf_path: str):
         prev_line_bottom = 0
 
         for i, line in enumerate(lines):
+            if ignore_line_texts and line["text"] in ignore_line_texts:
+                continue
             # Coordinates where to write, you can adjust as per your needs
             x = 30
             y = page_height - line["bottom"] + offset

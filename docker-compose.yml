@@ -38,6 +38,7 @@ services:
     depends_on:
       - db-ready
       - localstack-ready
+
   mail:
     image: namshi/smtp
     restart: always
@@ -115,7 +116,7 @@ services:
       AWS_DEFAULT_REGION: us-east-1
       PROJECT_NAME: nasa-apt-api-local
       API_VERSION_STRING: /v2
-      AWS_RESOURCES_ENDPOINT: http://localstack:4566
+      AWS_RESOURCES_ENDPOINT: ${AWS_RESOURCES_ENDPOINT:-http://localstack:4566}
       S3_BUCKET: nasa-apt-dev-files
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
       # This URL omits the "http://" in order to remain consistent
@@ -156,7 +157,7 @@ services:
       AWS_DEFAULT_REGION: us-east-1
       PROJECT_NAME: nasa-apt-api-local
       API_VERSION_STRING: /v2
-      AWS_RESOURCES_ENDPOINT: http://localstack:4566
+      AWS_RESOURCES_ENDPOINT: ${AWS_RESOURCES_ENDPOINT:-http://localstack:4566}
       S3_BUCKET: nasa-apt-dev-files
       POSTGRES_ADMIN_CREDENTIALS_ARN: mocked_credentials_arn
       # This URL omits the "http://" in order to remain consistent
