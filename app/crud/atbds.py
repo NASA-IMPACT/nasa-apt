@@ -101,6 +101,15 @@ class CRUDAtbds(CRUDBase[Atbds, FullOutput, Create, Update]):
         which needs to be saved as a field of the AtbdVersion, gets generated when
         serializing the Atbd to the database."""
 
+        # Uniqueness validation for title
+        if (atbd_input.title is not None) and db.query(
+            db.query(Atbds).filter(Atbds.title == atbd_input.title).exists()
+        ).scalar():
+            raise HTTPException(
+                status_code=400,
+                detail="The ATBD title is already in use. Please provide a different title.",
+            )
+
         # Unique validation
         if (
             atbd_input.alias is not None
