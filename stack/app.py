@@ -227,6 +227,12 @@ class nasaAPTLambdaStack(Stack):
             if "prod" in config.STAGE.lower()
             else RemovalPolicy.DESTROY,
             encryption_at_rest=opensearch.EncryptionAtRestOptions(enabled=True),
+            logging=opensearch.LoggingOptions(
+                audit_log_enabled=True, # [Opensearch.5]
+                app_log_enabled=True, # [Opensearch.4]
+            ),
+            node_to_node_encryption=True, # [Opensearch.3]
+            tls_security_policy=opensearch.TLSSecurityPolicy.TLS_1_2, # [Opensearch.8]
         )
 
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
