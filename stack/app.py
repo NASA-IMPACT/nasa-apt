@@ -210,10 +210,10 @@ class nasaAPTLambdaStack(Stack):
 
         # Log Groups for OpenSearch.LoggingOptions
         audit_log = logs.LogGroup(
-            self, "OpenSearchAuditLogGroup", retention=logs.RetentionDays.ONE_WEEK
+            self, "OpenSearchAuditLogGroup", retention=logs.RetentionDays.ONE_MONTH
         )
         app_log = logs.LogGroup(
-            self, "OpenSearchAppLogGroup", retention=logs.RetentionDays.ONE_WEEK
+            self, "OpenSearchAppLogGroup", retention=logs.RetentionDays.ONE_MONTH
         )
 
         # This domain is launched within a VPC
