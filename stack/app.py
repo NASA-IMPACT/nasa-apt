@@ -13,6 +13,7 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_event_source
+from aws_cdk import aws_logs as logs
 from aws_cdk import aws_opensearchservice as opensearch
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
@@ -195,6 +196,26 @@ class nasaAPTLambdaStack(Stack):
             retention_period=Duration.seconds(visibility_timeout * config.MAX_RETRIES),
         )
 
+        # IAM role for OpenSearch.AdvancedSecurityOptions
+        opensearch_role = iam.Role(
+            self,
+            "OpenSearchRole",
+            assumed_by=iam.AccountRootPrincipal(),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "AmazonOpenSearchServiceFullAccess"
+                )
+            ],
+        )
+
+        # Log Groups for OpenSearch.LoggingOptions
+        audit_log = logs.LogGroup(
+            self, "OpenSearchAuditLogGroup", retention=logs.RetentionDays.ONE_MONTH
+        )
+        app_log = logs.LogGroup(
+            self, "OpenSearchAppLogGroup", retention=logs.RetentionDays.ONE_MONTH
+        )
+
         # This domain is launched within a VPC
         private_os_domain = opensearch.Domain(
             self,
@@ -227,6 +248,18 @@ class nasaAPTLambdaStack(Stack):
             if "prod" in config.STAGE.lower()
             else RemovalPolicy.DESTROY,
             encryption_at_rest=opensearch.EncryptionAtRestOptions(enabled=True),
+            enforce_https=True,  # [Opensearch.8]
+            fine_grained_access_control=opensearch.AdvancedSecurityOptions(
+                master_user_arn=opensearch_role.role_arn,
+            ),
+            logging=opensearch.LoggingOptions(
+                audit_log_enabled=True,  # [Opensearch.5]
+                audit_log_group=audit_log,
+                app_log_enabled=True,  # [Opensearch.4]
+                app_log_group=app_log,
+            ),
+            node_to_node_encryption=True,  # [Opensearch.3]
+            tls_security_policy=opensearch.TLSSecurityPolicy.TLS_1_2,  # [Opensearch.8]
         )
 
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
