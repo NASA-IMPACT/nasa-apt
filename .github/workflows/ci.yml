@@ -69,7 +69,7 @@ jobs:
           STAGE=staging
           API_VERSION_STRING=/v2
           # Frontend Url used to set CORS origin for FastAPI
-          APT_FRONTEND_URL=https://nasa-apt.surge.sh
+          APT_FRONTEND_URL=https://d3p0lkft682kz.cloudfront.net
           NOTIFICATIONS_FROM="no-reply@ds.io"
           APT_FEATURE_JOURNAL_PDF_EXPORT_ENABLED="true"
           DATABASE_FROM_SNAPSHOT_ID="nasa-apt-api-staging-db-encrypted"
