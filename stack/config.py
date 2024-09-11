@@ -55,7 +55,7 @@ FRONTEND_URL = os.environ.get("APT_FRONTEND_URL") or exit(
 )
 
 # if STAGE != "prod":
-#    FRONTEND_URL = f"{FRONTEND_URL},http://localhost:9000,https://nasa-apt.surge.sh"
+#    FRONTEND_URL = f"{FRONTEND_URL},http://localhost:9000"
 
 BACKEND_CORS_ORIGINS = os.environ.get(
     "BACKEND_CORS_ORIGINS",
