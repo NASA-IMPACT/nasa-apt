@@ -262,19 +262,6 @@ class nasaAPTLambdaStack(Stack):
             tls_security_policy=opensearch.TLSSecurityPolicy.TLS_1_2,  # [Opensearch.8]
         )
 
-        # apt_opensearch_policy_statement = iam.PolicyStatement(
-        #     effect=iam.Effect.ALLOW,
-        #     principals=[iam.ServicePrincipal("es.amazonaws.com")],
-        #     actions=["logs:PutLogEvents", "logs:CreateLogStream"],
-        #     resources=[
-        #         app_log.log_group_arn,
-        #         audit_log.log_group_arn,
-        #     ],
-        # )
-
-        # app_log.add_to_resource_policy(apt_opensearch_policy_statement)
-        # audit_log.add_to_resource_policy(apt_opensearch_policy_statement)
-
         ses_access = iam.PolicyStatement(actions=["ses:SendEmail"], resources=["*"])
         sqs_access = iam.PolicyStatement(actions=["sqs:SendMessage"], resources=["*"])
 
