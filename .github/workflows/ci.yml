@@ -7,9 +7,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
     - name: Setup python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@e9aba2c848f5ebd159c070c61ea2c4e2b122355e # v2
       with: 
         python-version: 3.8
     - name: Install APT-GET dependencies
@@ -27,9 +27,9 @@ jobs:
   #   needs: [lint]
   #   runs-on: ubuntu-latest
   #   steps:
-  #   - uses: actions/checkout@v2
+  #   - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
   #   - name: Setup python 3
-  #     uses: actions/setup-python@v2
+  #     uses: actions/setup-python@e9aba2c848f5ebd159c070c61ea2c4e2b122355e # v2
   #     with:
   #       python-version: 3.8
   #   - name: Install APT-GET dependencies
@@ -48,17 +48,17 @@ jobs:
     if: (github.event.ref == 'refs/heads/develop')
     runs-on: ubuntu-latest
     steps: 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
       - name: Setup python 3
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@e9aba2c848f5ebd159c070c61ea2c4e2b122355e # v2
         with: 
           python-version: 3.8
       - name: Setup Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@f1f314fca9dfce2769ece7d933488f076716723e # v1
         with: 
           node-version: 18 
       - name: Configure awscli
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1
         with:
           aws-access-key-id: ${{ secrets.DS_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.DS_AWS_SECRET_ACCESS_KEY }}
@@ -101,17 +101,17 @@ jobs:
   #   if: github.event.ref == 'refs/heads/master' 
   #   runs-on: ubuntu-latest
   #   steps: 
-  #     - uses: actions/checkout@v2
+  #     - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
   #     - name: Setup python 3
-  #       uses: actions/setup-python@v2
+  #       uses: actions/setup-python@e9aba2c848f5ebd159c070c61ea2c4e2b122355e # v2
   #       with: 
   #         python-version: 3.8
   #     - name: Setup Node
-  #       uses: actions/setup-node@v1
+  #       uses: actions/setup-node@f1f314fca9dfce2769ece7d933488f076716723e # v1
   #       with: 
   #         node-version: 14 
   #     - name: Configure awscli
-  #       uses: aws-actions/configure-aws-credentials@v1
+  #       uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1
   #       with:
   #         aws-access-key-id: ${{ secrets.UAH_AWS_ACCESS_KEY_ID }}
   #         aws-secret-access-key: ${{ secrets.UAH_AWS_SECRET_ACCESS_KEY }}
